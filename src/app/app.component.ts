@@ -12,8 +12,4 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 })
 export class AppComponent {
   title = 'hireassist';
-
-  public toggleFullScreen() {
-    console.log();
-  }
 }
