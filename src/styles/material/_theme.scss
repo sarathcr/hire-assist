@@ -1,0 +1,19 @@
+@use '@angular/material' as mat;
+
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Inter:wght@100;300;400;500;600;700;800;900&family=Josefin+Sans:ital,wght@0,100;0,300;0,600;1,400&family=Markazi+Text:wght@400..700&display=swap');
+
+html {
+  @include mat.theme(
+    (
+      color: mat.$azure-palette,
+      typography: (
+        plain-family: 'Markazi Text',
+        brand-family: serif,
+        bold-weight: 900,
+        medium-weight: 500,
+        regular-weight: 300,
+      ),
+      density: 0,
+    )
+  );
+}

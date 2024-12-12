@@ -1,0 +1,11 @@
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.card {
+  border: 1px solid black;
+  border-radius: 5%;
+  padding: 50px;
+}
