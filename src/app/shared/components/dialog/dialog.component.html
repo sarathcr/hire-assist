@@ -1,0 +1,8 @@
+<h2 mat-dialog-title>Title</h2>
+<mat-dialog-content>
+  <p>What's your favorite animal?</p>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-stroked-button mat-dialog-close>No Thanks</button>
+  <button mat-button [mat-dialog-close]="onSubmit()" cdkFocusInitial>Ok</button>
+</mat-dialog-actions>

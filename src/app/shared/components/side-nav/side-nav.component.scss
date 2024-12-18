@@ -1,0 +1,41 @@
+:host {
+  width: 270px;
+  height: 100%;
+  box-shadow: inset -3px 0px 4px -1px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar {
+  padding: 30px;
+  text-align: center;
+  height: 100%;
+
+  &__logo {
+    width: 100%;
+    margin: 0;
+    img {
+      width: 80%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  &__nav {
+    margin-top: 60px;
+    ::ng-deep {
+      .mdc-list-item__primary-text {
+        display: flex;
+        align-items: center;
+        font-family: 'Poppins', serif;
+        font-weight: 500;
+        font-style: normal;
+      }
+      .mat-icon {
+        color: var(--mat-sys-primary);
+        margin-right: 10px;
+      }
+    }
+    &_active {
+      background: #2196f324;
+      border-radius: 6px;
+    }
+  }
+}
