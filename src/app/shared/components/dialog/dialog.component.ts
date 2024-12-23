@@ -1,33 +1,26 @@
-import { Component, inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
-  MAT_DIALOG_DEFAULT_OPTIONS,
   MatDialogModule,
   MatDialogRef,
 } from '@angular/material/dialog';
+import { DialogData } from '../../models/dialog-models';
+import { MatButtonModule } from '@angular/material/button';
 
-export interface DialogData {
-  // name(name: any): unknown;
-  message: string;
-  title: string;
-  isChoice: boolean;
-  acceptButtonText?: string;
-  cancelButtonText?: string;
-  disableClose?: boolean;
-}
 @Component({
   selector: 'app-dialog',
-  imports: [MatDialogModule],
-  providers: [
-    { provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: { hasBackdrop: false } },
-  ],
+  imports: [MatDialogModule, MatButtonModule],
+
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.scss',
 })
 export class DialogComponent {
-  readonly dialogRef = inject(MatDialogRef<DialogComponent>);
-  readonly data = inject<DialogData>(MAT_DIALOG_DATA);
-  // EVENTS
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    public dialogRef: MatDialogRef<DialogComponent>
+  ) {}
+
+  // Public Events
   public onSubmit() {
     this.dialogRef.close(true);
   }

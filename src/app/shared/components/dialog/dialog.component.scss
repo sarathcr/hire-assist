@@ -1,0 +1,10 @@
+.dialog {
+  ::ng-deep {
+    .mdc-dialog__title {
+      font-family: 'Poppins', serif;
+      font-style: normal;
+      font-weight: 500;
+      font-size: 20px;
+    }
+  }
+}

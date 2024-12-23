@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { RouterOutlet } from '@angular/router';
+import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout.component';
+import { FullscreenLayoutComponent } from './layouts/fullscreen-layout/fullscreen-layout.component';
 import { PageLayout } from './shared/enum/enum';
 import { PageLayoutService } from './shared/services/page-layout.service';
-import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout.component';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +18,7 @@ import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-l
     MatFormFieldModule,
     MatInputModule,
     DashboardLayoutComponent,
+    FullscreenLayoutComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
