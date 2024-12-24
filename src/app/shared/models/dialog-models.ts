@@ -12,4 +12,5 @@ export interface DialogData {
   acceptButtonText?: string;
   cancelButtonText?: string;
   disableClose?: boolean;
+  closeOnNavigation?: boolean;
 }

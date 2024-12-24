@@ -8,7 +8,10 @@
   </mat-dialog-content>
 
   <mat-dialog-actions>
-    <button mat-button mat-dialog-close>Cancel</button>
+    @if (data.isChoice) {
+      <button mat-button mat-dialog-close>Cancel</button>
+    }
+
     <button mat-button mat-flat-button (click)="onSubmit()">Continue</button>
   </mat-dialog-actions>
 </div>

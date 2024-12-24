@@ -1,11 +1,10 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../../shared/components/base/base.component';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { DialogConfig, DialogData } from '../../shared/models/dialog-models';
-import { AssessmentWarningService } from '../../shared/services/assessment-warning.service';
 
 @Component({
   selector: 'app-candidate',
@@ -15,21 +14,11 @@ import { AssessmentWarningService } from '../../shared/services/assessment-warni
   styleUrl: './candidate.component.scss',
 })
 export class CandidateComponent extends BaseComponent {
-  private warning = signal(0);
-
-  warningService = inject(AssessmentWarningService);
   constructor(
     private dialog: MatDialog,
     private router: Router
   ) {
     super();
-    effect(() => {
-      console.log(this.warning());
-
-      if (this.warning() <= 2) {
-        this.requestFullScreen();
-      }
-    });
   }
 
   // Public Events
@@ -49,20 +38,7 @@ export class CandidateComponent extends BaseComponent {
       .subscribe(result => {
         if (result) {
           this.router.navigate(['/candidate/test']);
-          this.warning.update(val => val + 1);
         }
-      });
-  }
-
-  private requestFullScreen() {
-    const element = document.documentElement;
-    element
-      .requestFullscreen()
-      .then(() => {
-        console.log('Entered fullscreen mode.');
-      })
-      .catch(err => {
-        console.error('Failed to enter fullscreen mode:', err);
       });
   }
 }

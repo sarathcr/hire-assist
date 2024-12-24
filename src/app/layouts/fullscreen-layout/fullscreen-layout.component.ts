@@ -4,8 +4,6 @@ import { Component } from '@angular/core';
   selector: 'app-fullscreen-layout',
   imports: [],
   templateUrl: './fullscreen-layout.component.html',
-  styleUrl: './fullscreen-layout.component.scss'
+  styleUrl: './fullscreen-layout.component.scss',
 })
-export class FullscreenLayoutComponent {
-
-}
+export class FullscreenLayoutComponent {}

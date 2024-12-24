@@ -4,10 +4,10 @@ import { Injectable, signal } from '@angular/core';
   providedIn: 'root',
 })
 export class AssessmentWarningService {
-  private warningCount = signal(0);
+  private warningCount = signal(1);
 
   public setWarningCount(count: number) {
-    this.warningCount.set(count);
+    this.warningCount.update(curr => curr + count);
   }
 
   public getWarningCount() {
