@@ -5,10 +5,11 @@ body,
 html {
   margin: 0;
   height: 100%;
-  font-family: 'Poppins', serif;
   font-weight: 300;
-  font-style: normal;
 }
+
 * {
   box-sizing: border-box;
+  font-family: 'Poppins', serif !important;
+  font-style: normal;
 }

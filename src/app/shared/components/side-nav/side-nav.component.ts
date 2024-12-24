@@ -5,7 +5,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-side-nav',
-  imports: [MatIconModule, MatListModule, RouterLink, RouterLinkActive],
+  imports: [MatListModule, RouterLink, RouterLinkActive, MatIconModule],
   templateUrl: './side-nav.component.html',
   styleUrl: './side-nav.component.scss',
 })
