@@ -1,7 +1,7 @@
-import { Component, HostListener, inject, OnInit, output } from '@angular/core';
+import { CommonModule, LocationStrategy } from '@angular/common';
+import { Component, HostListener, inject, output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { fromEvent } from 'rxjs';
 import { BaseComponent } from '../../shared/components/base/base.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { RadioButtonComponent } from '../../shared/components/radio-button/radio-button.component';
@@ -10,7 +10,7 @@ import { AssessmentWarningService } from '../../shared/services/assessment-warni
 
 @Component({
   selector: 'app-assessment',
-  imports: [RadioButtonComponent],
+  imports: [RadioButtonComponent, CommonModule],
   templateUrl: './assessment.component.html',
   styleUrl: './assessment.component.scss',
 })
@@ -19,15 +19,20 @@ export class AssessmentComponent extends BaseComponent {
   public selectOption = output();
   // Private
   private isFullscreen = false;
+  private isNavigationIntercepted = false;
   // Services
   private warningService = inject(AssessmentWarningService);
 
   constructor(
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private locationStrategy: LocationStrategy
   ) {
     super();
     this.enterFullScreenMode();
+    this.locationStrategy.onPopState(() => {
+      this.showPreventNavigationDialog();
+    });
   }
 
   // Listener Events
@@ -84,6 +89,7 @@ export class AssessmentComponent extends BaseComponent {
         if (result) {
           this.warningService.setWarningCount(1);
           this.enterFullScreenMode();
+          this.dialog.closeAll();
         }
       });
   }
@@ -98,11 +104,14 @@ export class AssessmentComponent extends BaseComponent {
       .afterClosed()
       .subscribe(result => {
         if (result) {
-          if (this.warningService.getWarningCount() <= 2) {
-            this.showWarningDialog();
-          } else {
-            this.router.navigate(['/candidate']);
-          }
+          //   // Handle if the user agrees to continue navigation
+          //   this.isNavigationIntercepted = true;
+          //   window.history.back(); // Navigate as requested
+          // } else {
+          // Reset interception
+          this.isNavigationIntercepted = false;
+          console.log('Navigation prevented.');
+          this.showWarningDialog();
         }
       });
   }
@@ -118,7 +127,7 @@ export class AssessmentComponent extends BaseComponent {
   private getPreventNavigationDialogData(): DialogData {
     return {
       title: 'Warning',
-      message: `You are not allowed to refresh or navigate away from this page`,
+      message: `You are navigating away from this page. Are you sure you want to proceed?`,
       isChoice: true,
       closeOnNavigation: true,
     };
