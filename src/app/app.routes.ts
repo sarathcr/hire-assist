@@ -14,15 +14,13 @@ export const routes: Routes = [
       layout: setLayout(PageLayout.DashBoard),
     },
     runGuardsAndResolvers: 'always',
-    children: [
-      {
-        path: 'test',
-        component: AssessmentComponent,
-        runGuardsAndResolvers: 'always',
-        resolve: {
-          layout: setLayout(PageLayout.FullScreen),
-        },
-      },
-    ],
+  },
+  {
+    path: 'candidate/test',
+    component: AssessmentComponent,
+    runGuardsAndResolvers: 'always',
+    resolve: {
+      layout: setLayout(PageLayout.FullScreen),
+    },
   },
 ];
