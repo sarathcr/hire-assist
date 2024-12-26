@@ -144,7 +144,7 @@ export class AssessmentComponent extends BaseComponent {
   private getPreventNavigationDialogData(): DialogData {
     return {
       title: 'Warning',
-      message: `You are navigating away from this page. Are you sure you want to proceed?`,
+      message: `You are not allowed to navigate away from this page. Please complete the test.`,
       isChoice: true,
       closeOnNavigation: true,
     };
