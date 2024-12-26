@@ -1,0 +1,18 @@
+.thank-you {
+  padding: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100%;
+  &__content {
+    width: 60%;
+    text-align: center;
+  }
+  &__image {
+    width: 10%;
+    img {
+      width: 100%;
+    }
+  }
+}
