@@ -1,0 +1,101 @@
+.example-form{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  margin-bottom: 10vh;
+
+  p{
+    font-size: 22px;
+    color: gray;
+    font-weight: 500;
+  }
+}
+.example-full-width{
+  width: 60%;
+  margin-top: 40px;
+}
+
+.signup{
+  appearance: button;
+  background-color: #182bd6;
+  border: solid transparent;
+  border-radius: 16px;
+  border-width: 0 0 4px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: din-round,sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  line-height: 20px;
+  margin: 0;
+  outline: none;
+  overflow: visible;
+  padding: 13px 16px;
+  text-align: center;
+  touch-action: manipulation;
+  transform: translateZ(0);
+  transition: filter .2s;
+  user-select: none;
+  -webkit-user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 60%;
+}
+
+.signup:after {
+  background-clip: padding-box;
+  background-color: darkblue;
+  border: solid transparent;
+  border-radius: 16px;
+  border-width: 0 0 4px;
+  bottom: -4px;
+  content: "";
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: -1;
+}
+
+.signup,
+.signup:focus {
+  user-select: auto;
+}
+
+.signup:hover:not(:disabled) {
+  filter: brightness(1.1);
+  -webkit-filter: brightness(1.1);
+}
+
+.signup:disabled {
+  cursor: auto;
+}
+
+.signup:active {
+  border-width: 4px 0 0;
+  background: none;
+}
+
+.forgot{
+  margin-top: 10px;
+  color: gray;
+  font-size: 20px;
+  font-weight: 500;
+  text-decoration: underline;
+}
+.forgot:hover{
+  cursor: pointer;
+}
+
+
+@media (max-width: 1300px) {
+  .example-full-width{
+    width: 70%;
+  }
+  
+}

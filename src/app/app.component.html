@@ -5,6 +5,12 @@
     </app-dashboard-layout>
   }
 
+  @case (PageLayout.AuthLayout) {
+    <app-auth-layout>
+      <router-outlet />
+    </app-auth-layout>
+  }
+
   <!-- @case (PageLayout.UnAuthorized) {
         <unauthorized-layout>
             <router-outlet />

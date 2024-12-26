@@ -12,3 +12,14 @@ html {
 * {
   box-sizing: border-box;
 }
+
+body .mdc-text-field--filled {
+  border-radius: 25px;
+  border: 1px solid darkblue;
+  background-color: #F0FFFF !important;
+  font-size: 25px !important;
+}
+
+mat-form-field label {
+  font-size: 25px !important;
+}
