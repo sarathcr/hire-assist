@@ -68,6 +68,20 @@ export class AssessmentComponent extends BaseComponent {
     this.selectOption.emit();
   }
 
+  public exitFullScreenMode(): void {
+    // Check if the document is currently in fullscreen
+    if (document.fullscreenElement) {
+      document
+        .exitFullscreen()
+        .then(() => {
+          this.showTestTerminationDialog();
+        })
+        .catch(err => console.error('Failed to exit fullscreen mode:', err));
+    } else {
+      console.log('Not in fullscreen mode.');
+    }
+  }
+
   // Private Methods
   private enterFullScreenMode(): void {
     if (typeof document !== 'undefined') {
@@ -99,6 +113,7 @@ export class AssessmentComponent extends BaseComponent {
         }
       });
   }
+
   private showPreventNavigationDialog(): void {
     const modalData: DialogData = this.getPreventNavigationDialogData();
 
@@ -110,11 +125,6 @@ export class AssessmentComponent extends BaseComponent {
       .afterClosed()
       .subscribe(result => {
         if (result) {
-          //   // Handle if the user agrees to continue navigation
-          //   this.isNavigationIntercepted = true;
-          //   window.history.back(); // Navigate as requested
-          // } else {
-          // Reset interception
           this.isNavigationIntercepted = false;
           console.log('Navigation prevented.');
           this.showWarningDialog();
@@ -130,6 +140,7 @@ export class AssessmentComponent extends BaseComponent {
       closeOnNavigation: true,
     };
   }
+
   private getPreventNavigationDialogData(): DialogData {
     return {
       title: 'Warning',
@@ -143,18 +154,28 @@ export class AssessmentComponent extends BaseComponent {
     this.exitFullScreenMode();
   }
 
-  public exitFullScreenMode(): void {
-    // Check if the document is currently in fullscreen
-    if (document.fullscreenElement) {
-      document
-        .exitFullscreen()
-        .then(() => {
-          console.log('Exited fullscreen mode.');
+  private showTestTerminationDialog() {
+    const modalData: DialogData = this.getTestTerminationDialogData();
+
+    this.dialog
+      .open(DialogComponent, {
+        ...DialogConfig,
+        data: modalData,
+      })
+      .afterClosed()
+      .subscribe(result => {
+        if (result) {
           this.router.navigate(['/candidate']);
-        })
-        .catch(err => console.error('Failed to exit fullscreen mode:', err));
-    } else {
-      console.log('Not in fullscreen mode.');
-    }
+        }
+      });
+  }
+
+  private getTestTerminationDialogData(): DialogData {
+    return {
+      title: 'Sorry',
+      message: `You have used your maximum attempts by exiting full screen mode. Please contact invigilator/HR for further information`,
+      isChoice: false,
+      closeOnNavigation: true,
+    };
   }
 }

@@ -1,4 +1,4 @@
-import { Component, output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 
 @Component({
@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class ButtonComponent {
   public btnClick = output();
+  public buttonLabel = input();
 
   // Public Events
   public onButtonClick(): void {
