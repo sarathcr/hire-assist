@@ -70,10 +70,16 @@ export class AssessmentComponent extends BaseComponent {
 
   // Private Methods
   private enterFullScreenMode(): void {
-    document.documentElement
-      .requestFullscreen()
-      .then(() => console.log('Entered fullscreen mode.'))
-      .catch(err => console.error('Failed to enter fullscreen mode:', err));
+    if (typeof document !== 'undefined') {
+      document.documentElement
+        .requestFullscreen()
+        .then(() => console.log('Entered fullscreen mode.'))
+        .catch(err => console.error('Failed to enter fullscreen mode:', err));
+    } else {
+      console.warn(
+        'Document is not defined. This code is running in a non-browser environment.'
+      );
+    }
   }
 
   private showWarningDialog(): void {
