@@ -1,11 +1,11 @@
 import { Routes } from '@angular/router';
+import { LoginComponent } from './modules/auth/components/login/login.component';
 import { CandidateComponent } from './modules/candidate/candidate.component';
-import { setLayout } from './shared/resolvers/set-layout.resolver';
 import { PageLayout } from './shared/enum/enum';
-import { AuthComponent } from './modules/auth/auth.component';
+import { setLayout } from './shared/resolvers/set-layout.resolver';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'candidate', pathMatch: 'full' },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
   {
     path: 'candidate',
     component: CandidateComponent,
@@ -14,8 +14,8 @@ export const routes: Routes = [
     },
   },
   {
-    path: 'auth',
-    component: AuthComponent,
+    path: 'login',
+    component: LoginComponent,
     resolve: {
       layout: setLayout(PageLayout.AuthLayout),
     },

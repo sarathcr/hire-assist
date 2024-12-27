@@ -1,0 +1,10 @@
+.login {
+  text-align: center;
+  &__title {
+    color: #736d6d;
+  }
+  &__sub-title,
+  &__title {
+    margin-top: 0;
+  }
+}
