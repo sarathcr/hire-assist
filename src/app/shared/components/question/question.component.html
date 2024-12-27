@@ -1,0 +1,8 @@
+<div class="question">
+  <p class="question-text">{{ question.text }}</p>
+  <img
+    *ngIf="question.image"
+    [src]="question.image"
+    alt="Question Image"
+    class="question-image" />
+</div>

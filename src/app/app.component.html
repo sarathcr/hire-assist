@@ -11,17 +11,11 @@
     </app-auth-layout>
   }
 
-  <!-- @case (PageLayout.UnAuthorized) {
-        <unauthorized-layout>
-            <router-outlet />
-        </unauthorized-layout>
-    }
-
-    @case (PageLayout.Error) {
-        <error-layout>
-            <router-outlet />
-        </error-layout>
-    } -->
+  @case (PageLayout.FullScreen) {
+    <app-fullscreen-layout>
+      <router-outlet />
+    </app-fullscreen-layout>
+  }
 
   @default {
     <!-- <unauthorized-layout>

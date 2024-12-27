@@ -6,6 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { RouterOutlet } from '@angular/router';
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout.component';
 import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout.component';
+import { FullscreenLayoutComponent } from './layouts/fullscreen-layout/fullscreen-layout.component';
 import { PageLayout } from './shared/enum/enum';
 import { PageLayoutService } from './shared/services/page-layout.service';
 
@@ -19,6 +20,7 @@ import { PageLayoutService } from './shared/services/page-layout.service';
     MatInputModule,
     DashboardLayoutComponent,
     AuthLayoutComponent,
+    FullscreenLayoutComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

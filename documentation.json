@@ -1,0 +1,2789 @@
+{
+    "pipes": [],
+    "interfaces": [
+        {
+            "name": "DialogData",
+            "id": "interface-DialogData-26d13c192fedbe96f83e9bbab8265d8e57404a0a475b348cfa46da3b6daf6fcb6510ed646d1242985a27af70b2b5c95666dd9388d4ed8ce144db1edb2e521b5b",
+            "file": "src/app/shared/models/dialog-models.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "interface",
+            "sourceCode": "export const DialogConfig = {\r\n  hasBackdrop: true,\r\n  backdropClass: 'dialogBackdrop',\r\n  disableClose: true,\r\n  autoFocus: false,\r\n};\r\n\r\nexport interface DialogData {\r\n  title: string;\r\n  message: string;\r\n  isChoice: boolean;\r\n  acceptButtonText?: string;\r\n  cancelButtonText?: string;\r\n  disableClose?: boolean;\r\n  closeOnNavigation?: boolean;\r\n}\r\n",
+            "properties": [
+                {
+                    "name": "acceptButtonText",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": true,
+                    "description": "",
+                    "line": 12
+                },
+                {
+                    "name": "cancelButtonText",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": true,
+                    "description": "",
+                    "line": 13
+                },
+                {
+                    "name": "closeOnNavigation",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "boolean",
+                    "indexKey": "",
+                    "optional": true,
+                    "description": "",
+                    "line": 15
+                },
+                {
+                    "name": "disableClose",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "boolean",
+                    "indexKey": "",
+                    "optional": true,
+                    "description": "",
+                    "line": 14
+                },
+                {
+                    "name": "isChoice",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "boolean",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 11
+                },
+                {
+                    "name": "message",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 10
+                },
+                {
+                    "name": "title",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 9
+                }
+            ],
+            "indexSignatures": [],
+            "kind": 171,
+            "methods": [],
+            "extends": []
+        },
+        {
+            "name": "User",
+            "id": "interface-User-23c11020a2831beb3fa02ee911a75b64009c31bb46f73a01145c2560cb13b7f7e641105b678bd8fb01a5a199117001f3da4a78351d29d85d213ed7b82982091f",
+            "file": "src/stories/user.ts",
+            "deprecated": false,
+            "deprecationMessage": "",
+            "type": "interface",
+            "sourceCode": "export interface User {\r\n  name: string;\r\n}\r\n",
+            "properties": [
+                {
+                    "name": "name",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 2
+                }
+            ],
+            "indexSignatures": [],
+            "kind": 171,
+            "methods": [],
+            "extends": []
+        }
+    ],
+    "injectables": [
+        {
+            "name": "AssessmentWarningService",
+            "id": "injectable-AssessmentWarningService-327909167b3f54f79c5080f4722f625f3ac53e448e9a8f510a6587bf082fe7882b086705a16f8c64ea826b7520e3aa9c389ebc51cc2fa47901f7fb27287e9914",
+            "file": "src/app/shared/services/assessment-warning.service.ts",
+            "properties": [
+                {
+                    "name": "warningCount",
+                    "defaultValue": "signal(1)",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 7,
+                    "modifierKind": [
+                        123
+                    ]
+                }
+            ],
+            "methods": [
+                {
+                    "name": "getWarningCount",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "any",
+                    "typeParameters": [],
+                    "line": 13,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        125
+                    ]
+                },
+                {
+                    "name": "setWarningCount",
+                    "args": [
+                        {
+                            "name": "count",
+                            "type": "number",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 9,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        125
+                    ],
+                    "jsdoctags": [
+                        {
+                            "name": "count",
+                            "type": "number",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "description": "",
+            "rawdescription": "\n",
+            "sourceCode": "import { Injectable, signal } from '@angular/core';\r\n\r\n@Injectable({\r\n  providedIn: 'root',\r\n})\r\nexport class AssessmentWarningService {\r\n  private warningCount = signal(1);\r\n\r\n  public setWarningCount(count: number) {\r\n    this.warningCount.update(curr => curr + count);\r\n  }\r\n\r\n  public getWarningCount() {\r\n    return this.warningCount();\r\n  }\r\n}\r\n",
+            "extends": [],
+            "type": "injectable"
+        },
+        {
+            "name": "PageLayoutService",
+            "id": "injectable-PageLayoutService-9fcc33e1f0740829b50942f437ff6cb5b8772e7c8b2d8d63a949758133c8427b349ac4d9c978a95119441d63d08d1f34c886c217711d63e90304b3c915418e46",
+            "file": "src/app/shared/services/page-layout.service.ts",
+            "properties": [
+                {
+                    "name": "layout$",
+                    "defaultValue": "this.layoutSubject.asObservable()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 11,
+                    "modifierKind": [
+                        125
+                    ]
+                },
+                {
+                    "name": "layoutSubject",
+                    "defaultValue": "new Subject<PageLayout>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 9,
+                    "modifierKind": [
+                        123
+                    ]
+                }
+            ],
+            "methods": [
+                {
+                    "name": "setLayout",
+                    "args": [
+                        {
+                            "name": "value",
+                            "type": "PageLayout",
+                            "deprecated": false,
+                            "deprecationMessage": ""
+                        }
+                    ],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 13,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        125
+                    ],
+                    "jsdoctags": [
+                        {
+                            "name": "value",
+                            "type": "PageLayout",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "tagName": {
+                                "text": "param"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "description": "",
+            "rawdescription": "\n",
+            "sourceCode": "import { Injectable } from '@angular/core';\r\nimport { Subject } from 'rxjs';\r\nimport { PageLayout } from '../enum/enum';\r\n\r\n@Injectable({\r\n  providedIn: 'root',\r\n})\r\nexport class PageLayoutService {\r\n  private layoutSubject = new Subject<PageLayout>();\r\n\r\n  public layout$ = this.layoutSubject.asObservable();\r\n\r\n  public setLayout(value: PageLayout) {\r\n    this.layoutSubject.next(value);\r\n  }\r\n}\r\n",
+            "extends": [],
+            "type": "injectable"
+        }
+    ],
+    "guards": [],
+    "interceptors": [],
+    "classes": [],
+    "directives": [],
+    "components": [
+        {
+            "name": "AppComponent",
+            "id": "component-AppComponent-1ae94b3bfa8694bf0bf73ca3e3e140edfe74de52c9f1772b6ec02e1cb8ae4d7d4a78e0bf65ebd89d613ceb4e86749a8a453bac5331940daf53a30e0e75f11ef9",
+            "file": "src/app/app.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-root",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./app.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "PageLayout",
+                    "defaultValue": "PageLayout",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 27,
+                    "modifierKind": [
+                        148
+                    ]
+                },
+                {
+                    "name": "pageLayoutService",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "PageLayoutService",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 29,
+                    "modifierKind": [
+                        125
+                    ]
+                }
+            ],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "RouterOutlet"
+                },
+                {
+                    "name": "FormsModule",
+                    "type": "module"
+                },
+                {
+                    "name": "MatFormFieldModule",
+                    "type": "module"
+                },
+                {
+                    "name": "MatInputModule",
+                    "type": "module"
+                },
+                {
+                    "name": "DashboardLayoutComponent",
+                    "type": "component"
+                },
+                {
+                    "name": "FullscreenLayoutComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { CommonModule } from '@angular/common';\r\nimport { Component } from '@angular/core';\r\nimport { FormsModule } from '@angular/forms';\r\nimport { MatFormFieldModule } from '@angular/material/form-field';\r\nimport { MatInputModule } from '@angular/material/input';\r\nimport { RouterOutlet } from '@angular/router';\r\nimport { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-layout.component';\r\nimport { FullscreenLayoutComponent } from './layouts/fullscreen-layout/fullscreen-layout.component';\r\nimport { PageLayout } from './shared/enum/enum';\r\nimport { PageLayoutService } from './shared/services/page-layout.service';\r\n\r\n@Component({\r\n  selector: 'app-root',\r\n  imports: [\r\n    CommonModule,\r\n    RouterOutlet,\r\n    FormsModule,\r\n    MatFormFieldModule,\r\n    MatInputModule,\r\n    DashboardLayoutComponent,\r\n    FullscreenLayoutComponent,\r\n  ],\r\n  templateUrl: './app.component.html',\r\n  styleUrl: './app.component.scss',\r\n})\r\nexport class AppComponent {\r\n  readonly PageLayout = PageLayout;\r\n\r\n  constructor(public pageLayoutService: PageLayoutService) {}\r\n}\r\n",
+            "styleUrl": "./app.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "constructorObj": {
+                "name": "constructor",
+                "description": "",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "args": [
+                    {
+                        "name": "pageLayoutService",
+                        "type": "PageLayoutService",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "line": 27,
+                "jsdoctags": [
+                    {
+                        "name": "pageLayoutService",
+                        "type": "PageLayoutService",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            },
+            "extends": [],
+            "templateData": "@switch (pageLayoutService.layout$ | async) {\r\n  @case (PageLayout.DashBoard) {\r\n    <app-dashboard-layout>\r\n      <router-outlet />\r\n    </app-dashboard-layout>\r\n  }\r\n\r\n  @case (PageLayout.FullScreen) {\r\n    <app-fullscreen-layout>\r\n      <router-outlet />\r\n    </app-fullscreen-layout>\r\n  }\r\n\r\n  <!--@case (PageLayout.Error) {\r\n        <error-layout>\r\n            <router-outlet />\r\n        </error-layout>\r\n    } -->\r\n\r\n  @default {\r\n    <!-- <unauthorized-layout>\r\n            <router-outlet />\r\n        </unauthorized-layout> -->\r\n  }\r\n}\r\n"
+        },
+        {
+            "name": "AssessmentComponent",
+            "id": "component-AssessmentComponent-18cd638227e08c50197a41164e96b75ed79dbd1d7c03b0c68c3e8761bff495e6061c845aba152a83cf0af5f92bed7f54f6836c5528e1b85fe2d939105ea6367c",
+            "file": "src/app/modules/assessment/assessment.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-assessment",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./assessment.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [
+                {
+                    "name": "selectOption",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 19,
+                    "modifierKind": [
+                        125
+                    ],
+                    "required": false
+                }
+            ],
+            "propertiesClass": [
+                {
+                    "name": "isFullscreen",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 21,
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "isNavigationIntercepted",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 22,
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "selectOption",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 19,
+                    "modifierKind": [
+                        125
+                    ],
+                    "required": false
+                },
+                {
+                    "name": "warningService",
+                    "defaultValue": "inject(AssessmentWarningService)",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 24,
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "subscriptionList",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Subscription[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 11,
+                    "modifierKind": [
+                        124
+                    ],
+                    "inheritance": {
+                        "file": "BaseComponent"
+                    }
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "enterFullScreenMode",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 86,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "exitFullScreenMode",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 71,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        125
+                    ]
+                },
+                {
+                    "name": "exitToCandidatePage",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 153,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "getPreventNavigationDialogData",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "DialogData",
+                    "typeParameters": [],
+                    "line": 144,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "getTestTerminationDialogData",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "DialogData",
+                    "typeParameters": [],
+                    "line": 173,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "getWarningDialogData",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "DialogData",
+                    "typeParameters": [],
+                    "line": 135,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "onFullscreenChange",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 40,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "decorators": [
+                        {
+                            "name": "HostListener",
+                            "stringifiedArguments": "'document:fullscreenchange'"
+                        }
+                    ],
+                    "modifierKind": [
+                        170
+                    ]
+                },
+                {
+                    "name": "onOptionSelect",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 67,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        125
+                    ]
+                },
+                {
+                    "name": "onVisibilityChange",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 59,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "decorators": [
+                        {
+                            "name": "HostListener",
+                            "stringifiedArguments": "'document:visibilitychange'"
+                        }
+                    ],
+                    "modifierKind": [
+                        170,
+                        125
+                    ]
+                },
+                {
+                    "name": "showPreventNavigationDialog",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 117,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "showTestTerminationDialog",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 157,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "showWarningDialog",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 99,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        123
+                    ]
+                },
+                {
+                    "name": "ngOnDestroy",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 13,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "inheritance": {
+                        "file": "BaseComponent"
+                    }
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [
+                {
+                    "name": "document:fullscreenchange",
+                    "args": [],
+                    "argsDecorator": [],
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 40
+                },
+                {
+                    "name": "document:visibilitychange",
+                    "args": [],
+                    "argsDecorator": [],
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 59
+                }
+            ],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "RadioButtonComponent",
+                    "type": "component"
+                },
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { CommonModule, LocationStrategy } from '@angular/common';\r\nimport { Component, HostListener, inject, output } from '@angular/core';\r\nimport { MatDialog } from '@angular/material/dialog';\r\nimport { Router } from '@angular/router';\r\nimport { BaseComponent } from '../../shared/components/base/base.component';\r\nimport { DialogComponent } from '../../shared/components/dialog/dialog.component';\r\nimport { RadioButtonComponent } from '../../shared/components/radio-button/radio-button.component';\r\nimport { DialogConfig, DialogData } from '../../shared/models/dialog-models';\r\nimport { AssessmentWarningService } from '../../shared/services/assessment-warning.service';\r\n\r\n@Component({\r\n  selector: 'app-assessment',\r\n  imports: [RadioButtonComponent, CommonModule],\r\n  templateUrl: './assessment.component.html',\r\n  styleUrl: './assessment.component.scss',\r\n})\r\nexport class AssessmentComponent extends BaseComponent {\r\n  // Signals\r\n  public selectOption = output();\r\n  // Private\r\n  private isFullscreen = false;\r\n  private isNavigationIntercepted = false;\r\n  // Services\r\n  private warningService = inject(AssessmentWarningService);\r\n\r\n  constructor(\r\n    private dialog: MatDialog,\r\n    private router: Router,\r\n    private locationStrategy: LocationStrategy\r\n  ) {\r\n    super();\r\n    this.enterFullScreenMode();\r\n    this.locationStrategy.onPopState(() => {\r\n      this.showPreventNavigationDialog();\r\n    });\r\n  }\r\n\r\n  // Listener Events\r\n  @HostListener('document:fullscreenchange')\r\n  onFullscreenChange(): void {\r\n    const warningCount = this.warningService.getWarningCount();\r\n\r\n    if (warningCount > 2) {\r\n      this.exitToCandidatePage();\r\n      return;\r\n    }\r\n\r\n    const isCurrentlyFullscreen = !!document.fullscreenElement;\r\n\r\n    if (this.isFullscreen && !isCurrentlyFullscreen) {\r\n      console.log('Fullscreen exited. Re-entering fullscreen...');\r\n      this.showWarningDialog();\r\n    }\r\n\r\n    this.isFullscreen = isCurrentlyFullscreen;\r\n  }\r\n\r\n  @HostListener('document:visibilitychange')\r\n  public onVisibilityChange(): void {\r\n    if (document.visibilityState === 'hidden') {\r\n      console.log('Tab switched. Showing warning dialog...');\r\n      this.showWarningDialog();\r\n    }\r\n  }\r\n\r\n  // Public Events\r\n  public onOptionSelect(): void {\r\n    this.selectOption.emit();\r\n  }\r\n\r\n  public exitFullScreenMode(): void {\r\n    // Check if the document is currently in fullscreen\r\n    if (document.fullscreenElement) {\r\n      document\r\n        .exitFullscreen()\r\n        .then(() => {\r\n          this.showTestTerminationDialog();\r\n        })\r\n        .catch(err => console.error('Failed to exit fullscreen mode:', err));\r\n    } else {\r\n      console.log('Not in fullscreen mode.');\r\n    }\r\n  }\r\n\r\n  // Private Methods\r\n  private enterFullScreenMode(): void {\r\n    if (typeof document !== 'undefined') {\r\n      document.documentElement\r\n        .requestFullscreen()\r\n        .then(() => console.log('Entered fullscreen mode.'))\r\n        .catch(err => console.error('Failed to enter fullscreen mode:', err));\r\n    } else {\r\n      console.warn(\r\n        'Document is not defined. This code is running in a non-browser environment.'\r\n      );\r\n    }\r\n  }\r\n\r\n  private showWarningDialog(): void {\r\n    const modalData: DialogData = this.getWarningDialogData();\r\n\r\n    this.dialog\r\n      .open(DialogComponent, {\r\n        ...DialogConfig,\r\n        data: modalData,\r\n      })\r\n      .afterClosed()\r\n      .subscribe(result => {\r\n        if (result) {\r\n          this.warningService.setWarningCount(1);\r\n          this.enterFullScreenMode();\r\n          this.dialog.closeAll();\r\n        }\r\n      });\r\n  }\r\n\r\n  private showPreventNavigationDialog(): void {\r\n    const modalData: DialogData = this.getPreventNavigationDialogData();\r\n\r\n    this.dialog\r\n      .open(DialogComponent, {\r\n        ...DialogConfig,\r\n        data: modalData,\r\n      })\r\n      .afterClosed()\r\n      .subscribe(result => {\r\n        if (result) {\r\n          this.isNavigationIntercepted = false;\r\n          console.log('Navigation prevented.');\r\n          this.showWarningDialog();\r\n        }\r\n      });\r\n  }\r\n\r\n  private getWarningDialogData(): DialogData {\r\n    return {\r\n      title: 'Warning',\r\n      message: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.`,\r\n      isChoice: true,\r\n      closeOnNavigation: true,\r\n    };\r\n  }\r\n\r\n  private getPreventNavigationDialogData(): DialogData {\r\n    return {\r\n      title: 'Warning',\r\n      message: `You are navigating away from this page. Are you sure you want to proceed?`,\r\n      isChoice: true,\r\n      closeOnNavigation: true,\r\n    };\r\n  }\r\n\r\n  private exitToCandidatePage(): void {\r\n    this.exitFullScreenMode();\r\n  }\r\n\r\n  private showTestTerminationDialog() {\r\n    const modalData: DialogData = this.getTestTerminationDialogData();\r\n\r\n    this.dialog\r\n      .open(DialogComponent, {\r\n        ...DialogConfig,\r\n        data: modalData,\r\n      })\r\n      .afterClosed()\r\n      .subscribe(result => {\r\n        if (result) {\r\n          this.router.navigate(['/candidate']);\r\n        }\r\n      });\r\n  }\r\n\r\n  private getTestTerminationDialogData(): DialogData {\r\n    return {\r\n      title: 'Sorry',\r\n      message: `You have used your maximum attempts by exiting full screen mode. Please contact invigilator/HR for further information`,\r\n      isChoice: false,\r\n      closeOnNavigation: true,\r\n    };\r\n  }\r\n}\r\n",
+            "styleUrl": "./assessment.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "constructorObj": {
+                "name": "constructor",
+                "description": "",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "args": [
+                    {
+                        "name": "dialog",
+                        "type": "MatDialog",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    },
+                    {
+                        "name": "router",
+                        "type": "Router",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    },
+                    {
+                        "name": "locationStrategy",
+                        "type": "LocationStrategy",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "line": 24,
+                "jsdoctags": [
+                    {
+                        "name": "dialog",
+                        "type": "MatDialog",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    },
+                    {
+                        "name": "router",
+                        "type": "Router",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    },
+                    {
+                        "name": "locationStrategy",
+                        "type": "LocationStrategy",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            },
+            "extends": [
+                "BaseComponent"
+            ],
+            "templateData": "<p>assessment works!</p>\r\n<app-radio-button (onSelect)=\"onOptionSelect()\"></app-radio-button>\r\n"
+        },
+        {
+            "name": "BaseComponent",
+            "id": "component-BaseComponent-f6a04cd7e5159ebfd49d299fd9248ab33377360ad020dedbaacdc70ebc5434b4e7ef51c906c45a425eca84ba4cea813fb039e55a1e039e834d9d387742541b0e",
+            "file": "src/app/shared/components/base/base.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-base",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./base.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "subscriptionList",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Subscription[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 11,
+                    "modifierKind": [
+                        124
+                    ]
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "ngOnDestroy",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 13,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, OnDestroy } from '@angular/core';\r\nimport { Subscription } from 'rxjs';\r\n\r\n@Component({\r\n  selector: 'app-base',\r\n  imports: [],\r\n  templateUrl: './base.component.html',\r\n  styleUrl: './base.component.scss',\r\n})\r\nexport class BaseComponent implements OnDestroy {\r\n  protected subscriptionList: Subscription[] = [];\r\n\r\n  ngOnDestroy(): void {\r\n    if (this.subscriptionList && this.subscriptionList.length) {\r\n      this.subscriptionList?.forEach(s => s?.unsubscribe());\r\n    }\r\n  }\r\n}\r\n",
+            "styleUrl": "./base.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "implements": [
+                "OnDestroy"
+            ],
+            "templateData": "\r\n"
+        },
+        {
+            "name": "ButtonComponent",
+            "id": "component-ButtonComponent-5747b2121bdc472b32e41e4e47db44dbd7601fe73e9c7b3d0f82e7d1aaf97be0d13d4880fee19b0e4d511178aa52a24a5a9ea3ee0034d204ffd659c0aae43e41",
+            "file": "src/stories/button.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "storybook-button",
+            "styleUrls": [
+                "./button.css"
+            ],
+            "styles": [],
+            "template": " <button  type=\"button\"\n  (click)=\"onClick.emit($event)\"\n  [ngClass]=\"classes\"\n  [ngStyle]=\"{ 'background-color': backgroundColor }\"\n>\n  {{ label }}\n</button>",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "backgroundColor",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\nWhat background color to use",
+                    "description": "<p>What background color to use</p>\n",
+                    "line": 25,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "label",
+                    "defaultValue": "'Button'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "jsdoctags": [
+                        {
+                            "pos": 793,
+                            "end": 807,
+                            "kind": 327,
+                            "id": 0,
+                            "flags": 16842752,
+                            "modifierFlagsCache": 0,
+                            "transformFlags": 0,
+                            "tagName": {
+                                "pos": 794,
+                                "end": 802,
+                                "kind": 80,
+                                "id": 0,
+                                "flags": 16842752,
+                                "transformFlags": 0,
+                                "escapedText": "required"
+                            },
+                            "comment": ""
+                        }
+                    ],
+                    "rawdescription": "\n\nButton contents\n\n",
+                    "description": "<p>Button contents</p>\n",
+                    "line": 37,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "primary",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\nIs this the principal call to action on the page?",
+                    "description": "<p>Is this the principal call to action on the page?</p>\n",
+                    "line": 21,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "size",
+                    "defaultValue": "'medium'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\nHow large should the button be?",
+                    "description": "<p>How large should the button be?</p>\n",
+                    "line": 29,
+                    "type": "\"small\" | \"medium\" | \"large\"",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "onClick",
+                    "defaultValue": "new EventEmitter<Event>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\nOptional click handler",
+                    "description": "<p>Optional click handler</p>\n",
+                    "line": 41,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { CommonModule } from '@angular/common';\r\nimport { Component, Input, Output, EventEmitter } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'storybook-button',\r\n  standalone: true,\r\n  imports: [CommonModule],\r\n  template: ` <button\r\n  type=\"button\"\r\n  (click)=\"onClick.emit($event)\"\r\n  [ngClass]=\"classes\"\r\n  [ngStyle]=\"{ 'background-color': backgroundColor }\"\r\n>\r\n  {{ label }}\r\n</button>`,\r\n  styleUrls: ['./button.css'],\r\n})\r\nexport class ButtonComponent {\r\n  /** Is this the principal call to action on the page? */\r\n  @Input()\r\n  primary = false;\r\n\r\n  /** What background color to use */\r\n  @Input()\r\n  backgroundColor?: string;\r\n\r\n  /** How large should the button be? */\r\n  @Input()\r\n  size: 'small' | 'medium' | 'large' = 'medium';\r\n\r\n  /**\r\n   * Button contents\r\n   *\r\n   * @required\r\n   */\r\n  @Input()\r\n  label = 'Button';\r\n\r\n  /** Optional click handler */\r\n  @Output()\r\n  onClick = new EventEmitter<Event>();\r\n\r\n  public get classes(): string[] {\r\n    const mode = this.primary ? 'storybook-button--primary' : 'storybook-button--secondary';\r\n\r\n    return ['storybook-button', `storybook-button--${this.size}`, mode];\r\n  }\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ".storybook-button {\r\n  display: inline-block;\r\n  cursor: pointer;\r\n  border: 0;\r\n  border-radius: 3em;\r\n  font-weight: 700;\r\n  line-height: 1;\r\n  font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;\r\n}\r\n.storybook-button--primary {\r\n  background-color: #1ea7fd;\r\n  color: white;\r\n}\r\n.storybook-button--secondary {\r\n  box-shadow: rgba(0, 0, 0, 0.15) 0px 0px 0px 1px inset;\r\n  background-color: transparent;\r\n  color: #333;\r\n}\r\n.storybook-button--small {\r\n  padding: 10px 16px;\r\n  font-size: 12px;\r\n}\r\n.storybook-button--medium {\r\n  padding: 11px 20px;\r\n  font-size: 14px;\r\n}\r\n.storybook-button--large {\r\n  padding: 12px 24px;\r\n  font-size: 16px;\r\n}\r\n",
+                    "styleUrl": "./button.css"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "accessors": {
+                "classes": {
+                    "name": "classes",
+                    "getSignature": {
+                        "name": "classes",
+                        "type": "[]",
+                        "returnType": "string[]",
+                        "line": 43
+                    }
+                }
+            }
+        },
+        {
+            "name": "ButtonComponent",
+            "id": "component-ButtonComponent-f2332256db3b10fe78c0bdf843fc36d05e6b4a1f3423b05095c29a11c6415ee795c9e1328752d6efee3a21f10cf9d9e326e0c4150d5dbe33381dde5d7bf496b6-1",
+            "file": "src/app/shared/components/button/button.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-button",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./button.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "buttonLabel",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 12,
+                    "modifierKind": [
+                        125
+                    ],
+                    "required": false
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "btnClick",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 11,
+                    "modifierKind": [
+                        125
+                    ],
+                    "required": false
+                }
+            ],
+            "propertiesClass": [
+                {
+                    "name": "btnClick",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 11,
+                    "modifierKind": [
+                        125
+                    ],
+                    "required": false
+                },
+                {
+                    "name": "buttonLabel",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 12,
+                    "modifierKind": [
+                        125
+                    ],
+                    "required": false
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "onButtonClick",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 15,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        125
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "MatButtonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, input, output } from '@angular/core';\r\nimport { MatButtonModule } from '@angular/material/button';\r\n\r\n@Component({\r\n  selector: 'app-button',\r\n  imports: [MatButtonModule],\r\n  templateUrl: './button.component.html',\r\n  styleUrl: './button.component.scss',\r\n})\r\nexport class ButtonComponent {\r\n  public btnClick = output();\r\n  public buttonLabel = input();\r\n\r\n  // Public Events\r\n  public onButtonClick(): void {\r\n    this.btnClick.emit();\r\n  }\r\n}\r\n",
+            "styleUrl": "./button.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "isDuplicate": true,
+            "duplicateId": 1,
+            "duplicateName": "ButtonComponent-1",
+            "templateData": "<button mat-flat-button (click)=\"onButtonClick()\">{{ buttonLabel() }}</button>\r\n"
+        },
+        {
+            "name": "CandidateComponent",
+            "id": "component-CandidateComponent-00efcfb0d9a24f402614f22822bed77a5a8b4465bc4786212cc2b760f4e240243e9a423197324c2065a6db538af0b9ceef66e63f494dee9563ca163717c33cd7",
+            "file": "src/app/modules/candidate/candidate.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [
+                {
+                    "name": "MatDialog"
+                }
+            ],
+            "selector": "app-candidate",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./candidate.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "subscriptionList",
+                    "defaultValue": "[]",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "Subscription[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 11,
+                    "modifierKind": [
+                        124
+                    ],
+                    "inheritance": {
+                        "file": "BaseComponent"
+                    }
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "onAssessmentStart",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 25,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        125
+                    ]
+                },
+                {
+                    "name": "ngOnDestroy",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 13,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "inheritance": {
+                        "file": "BaseComponent"
+                    }
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "CardComponent",
+                    "type": "component"
+                },
+                {
+                    "name": "MatDialogModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\r\nimport { MatDialog, MatDialogModule } from '@angular/material/dialog';\r\nimport { Router } from '@angular/router';\r\nimport { BaseComponent } from '../../shared/components/base/base.component';\r\nimport { CardComponent } from '../../shared/components/card/card.component';\r\nimport { DialogComponent } from '../../shared/components/dialog/dialog.component';\r\nimport { DialogConfig, DialogData } from '../../shared/models/dialog-models';\r\n\r\n@Component({\r\n  selector: 'app-candidate',\r\n  imports: [CardComponent, MatDialogModule],\r\n  providers: [MatDialog],\r\n  templateUrl: './candidate.component.html',\r\n  styleUrl: './candidate.component.scss',\r\n})\r\nexport class CandidateComponent extends BaseComponent {\r\n  constructor(\r\n    private dialog: MatDialog,\r\n    private router: Router\r\n  ) {\r\n    super();\r\n  }\r\n\r\n  // Public Events\r\n  public onAssessmentStart() {\r\n    const modalData: DialogData = {\r\n      title: 'Assessment instructions',\r\n      message:\r\n        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',\r\n      isChoice: true,\r\n    };\r\n    this.dialog\r\n      .open(DialogComponent, {\r\n        ...DialogConfig,\r\n        data: { ...modalData },\r\n      })\r\n      .afterClosed()\r\n      .subscribe(result => {\r\n        if (result) {\r\n          this.router.navigate(['/candidate/test']);\r\n        }\r\n      });\r\n  }\r\n}\r\n",
+            "styleUrl": "./candidate.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "constructorObj": {
+                "name": "constructor",
+                "description": "",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "args": [
+                    {
+                        "name": "dialog",
+                        "type": "MatDialog",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    },
+                    {
+                        "name": "router",
+                        "type": "Router",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "line": 16,
+                "jsdoctags": [
+                    {
+                        "name": "dialog",
+                        "type": "MatDialog",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    },
+                    {
+                        "name": "router",
+                        "type": "Router",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            },
+            "extends": [
+                "BaseComponent"
+            ],
+            "templateData": "<h1>Active Tests</h1>\r\n<div class=\"card-wrapper\">\r\n  <app-card (startTest)=\"onAssessmentStart()\"></app-card>\r\n</div>\r\n"
+        },
+        {
+            "name": "CardComponent",
+            "id": "component-CardComponent-f2138fa92c0a1ef6cc398ae4910cc2ef047ee553398ae1d66a146976345abdeb4d23531e77bea9bd40f49a22a52356ea4ae6dfa0edd8ef6249f10e1bccec7ed6",
+            "file": "src/app/shared/components/card/card.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-card",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./card.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [
+                {
+                    "name": "startTest",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 11,
+                    "modifierKind": [
+                        125
+                    ],
+                    "required": false
+                }
+            ],
+            "propertiesClass": [
+                {
+                    "name": "startTest",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 11,
+                    "modifierKind": [
+                        125
+                    ],
+                    "required": false
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "startAssessment",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 13,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        125
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "ButtonComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, output } from '@angular/core';\r\nimport { ButtonComponent } from '../button/button.component';\r\n\r\n@Component({\r\n  selector: 'app-card',\r\n  imports: [ButtonComponent],\r\n  templateUrl: './card.component.html',\r\n  styleUrl: './card.component.scss',\r\n})\r\nexport class CardComponent {\r\n  public startTest = output();\r\n  // Public Events\r\n  public startAssessment() {\r\n    this.startTest.emit();\r\n  }\r\n}\r\n",
+            "styleUrl": "./card.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<div class=\"card\">\r\n  <div class=\"card__header\">\r\n    <span class=\"card__tag\">Aptitude test</span>\r\n  </div>\r\n  <div class=\"card__content\">\r\n    <p>Open position : <span>NATS</span></p>\r\n    <p>Mode : <span>Online</span></p>\r\n    <p>No. of Questions : <span>30</span></p>\r\n    <p>Time : <span>10:30 AM - 11.30 AM</span></p>\r\n  </div>\r\n  <div class=\"card__footer\">\r\n    <app-button\r\n      [buttonLabel]=\"'Start'\"\r\n      (btnClick)=\"startAssessment()\"></app-button>\r\n  </div>\r\n</div>\r\n"
+        },
+        {
+            "name": "DashboardLayoutComponent",
+            "id": "component-DashboardLayoutComponent-b3df3a2789c21bb5787d800601853eb1f4c06ee1caaef2a5d95e97614cac27e3987ab02d395b93342ef8739ee5ae8d526508cb48a2b81d1f1c3b842a2a3ec930",
+            "file": "src/app/layouts/dashboard-layout/dashboard-layout.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-dashboard-layout",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./dashboard-layout.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "SideNavComponent",
+                    "type": "component"
+                },
+                {
+                    "name": "HeaderComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\r\nimport { HeaderComponent } from '../../shared/components/header/header.component';\r\nimport { SideNavComponent } from '../../shared/components/side-nav/side-nav.component';\r\n\r\n@Component({\r\n  selector: 'app-dashboard-layout',\r\n  imports: [SideNavComponent, HeaderComponent],\r\n  templateUrl: './dashboard-layout.component.html',\r\n  styleUrl: './dashboard-layout.component.scss',\r\n})\r\nexport class DashboardLayoutComponent {}\r\n",
+            "styleUrl": "./dashboard-layout.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<div class=\"dashboard\">\r\n  <app-side-nav></app-side-nav>\r\n\r\n  <main class=\"main\">\r\n    <app-header></app-header>\r\n    <div class=\"main__content\"><ng-content /></div>\r\n    <!-- <app-footer></app-footer> -->\r\n  </main>\r\n</div>\r\n"
+        },
+        {
+            "name": "DialogComponent",
+            "id": "component-DialogComponent-4efcad6aea9a96b64b60b7e75ba29a22d16680fe2a420c8694b6f53985421f1bf92a1ce1ddd9278cffaedb1d4dbdab95a1949b1f9fe0400dd9198764b542358d",
+            "file": "src/app/shared/components/dialog/dialog.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-dialog",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./dialog.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "data",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "DialogData",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 19,
+                    "decorators": [
+                        {
+                            "name": "Inject",
+                            "stringifiedArguments": "MAT_DIALOG_DATA"
+                        }
+                    ],
+                    "modifierKind": [
+                        170,
+                        125
+                    ]
+                },
+                {
+                    "name": "dialogRef",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "MatDialogRef<DialogComponent>",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 20,
+                    "modifierKind": [
+                        125
+                    ]
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "onSubmit",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 24,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        125
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "MatDialogModule",
+                    "type": "module"
+                },
+                {
+                    "name": "MatButtonModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Inject } from '@angular/core';\r\nimport {\r\n  MAT_DIALOG_DATA,\r\n  MatDialogModule,\r\n  MatDialogRef,\r\n} from '@angular/material/dialog';\r\nimport { DialogData } from '../../models/dialog-models';\r\nimport { MatButtonModule } from '@angular/material/button';\r\n\r\n@Component({\r\n  selector: 'app-dialog',\r\n  imports: [MatDialogModule, MatButtonModule],\r\n\r\n  templateUrl: './dialog.component.html',\r\n  styleUrl: './dialog.component.scss',\r\n})\r\nexport class DialogComponent {\r\n  constructor(\r\n    @Inject(MAT_DIALOG_DATA) public data: DialogData,\r\n    public dialogRef: MatDialogRef<DialogComponent>\r\n  ) {}\r\n\r\n  // Public Events\r\n  public onSubmit() {\r\n    this.dialogRef.close(true);\r\n  }\r\n}\r\n",
+            "styleUrl": "./dialog.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "constructorObj": {
+                "name": "constructor",
+                "description": "",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "args": [
+                    {
+                        "name": "data",
+                        "type": "DialogData",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    },
+                    {
+                        "name": "dialogRef",
+                        "type": "MatDialogRef<DialogComponent>",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "line": 17,
+                "jsdoctags": [
+                    {
+                        "name": "data",
+                        "type": "DialogData",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    },
+                    {
+                        "name": "dialogRef",
+                        "type": "MatDialogRef<DialogComponent>",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            },
+            "extends": [],
+            "templateData": "<div class=\"dialog\" @flyInOut>\r\n  <div class=\"dialog__header\">\r\n    <h2 mat-dialog-title>{{ data.title }}</h2>\r\n  </div>\r\n\r\n  <mat-dialog-content>\r\n    <p>{{ data.message }}</p>\r\n  </mat-dialog-content>\r\n\r\n  <mat-dialog-actions>\r\n    @if (data.isChoice) {\r\n      <button mat-button mat-dialog-close>Cancel</button>\r\n    }\r\n\r\n    <button mat-button mat-flat-button (click)=\"onSubmit()\">Continue</button>\r\n  </mat-dialog-actions>\r\n</div>\r\n"
+        },
+        {
+            "name": "FooterComponent",
+            "id": "component-FooterComponent-d84512f509563ebfb30fe940acc323c856e5782a59dfbb28b05522ea5976911011bdcc766680913526746942655ed85922ab5027c1733dd2d1398fd763009e63",
+            "file": "src/app/shared/components/footer/footer.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-footer",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./footer.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'app-footer',\r\n  imports: [],\r\n  templateUrl: './footer.component.html',\r\n  styleUrl: './footer.component.scss'\r\n})\r\nexport class FooterComponent {\r\n\r\n}\r\n",
+            "styleUrl": "./footer.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<p>footer works!</p>\r\n"
+        },
+        {
+            "name": "FullscreenLayoutComponent",
+            "id": "component-FullscreenLayoutComponent-2e0c233ee3c4ddc82d517e7649a8843e6f50f22bbeb5e9c33e62685db32d7c634c82aa4ab374ea9c8194dd72b4704f235960af320d917b9642f1d19743eddc04",
+            "file": "src/app/layouts/fullscreen-layout/fullscreen-layout.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-fullscreen-layout",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./fullscreen-layout.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'app-fullscreen-layout',\r\n  imports: [],\r\n  templateUrl: './fullscreen-layout.component.html',\r\n  styleUrl: './fullscreen-layout.component.scss',\r\n})\r\nexport class FullscreenLayoutComponent {}\r\n",
+            "styleUrl": "./fullscreen-layout.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<div class=\"fullscreen__content\"><ng-content /></div>\r\n"
+        },
+        {
+            "name": "HeaderComponent",
+            "id": "component-HeaderComponent-35575735b3444c6f049822f5234963ce3b046795ea9cdf6a15e8c7d72acd8ededb78ca25c4e1fbb5f0416c5855203a87ae0483f5d065c2dfa68d5329e347a84b",
+            "file": "src/stories/header.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "storybook-header",
+            "styleUrls": [
+                "./header.css"
+            ],
+            "styles": [],
+            "template": "<header>  <div class=\"storybook-header\">\n    <div>\n      <svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\">\n        <g fill=\"none\" fillRule=\"evenodd\">\n          <path\n            d=\"M10 0h12a10 10 0 0110 10v12a10 10 0 01-10 10H10A10 10 0 010 22V10A10 10 0 0110 0z\"\n            fill=\"#FFF\"\n          />\n          <path\n            d=\"M5.3 10.6l10.4 6v11.1l-10.4-6v-11zm11.4-6.2l9.7 5.5-9.7 5.6V4.4z\"\n            fill=\"#555AB9\"\n          />\n          <path d=\"M27.2 10.6v11.2l-10.5 6V16.5l10.5-6zM15.7 4.4v11L6 10l9.7-5.5z\" fill=\"#91BAF8\" />\n        </g>\n      </svg>\n      <h1>Acme</h1>\n    </div>\n    <div>\n      <div *ngIf=\"user\">\n        <span class=\"welcome\">\n          Welcome, <b>{{ user.name }}</b\n          >!\n        </span>\n        <storybook-button\n          *ngIf=\"user\"\n          size=\"small\"\n          (onClick)=\"onLogout.emit($event)\"\n          label=\"Log out\"\n        ></storybook-button>\n      </div>\n      <div *ngIf=\"!user\">\n        <storybook-button\n          *ngIf=\"!user\"\n          size=\"small\"\n          class=\"margin-left\"\n          (onClick)=\"onLogin.emit($event)\"\n          label=\"Log in\"\n        ></storybook-button>\n        <storybook-button\n          *ngIf=\"!user\"\n          size=\"small\"\n          [primary]=\"true\"\n          class=\"margin-left\"\n          (onClick)=\"onCreateAccount.emit($event)\"\n          label=\"Sign up\"\n        ></storybook-button>\n      </div>\n    </div>\n  </div>\n</header>",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "user",
+                    "defaultValue": "null",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 66,
+                    "type": "User | null",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "onCreateAccount",
+                    "defaultValue": "new EventEmitter<Event>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 75,
+                    "type": "EventEmitter"
+                },
+                {
+                    "name": "onLogin",
+                    "defaultValue": "new EventEmitter<Event>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 69,
+                    "type": "EventEmitter"
+                },
+                {
+                    "name": "onLogout",
+                    "defaultValue": "new EventEmitter<Event>()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 72,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "ButtonComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input, Output, EventEmitter } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\n\r\nimport { ButtonComponent } from './button.component';\r\nimport type { User } from './user';\r\n\r\n@Component({\r\n  selector: 'storybook-header',\r\n  standalone: true,\r\n  imports: [CommonModule, ButtonComponent],\r\n  template: `<header>\r\n  <div class=\"storybook-header\">\r\n    <div>\r\n      <svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\">\r\n        <g fill=\"none\" fillRule=\"evenodd\">\r\n          <path\r\n            d=\"M10 0h12a10 10 0 0110 10v12a10 10 0 01-10 10H10A10 10 0 010 22V10A10 10 0 0110 0z\"\r\n            fill=\"#FFF\"\r\n          />\r\n          <path\r\n            d=\"M5.3 10.6l10.4 6v11.1l-10.4-6v-11zm11.4-6.2l9.7 5.5-9.7 5.6V4.4z\"\r\n            fill=\"#555AB9\"\r\n          />\r\n          <path d=\"M27.2 10.6v11.2l-10.5 6V16.5l10.5-6zM15.7 4.4v11L6 10l9.7-5.5z\" fill=\"#91BAF8\" />\r\n        </g>\r\n      </svg>\r\n      <h1>Acme</h1>\r\n    </div>\r\n    <div>\r\n      <div *ngIf=\"user\">\r\n        <span class=\"welcome\">\r\n          Welcome, <b>{{ user.name }}</b\r\n          >!\r\n        </span>\r\n        <storybook-button\r\n          *ngIf=\"user\"\r\n          size=\"small\"\r\n          (onClick)=\"onLogout.emit($event)\"\r\n          label=\"Log out\"\r\n        ></storybook-button>\r\n      </div>\r\n      <div *ngIf=\"!user\">\r\n        <storybook-button\r\n          *ngIf=\"!user\"\r\n          size=\"small\"\r\n          class=\"margin-left\"\r\n          (onClick)=\"onLogin.emit($event)\"\r\n          label=\"Log in\"\r\n        ></storybook-button>\r\n        <storybook-button\r\n          *ngIf=\"!user\"\r\n          size=\"small\"\r\n          [primary]=\"true\"\r\n          class=\"margin-left\"\r\n          (onClick)=\"onCreateAccount.emit($event)\"\r\n          label=\"Sign up\"\r\n        ></storybook-button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</header>`,\r\n  styleUrls: ['./header.css'],\r\n})\r\nexport class HeaderComponent {\r\n  @Input()\r\n  user: User | null = null;\r\n\r\n  @Output()\r\n  onLogin = new EventEmitter<Event>();\r\n\r\n  @Output()\r\n  onLogout = new EventEmitter<Event>();\r\n\r\n  @Output()\r\n  onCreateAccount = new EventEmitter<Event>();\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ".storybook-header {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n  border-bottom: 1px solid rgba(0, 0, 0, 0.1);\r\n  padding: 15px 20px;\r\n  font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;\r\n}\r\n\r\n.storybook-header svg {\r\n  display: inline-block;\r\n  vertical-align: top;\r\n}\r\n\r\n.storybook-header h1 {\r\n  display: inline-block;\r\n  vertical-align: top;\r\n  margin: 6px 0 6px 10px;\r\n  font-weight: 700;\r\n  font-size: 20px;\r\n  line-height: 1;\r\n}\r\n\r\n.storybook-header button + button {\r\n  margin-left: 10px;\r\n}\r\n\r\n.storybook-header .welcome {\r\n  margin-right: 10px;\r\n  color: #333;\r\n  font-size: 14px;\r\n}\r\n",
+                    "styleUrl": "./header.css"
+                }
+            ],
+            "stylesData": "",
+            "extends": []
+        },
+        {
+            "name": "HeaderComponent",
+            "id": "component-HeaderComponent-1f456fd01fe1b09ec984d3333d951eae46c62136da8d18778f634b9bd2b93303e76cfd240326ba748712330f4a6030ddbf988357cc3f2a5735e83174fe35d2f4-1",
+            "file": "src/app/shared/components/header/header.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-header",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./header.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'app-header',\r\n  imports: [],\r\n  templateUrl: './header.component.html',\r\n  styleUrl: './header.component.scss',\r\n})\r\nexport class HeaderComponent {}\r\n",
+            "styleUrl": "./header.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "isDuplicate": true,
+            "duplicateId": 1,
+            "duplicateName": "HeaderComponent-1",
+            "templateData": "<header class=\"header\">\r\n  <div class=\"header__avatar\">\r\n    <img src=\"avatar.png\" alt=\"avatar\" />\r\n  </div>\r\n</header>\r\n"
+        },
+        {
+            "name": "PageComponent",
+            "id": "component-PageComponent-79bfb042a722f49579739dfd01d8f1b67681d0272a72a283c14edeb22f0462775c80ba4f7c1eb0fa4bd5fa1844083da0140980e75b5500cd98cc26421ec6d569",
+            "file": "src/stories/page.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "storybook-page",
+            "styleUrls": [
+                "./page.css"
+            ],
+            "styles": [],
+            "template": "<article>  <storybook-header\n    [user]=\"user\"\n    (onLogout)=\"doLogout()\"\n    (onLogin)=\"doLogin()\"\n    (onCreateAccount)=\"doCreateAccount()\"\n  ></storybook-header>\n  <section class=\"storybook-page\">\n    <h2>Pages in Storybook</h2>\n    <p>\n      We recommend building UIs with a\n      <a href=\"https://componentdriven.org\" target=\"_blank\" rel=\"noopener noreferrer\">\n        <strong>component-driven</strong>\n      </a>\n      process starting with atomic components and ending with pages.\n    </p>\n    <p>\n      Render pages with mock data. This makes it easy to build and review page states without\n      needing to navigate to them in your app. Here are some handy patterns for managing page data\n      in Storybook:\n    </p>\n    <ul>\n      <li>\n        Use a higher-level connected component. Storybook helps you compose such data from the\n        \"args\" of child component stories\n      </li>\n      <li>\n        Assemble data in the page component from your services. You can mock these services out\n        using Storybook.\n      </li>\n    </ul>\n    <p>\n      Get a guided tutorial on component-driven development at\n      <a href=\"https://storybook.js.org/tutorials/\" target=\"_blank\" rel=\"noopener noreferrer\">\n        Storybook tutorials\n      </a>\n      . Read more in the\n      <a href=\"https://storybook.js.org/docs\" target=\"_blank\" rel=\"noopener noreferrer\"> docs </a>\n      .\n    </p>\n    <div class=\"tip-wrapper\">\n      <span class=\"tip\">Tip</span> Adjust the width of the canvas with the\n      <svg width=\"10\" height=\"10\" viewBox=\"0 0 12 12\" xmlns=\"http://www.w3.org/2000/svg\">\n        <g fill=\"none\" fillRule=\"evenodd\">\n          <path\n            d=\"M1.5 5.2h4.8c.3 0 .5.2.5.4v5.1c-.1.2-.3.3-.4.3H1.4a.5.5 0 01-.5-.4V5.7c0-.3.2-.5.5-.5zm0-2.1h6.9c.3 0 .5.2.5.4v7a.5.5 0 01-1 0V4H1.5a.5.5 0 010-1zm0-2.1h9c.3 0 .5.2.5.4v9.1a.5.5 0 01-1 0V2H1.5a.5.5 0 010-1zm4.3 5.2H2V10h3.8V6.2z\"\n            id=\"a\"\n            fill=\"#999\"\n          />\n        </g>\n      </svg>\n      Viewports addon in the toolbar\n    </div>\n  </section>\n</article>",
+            "templateUrl": [],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "user",
+                    "defaultValue": "null",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "User | null",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 69
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "doCreateAccount",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 79,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "doLogin",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 75,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "doLogout",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 71,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "HeaderComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\r\nimport { CommonModule } from '@angular/common';\r\n\r\nimport { HeaderComponent } from './header.component';\r\nimport type { User } from './user';\r\n\r\n@Component({\r\n  selector: 'storybook-page',\r\n  standalone: true,\r\n  imports: [CommonModule, HeaderComponent],\r\n  template: `<article>\r\n  <storybook-header\r\n    [user]=\"user\"\r\n    (onLogout)=\"doLogout()\"\r\n    (onLogin)=\"doLogin()\"\r\n    (onCreateAccount)=\"doCreateAccount()\"\r\n  ></storybook-header>\r\n  <section class=\"storybook-page\">\r\n    <h2>Pages in Storybook</h2>\r\n    <p>\r\n      We recommend building UIs with a\r\n      <a href=\"https://componentdriven.org\" target=\"_blank\" rel=\"noopener noreferrer\">\r\n        <strong>component-driven</strong>\r\n      </a>\r\n      process starting with atomic components and ending with pages.\r\n    </p>\r\n    <p>\r\n      Render pages with mock data. This makes it easy to build and review page states without\r\n      needing to navigate to them in your app. Here are some handy patterns for managing page data\r\n      in Storybook:\r\n    </p>\r\n    <ul>\r\n      <li>\r\n        Use a higher-level connected component. Storybook helps you compose such data from the\r\n        \"args\" of child component stories\r\n      </li>\r\n      <li>\r\n        Assemble data in the page component from your services. You can mock these services out\r\n        using Storybook.\r\n      </li>\r\n    </ul>\r\n    <p>\r\n      Get a guided tutorial on component-driven development at\r\n      <a href=\"https://storybook.js.org/tutorials/\" target=\"_blank\" rel=\"noopener noreferrer\">\r\n        Storybook tutorials\r\n      </a>\r\n      . Read more in the\r\n      <a href=\"https://storybook.js.org/docs\" target=\"_blank\" rel=\"noopener noreferrer\"> docs </a>\r\n      .\r\n    </p>\r\n    <div class=\"tip-wrapper\">\r\n      <span class=\"tip\">Tip</span> Adjust the width of the canvas with the\r\n      <svg width=\"10\" height=\"10\" viewBox=\"0 0 12 12\" xmlns=\"http://www.w3.org/2000/svg\">\r\n        <g fill=\"none\" fillRule=\"evenodd\">\r\n          <path\r\n            d=\"M1.5 5.2h4.8c.3 0 .5.2.5.4v5.1c-.1.2-.3.3-.4.3H1.4a.5.5 0 01-.5-.4V5.7c0-.3.2-.5.5-.5zm0-2.1h6.9c.3 0 .5.2.5.4v7a.5.5 0 01-1 0V4H1.5a.5.5 0 010-1zm0-2.1h9c.3 0 .5.2.5.4v9.1a.5.5 0 01-1 0V2H1.5a.5.5 0 010-1zm4.3 5.2H2V10h3.8V6.2z\"\r\n            id=\"a\"\r\n            fill=\"#999\"\r\n          />\r\n        </g>\r\n      </svg>\r\n      Viewports addon in the toolbar\r\n    </div>\r\n  </section>\r\n</article>`,\r\n  styleUrls: ['./page.css'],\r\n})\r\nexport class PageComponent {\r\n  user: User | null = null;\r\n\r\n  doLogout() {\r\n    this.user = null;\r\n  }\r\n\r\n  doLogin() {\r\n    this.user = { name: 'Jane Doe' };\r\n  }\r\n\r\n  doCreateAccount() {\r\n    this.user = { name: 'Jane Doe' };\r\n  }\r\n}\r\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": ".storybook-page {\r\n  margin: 0 auto;\r\n  padding: 48px 20px;\r\n  max-width: 600px;\r\n  color: #333;\r\n  font-size: 14px;\r\n  line-height: 24px;\r\n  font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;\r\n}\r\n\r\n.storybook-page h2 {\r\n  display: inline-block;\r\n  vertical-align: top;\r\n  margin: 0 0 4px;\r\n  font-weight: 700;\r\n  font-size: 32px;\r\n  line-height: 1;\r\n}\r\n\r\n.storybook-page p {\r\n  margin: 1em 0;\r\n}\r\n\r\n.storybook-page a {\r\n  color: #1ea7fd;\r\n  text-decoration: none;\r\n}\r\n\r\n.storybook-page ul {\r\n  margin: 1em 0;\r\n  padding-left: 30px;\r\n}\r\n\r\n.storybook-page li {\r\n  margin-bottom: 8px;\r\n}\r\n\r\n.storybook-page .tip {\r\n  display: inline-block;\r\n  vertical-align: top;\r\n  margin-right: 10px;\r\n  border-radius: 1em;\r\n  background: #e7fdd8;\r\n  padding: 4px 12px;\r\n  color: #66bf3c;\r\n  font-weight: 700;\r\n  font-size: 11px;\r\n  line-height: 12px;\r\n}\r\n\r\n.storybook-page .tip-wrapper {\r\n  margin-top: 40px;\r\n  margin-bottom: 40px;\r\n  font-size: 13px;\r\n  line-height: 20px;\r\n}\r\n\r\n.storybook-page .tip-wrapper svg {\r\n  display: inline-block;\r\n  vertical-align: top;\r\n  margin-top: 3px;\r\n  margin-right: 4px;\r\n  width: 12px;\r\n  height: 12px;\r\n}\r\n\r\n.storybook-page .tip-wrapper svg path {\r\n  fill: #1ea7fd;\r\n}\r\n",
+                    "styleUrl": "./page.css"
+                }
+            ],
+            "stylesData": "",
+            "extends": []
+        },
+        {
+            "name": "QuestionComponent",
+            "id": "component-QuestionComponent-771dc27f5a2e35dcc590bdb44235729b5d8843f5c66df62056760d26ae524bfc3cd57c06815fb09fddb38c461442cabd131f266b9022a2ce65c0761adb227627",
+            "file": "src/app/shared/components/question/question.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-question",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./question.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "question",
+                    "defaultValue": "{\r\n    text: 'What is the capital of France?',\r\n    image: 'assets/images/france-map.png', // Replace with your image path\r\n  }",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 10
+                }
+            ],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\r\n\r\n@Component({\r\n  selector: 'app-question',\r\n  imports: [],\r\n  templateUrl: './question.component.html',\r\n  styleUrl: './question.component.scss',\r\n})\r\nexport class QuestionComponent {\r\n  question = {\r\n    text: 'What is the capital of France?',\r\n    image: 'assets/images/france-map.png', // Replace with your image path\r\n  };\r\n}\r\n",
+            "styleUrl": "./question.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<div class=\"question\">\r\n  <p class=\"question-text\">{{ question.text }}</p>\r\n  <img\r\n    *ngIf=\"question.image\"\r\n    [src]=\"question.image\"\r\n    alt=\"Question Image\"\r\n    class=\"question-image\" />\r\n</div>\r\n"
+        },
+        {
+            "name": "RadioButtonComponent",
+            "id": "component-RadioButtonComponent-625ad2cf2c99f413087d116815143e251e489c77c77ff2a0f3b3860654db5884bff2aaecdf4ee6369350c3183072c810f3010398f97b6a3d26badff9c0bd0831",
+            "file": "src/app/shared/components/radio-button/radio-button.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-radio-button",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./radio-button.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [
+                {
+                    "name": "options",
+                    "defaultValue": "['Option 1', 'Option 2', 'Option 3', 'Option 4']",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "string[]",
+                    "indexKey": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 10
+                }
+            ],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "MatRadioModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\r\nimport { MatRadioModule } from '@angular/material/radio';\r\n@Component({\r\n  selector: 'app-radio-button',\r\n  imports: [MatRadioModule],\r\n  templateUrl: './radio-button.component.html',\r\n  styleUrl: './radio-button.component.scss',\r\n})\r\nexport class RadioButtonComponent {\r\n  options: string[] = ['Option 1', 'Option 2', 'Option 3', 'Option 4'];\r\n}\r\n",
+            "styleUrl": "./radio-button.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<mat-radio-group\r\n  aria-labelledby=\"example-radio-group-label\"\r\n  class=\"example-radio-group\">\r\n  @for (option of options; track option) {\r\n    <mat-radio-button class=\"example-radio-button\" [value]=\"option\">{{option}}</mat-radio-button>\r\n}\r\n</mat-radio-group>"
+        },
+        {
+            "name": "SideNavComponent",
+            "id": "component-SideNavComponent-28818eb65b8b336eab29b381e0cab99ba9e58a42fd2eb1d105e4aa644a5ccd260dcbedbd5a4c9b381cfdecc8d2b7b6703be0106a9d980b1b3dea0e35cf0de8e7",
+            "file": "src/app/shared/components/side-nav/side-nav.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-side-nav",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./side-nav.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "MatListModule",
+                    "type": "module"
+                },
+                {
+                    "name": "RouterLink"
+                },
+                {
+                    "name": "RouterLinkActive"
+                },
+                {
+                    "name": "MatIconModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\r\nimport { MatIconModule } from '@angular/material/icon';\r\nimport { MatListModule } from '@angular/material/list';\r\nimport { RouterLink, RouterLinkActive } from '@angular/router';\r\n\r\n@Component({\r\n  selector: 'app-side-nav',\r\n  imports: [MatListModule, RouterLink, RouterLinkActive, MatIconModule],\r\n  templateUrl: './side-nav.component.html',\r\n  styleUrl: './side-nav.component.scss',\r\n})\r\nexport class SideNavComponent {}\r\n",
+            "styleUrl": "./side-nav.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<aside class=\"sidebar\">\r\n  <figure class=\"sidebar__logo\"><img src=\"logo.png\" alt=\"log\" /></figure>\r\n  <nav class=\"sidebar__nav\">\r\n    <mat-nav-list class=\"\">\r\n      <a\r\n        mat-list-item\r\n        routerLink=\"/candidate\"\r\n        routerLinkActive=\"sidebar__nav_active\">\r\n        <mat-icon\r\n          aria-hidden=\"false\"\r\n          aria-label=\"home icon\"\r\n          fontIcon=\"home\"></mat-icon\r\n        ><span>Dashboard</span></a\r\n      >\r\n    </mat-nav-list>\r\n  </nav>\r\n</aside>\r\n"
+        },
+        {
+            "name": "ThankYouComponent",
+            "id": "component-ThankYouComponent-0c644f5c00e2bfe8bc184067eee15a9b19b0a29d719bd81c244688325917b0a027150cd5c8f774ca8b0b05de11850a8375b44a60e1dcadedccf4bf3332992e90",
+            "file": "src/app/modules/assessment/components/thank-you/thank-you.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "app-thank-you",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./thank-you.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [
+                {
+                    "name": "onGoBackClick",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 15,
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "modifierKind": [
+                        125
+                    ]
+                }
+            ],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": false,
+            "imports": [
+                {
+                    "name": "ButtonComponent",
+                    "type": "component"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component } from '@angular/core';\r\nimport { ButtonComponent } from '../../../../shared/components/button/button.component';\r\nimport { Router } from '@angular/router';\r\n\r\n@Component({\r\n  selector: 'app-thank-you',\r\n  imports: [ButtonComponent],\r\n  templateUrl: './thank-you.component.html',\r\n  styleUrl: './thank-you.component.scss',\r\n})\r\nexport class ThankYouComponent {\r\n  constructor(private router: Router) {}\r\n\r\n  // Public Events\r\n  public onGoBackClick() {\r\n    this.router.navigate(['/candidate']);\r\n  }\r\n}\r\n",
+            "styleUrl": "./thank-you.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "constructorObj": {
+                "name": "constructor",
+                "description": "",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "args": [
+                    {
+                        "name": "router",
+                        "type": "Router",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "line": 11,
+                "jsdoctags": [
+                    {
+                        "name": "router",
+                        "type": "Router",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            },
+            "extends": [],
+            "templateData": "<div class=\"thank-you\">\r\n  <figure class=\"thank-you__image\">\r\n    <img src=\"thank-you.gif\" alt=\"thank-you\" />\r\n  </figure>\r\n  <p class=\"thank-you__content\">\r\n    You have completed your aptitude test and we will let you know with further\r\n    information shortly. Please contact HR/Invigiators for further steps.\r\n  </p>\r\n  <app-button\r\n    [buttonLabel]=\"'Go Back'\"\r\n    (btnClick)=\"onGoBackClick()\"></app-button>\r\n</div>\r\n"
+        }
+    ],
+    "modules": [],
+    "miscellaneous": {
+        "variables": [
+            {
+                "name": "angularApp",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/server.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "new AngularNodeAppEngine()"
+            },
+            {
+                "name": "app",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/server.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "express()"
+            },
+            {
+                "name": "appConfig",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/app/app.config.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "ApplicationConfig",
+                "defaultValue": "{\r\n  providers: [\r\n    provideZoneChangeDetection({ eventCoalescing: true }),\r\n    provideRouter(routes),\r\n    // RouteReuseStrategy({})\r\n    provideClientHydration(withEventReplay()),\r\n    provideServiceWorker('ngsw-worker.js', {\r\n      enabled: !isDevMode(),\r\n      registrationStrategy: 'registerWhenStable:30000',\r\n    }),\r\n    provideAnimationsAsync(),\r\n    provideAnimationsAsync('noop'),\r\n  ],\r\n}"
+            },
+            {
+                "name": "backButtonGuard",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/app/modules/assessment/guards/backButton.guard.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "CanActivateFn",
+                "defaultValue": "() => {\r\n  const router = inject(Router);\r\n  const isBackBtnClicked =\r\n    router.getCurrentNavigation()?.trigger === 'popstate';\r\n  return !isBackBtnClicked;\r\n}"
+            },
+            {
+                "name": "bootstrap",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/main.server.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "() => bootstrapApplication(AppComponent, config)"
+            },
+            {
+                "name": "browserDistFolder",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/server.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "resolve(serverDistFolder, '../browser')"
+            },
+            {
+                "name": "config",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/app/app.config.server.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "mergeApplicationConfig(appConfig, serverConfig)"
+            },
+            {
+                "name": "DialogConfig",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/app/shared/models/dialog-models.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "object",
+                "defaultValue": "{\r\n  hasBackdrop: true,\r\n  backdropClass: 'dialogBackdrop',\r\n  disableClose: true,\r\n  autoFocus: false,\r\n}"
+            },
+            {
+                "name": "reqHandler",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/server.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "createNodeRequestHandler(app)",
+                "rawdescription": "The request handler used by the Angular CLI (dev-server and during build).",
+                "description": "<p>The request handler used by the Angular CLI (dev-server and during build).</p>\n"
+            },
+            {
+                "name": "serverConfig",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/app/app.config.server.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "ApplicationConfig",
+                "defaultValue": "{\r\n  providers: [\r\n    provideServerRendering(),\r\n    provideServerRoutesConfig(serverRoutes)\r\n  ]\r\n}"
+            },
+            {
+                "name": "serverDistFolder",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/server.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "dirname(fileURLToPath(import.meta.url))"
+            },
+            {
+                "name": "serverRoutes",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/app/app.routes.server.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "ServerRoute[]",
+                "defaultValue": "[\r\n  {\r\n    path: '**',\r\n    renderMode: RenderMode.Prerender\r\n  }\r\n]"
+            },
+            {
+                "name": "setLayout",
+                "ctype": "miscellaneous",
+                "subtype": "variable",
+                "file": "src/app/shared/resolvers/set-layout.resolver.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "type": "",
+                "defaultValue": "(inputLayout: PageLayout): ResolveFn<void> => {\r\n  return (_route: ActivatedRouteSnapshot, _state: RouterStateSnapshot) => {\r\n    inject(PageLayoutService).setLayout(inputLayout);\r\n  };\r\n}"
+            }
+        ],
+        "functions": [],
+        "typealiases": [],
+        "enumerations": [
+            {
+                "name": "ButtonType",
+                "childs": [
+                    {
+                        "name": "Primary",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "value": "primary"
+                    },
+                    {
+                        "name": "Secondary",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "value": "secondary"
+                    },
+                    {
+                        "name": "Tertiary",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "value": "tertiary"
+                    }
+                ],
+                "ctype": "miscellaneous",
+                "subtype": "enum",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "file": "src/app/shared/enum/enum.ts"
+            },
+            {
+                "name": "PageLayout",
+                "childs": [
+                    {
+                        "name": "DashBoard",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "value": "dashboard"
+                    },
+                    {
+                        "name": "FullScreen",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "value": "fullscreen"
+                    }
+                ],
+                "ctype": "miscellaneous",
+                "subtype": "enum",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "file": "src/app/shared/enum/enum.ts"
+            }
+        ],
+        "groupedVariables": {
+            "src/server.ts": [
+                {
+                    "name": "angularApp",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/server.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "new AngularNodeAppEngine()"
+                },
+                {
+                    "name": "app",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/server.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "express()"
+                },
+                {
+                    "name": "browserDistFolder",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/server.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "resolve(serverDistFolder, '../browser')"
+                },
+                {
+                    "name": "reqHandler",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/server.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "createNodeRequestHandler(app)",
+                    "rawdescription": "The request handler used by the Angular CLI (dev-server and during build).",
+                    "description": "<p>The request handler used by the Angular CLI (dev-server and during build).</p>\n"
+                },
+                {
+                    "name": "serverDistFolder",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/server.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "dirname(fileURLToPath(import.meta.url))"
+                }
+            ],
+            "src/app/app.config.ts": [
+                {
+                    "name": "appConfig",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/app/app.config.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "ApplicationConfig",
+                    "defaultValue": "{\r\n  providers: [\r\n    provideZoneChangeDetection({ eventCoalescing: true }),\r\n    provideRouter(routes),\r\n    // RouteReuseStrategy({})\r\n    provideClientHydration(withEventReplay()),\r\n    provideServiceWorker('ngsw-worker.js', {\r\n      enabled: !isDevMode(),\r\n      registrationStrategy: 'registerWhenStable:30000',\r\n    }),\r\n    provideAnimationsAsync(),\r\n    provideAnimationsAsync('noop'),\r\n  ],\r\n}"
+                }
+            ],
+            "src/app/modules/assessment/guards/backButton.guard.ts": [
+                {
+                    "name": "backButtonGuard",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/app/modules/assessment/guards/backButton.guard.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "CanActivateFn",
+                    "defaultValue": "() => {\r\n  const router = inject(Router);\r\n  const isBackBtnClicked =\r\n    router.getCurrentNavigation()?.trigger === 'popstate';\r\n  return !isBackBtnClicked;\r\n}"
+                }
+            ],
+            "src/main.server.ts": [
+                {
+                    "name": "bootstrap",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/main.server.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "() => bootstrapApplication(AppComponent, config)"
+                }
+            ],
+            "src/app/app.config.server.ts": [
+                {
+                    "name": "config",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/app/app.config.server.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "mergeApplicationConfig(appConfig, serverConfig)"
+                },
+                {
+                    "name": "serverConfig",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/app/app.config.server.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "ApplicationConfig",
+                    "defaultValue": "{\r\n  providers: [\r\n    provideServerRendering(),\r\n    provideServerRoutesConfig(serverRoutes)\r\n  ]\r\n}"
+                }
+            ],
+            "src/app/shared/models/dialog-models.ts": [
+                {
+                    "name": "DialogConfig",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/app/shared/models/dialog-models.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "object",
+                    "defaultValue": "{\r\n  hasBackdrop: true,\r\n  backdropClass: 'dialogBackdrop',\r\n  disableClose: true,\r\n  autoFocus: false,\r\n}"
+                }
+            ],
+            "src/app/app.routes.server.ts": [
+                {
+                    "name": "serverRoutes",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/app/app.routes.server.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "ServerRoute[]",
+                    "defaultValue": "[\r\n  {\r\n    path: '**',\r\n    renderMode: RenderMode.Prerender\r\n  }\r\n]"
+                }
+            ],
+            "src/app/shared/resolvers/set-layout.resolver.ts": [
+                {
+                    "name": "setLayout",
+                    "ctype": "miscellaneous",
+                    "subtype": "variable",
+                    "file": "src/app/shared/resolvers/set-layout.resolver.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "defaultValue": "(inputLayout: PageLayout): ResolveFn<void> => {\r\n  return (_route: ActivatedRouteSnapshot, _state: RouterStateSnapshot) => {\r\n    inject(PageLayoutService).setLayout(inputLayout);\r\n  };\r\n}"
+                }
+            ]
+        },
+        "groupedFunctions": {},
+        "groupedEnumerations": {
+            "src/app/shared/enum/enum.ts": [
+                {
+                    "name": "ButtonType",
+                    "childs": [
+                        {
+                            "name": "Primary",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "value": "primary"
+                        },
+                        {
+                            "name": "Secondary",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "value": "secondary"
+                        },
+                        {
+                            "name": "Tertiary",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "value": "tertiary"
+                        }
+                    ],
+                    "ctype": "miscellaneous",
+                    "subtype": "enum",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "file": "src/app/shared/enum/enum.ts"
+                },
+                {
+                    "name": "PageLayout",
+                    "childs": [
+                        {
+                            "name": "DashBoard",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "value": "dashboard"
+                        },
+                        {
+                            "name": "FullScreen",
+                            "deprecated": false,
+                            "deprecationMessage": "",
+                            "value": "fullscreen"
+                        }
+                    ],
+                    "ctype": "miscellaneous",
+                    "subtype": "enum",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "file": "src/app/shared/enum/enum.ts"
+                }
+            ]
+        },
+        "groupedTypeAliases": {}
+    },
+    "routes": [],
+    "coverage": {
+        "count": 5,
+        "status": "low",
+        "files": [
+            {
+                "filePath": "src/app/app.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "AppComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/4",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/app.config.server.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "config",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/app.config.server.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "serverConfig",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/app.config.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "appConfig",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/app.routes.server.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "serverRoutes",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/layouts/dashboard-layout/dashboard-layout.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "DashboardLayoutComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/layouts/fullscreen-layout/fullscreen-layout.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "FullscreenLayoutComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/modules/assessment/assessment.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "AssessmentComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/23",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/modules/assessment/components/thank-you/thank-you.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "ThankYouComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/modules/assessment/guards/backButton.guard.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "backButtonGuard",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/modules/candidate/candidate.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "CandidateComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/5",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/components/base/base.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "BaseComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/3",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/components/button/button.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "ButtonComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/6",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/components/card/card.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "CardComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/4",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/components/dialog/dialog.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "DialogComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/5",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/components/footer/footer.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "FooterComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/components/header/header.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "HeaderComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/components/question/question.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "QuestionComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/2",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/components/radio-button/radio-button.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "RadioButtonComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/2",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/components/side-nav/side-nav.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "SideNavComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/models/dialog-models.ts",
+                "type": "interface",
+                "linktype": "interface",
+                "name": "DialogData",
+                "coveragePercent": 0,
+                "coverageCount": "0/8",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/models/dialog-models.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "DialogConfig",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/resolvers/set-layout.resolver.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "setLayout",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/services/assessment-warning.service.ts",
+                "type": "injectable",
+                "linktype": "injectable",
+                "name": "AssessmentWarningService",
+                "coveragePercent": 0,
+                "coverageCount": "0/4",
+                "status": "low"
+            },
+            {
+                "filePath": "src/app/shared/services/page-layout.service.ts",
+                "type": "injectable",
+                "linktype": "injectable",
+                "name": "PageLayoutService",
+                "coveragePercent": 0,
+                "coverageCount": "0/4",
+                "status": "low"
+            },
+            {
+                "filePath": "src/main.server.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "bootstrap",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/server.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "angularApp",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/server.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "app",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/server.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "browserDistFolder",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/server.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "reqHandler",
+                "coveragePercent": 100,
+                "coverageCount": "1/1",
+                "status": "very-good"
+            },
+            {
+                "filePath": "src/server.ts",
+                "type": "variable",
+                "linktype": "miscellaneous",
+                "linksubtype": "variable",
+                "name": "serverDistFolder",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
+            },
+            {
+                "filePath": "src/stories/button.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "ButtonComponent",
+                "coveragePercent": 83,
+                "coverageCount": "5/6",
+                "status": "very-good"
+            },
+            {
+                "filePath": "src/stories/header.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "HeaderComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/5",
+                "status": "low"
+            },
+            {
+                "filePath": "src/stories/page.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "PageComponent",
+                "coveragePercent": 0,
+                "coverageCount": "0/5",
+                "status": "low"
+            },
+            {
+                "filePath": "src/stories/user.ts",
+                "type": "interface",
+                "linktype": "interface",
+                "name": "User",
+                "coveragePercent": 0,
+                "coverageCount": "0/2",
+                "status": "low"
+            }
+        ]
+    }
+}
