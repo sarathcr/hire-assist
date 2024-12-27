@@ -15,20 +15,10 @@
   }
   
   .flex-item-right {
-    padding: 10px;
+    padding: 0 8% 0 8%;
     flex: 50%;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     border-radius: 25px;
-  }
-  
-  @media (max-width: 1300px) {
-    .flex-container {
-      flex-direction: column;
-      height: auto;  
-    }
-    .flex-item-right{
-        width: 80%;
-    }
   }
   
     .auth__logo,.auth__logo2 {
@@ -52,4 +42,22 @@
 
     .welcome{
         color: darkslateblue;
+    }
+
+    @media (max-width: 1300px) {
+      .flex-container {
+        flex-direction: column;
+        height: auto;  
+      }
+      .flex-item-right{
+          width: 90%;
+          height: 60%;
+          padding: 0 15% 0 15%;
+      }
+    }
+  
+    @media (max-width: 750px) {
+      .flex-item-right{
+          padding: 0 5% 0 5%;
+      }
     }

@@ -1,1 +1,1 @@
-<button mat-flat-button (click)="onButtonClick()">Start</button>
+<button [ngClass]="buttonWidth() === 'full' ? 'btn-full-width': 'btn-normal'" mat-flat-button (click)="onButtonClick()">{{buttonLabel()}}</button>

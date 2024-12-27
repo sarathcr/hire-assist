@@ -1,41 +1,46 @@
 @if(!isForgot){
 <form class="example-form">
-  <h5>Please sign in to your account.</h5>
-  <mat-form-field class="example-full-width">
-    <mat-label>Email</mat-label>
-    <input type="email" matInput placeholder="Ex. test@example.com">
-  </mat-form-field>
-  <mat-form-field  class="example-full-width">
-    <mat-label>Enter your password</mat-label>
-    <input matInput [type]="hide() ? 'password' : 'text'" />
-    <button
-      mat-icon-button
-      matSuffix
-      (click)="clickEvent($event)"
-      [attr.aria-label]="'Hide password'"
-      [attr.aria-pressed]="hide()"
-    >
-      <mat-icon>{{hide() ? 'visibility_off' : 'visibility'}}</mat-icon>
-    </button>
-  </mat-form-field>
-  <mat-divider></mat-divider>
-  <button class="signup" role="button">Login</button>
-  <mat-divider></mat-divider>
-  <a class="forgot" (click)="hideLoginComponent()">Forgot Password?</a>
+  <div class="container">
+    <h5>Please sign in to your account.</h5>
+    <mat-form-field class="example-full-width">
+      <mat-label>Email</mat-label>
+      <input type="email" matInput placeholder="Ex. test@example.com">
+    </mat-form-field>
+    <mat-form-field  class="example-full-width">
+      <mat-label>Enter your password</mat-label>
+      <input matInput [type]="hide() ? 'password' : 'text'" />
+      <button
+        mat-icon-button
+        matSuffix
+        (click)="clickEvent($event)"
+        [attr.aria-label]="'Hide password'"
+        [attr.aria-pressed]="hide()"
+      >
+        <mat-icon>{{hide() ? 'visibility_off' : 'visibility'}}</mat-icon>
+      </button>
+    </mat-form-field>
+    <div></div>
+      <app-button [buttonLabel]="'Login'" [buttonWidth]="'full'"></app-button>
+    <div></div>
+    <a class="forgot" (click)="hideLoginComponent()">Forgot Password?</a>
+  </div>
+
 </form>
 }
 
 @if(isForgot){
   <form class="example-form">
-    <h5>Forgot Password?</h5>
-    <p>Enter your email, and we'll send you a link to reset your password.</p>
-    <mat-form-field class="example-full-width">
-      <mat-label>Email</mat-label>
-      <input type="email" matInput placeholder="Ex. test@example.com">
-    </mat-form-field>
-    <mat-divider></mat-divider>
-    <button class="signup" role="button">Submit</button>
-    <mat-divider></mat-divider>
-    <a class="forgot" (click)="hideLoginComponent()">Back to Login?</a>
+    <div class="container">
+      <h5>Forgot Password?</h5>
+      <p>Enter your email, and we'll send you a link to reset your password.</p>
+      <mat-form-field class="example-full-width">
+        <mat-label>Email</mat-label>
+        <input type="email" matInput placeholder="Ex. test@gmail.com">
+      </mat-form-field>
+      <div></div>
+        <app-button [buttonLabel]="'Submit'" [buttonWidth]="'full'"></app-button>
+      <div></div>
+      <a class="forgot" (click)="hideLoginComponent()">Back to Login?</a>
+    </div>
   </form>
 }
