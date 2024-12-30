@@ -1,7 +1,7 @@
 <div class="login">
   <h1 class="login__title">Login</h1>
   <p class="login__sub-title">Please enter your credentials to continue</p>
-  <form>
+  <form [formGroup]="fGroup">
     <app-input-text></app-input-text>
     <app-input-text></app-input-text>
     <app-button [buttonLabel]="'Login'" [buttonSize]="'large'"></app-button>
