@@ -5,17 +5,17 @@
     </app-dashboard-layout>
   }
 
+  @case (PageLayout.AuthLayout) {
+    <app-auth-layout>
+      <router-outlet />
+    </app-auth-layout>
+  }
+
   @case (PageLayout.FullScreen) {
     <app-fullscreen-layout>
       <router-outlet />
     </app-fullscreen-layout>
   }
-
-  <!--@case (PageLayout.Error) {
-        <error-layout>
-            <router-outlet />
-        </error-layout>
-    } -->
 
   @default {
     <!-- <unauthorized-layout>

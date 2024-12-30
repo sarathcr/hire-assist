@@ -1,0 +1,40 @@
+.example-form{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+  margin-bottom: 10vh;
+  width: 100%;
+
+  p{
+    font-size: 22px;
+    color: gray;
+    font-weight: 500;
+  }
+}
+
+.container{
+  width: 90%;
+}
+.example-full-width{
+  width: 100%;
+  margin-top: 40px;
+}
+
+.forgot{
+  margin-top: 10px;
+  color: gray;
+  font-size: 20px;
+  font-weight: 500;
+  text-decoration: underline;
+}
+.forgot:hover{
+  cursor: pointer;
+}
+
+@media (max-width: 750px) {
+  .example-full-width{
+    margin-top: 10px;
+  }
+}

@@ -1,14 +1,15 @@
 import { Routes } from '@angular/router';
-//import { CandidateComponent } from './modules/candidate/candidate.component';
+import { LoginComponent } from './modules/auth/components/login/login.component';
+import { PageLayout } from './shared/enum/enum';
+import { setLayout } from './shared/resolvers/set-layout.resolver';
+
 import { AssessmentComponent } from './modules/assessment/assessment.component';
 import { backButtonGuard } from './modules/assessment/guards/backButton.guard';
 import { CandidateComponent } from './modules/candidate/candidate.component';
-import { PageLayout } from './shared/enum/enum';
-import { setLayout } from './shared/resolvers/set-layout.resolver';
 import { ThankYouComponent } from './modules/assessment/components/thank-you/thank-you.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'candidate', pathMatch: 'full' },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
   {
     path: 'candidate',
     component: CandidateComponent,
@@ -31,6 +32,13 @@ export const routes: Routes = [
     component: ThankYouComponent,
     resolve: {
       layout: setLayout(PageLayout.FullScreen),
+    },
+  },
+  {
+    path: 'login',
+    component: LoginComponent,
+    resolve: {
+      layout: setLayout(PageLayout.AuthLayout),
     },
   },
 ];

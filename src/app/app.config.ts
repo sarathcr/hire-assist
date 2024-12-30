@@ -17,13 +17,12 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    // RouteReuseStrategy({})
     provideClientHydration(withEventReplay()),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),
       registrationStrategy: 'registerWhenStable:30000',
     }),
     provideAnimationsAsync(),
-    provideAnimationsAsync('noop'),
+    // provideAnimationsAsync('noop'),
   ],
 };
