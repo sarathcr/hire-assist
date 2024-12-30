@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 export class ButtonComponent {
   public btnClick = output();
   public buttonLabel = input();
+  public buttonSize = input();
 
   // Public Events
   public onButtonClick(): void {

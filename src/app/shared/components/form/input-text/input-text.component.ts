@@ -5,7 +5,7 @@ import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-input-text',
-  imports: [FormsModule, MatInputModule, MatFormFieldModule],
+  imports: [FormsModule, MatInputModule, MatFormFieldModule, ],
   providers: [],
   templateUrl: './input-text.component.html',
   styleUrl: './input-text.component.scss',

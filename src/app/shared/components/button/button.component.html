@@ -1,1 +1,6 @@
-<button mat-flat-button (click)="onButtonClick()">{{ buttonLabel() }}</button>
+<button
+  mat-flat-button
+  [ngClass]="{ 'btn-large': buttonSize() === 'large' }"
+  (click)="onButtonClick()">
+  {{ buttonLabel() }}
+</button>

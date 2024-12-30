@@ -23,6 +23,6 @@ export const appConfig: ApplicationConfig = {
       registrationStrategy: 'registerWhenStable:30000',
     }),
     provideAnimationsAsync(),
-    provideAnimationsAsync('noop'),
+    // provideAnimationsAsync('noop'),
   ],
 };
