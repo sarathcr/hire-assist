@@ -1,6 +1,11 @@
-<div>
+<div [formGroup]="formGroup">
   <mat-form-field appearance="outline" class="field-container">
-    <mat-label>Label</mat-label>
-    <input matInput />
+    <mat-label>{{ inputTextConfig.labelKey }}</mat-label>
+    @if (inputTextConfig.id) {
+      <input
+        matInput
+        [formControlName]="inputTextConfig.id"
+        (input)="onInputChange($event)" />
+    }
   </mat-form-field>
 </div>

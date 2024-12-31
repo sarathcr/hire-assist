@@ -21,8 +21,8 @@ export class Data extends FormEntity {
       password: [Validators.required],
     },
     configMap: {
-      userName: { id: 'userName', labelKey: 'userName' },
-      password: { id: 'password', labelKey: 'userName' },
+      userName: { id: 'userName', labelKey: 'Username' },
+      password: { id: 'password', labelKey: 'Password' },
     },
   };
 }
