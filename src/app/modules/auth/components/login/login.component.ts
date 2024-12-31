@@ -7,6 +7,7 @@ import {
   ConfigMap,
 } from '../../../../shared/utilities/form.utility';
 import { LoginData } from '../../models/loginDataModel';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +20,7 @@ export class LoginComponent implements OnInit {
   public loginData = new LoginData();
   public configMap!: ConfigMap;
 
-  constructor() {
+  constructor(private router: Router) {
     this.fGroup = buildFormGroup(this.loginData);
   }
 
@@ -29,7 +30,11 @@ export class LoginComponent implements OnInit {
 
   // Public
   public async onSave() {
-    console.log('==>', this.fGroup.value);
+    this.fGroup.markAllAsTouched();
+    const isFormValid = this.fGroup.valid;
+    if (isFormValid) {
+      this.router.navigate(['/candidate']);
+    }
   }
 
   // Private

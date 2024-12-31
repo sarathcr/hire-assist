@@ -25,6 +25,6 @@ export abstract class BaseFormComponent {
       fc.markAsDirty();
     }
     const hasToShowError = fc?.dirty && errorKey;
-    return hasToShowError ? `validation.${errorKey}` : '';
+    return hasToShowError ? `Field is ${errorKey}` : '';
   }
 }

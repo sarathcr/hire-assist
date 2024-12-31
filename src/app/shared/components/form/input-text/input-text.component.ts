@@ -28,6 +28,7 @@ import { BaseFormComponent } from '../base-form/base-form.component';
 export class InputTextComponent extends BaseFormComponent implements OnInit {
   @Input() formGroup!: FormGroup;
   @Input() config!: CustomFormControlConfig;
+  @Input() dynamicSuffix!: string;
 
   public formControl!: FormControl<string>;
   public inputTextConfig!: CustomTextInputConfig;

@@ -7,5 +7,19 @@
         [formControlName]="inputTextConfig.id"
         (input)="onInputChange($event)" />
     }
+    @if (inputTextConfig.matSuffix) {
+      <span matPrefix class="input-suffix">{{
+        inputTextConfig.matPrefix
+      }}</span>
+    } @else if (inputTextConfig.matPrefix) {
+      <span matSuffix class="input-suffix">{{
+        inputTextConfig.matSuffix
+      }}</span>
+    } @else if (dynamicSuffix) {
+      <span matSuffix class="input-suffix">{{ dynamicSuffix }}</span>
+    }
+    @if (formControl.invalid) {
+      <mat-error> {{ errorMsg }}</mat-error>
+    }
   </mat-form-field>
 </div>
