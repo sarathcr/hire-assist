@@ -2,15 +2,13 @@
   <h1 class="login__title">Login</h1>
   <p class="login__sub-title">Please enter your credentials to continue</p>
   <form [formGroup]="fGroup">
-    @if (configMap['userName']) {
-      <app-input-text
-        [formGroup]="fGroup"
-        [config]="configMap['userName']"></app-input-text>
-    }
-
-    <!-- <app-input-text
+    <app-input-text
       [formGroup]="fGroup"
-      [config]="configMap['password']"></app-input-text> -->
+      [config]="configMap['userName']"></app-input-text>
+
+    <app-input-text
+      [formGroup]="fGroup"
+      [config]="configMap['password']"></app-input-text>
     <app-button
       [buttonLabel]="'Login'"
       [buttonSize]="'large'"

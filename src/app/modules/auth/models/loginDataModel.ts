@@ -1,17 +1,7 @@
 import { Validators } from '@angular/forms';
-import {
-  FormEntity,
-  initialMetadata,
-  Metadata,
-} from '../../../shared/utilities/form.utility';
+import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
 
 export class LoginData extends FormEntity {
-  data = new Data();
-
-  metadata: Metadata = initialMetadata;
-}
-
-export class Data extends FormEntity {
   userName = '';
   password = '';
 

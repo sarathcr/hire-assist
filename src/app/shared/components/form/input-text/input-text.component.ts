@@ -42,7 +42,6 @@ export class InputTextComponent extends BaseFormComponent implements OnInit {
   public onInputChange(event: Event) {
     const inputElement = event.target as HTMLInputElement;
     const inputValue: string = inputElement.value;
-    // this.formControl.setValue(inputValue);
-    console.log('===>', inputValue);
+    this.formControl.setValue(inputValue);
   }
 }

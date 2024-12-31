@@ -29,12 +29,12 @@ export class LoginComponent implements OnInit {
 
   // Public
   public async onSave() {
-    // console.log('==>', this.fGroup.value);
+    console.log('==>', this.fGroup.value);
   }
 
   // Private
   private setConfigMaps(): void {
-    const { data } = new LoginData();
-    if (data) this.configMap = data.metadata.configMap || {};
+    const { metadata } = new LoginData();
+    this.configMap = metadata.configMap || {};
   }
 }
