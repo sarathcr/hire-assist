@@ -163,25 +163,27 @@ export class AssessmentComponent
 
   private showPreventNavigationDialog(): void {
     const modalData: DialogData = this.getPreventNavigationDialogData();
-
-    this.ref = this.dialog.open(DialogComponent, {
-      data: modalData,
-      header: 'Warning',
-      width: '50vw',
-      modal: true,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-      templates: {
-        footer: DialogFooterComponent,
-      },
-    });
+    if (!this.ref) {
+      this.ref = this.dialog.open(DialogComponent, {
+        data: modalData,
+        header: 'Warning',
+        width: '50vw',
+        modal: true,
+        breakpoints: {
+          '960px': '75vw',
+          '640px': '90vw',
+        },
+        templates: {
+          footer: DialogFooterComponent,
+        },
+      });
+    }
     this.ref?.onClose.subscribe(result => {
       if (result) {
         this.isNavigationIntercepted = false;
         console.log('Navigation prevented.');
         this.showWarningDialog();
+        this.ref?.close();
       }
     });
   }
