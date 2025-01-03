@@ -11,6 +11,7 @@ export class AssessmentWarningService {
   }
 
   public getWarningCount() {
+    console.log(this.warningCount());
     return this.warningCount();
   }
 }

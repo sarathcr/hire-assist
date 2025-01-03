@@ -6,7 +6,7 @@ export const DialogConfig = {
 };
 
 export interface DialogData {
-  title: string;
+  title?: string;
   message: string;
   isChoice: boolean;
   acceptButtonText?: string;

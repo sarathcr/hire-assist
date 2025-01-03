@@ -4,6 +4,7 @@ import { ButtonComponent } from '../button/button.component';
 @Component({
   selector: 'app-card',
   imports: [ButtonComponent],
+  // providers:[]
   templateUrl: './card.component.html',
   styleUrl: './card.component.scss',
 })

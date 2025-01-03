@@ -1,4 +1,13 @@
+<!-- eslint-disable @angular-eslint/template/click-events-have-key-events -->
 <header class="header">
+  <div
+    class="header__nav"
+    tabindex="0"
+    (click)="onMenuClick()"
+    (keydown.enter)="onMenuClick()"
+    (keydown.space)="onMenuClick()">
+    <span class="pi pi-bars"></span>
+  </div>
   <div class="header__avatar">
     <img src="avatar.png" alt="avatar" />
   </div>

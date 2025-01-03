@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputTextComponent } from '../../../../shared/components/form/input-text/input-text.component';
 import {
@@ -7,7 +8,6 @@ import {
   ConfigMap,
 } from '../../../../shared/utilities/form.utility';
 import { LoginData } from '../../models/loginDataModel';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',

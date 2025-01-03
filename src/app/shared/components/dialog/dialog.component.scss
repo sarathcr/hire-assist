@@ -1,10 +1,25 @@
 .dialog {
-  ::ng-deep {
-    .mdc-dialog__title {
-      font-family: 'Poppins', serif;
-      font-style: normal;
-      font-weight: 500;
-      font-size: 20px;
-    }
-  }
+  position: relative;
+
+  // &__footer {
+  //   position: absolute;
+  //   padding: 20px;
+  //   width: 100%;
+  //   display: flex;
+  //   align-items: center;
+  //   justify-content: flex-end;
+  //   gap: 1rem;
+  // }
+  // &__description {
+  //   overflow: auto;
+  //   height: auto;
+  //   max-height: 50vh;
+  //   padding-top: 50px;
+  // }
 }
+// ::ng-deep {
+//   .p-dialog-content {
+//     overflow: hidden;
+//     height: auto;
+//   }
+// }

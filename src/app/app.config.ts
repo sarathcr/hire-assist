@@ -11,7 +11,10 @@ import {
 } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideServiceWorker } from '@angular/service-worker';
+
+import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
+import { MyPreset } from './app.theme.preset';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -23,6 +26,10 @@ export const appConfig: ApplicationConfig = {
       registrationStrategy: 'registerWhenStable:30000',
     }),
     provideAnimationsAsync(),
-    // provideAnimationsAsync('noop'),
+    providePrimeNG({
+      theme: {
+        preset: MyPreset,
+      },
+    }),
   ],
 };

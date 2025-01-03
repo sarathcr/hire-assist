@@ -1,6 +1,9 @@
-<button
-  mat-flat-button
-  [ngClass]="{ 'btn-large': buttonSize() === 'large' }"
-  (click)="onButtonClick()">
-  {{ buttonLabel() }}
-</button>
+<p-button
+  class="btn"
+  [variant]="buttonVariant()"
+  [ngClass]="{
+    'btn-large': buttonSize() === 'large',
+    'btn-full': buttonWidth() === 'full',
+  }"
+  label="{{ buttonLabel() }}"
+  (click)="onButtonClick()" />

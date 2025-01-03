@@ -1,58 +1,75 @@
 import { CommonModule, LocationStrategy } from '@angular/common';
-import { Component, HostListener, inject, output } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import {
+  Component,
+  effect,
+  HostListener,
+  inject,
+  OnDestroy,
+  OnInit,
+  output,
+} from '@angular/core';
 import { Router } from '@angular/router';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { BaseComponent } from '../../shared/components/base/base.component';
 import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { RadioButtonComponent } from '../../shared/components/radio-button/radio-button.component';
-import { DialogConfig, DialogData } from '../../shared/models/dialog-models';
+import { DialogData } from '../../shared/models/dialog-models';
 import { AssessmentWarningService } from '../../shared/services/assessment-warning.service';
+import { DialogFooterComponent } from '../../shared/components/dialog-footer/dialog-footer.component';
 
 @Component({
   selector: 'app-assessment',
   imports: [RadioButtonComponent, CommonModule],
+  providers: [DialogService],
   templateUrl: './assessment.component.html',
   styleUrl: './assessment.component.scss',
 })
-export class AssessmentComponent extends BaseComponent {
+export class AssessmentComponent
+  extends BaseComponent
+  implements OnInit, OnDestroy
+{
+  private warningService = inject(AssessmentWarningService);
+  public isFullScreen = false;
   // Signals
   public selectOption = output();
+  public isNavigationIntercepted = false;
   // Private
-  private isFullscreen = false;
-  private isNavigationIntercepted = false;
+  private warningCount!: number;
+
   // Services
-  private warningService = inject(AssessmentWarningService);
+
+  public ref: DynamicDialogRef | undefined;
 
   constructor(
-    private dialog: MatDialog,
+    private dialog: DialogService,
     private router: Router,
     private locationStrategy: LocationStrategy
   ) {
     super();
-    this.enterFullScreenMode();
     this.locationStrategy.onPopState(() => {
       this.showPreventNavigationDialog();
     });
+
+    effect(() => {
+      this.warningCount = this.warningService.getWarningCount();
+    });
+  }
+
+  ngOnInit(): void {
+    if (this.warningCount == 2) {
+      this.showTestTerminationDialog();
+    } else this.enterFullScreenMode();
   }
 
   // Listener Events
   @HostListener('document:fullscreenchange')
-  onFullscreenChange(): void {
-    const warningCount = this.warningService.getWarningCount();
-
-    if (warningCount > 2) {
-      this.exitToCandidatePage();
-      return;
-    }
-
-    const isCurrentlyFullscreen = !!document.fullscreenElement;
-
-    if (this.isFullscreen && !isCurrentlyFullscreen) {
-      console.log('Fullscreen exited. Re-entering fullscreen...');
+  public onFullscreenChange(): void {
+    this.isFullScreen = !!document.fullscreenElement;
+    if (!this.isFullScreen && this.warningCount <= 1) {
       this.showWarningDialog();
+    } else if (!this.isFullScreen && this.warningCount > 1) {
+      this.showTestTerminationDialog();
     }
-
-    this.isFullscreen = isCurrentlyFullscreen;
   }
 
   @HostListener('document:visibilitychange')
@@ -68,21 +85,7 @@ export class AssessmentComponent extends BaseComponent {
     this.selectOption.emit();
   }
 
-  public exitFullScreenMode(): void {
-    // Check if the document is currently in fullscreen
-    if (document.fullscreenElement) {
-      document
-        .exitFullscreen()
-        .then(() => {
-          this.showTestTerminationDialog();
-        })
-        .catch(err => console.error('Failed to exit fullscreen mode:', err));
-    } else {
-      console.log('Not in fullscreen mode.');
-    }
-  }
-
-  // Private Methods
+  // Private
   private enterFullScreenMode(): void {
     if (typeof document !== 'undefined') {
       document.documentElement
@@ -98,83 +101,95 @@ export class AssessmentComponent extends BaseComponent {
 
   private showWarningDialog(): void {
     const modalData: DialogData = this.getWarningDialogData();
-
-    this.dialog
-      .open(DialogComponent, {
-        ...DialogConfig,
-        data: modalData,
-      })
-      .afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.warningService.setWarningCount(1);
-          this.enterFullScreenMode();
-          this.dialog.closeAll();
-        }
-      });
-  }
-
-  private showPreventNavigationDialog(): void {
-    const modalData: DialogData = this.getPreventNavigationDialogData();
-
-    this.dialog
-      .open(DialogComponent, {
-        ...DialogConfig,
-        data: modalData,
-      })
-      .afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.isNavigationIntercepted = false;
-          console.log('Navigation prevented.');
-          this.showWarningDialog();
-        }
-      });
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Warning',
+      width: '50vw',
+      modal: true,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+    this.ref?.onClose.subscribe(result => {
+      if (result) {
+        this.warningService.setWarningCount(1);
+        this.enterFullScreenMode();
+        this.ref?.close();
+      }
+    });
   }
 
   private getWarningDialogData(): DialogData {
     return {
-      title: 'Warning',
       message: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.`,
       isChoice: true,
       closeOnNavigation: true,
     };
   }
 
-  private getPreventNavigationDialogData(): DialogData {
-    return {
-      title: 'Warning',
-      message: `You are not allowed to navigate away from this page. Please complete the test.`,
-      isChoice: true,
-      closeOnNavigation: true,
-    };
-  }
-
-  private exitToCandidatePage(): void {
-    this.exitFullScreenMode();
-  }
-
   private showTestTerminationDialog() {
     const modalData: DialogData = this.getTestTerminationDialogData();
-
-    this.dialog
-      .open(DialogComponent, {
-        ...DialogConfig,
-        data: modalData,
-      })
-      .afterClosed()
-      .subscribe(result => {
-        if (result) {
-          this.router.navigate(['/candidate']);
-        }
-      });
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Sorry',
+      width: '50vw',
+      modal: true,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+    this.ref?.onClose.subscribe(result => {
+      if (result) {
+        this.router.navigate(['candidate/thank-you']);
+      }
+    });
   }
 
   private getTestTerminationDialogData(): DialogData {
     return {
-      title: 'Sorry',
       message: `You have used your maximum attempts by exiting full screen mode. Please contact invigilator/HR for further information`,
       isChoice: false,
+      closeOnNavigation: true,
+    };
+  }
+
+  private showPreventNavigationDialog(): void {
+    const modalData: DialogData = this.getPreventNavigationDialogData();
+
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Warning',
+      width: '50vw',
+      modal: true,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+    this.ref?.onClose.subscribe(result => {
+      if (result) {
+        this.isNavigationIntercepted = false;
+        console.log('Navigation prevented.');
+        this.showWarningDialog();
+      }
+    });
+  }
+
+  private getPreventNavigationDialogData(): DialogData {
+    return {
+      message: `You are not allowed to navigate away from this page. Please complete the test.`,
+      isChoice: true,
       closeOnNavigation: true,
     };
   }

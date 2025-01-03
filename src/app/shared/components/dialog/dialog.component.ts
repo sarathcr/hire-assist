@@ -1,27 +1,33 @@
-import { Component, Inject } from '@angular/core';
-import {
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-  MatDialogRef,
-} from '@angular/material/dialog';
-import { DialogData } from '../../models/dialog-models';
-import { MatButtonModule } from '@angular/material/button';
+import { Component, OnInit, output } from '@angular/core';
+import { ButtonModule } from 'primeng/button';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
   selector: 'app-dialog',
-  imports: [MatDialogModule, MatButtonModule],
+  imports: [ButtonModule],
 
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.scss',
 })
-export class DialogComponent {
+export class DialogComponent implements OnInit {
+  // Public Events
+  public btnSubmit = output();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public data: any;
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: DialogData,
-    public dialogRef: MatDialogRef<DialogComponent>
+    private ref: DynamicDialogRef,
+    public config: DynamicDialogConfig
   ) {}
 
-  // Public Events
+  ngOnInit(): void {
+    this.data = this.config.data;
+  }
+
   public onSubmit() {
-    this.dialogRef.close(true);
+    this.ref.close(true);
+  }
+
+  public onClose() {
+    this.ref.close();
   }
 }

@@ -14,4 +14,24 @@
       object-fit: cover;
     }
   }
+  &__nav {
+    ::ng-deep {
+      .pi {
+        display: none;
+      }
+    }
+  }
+  @media (max-width: 768px) {
+    justify-content: space-between;
+    align-items: center;
+    &__nav {
+      ::ng-deep {
+        .pi {
+          display: block;
+          font-size: 24px;
+          color: #1565c0;
+        }
+      }
+    }
+  }
 }

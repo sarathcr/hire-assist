@@ -1,25 +1,23 @@
-<div [formGroup]="formGroup">
-  <mat-form-field appearance="outline" class="field-container">
-    <mat-label>{{ inputTextConfig.labelKey }}</mat-label>
-    @if (inputTextConfig.id) {
-      <input
-        matInput
-        [formControlName]="inputTextConfig.id"
-        (input)="onInputChange($event)" />
-    }
-    @if (inputTextConfig.matSuffix) {
-      <span matPrefix class="input-suffix">{{
-        inputTextConfig.matPrefix
-      }}</span>
-    } @else if (inputTextConfig.matPrefix) {
-      <span matSuffix class="input-suffix">{{
-        inputTextConfig.matSuffix
-      }}</span>
-    } @else if (dynamicSuffix) {
-      <span matSuffix class="input-suffix">{{ dynamicSuffix }}</span>
-    }
-    @if (formControl.invalid) {
-      <mat-error> {{ errorMsg }}</mat-error>
-    }
-  </mat-form-field>
+<div class="input-text" [formGroup]="formGroup">
+  <p-floatlabel variant="on"
+    ><input
+      id="over_label"
+      type="text"
+      pInputText
+      [formControlName]="inputTextConfig.id"
+      (input)="onInputChange($event)" /><label for="over_label">{{
+      inputTextConfig.labelKey
+    }}</label></p-floatlabel
+  >
+
+  @if (inputTextConfig.matSuffix) {
+    <span class="input-suffix">{{ inputTextConfig.matPrefix }}</span>
+  } @else if (inputTextConfig.matPrefix) {
+    <span class="input-suffix">{{ inputTextConfig.matSuffix }}</span>
+  } @else if (dynamicSuffix) {
+    <span class="input-suffix">{{ dynamicSuffix }}</span>
+  }
+  @if (formControl.touched && formControl.invalid) {
+    <span class="input-text__validation-label"> {{ errorMsg }}</span>
+  }
 </div>

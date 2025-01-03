@@ -48,4 +48,22 @@
     justify-content: center;
     background: #fff;
   }
+  // screen size below 768px
+  @media (max-width: 768px) {
+    &__left {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: -1;
+      &_content {
+        display: none;
+      }
+    }
+    &__content {
+      flex: 0 0 100%;
+      background: transparent;
+    }
+  }
 }

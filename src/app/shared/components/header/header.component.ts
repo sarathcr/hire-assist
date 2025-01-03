@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject, output } from '@angular/core';
+import { ToggleMenuService } from '../../services/toggle-menu.service';
 
 @Component({
   selector: 'app-header',
@@ -6,4 +7,11 @@ import { Component } from '@angular/core';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
-export class HeaderComponent {}
+export class HeaderComponent {
+  public menuOpen = output<boolean>();
+  toggleMenu = inject(ToggleMenuService);
+
+  public onMenuClick() {
+    this.toggleMenu.setToggleMenu(true);
+  }
+}

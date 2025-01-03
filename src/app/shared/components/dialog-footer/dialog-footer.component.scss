@@ -1,0 +1,15 @@
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: 20px;
+}
+::ng-deep {
+  .p-dialog-footer {
+    box-shadow: 0px -15px 20px -26px #000;
+  }
+  .p-dialog-header {
+    box-shadow: 0px 15px 10px -20px #000;
+  }
+}

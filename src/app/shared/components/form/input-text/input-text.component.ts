@@ -5,8 +5,8 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { InputTextModule } from 'primeng/inputtext';
 import {
   CustomFormControlConfig,
   CustomTextInputConfig,
@@ -16,9 +16,9 @@ import { BaseFormComponent } from '../base-form/base-form.component';
 @Component({
   selector: 'app-input-text',
   imports: [
+    InputTextModule,
+    FloatLabelModule,
     FormsModule,
-    MatInputModule,
-    MatFormFieldModule,
     ReactiveFormsModule,
   ],
   providers: [],
