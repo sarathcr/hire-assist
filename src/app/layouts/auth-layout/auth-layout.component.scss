@@ -30,9 +30,9 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background: rgba(255, 255, 255, 0.5);
+      background: var(--background-light-grey);
       border-radius: 20px;
-      padding: 30px;
+      padding: var(--spacing-30);
       img {
         width: 100px;
       }
@@ -46,10 +46,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fff;
+    background: var(--color-white);
   }
   // screen size below 768px
   @media (max-width: 768px) {
+    padding: var(--spacing-30);
     &__left {
       position: absolute;
       top: 0;

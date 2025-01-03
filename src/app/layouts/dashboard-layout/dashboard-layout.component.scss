@@ -11,7 +11,7 @@
     background-color: #fbfbfb;
     &__content {
       flex-grow: 1;
-      padding: 20px;
+      padding: var(--spacing-20);
     }
   }
   @media (max-width: 768px) {

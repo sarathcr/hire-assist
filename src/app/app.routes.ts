@@ -7,6 +7,7 @@ import { AssessmentComponent } from './modules/assessment/assessment.component';
 import { ThankYouComponent } from './modules/assessment/components/thank-you/thank-you.component';
 import { backButtonGuard } from './modules/assessment/guards/backButton.guard';
 import { CandidateComponent } from './modules/candidate/candidate.component';
+import { DeviceWidthGuard } from './shared/guards/device-warning.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -21,6 +22,7 @@ export const routes: Routes = [
   {
     path: 'candidate/test',
     component: AssessmentComponent,
+    canActivate: [DeviceWidthGuard],
     canDeactivate: [backButtonGuard],
     runGuardsAndResolvers: 'always',
     resolve: {

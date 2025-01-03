@@ -7,18 +7,18 @@
 .login {
   text-align: center;
   &__title {
-    color: #736d6d;
+    color: var(--color-grey);
   }
   &__sub-title,
   &__title {
     margin-top: 0;
   }
   @media (max-width: 768px) {
-    background: rgba(255, 255, 255, 0.5);
-    border-radius: 20px;
-    padding: 30px;
+    background: var(--color-white);
+    border-radius: var(--spacing-20);
+    padding: var(--spacing-30);
     &__title {
-      color: #000;
+      color: var(--color-black);
     }
   }
 }

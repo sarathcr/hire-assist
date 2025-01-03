@@ -7,7 +7,7 @@
   }
   .p-floatlabel-on:not(input.p-filled) label {
     font-weight: 300;
-    font-size: 15px;
+    font-size: var(--font-size-base);
   }
   .p-floatlabel-on:has(input.p-filled, input:focus) label {
     font-size: smaller;
@@ -15,9 +15,9 @@
   &__validation-label {
     position: absolute;
     left: 0;
-    font-size: 12px;
+    font-size: var(--font-size-small);
     margin-top: 2px;
     color: var(--p-form-field-invalid-placeholder-color);
-    padding: 0 10px;
+    padding: 0 var(--spacing-10);
   }
 }

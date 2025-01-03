@@ -1,5 +1,5 @@
 .header {
-  padding: 20px;
+  padding: var(--spacing-20);
   display: flex;
   justify-content: flex-end;
   background-color: #fff;
@@ -28,8 +28,8 @@
       ::ng-deep {
         .pi {
           display: block;
-          font-size: 24px;
-          color: #1565c0;
+          font-size: var(--font-size-24);
+          color: var(--primary-color);
         }
       }
     }

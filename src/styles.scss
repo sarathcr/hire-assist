@@ -1,6 +1,27 @@
 @use './styles/main.scss';
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Josefin+Sans:ital,wght@0,100;0,300;0,600;1,400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
+:root {
+  // Color Variables
+  --primary-color: #1565c0;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-grey: #736d6d;
+  --background-light-grey: rgba(255, 255, 255, 0.5);
+  --background-secondary: #2196f324;
+  // Spacing Variables
+  --spacing-5: 5px;
+  --spacing-10: 10px;
+  --spacing-20: 20px;
+  --spacing-30: 30px;
+  --spacing-50: 50px;
+  --spacing-60: 60px;
+  // Font Size
+  --font-size-small: 12px;
+  --font-size-base: 14px;
+  --font-size-24: 24px;
+}
+
 body,
 html {
   margin: 0;

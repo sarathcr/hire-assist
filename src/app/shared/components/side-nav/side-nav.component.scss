@@ -5,7 +5,7 @@
 }
 
 .sidebar {
-  padding: 30px;
+  padding: var(--spacing-30);
   text-align: center;
   height: 100%;
 
@@ -28,15 +28,15 @@
   }
 
   &__nav {
-    margin-top: 60px;
+    margin-top: var(--spacing-60);
 
     ::ng-deep {
       .p-menu {
         border: none;
 
         .p-menu-item-link-active {
-          background: #2196f324;
-          padding: 17px;
+          background: var(--background-secondary);
+          padding: var(--spacing-20);
           border-radius: 10px;
 
           .p-menu-item-label {
@@ -44,14 +44,14 @@
           }
 
           .p-menu-item-icon {
-            color: #1565c0;
+            color: var(--primary-color);
           }
         }
 
         .p-menu-item-content:hover {
           .p-menu-item-link-active {
             .p-menu-item-icon {
-              color: #1565c0;
+              color: var(--primary-color);
             }
           }
         }
