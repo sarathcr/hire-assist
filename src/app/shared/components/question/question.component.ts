@@ -1,14 +1,12 @@
-import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-question',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './question.component.html',
   styleUrl: './question.component.scss',
 })
 export class QuestionComponent {
-  question = {
-    text: 'What is the capital of France?',
-    image: 'assets/images/france-map.png', // Replace with your image path
-  };
+  @Input() question!: { text: string; image?: string };
 }

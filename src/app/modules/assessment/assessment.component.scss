@@ -1,0 +1,62 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 5%;
+  height: 100%;
+  @media (max-width: 768px) {
+    padding: 10%;
+  }
+}
+
+.assessment {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  &__title {
+    font-weight: bold;
+    font-size: var(--font-size-24);
+  }
+  &__buttonNavigation {
+    display: flex;
+    gap: 1rem;
+  }
+  &__question {
+    overflow: auto;
+    padding: var(--spacing-15);
+    border: 2px solid rgb(0, 149, 255);
+    border-style: dashed;
+    border-radius: 15px;
+    height: calc(100% - 200px);
+    background-color: rgb(221, 239, 253);
+    @media (max-width: 768px) {
+      height: 50%;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+  }
+  &__actionButtons {
+    padding: var(--spacing-20) 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    &_review-skip-button {
+      display: flex;
+      gap: 1rem;
+    }
+    @media (max-width: 768px) {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 25px;
+      ::ng-deep {
+        .p-ripple {
+          width: 100%;
+        }
+      }
+    }
+  }
+}

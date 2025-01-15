@@ -1,5 +1,4 @@
 :host {
-  width: 100%;
   display: block;
 }
 
@@ -15,6 +14,16 @@
         width: 100%;
         height: 50px;
       }
+    }
+  }
+}
+.btn-rounded {
+  ::ng-deep {
+    .p-button-rounded {
+      border-radius: 50%;
+      width: 50px !important;
+      height: 50px !important;
+      min-width: unset;
     }
   }
 }

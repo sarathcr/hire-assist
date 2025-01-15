@@ -1,0 +1,28 @@
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  padding-block: 1%;
+  padding-inline: 3%;
+
+  p-radiobutton {
+    padding-right: 10px;
+    display: flex;
+    align-items: center;
+  }
+  img {
+    width: 300px;
+    height: 300px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+  .option-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+  }
+}

@@ -1,11 +1,14 @@
 :host {
-  width: 270px;
+  width: 20%;
   height: 100%;
   box-shadow: inset -3px 0px 4px -1px rgba(0, 0, 0, 0.05);
+  @media (min-width: 1500px) {
+    width: 15%;
+  }
 }
 
 .sidebar {
-  padding: var(--spacing-30);
+  padding: var(--spacing-20);
   text-align: center;
   height: 100%;
 
@@ -33,21 +36,20 @@
     ::ng-deep {
       .p-menu {
         border: none;
-
-        .p-menu-item-link-active {
-          background: var(--background-secondary);
-          padding: var(--spacing-20);
-          border-radius: 10px;
-
-          .p-menu-item-label {
-            font-weight: 500;
-          }
-
-          .p-menu-item-icon {
-            color: var(--primary-color);
+        min-width: 100%;
+        .p-menu-item-link {
+          padding: var(--spacing-1-rem);
+          &-active {
+            background: var(--background-secondary);
+            border-radius: 10px;
+            .p-menu-item-label {
+              font-weight: 500;
+            }
+            .p-menu-item-icon {
+              color: var(--primary-color);
+            }
           }
         }
-
         .p-menu-item-content:hover {
           .p-menu-item-link-active {
             .p-menu-item-icon {

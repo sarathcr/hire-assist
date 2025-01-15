@@ -9,9 +9,14 @@
   --color-grey: #736d6d;
   --background-light-grey: rgba(255, 255, 255, 0.5);
   --background-secondary: #2196f324;
+  --dashboard-main-background-color: #fbfbfb;
   // Spacing Variables
+  // rem
+  --spacing-1-rem: 1rem;
+  // pixels
   --spacing-5: 5px;
   --spacing-10: 10px;
+  --spacing-15: 15px;
   --spacing-20: 20px;
   --spacing-30: 30px;
   --spacing-50: 50px;
@@ -20,6 +25,13 @@
   --font-size-small: 12px;
   --font-size-base: 14px;
   --font-size-24: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-white: #000000;
+    --dashboard-main-background-color: #847272;
+  }
 }
 
 body,

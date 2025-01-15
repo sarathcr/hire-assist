@@ -16,6 +16,7 @@ import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
 import { MyPreset } from './app.theme.preset';
 import { DialogService } from 'primeng/dynamicdialog';
+import { provideHttpClient } from '@angular/common/http';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -32,6 +33,7 @@ export const appConfig: ApplicationConfig = {
         preset: MyPreset,
       },
     }),
+    provideHttpClient(),
     DialogService,
   ],
 };
