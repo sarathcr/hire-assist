@@ -1,5 +1,6 @@
 import { Validators } from '@angular/forms';
 import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
+import { TokenData } from '../../../shared/models/token-data.models';
 
 export class LoginData extends FormEntity {
   userName = '';
@@ -15,4 +16,10 @@ export class LoginData extends FormEntity {
       password: { id: 'password', labelKey: 'Password' },
     },
   };
+}
+
+export interface LoginResponse {
+  data: TokenData;
+  errors: string[];
+  succeeded: boolean;
 }

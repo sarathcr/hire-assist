@@ -1,4 +1,63 @@
-<p>assessment works!</p>
-<app-radio-button (onSelect)="onOptionSelect()"></app-radio-button>
+<div class="assessment">
+  <div class="assessment__buttonNavigation">
+    @if (numberOfQuestions !== null) {
+      @for (quest of numberOfQuestions; track quest) {
+        <app-button
+          class="btn"
+          [buttonConfig]="quest"
+          [btnRounded]="true"
+          [buttonSeverity]="
+            quest.status === 'reviewed'
+              ? 'warn'
+              : quest.status === 'skipped'
+                ? 'danger'
+                : quest.status === 'saved'
+                  ? 'success'
+                  : quest.id === activeButtonId
+                    ? 'info'
+                    : 'secondary'
+          "
+          buttonLabel="{{ quest.id }}"
+          (btnClick)="onButtonClick($event)"
+          >{{ activeButtonId }}</app-button
+        >
+      }
+    }
+  </div>
 
-<ng-container></ng-container>
+  <p class="assessment__title">Question {{ activeButtonId }}</p>
+
+  @if (activeQuestion) {
+    <div class="assessment__question">
+      <app-question [question]="activeQuestion.question"> </app-question>
+
+      @for (option of activeQuestion.options; track option.id) {
+        <app-input-radio
+          [option]="option"
+          [(selectedValue)]="selectedValues[activeQuestion.id]"
+          [groupName]="'question_' + activeQuestion.id"
+          (selectedValueChange)="onOptionSelect(activeQuestion.id, $event)">
+        </app-input-radio>
+      }
+    </div>
+  }
+
+  <div class="assessment__actionButtons">
+    <div class="assessment__actionButtons_review-skip-button">
+      <app-button
+        [buttonLabel]="'Mark as Review'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onReviewBtnClick()"></app-button>
+      <app-button
+        [buttonLabel]="'Skip'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onSkipBtnClick()"></app-button>
+    </div>
+    <div class="save-button">
+      <app-button
+        [buttonLabel]="'Save & Next'"
+        [saveDisabled]="!selectedValues[activeQuestion?.id]"
+        (btnClick)="onSaveBtnClick()"></app-button>
+    </div>
+  </div>
+</div>

@@ -4,6 +4,10 @@
   [ngClass]="{
     'btn-large': buttonSize() === 'large',
     'btn-full': buttonWidth() === 'full',
+    'btn-rounded': btnRounded,
   }"
+  [severity]="buttonSeverity()"
   label="{{ buttonLabel() }}"
-  (click)="onButtonClick()" />
+  (click)="onButtonClick(buttonConfig()?.id)"
+  [rounded]="btnRounded"
+  [disabled]="saveDisabled" />

@@ -8,7 +8,7 @@
     flex-direction: column;
     justify-content: space-between;
     flex-grow: 1;
-    background-color: #fbfbfb;
+    background-color: var(--dashboard-main-background-color);
     &__content {
       flex-grow: 1;
       padding: var(--spacing-20);
