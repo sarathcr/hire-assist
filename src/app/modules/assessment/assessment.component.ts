@@ -8,7 +8,7 @@ import {
   OnInit,
   output,
 } from '@angular/core';
-import { Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { BaseComponent } from '../../shared/components/base/base.component';
 import { ButtonComponent } from '../../shared/components/button/button.component';
@@ -19,6 +19,7 @@ import { CarouselModule } from 'primeng/carousel';
 import { QuestionComponent } from '../../shared/components/question/question.component';
 import { DialogData } from '../../shared/models/dialog-models';
 import { AssessmentWarningService } from '../../shared/services/assessment-warning.service';
+import { DialogHeaderComponent } from '../../shared/components/dialog-header/dialog-header.component';
 
 export interface Questions {
   id: number;
@@ -152,6 +153,7 @@ export class AssessmentComponent
 
   // Private
   private warningCount!: number;
+  private browserRefresh = false;
 
   constructor(
     private dialog: DialogService,
@@ -166,6 +168,15 @@ export class AssessmentComponent
     effect(() => {
       this.warningCount = this.warningService.getWarningCount();
     });
+
+    this.subscriptionList.push(
+      router.events.subscribe(event => {
+        if (event instanceof NavigationStart) {
+          this.browserRefresh = !router.navigated;
+        }
+      })
+    );
+    console.log('browserRefresh', this.browserRefresh);
   }
 
   ngOnInit(): void {
@@ -287,7 +298,7 @@ export class AssessmentComponent
     const modalData: DialogData = this.getWarningDialogData();
     this.ref = this.dialog.open(DialogComponent, {
       data: modalData,
-      header: 'Warning',
+      // header: 'Warning',
       width: '50vw',
       modal: true,
       breakpoints: {
@@ -295,6 +306,7 @@ export class AssessmentComponent
         '640px': '90vw',
       },
       templates: {
+        header: DialogHeaderComponent,
         footer: DialogFooterComponent,
       },
     });
@@ -309,6 +321,8 @@ export class AssessmentComponent
 
   private getWarningDialogData(): DialogData {
     return {
+      headerTitle: 'Warning',
+      warningCount: this.warningCount,
       message: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.`,
       isChoice: true,
       closeOnNavigation: true,
@@ -400,7 +414,7 @@ export class AssessmentComponent
   private getPreventNavigationDialogData(): DialogData {
     return {
       message: `You are not allowed to navigate away from this page. Please complete the test.`,
-      isChoice: true,
+      isChoice: false,
       closeOnNavigation: true,
     };
   }
