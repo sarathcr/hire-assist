@@ -1,0 +1,20 @@
+.assessment-form {
+  padding: var(--spacing-10) 0 0;
+  &__field {
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    align-items: center;
+  }
+  &__label {
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+  }
+  &__button {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+}

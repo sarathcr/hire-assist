@@ -1,0 +1,24 @@
+<div class="admin-dashboard">
+  <h1>Assessment</h1>
+  <div class="admin-dashboard__card-wrapper">
+    @for (items of data; track items.id) {
+      <app-card
+        class="admin-dashboard__card"
+        [hasHeader]="false"
+        [hasLabel]="true"
+        [items]="labels"
+        (selectedItem)="selectedMenu($event)">
+        <!-- <p>Recent Activity</p> -->
+        <p>Name:{{ items.name }}</p>
+        <p>Description:{{ items.description }}</p>
+        <p>Status:{{ items.statusId }}</p>
+        <p>StartDateTime:{{ items.startDateTime }}</p>
+        <p>EndDateTime:{{ items.endDateTime }}</p>
+        <p>Active:{{ items.isActive }}</p>
+        <p></p>
+        <!-- <p>{{ cardItem.id }}</p>
+      <p>{{ cardItem.id }}</p> -->
+      </app-card>
+    }
+  </div>
+</div>

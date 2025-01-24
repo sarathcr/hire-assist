@@ -1,0 +1,24 @@
+<div class="input-text" [formGroup]="formGroup">
+  <ng-container>
+    <p-iftalabel>
+      <input
+        id="conditional_label"
+        type="text"
+        pInputText
+        [formControlName]="inputTextConfig.id"
+        (input)="onInputChange($event)" />
+      <label for="conditional_label">{{ inputTextConfig.labelKey }}</label>
+    </p-iftalabel>
+  </ng-container>
+
+  @if (inputTextConfig.matSuffix) {
+    <span class="input-suffix">{{ inputTextConfig.matPrefix }}</span>
+  } @else if (inputTextConfig.matPrefix) {
+    <span class="input-suffix">{{ inputTextConfig.matSuffix }}</span>
+  } @else if (dynamicSuffix) {
+    <span class="input-suffix">{{ dynamicSuffix }}</span>
+  }
+  @if (formControl.touched && formControl.invalid) {
+    <span class="input-text__validation-label"> {{ errorMsg }}</span>
+  }
+</div>

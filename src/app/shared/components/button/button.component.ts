@@ -36,10 +36,11 @@ export class ButtonComponent {
   public buttonLabel = input();
   public buttonSize = input();
   public buttonWidth = input();
+  public isLoading = input();
   public buttonVariant = input<ButtonVariant>();
   public buttonConfig = input<ButtonConfig>();
   public buttonSeverity = input<Severity>();
-  
+
   @Input() saveDisabled = false;
   @Input() btnRounded = false;
 

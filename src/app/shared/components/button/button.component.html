@@ -1,5 +1,6 @@
 <p-button
   class="btn"
+  [loading]="isLoading()"
   [variant]="buttonVariant()"
   [ngClass]="{
     'btn-large': buttonSize() === 'large',

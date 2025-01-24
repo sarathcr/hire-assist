@@ -1,0 +1,24 @@
+<div class="text-area" [formGroup]="formGroup">
+  <p-floatlabel variant="on">
+    <textarea
+      id="over_label"
+      type="textarea"
+      rows="3"
+      style="resize: none"
+      pTextarea
+      [formControlName]="inputTextAreaConfig.id"
+      (input)="onInputChange($event)"></textarea>
+    <label for="over_label">{{ inputTextAreaConfig.labelKey }}</label>
+  </p-floatlabel>
+
+  @if (inputTextAreaConfig.matSuffix) {
+    <span class="input-suffix">{{ inputTextAreaConfig.matPrefix }}</span>
+  } @else if (inputTextAreaConfig.matPrefix) {
+    <span class="input-suffix">{{ inputTextAreaConfig.matSuffix }}</span>
+  } @else if (dynamicSuffix) {
+    <span class="input-suffix">{{ dynamicSuffix }}</span>
+  }
+  @if (formControl.touched && formControl.invalid) {
+    <span class="input-text-area__validation-label"> {{ errorMsg }}</span>
+  }
+</div>

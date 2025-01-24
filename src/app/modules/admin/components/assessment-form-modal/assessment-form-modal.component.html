@@ -1,0 +1,42 @@
+<div class="assessment-form">
+  <form [formGroup]="data.fGroup">
+    <app-input-text
+      [formGroup]="data.fGroup"
+      [config]="data.configMap['name']"></app-input-text>
+
+    <app-input-text-area
+      [formGroup]="data.fGroup"
+      [config]="data.configMap['description']">
+    </app-input-text-area>
+
+    <!-- <app-input-select
+      [formGroup]="data.fGroup"
+      [config]="data.configMap['statusId']"
+      optionLabel="name"
+      placeholder="Status"
+      class="w-full md:w-56"
+      [selectOptions]="data.inputSelect">
+    </app-input-select> -->
+
+    <app-input-text-calender
+      [formGroup]="data.fGroup"
+      [config]="data.configMap['startDateTime']"></app-input-text-calender>
+
+    <app-input-text-calender
+      [formGroup]="data.fGroup"
+      [config]="data.configMap['endDateTime']">
+    </app-input-text-calender>
+
+    <app-toggle-switch
+      [formGroup]="data.fGroup"
+      [config]="data.configMap['isActive']">
+    </app-toggle-switch>
+    <div class="assessment-form__button">
+      <app-button
+        [buttonLabel]="'Cancel'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"></app-button>
+      <app-button [buttonLabel]="'Submit'" (btnClick)="onSubmit()"></app-button>
+    </div>
+  </form>
+</div>

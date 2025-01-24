@@ -1,16 +1,26 @@
 <div class="card">
-  <div class="card__header">
-    <span class="card__tag">Aptitude test</span>
-  </div>
+  @if (hasHeader) {
+    <div class="card__header">
+      <span class="card__tag">Aptitude test</span>
+    </div>
+  } @else {
+    <div class="card__header">
+      @if (hasLabel) {
+        <span class="card__tag" [ngClass]="{ card__tag_assessment: true }">
+          <p-menu #menu [model]="items" appendTo="body" [popup]="true" />
+          <p-button (click)="menu.toggle($event)" icon="pi pi-ellipsis-v" />
+        </span>
+      }
+    </div>
+  }
   <div class="card__content">
-    <p>Open position : <span>NATS</span></p>
-    <p>Mode : <span>Online</span></p>
-    <p>No. of Questions : <span>30</span></p>
-    <p>Time : <span>10:30 AM - 11.30 AM</span></p>
+    <ng-content></ng-content>
   </div>
   <div class="card__footer">
-    <app-button
-      [buttonLabel]="'Start'"
-      (btnClick)="startAssessment()"></app-button>
+    @if (hasHeader) {
+      <app-button
+        [buttonLabel]="'Start'"
+        (btnClick)="startAssessment()"></app-button>
+    }
   </div>
 </div>

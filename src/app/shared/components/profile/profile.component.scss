@@ -1,0 +1,171 @@
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: var(--spacing-20);
+
+  .profile-banner {
+    width: 100%;
+    height: 340px;
+    position: absolute;
+    background: url('/HumanizingTech.jpeg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    position: relative;
+    margin-top: -20px;
+  }
+
+  .profile-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -70px;
+    margin-right: 85%;
+    position: relative;
+
+    .profile-picture {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid white;
+      box-shadow: 0 2px 5px var(--color-black);
+      margin-bottom: var(--spacing-20);
+      align-items: flex-start;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .edit-icon {
+        position: absolute;
+        bottom: var(--font-size-24);
+        right: -5px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: var(--color-black);
+        border: 0;
+        width: 34px;
+        height: 34px;
+        color: var(--color-black);
+      }
+    }
+
+    .file-input {
+      display: none;
+    }
+  }
+}
+
+.profile {
+  display: flex;
+  align-items: flex-start;
+  border: var(--spacing-20);
+  border-radius: var(--spacing-15);
+
+}
+
+
+.profile-edit {
+  display: flex;
+  flex-direction: row;
+  width: 800px;
+  padding: var(--spacing-20);
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: var(--color-white);
+  box-shadow: var(--color-black);
+  margin: 40px;
+  flex-grow: 1;
+
+  .fields {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+
+  }
+
+  .row1 {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    padding: var(--spacing-20);
+
+  }
+
+  .fields-rem {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    padding: var(--spacing-20);
+    max-width: 900px;
+
+  }
+
+  // .calender {
+  //   width: 100%;
+
+  //   .input-text {
+  //     width: 100%;
+  //   }
+  // }
+
+  .save-button {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+  }
+
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    margin: 0;
+
+    .profile-banner {
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: 200px;
+    }
+
+    .profile-content {
+      margin-top: -50px;
+
+      .profile-picture {
+        width: 80px;
+        height: 80px;
+      }
+    }
+
+    .profile-edit {
+      padding: var(--spacing-15);
+      width: 100%;
+      flex-direction: column;
+
+      .fields {
+        display: flex;
+        padding: var(--spacing-15);
+        width: 100%;
+        flex-direction: column;
+        flex-grow: 1;
+      }
+
+      .row1 {
+        width: 100%;
+      }
+
+      .fields-rem {
+        width: 100%;
+        padding-top: 0;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  }
+}

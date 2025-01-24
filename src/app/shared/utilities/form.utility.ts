@@ -20,11 +20,34 @@ export interface CustomTextInputConfig extends BaseCustomConfig {
   matSuffix?: string;
   readonly?: boolean;
 }
+// INPUT TEXTAREA
+export interface CustomTextareaConfig extends BaseCustomConfig {
+  maxlength?: number;
+  matPrefix?: string;
+  matSuffix?: string;
+  readonly?: boolean;
+}
+// INPUT SELECT
+export interface CustomSelectConfig extends BaseCustomConfig {
+  maxlength?: number;
+  matPrefix?: string;
+  matSuffix?: string;
+  readonly?: boolean;
+}
 
-export type CustomFormControlConfig = CustomTextInputConfig;
-// | CustomTextareaConfig
-// | CustomSelectConfig
-// | CustomInputDateConfig
+// INPUT SELECT
+export interface CustomToggleSwitchConfig extends BaseCustomConfig {
+  maxlength?: number;
+  matPrefix?: string;
+  matSuffix?: string;
+  readonly?: boolean;
+}
+
+export type CustomFormControlConfig =
+  | CustomTextInputConfig
+  | CustomTextareaConfig
+  | CustomSelectConfig
+  | CustomToggleSwitchConfig;
 // | CustomNumberInputConfig;
 
 export interface Metadata {

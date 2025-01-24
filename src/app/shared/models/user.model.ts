@@ -8,16 +8,18 @@ export enum UserRole {
 export interface UserState {
   id: string;
   name: string;
+  // expiration?: number;
   //   preferedLang: Lang;
   role: string;
-  preferedDepartamentId: number;
-  application?: string;
+  // preferedDepartamentId: number;
+  // application?: string;
 }
 export const initialUserState: UserState = {
   id: '',
   name: '',
+  // expiration: 0,
   //   preferedLang: Lang.Spanish,
   role: UserRole.NULL,
-  preferedDepartamentId: 0,
-  application: '',
+  // preferedDepartamentId: 0,
+  // application: '',
 };

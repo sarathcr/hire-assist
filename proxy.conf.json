@@ -1,0 +1,16 @@
+{
+    "/api/secured/*": {
+        "target": "https://localhost:7238",
+        "secure": false,
+        "pathRewrite": {
+            "^/api/secured": "/"
+        }
+    },
+    "/api/*": {
+        "target": "https://localhost:7238",
+        "secure": false,
+        "pathRewrite": {
+            "^/api": "/"
+        }
+    }
+}
