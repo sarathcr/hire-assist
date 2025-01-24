@@ -4,15 +4,16 @@
   <form [formGroup]="fGroup">
     <app-input-text
       [formGroup]="fGroup"
-      [config]="configMap['userName']"></app-input-text>
+      [config]="configMap['email']"></app-input-text>
 
-    <app-input-text
-      [formGroup]="fGroup"
-      [config]="configMap['password']"></app-input-text>
+    <app-input-text [formGroup]="fGroup" [config]="configMap['password']">
+    </app-input-text>
     <app-button
       [buttonLabel]="'Login'"
       [buttonSize]="'large'"
       [buttonWidth]="'full'"
+      [isLoading]="isLoading"
       (click)="onSave()"></app-button>
   </form>
 </div>
+<p-toast position="top-right" class="Toast"></p-toast>

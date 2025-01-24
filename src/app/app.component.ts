@@ -6,6 +6,7 @@ import { DashboardLayoutComponent } from './layouts/dashboard-layout/dashboard-l
 import { FullscreenLayoutComponent } from './layouts/fullscreen-layout/fullscreen-layout.component';
 import { PageLayout } from './shared/enum/enum';
 import { PageLayoutService } from './shared/services/page-layout.service';
+import { LoaderComponent } from './shared/components/loader/loader.component';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +16,7 @@ import { PageLayoutService } from './shared/services/page-layout.service';
     DashboardLayoutComponent,
     AuthLayoutComponent,
     FullscreenLayoutComponent,
+    LoaderComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

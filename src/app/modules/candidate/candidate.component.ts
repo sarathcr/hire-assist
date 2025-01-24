@@ -17,6 +17,7 @@ import { CandidateService } from './services/candidate.service';
 })
 export class CandidateComponent extends BaseComponent implements OnInit {
   private ref: DynamicDialogRef | undefined;
+  public data: any;
   constructor(
     public dialog: DialogService,
     private router: Router,
@@ -29,6 +30,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const next = (res: any) => {
       console.log('NEXT', res);
+      this.data = res;
     };
     const error = (error: string) => {
       console.log('ERROR', error);

@@ -1,4 +1,4 @@
 export const environment = {
-    isProduction: false,
-    baseUrl: 'https://jsonplaceholder.typicode.com/todos/1' // Dummy url
+  isProduction: false,
+  baseUrl: 'https://localhost:7238',
 };

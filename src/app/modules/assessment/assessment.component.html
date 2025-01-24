@@ -1,7 +1,13 @@
 <div class="assessment">
   <div class="assessment__buttonNavigation">
-    @if (numberOfQuestions !== null) {
-      @for (quest of numberOfQuestions; track quest) {
+    <p-carousel
+      class="assessment__carousel"
+      [value]="numberOfQuestions"
+      [numVisible]="10"
+      [numScroll]="10"
+      [circular]="false"
+      [responsiveOptions]="responsiveOptions">
+      <ng-template let-quest pTemplate="item">
         <app-button
           class="btn"
           [buttonConfig]="quest"
@@ -21,8 +27,8 @@
           (btnClick)="onButtonClick($event)"
           >{{ activeButtonId }}</app-button
         >
-      }
-    }
+      </ng-template>
+    </p-carousel>
   </div>
 
   <p class="assessment__title">Question {{ activeButtonId }}</p>

@@ -1,6 +1,7 @@
 @switch (pageLayoutService.layout$ | async) {
   @case (PageLayout.DashBoard) {
     <app-dashboard-layout>
+      <app-loader></app-loader>
       <router-outlet />
     </app-dashboard-layout>
   }

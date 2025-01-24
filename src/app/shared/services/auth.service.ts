@@ -1,18 +1,12 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
-import { Observable, Subject, tap } from 'rxjs';
-import { StoreService } from './store.service';
 import { Router } from '@angular/router';
-import { LoginResponse } from '../../modules/auth/models/loginDataModel';
 import * as Forge from 'node-forge';
+import { Observable, Subject, tap } from 'rxjs';
 import { LOGIN_URL } from '../../constants/api';
 import { initialTokenData, TokenData } from '../models/token-data.models';
-import {
-  checkAppAndRole,
-  getTokenNumericPayloadData,
-  getTokenPayloadData,
-  TokenField,
-} from '../utilities/token.utility';
+import { getTokenPayloadData, TokenField } from '../utilities/token.utility';
+import { StoreService } from './store.service';
 
 @Injectable({
   providedIn: 'root',
@@ -34,6 +28,11 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
     this.destroy$.complete();
   }
 
+  /** Checks if the user is authenticated with a not expired token */
+  public isAuthenticated(): boolean {
+    return this.storeService.isAuthenticated();
+  }
+
   /** Gets the accessToken  */
   public getAccessToken(): string {
     const { accessToken } = this.storeService.getTokenData();
@@ -43,14 +42,14 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
   public login(loginData: {
     email: string;
     password: string;
-  }): Observable<LoginResponse> {
+  }): Observable<TokenData> {
     const { email, password } = loginData;
     const trimmedLoginData = {
       username: this.encryptWithPublicKey(email.trim()).toString(),
       password: this.encryptWithPublicKey(password.trim()).toString(),
     };
 
-    return this.http.post<LoginResponse>(LOGIN_URL, trimmedLoginData).pipe(
+    return this.http.post<TokenData>(LOGIN_URL, trimmedLoginData).pipe(
       tap(response => {
         this.initialize(response);
       })
@@ -64,71 +63,63 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
 
   //   Private
   /** Initializes User and TokenData in AppState */
-  private initialize(response: LoginResponse): void {
-    const { data: tokenData, succeeded, errors } = response;
-    const { accessToken } = tokenData;
+  private initialize(response: TokenData): void {
+    const { accessToken, refreshToken } = response;
     const error = 'Token error (internal)';
     const status = 422;
-    if (succeeded && accessToken) {
+    if (accessToken) {
       try {
-        this.getUserInfo(accessToken, tokenData, error, status);
+        this.getUserInfo(accessToken, refreshToken, error, status);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         this.storeService.setTokenData(initialTokenData);
         this.router.navigateByUrl('login');
         throw new HttpErrorResponse({ error, status });
       }
+    } else {
+      console.error(error);
     }
 
-    if (errors && errors.length) {
-      console.error(errors);
-    }
+    // if (errors && errors.length) {
+    //   console.error(errors);
+    // }
   }
 
   private getUserInfo(
     accessToken: string,
-    tokenData: TokenData,
+    refreshToken: string,
     error: string,
     status: number
   ) {
-    const userId = getTokenPayloadData(accessToken, TokenField.UserId);
-    const userName = getTokenPayloadData(accessToken, TokenField.UserName);
-    const role = getTokenPayloadData(accessToken, TokenField.Role);
-    const preferedDepartamentId = getTokenNumericPayloadData(
-      accessToken,
-      TokenField.PreferedDepartamentId
-    );
-    const authorisation = checkAppAndRole(
-      typeof role === 'string' ? [role] : role
-    );
-    this.storeService.setTokenData(tokenData);
+    console.log('accessToken', accessToken);
 
-    if (!authorisation?.authoirsedUser) {
+    const emailAddress = getTokenPayloadData(
+      accessToken,
+      TokenField.Emailaddress
+    );
+    const name = getTokenPayloadData(accessToken, TokenField.Name);
+    const roles = getTokenPayloadData(accessToken, TokenField.Role);
+    // roles should now be an array of numbers, e.g., [1, 2]
+
+    if (!roles || !Array.isArray(roles)) {
+      console.error('Invalid roles in token:', roles);
+      error = 'Invalid roles in token';
+      status = 403;
+    }
+
+    // Store tokens and user information
+    this.storeService.setTokenData({ accessToken, refreshToken });
+
+    if (!roles?.length) {
       error = 'Unauthorised User';
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       status = 403;
+      this.storeService.setUser(emailAddress, name, '');
+      return;
     }
-    this.storeService.setUser(
-      userId,
-      userName,
-      authorisation.role,
-      authorisation.application,
-      preferedDepartamentId
-    );
-    // this.roleService
-    //   .getPermissions()
-    //   .pipe(
-    //     tap(permissions => {
-    //       this.storeService.setPermissions(permissions);
-    //     }),
-    //     catchError(err => {
-    //       this.storeService.setPermissions([]);
-    //       console.error('Error al obtener roles o guardarlos', err);
-    //       return throwError(() => err);
-    //     }),
-    //     takeUntil(this.destroy$)
-    //   )
-    //   .subscribe();
+
+    // Store the roles as an array
+    this.storeService.setUser(emailAddress, name, roles); // Store roles as [1, 2]
   }
 
   private encryptWithPublicKey(valueToEncrypt: string): string {

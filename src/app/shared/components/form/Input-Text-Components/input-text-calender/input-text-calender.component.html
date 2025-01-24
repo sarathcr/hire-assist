@@ -1,0 +1,22 @@
+<div class="input-text" [formGroup]="formGroup">
+  <ng-container>
+      <label for="over_label">{{ inputTextConfig.labelKey }}</label>
+    <p-datepicker
+      id="over_label"
+      [formControlName]="inputTextConfig.id"
+      [showIcon]="true"
+      dateFormat="dd-mm-yy">
+    </p-datepicker>
+  </ng-container>
+
+  @if (inputTextConfig.matSuffix) {
+    <span class="input-suffix">{{ inputTextConfig.matPrefix }}</span>
+  } @else if (inputTextConfig.matPrefix) {
+    <span class="input-suffix">{{ inputTextConfig.matSuffix }}</span>
+  } @else if (dynamicSuffix) {
+    <span class="input-suffix">{{ dynamicSuffix }}</span>
+  }
+  @if (formControl.touched && formControl.invalid) {
+    <span class="input-text__validation-label"> {{ errorMsg }}</span>
+  }
+</div>

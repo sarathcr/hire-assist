@@ -1,0 +1,26 @@
+<div class="toggle-switch" [formGroup]="formGroup">
+  <label for="over_label">{{ customToggleSwitchConfig.labelKey }}</label>
+  <p-floatlabel variant="on">
+    <p-toggleswitch
+      [(ngModel)]="checked"
+      [ngModelOptions]="{ standalone: true }"
+      id="over_label"
+      pToggleswitch
+      (input)="onInputChange($event)">
+      <ng-template #handle let-checked="checked">
+        <i ngClass="['!text-xs', 'pi', checked ? 'pi-check' : 'pi-times']"></i>
+      </ng-template>
+    </p-toggleswitch>
+  </p-floatlabel>
+
+  @if (customToggleSwitchConfig.matSuffix) {
+    <span class="input-suffix">{{ customToggleSwitchConfig.matPrefix }}</span>
+  } @else if (customToggleSwitchConfig.matPrefix) {
+    <span class="input-suffix">{{ customToggleSwitchConfig.matSuffix }}</span>
+  } @else if (dynamicSuffix) {
+    <span class="input-suffix">{{ dynamicSuffix }}</span>
+  }
+  @if (formControl.touched && formControl.invalid) {
+    <span class="input-text-area__validation-label"> {{ errorMsg }}</span>
+  }
+</div>

@@ -12,6 +12,7 @@
     &__content {
       flex-grow: 1;
       padding: var(--spacing-20);
+      position: relative;
     }
   }
   @media (max-width: 768px) {

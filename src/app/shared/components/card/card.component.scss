@@ -15,9 +15,13 @@
     font-weight: 400;
     text-transform: uppercase;
     font-size: var(--font-size-base);
+    &_assessment{
+      background-color: unset;
+    }
   }
   &__content {
     font-weight: 400;
     font-size: var(--font-size-base);
   }
+  
 }

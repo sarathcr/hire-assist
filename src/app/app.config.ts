@@ -12,11 +12,12 @@ import {
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideServiceWorker } from '@angular/service-worker';
 
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
+import { DialogService } from 'primeng/dynamicdialog';
 import { routes } from './app.routes';
 import { MyPreset } from './app.theme.preset';
-import { DialogService } from 'primeng/dynamicdialog';
-import { provideHttpClient } from '@angular/common/http';
+import { MessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,7 +34,8 @@ export const appConfig: ApplicationConfig = {
         preset: MyPreset,
       },
     }),
-    provideHttpClient(),
+    provideHttpClient(withFetch()),
     DialogService,
+    MessageService,
   ],
 };

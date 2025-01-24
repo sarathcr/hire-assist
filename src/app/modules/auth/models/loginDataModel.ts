@@ -3,16 +3,16 @@ import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
 import { TokenData } from '../../../shared/models/token-data.models';
 
 export class LoginData extends FormEntity {
-  userName = '';
+  email = '';
   password = '';
 
   metadata: Metadata = {
     validatorsMap: {
-      userName: [Validators.required],
+      email: [Validators.required],
       password: [Validators.required],
     },
     configMap: {
-      userName: { id: 'userName', labelKey: 'Username' },
+      email: { id: 'email', labelKey: 'Email' },
       password: { id: 'password', labelKey: 'Password' },
     },
   };
