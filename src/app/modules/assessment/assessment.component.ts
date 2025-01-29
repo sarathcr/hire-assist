@@ -331,6 +331,7 @@ export class AssessmentComponent
       message: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.`,
       isChoice: true,
       closeOnNavigation: true,
+      acceptButtonText: 'Continue',
     };
   }
 
@@ -361,6 +362,7 @@ export class AssessmentComponent
       message: `You have used your maximum attempts by exiting full screen mode. Please contact invigilator/HR for further information`,
       isChoice: false,
       closeOnNavigation: true,
+      acceptButtonText: 'OK',
     };
   }
 
@@ -385,35 +387,41 @@ export class AssessmentComponent
     }
   }
   private showPreventNavigationDialog(): void {
-    const modalData: DialogData = this.getPreventNavigationDialogData();
-    if (!this.ref) {
-      this.ref = this.dialog.open(DialogComponent, {
-        data: modalData,
-        header: 'Warning',
-        width: '50vw',
-        modal: true,
-        breakpoints: {
-          '960px': '75vw',
-          '640px': '90vw',
-        },
-        templates: {
-          footer: DialogFooterComponent,
-        },
+    if (this.router.url === '/candidate/test') {
+      // Ensure it only triggers on this route
+      const modalData: DialogData = this.getPreventNavigationDialogData();
+
+      if (!this.ref) {
+        this.ref = this.dialog.open(DialogComponent, {
+          data: modalData,
+          header: 'Warning',
+          width: '50vw',
+          modal: true,
+          breakpoints: {
+            '960px': '75vw',
+            '640px': '90vw',
+          },
+          templates: {
+            footer: DialogFooterComponent,
+          },
+        });
+      }
+
+      this.ref?.onClose.subscribe(result => {
+        if (result) {
+          this.isNavigationIntercepted = false;
+          console.log('Navigation prevented.');
+
+          if (this.warningCount == 2) {
+            this.showWarningDialog();
+          } else {
+            this.showTestTerminationDialog();
+          }
+
+          this.ref?.close();
+        }
       });
     }
-    this.ref?.onClose.subscribe(result => {
-      if (result) {
-        this.isNavigationIntercepted = false;
-        console.log('Navigation prevented.');
-        if (this.warningCount == 2) {
-          this.showWarningDialog();
-        } else {
-          this.showTestTerminationDialog();
-        }
-
-        this.ref?.close();
-      }
-    });
   }
 
   private getPreventNavigationDialogData(): DialogData {
@@ -421,6 +429,7 @@ export class AssessmentComponent
       message: `You are not allowed to navigate away from this page. Please complete the test.`,
       isChoice: false,
       closeOnNavigation: true,
+      acceptButtonText: 'Continue',
     };
   }
 }
