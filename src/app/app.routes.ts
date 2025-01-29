@@ -11,6 +11,7 @@ import { CandidateComponent } from './modules/candidate/candidate.component';
 import { ProfileComponent } from './shared/components/profile/profile.component';
 import { UnauthorizedComponent } from './shared/components/unauthorized/unauthorized.component';
 import { thankYouGuard } from './shared/guards/thank-you.guard';
+import { DeviceWidthGuard } from './shared/guards/device-warning.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -27,6 +28,7 @@ export const routes: Routes = [
   {
     path: 'candidate/test',
     component: AssessmentComponent,
+    canActivate: [DeviceWidthGuard],
     // canActivate: [AuthGuard, DeviceWidthGuard],
     canDeactivate: [backButtonGuard],
     runGuardsAndResolvers: 'always',
