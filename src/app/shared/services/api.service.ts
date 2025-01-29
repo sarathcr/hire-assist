@@ -20,7 +20,7 @@ export abstract class ApiService<T> {
 
   /** GET (T entity) list request */
   public getEntityList(): Observable<T[]> {
-    this.store.setIsLoading(true);
+    // this.store.setIsLoading(true);
 
     const sanitizedUrl = this.sanitize.sanitize(
       4,
@@ -29,7 +29,7 @@ export abstract class ApiService<T> {
     if (sanitizedUrl) {
       return this.http.get<T[]>(sanitizedUrl).pipe(
         tap(() => {
-          this.store.setIsLoading(false);
+          // this.store.setIsLoading(false);
         })
       );
     } else {
@@ -38,8 +38,9 @@ export abstract class ApiService<T> {
   }
 
   /** GET (T entity) list request */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public createEntity(payload: any): Observable<T[]> {
-    this.store.setIsLoading(true);
+    // this.store.setIsLoading(true);
 
     const sanitizedUrl = this.sanitize.sanitize(
       4,
@@ -48,7 +49,7 @@ export abstract class ApiService<T> {
     if (sanitizedUrl) {
       return this.http.post<T[]>(sanitizedUrl, payload).pipe(
         tap(() => {
-          this.store.setIsLoading(false);
+          // this.store.setIsLoading(false);
         })
       );
     } else {

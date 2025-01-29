@@ -50,8 +50,24 @@ export class DashboardLayoutComponent implements OnInit {
           ];
           break;
         default:
-        // this.links = [{ label: 'Dashboard', path: '/dashboard' }];
+          this.links = [
+            {
+              label: 'Dashboard',
+              icon: 'pi pi-home',
+              routerLink: ['/candidate'],
+              routerLinkActiveOptions: { exact: true },
+            },
+          ];
       }
+    } else {
+      this.links = [
+        {
+          label: 'Dashboard',
+          icon: 'pi pi-home',
+          routerLink: ['/candidate'],
+          routerLinkActiveOptions: { exact: true },
+        },
+      ];
     }
   }
 }
