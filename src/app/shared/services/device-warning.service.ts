@@ -48,8 +48,9 @@ export class DeviceWarningService {
   private getDeviceWarningDialogData(): DialogData {
     return {
       message: `You cannot attend the assessment test from mobile devices. You should at least have a laptop or higher devices.`,
-      isChoice: true,
+      isChoice: false,
       closeOnNavigation: true,
+      acceptButtonText: 'OK',
     };
   }
 }
