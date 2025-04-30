@@ -1,0 +1,49 @@
+<div class="batch-form">
+  <form [formGroup]="data.fGroup">
+    <div class="batch-form_field-container">
+      <app-input-text
+        class="batch-form_field"
+        [formGroup]="data.fGroup"
+        type="text"
+        [config]="data.configMap['title']"
+      ></app-input-text>
+      <app-input-text-calender
+        class="batch-form_field-col_one"
+        [formGroup]="data.fGroup"
+        [config]="data.configMap['startDate']"
+        [showTime]="true"
+      ></app-input-text-calender>
+
+      <app-input-text-calender
+        class="batch-form_field-col_one"
+        [formGroup]="data.fGroup"
+        [config]="data.configMap['endDate']"
+        [showTime]="true"
+      >
+      </app-input-text-calender>
+    </div>
+    <app-input-textarea
+      class="batch-form_field"
+      [formGroup]="data.fGroup"
+      [config]="data.configMap['description']"
+    >
+    </app-input-textarea>
+    <app-toggle-switch
+      [formGroup]="data.fGroup"
+      [config]="data.configMap['isActive']"
+    >
+    </app-toggle-switch>
+    <div class="batch-form__button">
+      <app-button
+        [buttonLabel]="'Cancel'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"
+      ></app-button>
+      <app-button
+        [buttonLabel]="'Submit'"
+        [disabled]="!data.fGroup.valid"
+        (btnClick)="onSubmit()"
+      ></app-button>
+    </div>
+  </form>
+</div>

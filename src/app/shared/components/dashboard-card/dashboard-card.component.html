@@ -1,0 +1,37 @@
+@if (count() > 0) {
+  <div class="dashboard-card">
+    <h2 class="dashboard-card__title">{{ title() }}</h2>
+    <p class="dashboard-card__count">{{ count() }}</p>
+    <div class="dashboard-card__status">
+      @if (activeCount() > 0) {
+        <span
+          >Active:
+          <span class="dashboard-card__active">{{ activeCount() }}</span></span
+        >
+      }
+      @if (inactiveCount() > 0) {
+        <span
+          >Inactive:
+          <span class="dashboard-card__inactive">{{
+            inactiveCount()
+          }}</span></span
+        >
+      }
+    </div>
+  </div>
+} @else {
+  <div class="dashboard-card">
+    <h2 class="dashboard-card__title dashboard-card__title_skeleton">
+      <p-skeleton width="10rem" />
+    </h2>
+    <span class="dashboard-card__count">
+      <p-skeleton width="2rem" height="2rem" />
+    </span>
+    <div class="dashboard-card__status dashboard-card__status_skeleton">
+      <span class="flex gap-1">
+        <p-skeleton width="3rem" />
+        <span class="dashboard-card__active"><p-skeleton width="3rem" /></span
+      ></span>
+    </div>
+  </div>
+}

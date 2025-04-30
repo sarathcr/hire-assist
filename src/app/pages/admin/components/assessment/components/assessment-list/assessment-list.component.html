@@ -1,0 +1,35 @@
+<div class="assessment-list">
+  <div>
+    <div class="assessment-list__header">
+      <h1 class="assessment-list__title">Assessments</h1>
+      <app-button
+        class="assessment-list__button"
+        [icon]="'pi pi-plus'"
+        [buttonLabel]="'Create'"
+        (btnClick)="onCreateAssessment()"
+      ></app-button>
+    </div>
+
+    <div class="assessment-list__wrapper">
+      <div class="assessment-list__list">
+        @for (assessment of assessmentDataSource; track assessment) {
+          <app-assessment-card
+            class="assessment-list__card"
+            [data]="assessment"
+            (edit)="onEditAssessment($event)"
+            (duplicate)="onDuplicateAssessment($event)"
+            (delete)="onDeleteAssessment($event)"
+            (click)="onClickAssessment(assessment.id ?? 0)"
+          ></app-assessment-card>
+        } @empty {
+          <app-assessment-card-skeleton
+            class="assessment-list__card"
+          ></app-assessment-card-skeleton>
+        }
+      </div>
+    </div>
+  </div>
+  <app-pagination [dataSource]="dataSource" [filterMap]="filterMap">
+  </app-pagination>
+</div>
+<p-toast />

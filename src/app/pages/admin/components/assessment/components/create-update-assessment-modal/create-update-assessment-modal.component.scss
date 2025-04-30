@@ -1,0 +1,63 @@
+:host {
+  display: block;
+}
+::ng-deep {
+  .p-dialog-content {
+    overflow-y: visible;
+  }
+  .p-dialog-footer {
+    box-shadow: 0px -15px 20px -26px #000;
+  }
+  .p-dialog-header {
+    box-shadow: 0px 15px 10px -20px #000;
+  }
+}
+.assessment-form {
+  padding: var(--spacing-30) 0 0;
+  &__field {
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    align-items: center;
+  }
+  &__label {
+    margin-bottom: var(--spacing-25);
+    display: flex;
+    align-items: center;
+  }
+  &__button {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: var(--spacing-20);
+    box-shadow: 0px -15px 20px -26px #000;
+  }
+  &_field {
+    &-row {
+      &_one {
+        flex-basis: 50%;
+      }
+    }
+
+    &-container {
+      display: flex;
+      gap: 1rem;
+    }
+  }
+
+  ::ng-deep {
+    .p-datepicker {
+      display: flex;
+      height: 43px;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    &_field {
+      &-container {
+        display: block;
+      }
+    }
+  }
+}

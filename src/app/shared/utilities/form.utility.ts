@@ -5,6 +5,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { Option } from '../models/app-state.models';
 
 // CONFIGS
 
@@ -29,14 +30,23 @@ export interface CustomTextareaConfig extends BaseCustomConfig {
 }
 // INPUT SELECT
 export interface CustomSelectConfig extends BaseCustomConfig {
+  options: Option[];
   maxlength?: number;
   matPrefix?: string;
   matSuffix?: string;
   readonly?: boolean;
 }
 
-// INPUT SELECT
+// TOGGLE SWITCH
 export interface CustomToggleSwitchConfig extends BaseCustomConfig {
+  maxlength?: number;
+  matPrefix?: string;
+  matSuffix?: string;
+  readonly?: boolean;
+}
+
+//INPUT TEXT CALENDER
+export interface CustomInputTextCalenderConfig extends BaseCustomConfig {
   maxlength?: number;
   matPrefix?: string;
   matSuffix?: string;
@@ -47,7 +57,8 @@ export type CustomFormControlConfig =
   | CustomTextInputConfig
   | CustomTextareaConfig
   | CustomSelectConfig
-  | CustomToggleSwitchConfig;
+  | CustomToggleSwitchConfig
+  | CustomInputTextCalenderConfig;
 // | CustomNumberInputConfig;
 
 export interface Metadata {
@@ -81,9 +92,9 @@ export abstract class FormEntity {
 export const getPropertyTypeMap = (obj: any): Record<string, string> => {
   const propertyTypeMap: Record<string, string> = {};
   const properties = Object.getOwnPropertyNames(obj).filter(
-    x => x !== 'metadata'
+    (x) => x !== 'metadata'
   );
-  properties.forEach(prop => {
+  properties.forEach((prop) => {
     const propertyValue = obj[prop];
     const propType = Array.isArray(propertyValue)
       ? 'array'

@@ -1,0 +1,33 @@
+.assessment-card__tooltip,
+.assessment-card__footer_rounds__status {
+  .p-tooltip-text {
+    background-color: var(--color-white) !important;
+    color: var(--color-black);
+    font-size: var(--font-size-small);
+  }
+  &.p-tooltip-bottom {
+    .p-tooltip-arrow {
+      border-bottom-color: var(--color-white) !important;
+    }
+  }
+  &.p-tooltip-top {
+    .p-tooltip-arrow {
+      border-top-color: var(--color-white) !important;
+    }
+  }
+  &.p-tooltip-left {
+    .p-tooltip-arrow {
+      border-left-color: var(--color-white) !important;
+    }
+  }
+  &.p-tooltip-right {
+    .p-tooltip-arrow {
+      border-right-color: var(--color-white) !important;
+    }
+  }
+
+  .p-tooltip-text,
+  .p-tooltip-arrow {
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1) !important;
+  }
+}

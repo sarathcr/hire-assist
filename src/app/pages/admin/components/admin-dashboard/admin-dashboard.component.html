@@ -1,0 +1,25 @@
+<div class="dashboard">
+  <div id="assessment" routerLink="/admin/assessment">
+    <app-dashboard-card
+      class="dashboard-card"
+      [title]="'Total Assessments'"
+      [count]="assessmentData && assessmentData.total"
+      [activeCount]="assessmentData && assessmentData.active"
+      [inactiveCount]="assessmentData && assessmentData.inactive"
+      [routerLink]="'/assessment'"
+    ></app-dashboard-card>
+  </div>
+
+  <app-dashboard-card
+    class="dashboard-card"
+    id="users"
+    [title]="'Total Users'"
+    [count]="usersData && usersData.total"
+  ></app-dashboard-card>
+  <app-dashboard-card
+    class="dashboard-card"
+    id="question-set"
+    [title]="'Total Question Sets'"
+    [count]="usersData && questionSetData.total"
+  ></app-dashboard-card>
+</div>

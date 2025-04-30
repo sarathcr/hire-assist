@@ -1,0 +1,15 @@
+.assessment-detail {
+  display: flex;
+  width: 100%;
+  gap: 1rem;
+  overflow: auto;
+  height: calc(100vh - 286px);
+  &__stepper {
+    flex-grow: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  app-stepper-skeleton {
+    flex-grow: 1;
+  }
+}

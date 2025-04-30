@@ -1,15 +1,24 @@
-@use './styles/main.scss';
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Josefin+Sans:ital,wght@0,100;0,300;0,600;1,400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+/* You can add global styles to this file, and also import other style files */
+@use "./styles/main.scss";
+@import url("https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Josefin+Sans:ital,wght@0,100;0,300;0,600;1,400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
 :root {
   // Color Variables
   --primary-color: #1565c0;
+  --secondary-color: #1e88e5;
   --color-white: #ffffff;
   --color-black: #000000;
   --color-grey: #736d6d;
+  --color-warn: #f97316;
+  --color-danger: #dc2626;
+  --color-success: #16a34a;
+  --color-seperator: #e0e0e0;
+  --color-dune: #333333;
+  --color-davy-grey: #555555;
+  --color-clover-green: #43a047;
   --background-light-grey: rgba(255, 255, 255, 0.5);
   --background-secondary: #2196f324;
-  --dashboard-main-background-color: #fbfbfb;
+  --dashboard-main-background-color: #f5f6fa;
   // Spacing Variables
   // rem
   --spacing-1-rem: 1rem;
@@ -18,13 +27,17 @@
   --spacing-10: 10px;
   --spacing-15: 15px;
   --spacing-20: 20px;
+  --spacing-25: 25px;
   --spacing-30: 30px;
   --spacing-50: 50px;
   --spacing-60: 60px;
   // Font Size
   --font-size-small: 12px;
   --font-size-base: 14px;
+  --font-size-18: 18px;
+  --font-size-20: 20px;
   --font-size-24: 24px;
+  --font-size-28: 28px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -44,7 +57,27 @@ html {
 
 * {
   box-sizing: border-box;
-  font-family: 'Poppins', serif;
+  font-family: "Poppins", serif;
   font-style: normal;
   // margin: 0;
+}
+
+.empty-data {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100% - 300px);
+  font-size: var(--font-size-base);
+  color: var(--color-grey);
+  background-color: var(--color-white);
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.p-0 {
+  padding: 0;
+}
+
+.m-0 {
+  margin: 0;
 }

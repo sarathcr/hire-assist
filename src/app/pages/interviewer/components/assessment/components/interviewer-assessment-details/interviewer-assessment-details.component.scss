@@ -1,0 +1,10 @@
+:host {
+  height: 100%;
+  position: relative;
+  ::ng-deep {
+    .table {
+      padding-bottom: 100px;
+      padding-top: 30px;
+    }
+  }
+}

@@ -1,0 +1,65 @@
+:host {
+  padding: var(--spacing-30);
+}
+.assessment-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  &__assessmentround {
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: var(--p-toolbar-padding);
+    background: var(--p-toolbar-background);
+    border: 1px solid var(--p-toolbar-border-color);
+    color: var(--p-toolbar-color);
+    border-radius: var(--p-toolbar-border-radius);
+    gap: var(--p-toolbar-gap);
+    &__button {
+      cursor: pointer;
+      cursor: pointer;
+      border: none;
+      background: none;
+      background-color: #1976d2;
+    }
+  }
+  &__stepper {
+    // display: inline-block;
+  }
+  &__stepper-horizontal {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 0;
+  }
+
+  &__step-item {
+    display: flex;
+    align-items: center;
+    background-color: #eef2f7;
+    padding: 10px 15px;
+    border-radius: 6px;
+    // cursor: pointer;
+    cursor: grab;
+    white-space: nowrap;
+    transition: transform 0.2s;
+  }
+
+  &__step-arrow {
+    font-size: 1.2rem;
+    margin-left: 10px;
+    margin-right: 10px;
+    color: #888;
+  }
+  &__candidate {
+    padding-top: var(--spacing-30);
+  }
+  &__button {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    //justify-content: flex-end;
+    gap: 1rem;
+  }
+}

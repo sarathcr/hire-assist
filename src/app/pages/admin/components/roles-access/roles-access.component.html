@@ -1,0 +1,17 @@
+<div class="roles-access">
+  <h1>Roles and Access</h1>
+  <app-table
+    [tableData]="data"
+    [columnsData]="columns"
+    heading="Manage Roles and Access"
+    [hasDelete]="true"
+    (create)="AddNewUser()"
+    (edit)="editUser($event)"
+    (delete)="deleteUser($event)"
+    (deleteSelected)="deleteSelectedUsers($event)"
+    (pageChangeAndSort)="onTablePayloadChange($event)"
+  >
+  </app-table>
+
+  <p-toast position="top-right" class="Toast"></p-toast>
+</div>

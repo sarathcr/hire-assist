@@ -1,0 +1,6 @@
+<div class="question">
+  <p class="question-text">{{ question.text }}</p>
+  @if (question.image) {
+    <img [src]="question.image" alt="Question" class="question-image" />
+  }
+</div>

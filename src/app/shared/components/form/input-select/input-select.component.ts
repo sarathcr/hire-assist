@@ -2,6 +2,7 @@ import {
   Component,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   SimpleChanges,
 } from '@angular/core';
@@ -12,14 +13,15 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { FloatLabelModule } from 'primeng/floatlabel';
-import { SelectModule, Select } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { Select } from 'primeng/select';
+import { Option } from '../../../models/app-state.models';
 import {
   CustomFormControlConfig,
   CustomSelectConfig,
-  CustomTextInputConfig,
 } from '../../../utilities/form.utility';
 import { BaseFormComponent } from '../base-form/base-form.component';
-import { InputTextModule } from 'primeng/inputtext';
+import { Subscription } from 'rxjs';
 
 export interface Options {
   name: string;
@@ -40,26 +42,41 @@ export interface Options {
 
 //extends BaseFormComponent
 //, OnChanges
-export class InputSelectComponent extends BaseFormComponent implements OnInit {
+export class InputSelectComponent
+  extends BaseFormComponent
+  implements OnInit, OnChanges, OnDestroy
+{
   @Input() formGroup!: FormGroup;
   @Input() config!: CustomFormControlConfig;
   @Input() dynamicSuffix!: string;
-
   @Input() selectOptions: Options[] | undefined;
-  selectedData: Options | undefined;
+  @Input() selectedData: string | undefined;
+
   public formControl!: FormControl<string>;
   public selectConfig!: CustomSelectConfig;
+  public options: Option[] = [];
+
+  private subs!: Subscription;
 
   ngOnInit(): void {
     this.selectConfig = this.config as CustomSelectConfig;
-
+    this.options = (this.config as CustomSelectConfig).options || [];
     this.formControl = this.formGroup.get(this.config.id) as FormControl;
   }
 
-  // Public
-  public onInputChange(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    const inputValue: string = inputElement.value;
-    this.formControl.setValue(inputValue);
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes && changes['config'] && changes['config'].currentValue) {
+      this.options = changes['config'].currentValue.options;
+    }
   }
+
+  ngOnDestroy(): void {
+    this.subs?.unsubscribe();
+  }
+
+  // PUBLIC
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // public onSelectionChange(event: ) {
+  //   // this.change.emit(event.value);
+  // }
 }

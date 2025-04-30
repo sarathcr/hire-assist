@@ -1,4 +1,5 @@
 export const environment = {
   isProduction: true,
-  baseUrl: 'https://jsonplaceholder.typicode.com/todos/1', // Dummy url
+  authorizationUrl: 'https://hireassistsecurity.azurewebsites.net',
+  assessmentUrl: 'https://hireassistassessment.azurewebsites.net',
 };

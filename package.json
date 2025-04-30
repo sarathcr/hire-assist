@@ -1,5 +1,5 @@
 {
-  "name": "hireassist",
+  "name": "hire-assist-fe",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -7,15 +7,11 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:hireassist": "node dist/hireassist/server/server.mjs",
-    "lint": "ng lint",
-    "storybook": "ng run hireassist:storybook",
-    "build-storybook": "ng run hireassist:build-storybook"
+    "serve:ssr:hire-assist-fe": "node dist/hire-assist-fe/server/server.mjs"
   },
   "private": true,
   "dependencies": {
     "@angular/animations": "^19.0.0",
-    "@angular/cdk": "^19.0.3",
     "@angular/common": "^19.0.0",
     "@angular/compiler": "^19.0.0",
     "@angular/core": "^19.0.0",
@@ -24,36 +20,28 @@
     "@angular/platform-browser-dynamic": "^19.0.0",
     "@angular/platform-server": "^19.0.0",
     "@angular/router": "^19.0.0",
-    "@angular/service-worker": "^19.0.0",
-    "@angular/ssr": "^19.0.2",
+    "@angular/ssr": "^19.0.7",
     "@primeng/themes": "^19.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "@typescript-eslint/utils": "^8.28.0",
     "express": "^4.18.2",
     "lodash": "^4.17.21",
-    "ngx-bootstrap": "^19.0.1",
+    "ngx-countdown": "^19.0.0",
     "node-forge": "^1.3.1",
-    "primeflex": "^3.3.1",
     "primeicons": "^7.0.0",
-    "primeng": "^19.0.5",
+    "primeng": "^19.0.9",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^19.0.2",
-    "@angular/cli": "^19.0.2",
+    "@angular-devkit/build-angular": "^19.0.7",
+    "@angular/cli": "^19.0.7",
     "@angular/compiler-cli": "^19.0.0",
-    "@chromatic-com/storybook": "^3.2.3",
-    "@compodoc/compodoc": "^1.1.26",
-    "@storybook/addon-docs": "^8.4.7",
-    "@storybook/addon-essentials": "^8.4.7",
-    "@storybook/addon-interactions": "^8.4.7",
-    "@storybook/addon-onboarding": "^8.4.7",
-    "@storybook/angular": "^8.4.7",
-    "@storybook/blocks": "^8.4.7",
-    "@storybook/test": "^8.4.7",
     "@types/express": "^4.17.17",
     "@types/jasmine": "~5.1.0",
-    "@types/lodash": "^4.17.14",
+    "@types/lodash": "^4.17.16",
     "@types/node": "^18.18.0",
     "angular-eslint": "19.0.0",
     "eslint": "^9.15.0",
@@ -68,13 +56,7 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "prettier": "^3.4.2",
-    "storybook": "^8.4.7",
     "typescript": "~5.6.2",
     "typescript-eslint": "8.16.0"
-  },
-  "eslintConfig": {
-    "extends": [
-      "plugin:storybook/recommended"
-    ]
   }
 }

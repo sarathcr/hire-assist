@@ -1,0 +1,32 @@
+<div class="round-form">
+  <form [formGroup]="fGroup">
+    <div class="round-form_field-container">
+      <app-input-text
+        [size]="'small'"
+        type="text"
+        class="round-form_field-col_one"
+        [formGroup]="fGroup"
+        [config]="configMap['name']"
+      ></app-input-text>
+      <app-input-text
+        [size]="'small'"
+        type="text"
+        class="round-form_field-col_one"
+        [formGroup]="fGroup"
+        [config]="configMap['sequence']"
+      ></app-input-text>
+    </div>
+    <div class="round-form__button">
+      <app-button
+        [buttonLabel]="'Cancel'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"
+      ></app-button>
+      <app-button
+        [buttonLabel]="'Submit'"
+        [disabled]="!fGroup.valid"
+        (btnClick)="onSubmit()"
+      ></app-button>
+    </div>
+  </form>
+</div>

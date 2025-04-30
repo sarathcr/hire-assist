@@ -2,15 +2,17 @@
   <div class="dialog-footer__btn-wrapper">
     @if (data.isChoice) {
       <app-button
-        buttonLabel="I Quit"
+        [buttonLabel]="data.cancelButtonText"
         [buttonVariant]="'outlined'"
-        (btnClick)="onClose()"></app-button>
+        (btnClick)="onClose()"
+      ></app-button>
     }
   </div>
 
   <div class="dialog-footer__btn-wrapper">
     <app-button
       [buttonLabel]="data.acceptButtonText"
-      (btnClick)="onSubmit()"></app-button>
+      (btnClick)="onSubmit()"
+    ></app-button>
   </div>
 </footer>

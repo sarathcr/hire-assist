@@ -1,0 +1,32 @@
+<div class="schedule-interview">
+  <form [formGroup]="fGroup">
+
+    <div class="dialog__content">
+  <h4>Selected Candidate IDs</h4>
+
+  <p-chip *ngFor="let id of selectedCandidateIds; let i = index"
+          [label]="id"
+          [removable]="true"
+          (onRemove)="removeCandidate(i)">
+  </p-chip>
+
+</div>
+    <app-input-text-calender
+      [formGroup]="fGroup"
+      [config]="configMap['scheduleDate']"
+      [showTime]="true"
+    ></app-input-text-calender>
+  </form>
+  <footer class="dialog-footer">
+    <div class="dialog-footer__btn-wrapper">
+      <app-button
+        buttonLabel="Cancel"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"
+      ></app-button>
+    </div>
+    <div class="dialog-footer__btn-wrapper">
+      <app-button buttonLabel="Schedule" (btnClick)="onSchedule()"></app-button>
+    </div>
+  </footer>
+</div>

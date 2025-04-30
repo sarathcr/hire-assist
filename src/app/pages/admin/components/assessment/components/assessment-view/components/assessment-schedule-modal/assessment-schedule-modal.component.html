@@ -1,0 +1,29 @@
+<div class="assessment-schedule">
+  <form [formGroup]="fGroup">
+    <app-input-multiselect
+      class="assessment-schedule_field-col_one"
+      [formGroup]="fGroup"
+      [config]="configMap['round']"
+      [selectedItems]=""
+    />
+    <div>
+      <app-button
+        class="assessment-schedule__add"
+        [buttonLabel]="'New'"
+        (btnClick)="openAddRoundModal()"
+      ></app-button>
+    </div>
+    <div class="assessment-schedule__button">
+      <app-button
+        [buttonLabel]="'Cancel'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"
+      ></app-button>
+      <app-button
+        [buttonLabel]="'Submit'"
+        [disabled]="!fGroup.valid"
+        (btnClick)="onSubmit()"
+      ></app-button>
+    </div>
+  </form>
+</div>

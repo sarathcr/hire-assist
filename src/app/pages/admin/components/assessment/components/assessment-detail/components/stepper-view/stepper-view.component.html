@@ -1,0 +1,28 @@
+<app-table
+  [tableData]="data"
+  [columnsData]="columns"
+  heading="Candidate List"
+  [hasAdd]="false"
+  [hasDelete]="false"
+  [hideToolbar]="true"
+  [customButton]="true"
+  [customButtonLabel]="'Schedule'"
+  [hasFilter]="true"
+  [hasView]="true"
+  [hasRowEdit]="false"
+  (selectedIds)="getSelectedId($event)"
+  (delete)="deleteCandidate($event)"
+  (view)="onView($event)"
+  (pageChangeAndSort)="onTablePayloadChange($event)"
+>
+</app-table>
+
+<div class="stepper-view__btn-grp">
+  <app-button
+    [buttonLabel]="'Complete'"
+    [buttonVariant]="'outlined'"
+    (btnClick)="handleCompleteAssessmentRound()"
+  ></app-button>
+</div>
+
+<p-toast position="top-right" class="Toast"></p-toast>

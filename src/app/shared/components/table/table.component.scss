@@ -1,0 +1,33 @@
+.table {
+  // overflow-x: auto;
+  // overflow-y: auto; // optional, if you don't want vertical scroll here
+  // width: 100%;
+  // height: 100%;
+  // min-width: 100%;
+  // display: block; // Ensure it's scrollable
+  ::ng-deep {
+    .p-toolbar-start {
+      display: flex;
+      gap: 1rem;
+    }
+    .p-table-wrapper {
+      min-width: 1200px;
+    }
+  }
+  &_skeleton {
+    min-width: 100%;
+  }
+  &__expanded {
+    &__correctAnswer {
+      color: rgb(8, 135, 8);
+      width: fit-content;
+      font-weight: bold;
+    }
+    &__optionList {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      list-style-type: lower-alpha;
+    }
+  }
+}
