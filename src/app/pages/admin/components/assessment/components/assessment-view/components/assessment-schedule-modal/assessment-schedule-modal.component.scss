@@ -1,0 +1,18 @@
+:host {
+  padding: var(--spacing-30);
+}
+.assessment-schedule {
+  &__button {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  &_field {
+    &-row {
+      &_one {
+        flex-basis: 50%;
+      }
+    }
+  }
+}

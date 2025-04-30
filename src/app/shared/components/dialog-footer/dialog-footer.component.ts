@@ -2,6 +2,7 @@ import { Component, OnInit, output } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonComponent } from '../button/button.component';
 import { Router } from '@angular/router';
+import { DialogData } from '../../models/dialog.models';
 
 @Component({
   selector: 'app-dialog-footer',
@@ -10,14 +11,14 @@ import { Router } from '@angular/router';
   styleUrl: './dialog-footer.component.scss',
 })
 export class DialogFooterComponent implements OnInit {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public data: any;
+  public data!: DialogData;
+
   public btnSubmit = output();
 
   constructor(
     private ref: DynamicDialogRef,
     private router: Router,
-    public config: DynamicDialogConfig
+    public config: DynamicDialogConfig,
   ) {}
 
   ngOnInit(): void {
@@ -30,6 +31,6 @@ export class DialogFooterComponent implements OnInit {
 
   public onClose() {
     this.ref.close();
-    this.router.navigate(['/candidate/thank-you']);
+    //this.router.navigate(['/candidate/thank-you']);
   }
 }

@@ -1,0 +1,40 @@
+:host {
+  padding: var(--spacing-30);
+}
+::ng-deep {
+  .p-dialog-content {
+    overflow-y: visible;
+  }
+}
+.round-form {
+  padding: var(--spacing-10) 0 0;
+  &__field {
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    align-items: center;
+  }
+  &__label {
+    margin-bottom: var(--spacing-25);
+    display: flex;
+    align-items: center;
+  }
+  &__button {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  &_field {
+    &-row {
+      &_one {
+        flex-basis: 50%;
+      }
+    }
+
+    &-container {
+      display: flex;
+      gap: 1rem;
+    }
+  }
+}

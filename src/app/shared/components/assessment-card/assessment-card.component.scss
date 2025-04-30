@@ -1,0 +1,149 @@
+.assessment-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--color-white);
+  padding: var(--spacing-15);
+  margin-top: var(--spacing-15);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  border-left: 5px solid var(--secondary-color);
+  height: 100%;
+  cursor: pointer;
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  &_skeleton {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    column-gap: var(--spacing-15);
+    row-gap: var(--spacing-15);
+    justify-content: center;
+    max-width: 1000px;
+  }
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  &__over-title {
+    font-size: var(--font-size-small);
+    color: var(--color-grey);
+  }
+  &__actions {
+    z-index: 9;
+    ::ng-deep {
+      .p-speeddial {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
+      .p-button-icon-only {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+      }
+      .p-button-icon {
+        font-size: var(--font-size-small);
+      }
+    }
+  }
+  &__title {
+    font-size: var(--font-size-base);
+    color: var(--color-dune);
+    margin-bottom: var(--spacing-15);
+    font-weight: 600;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  &__progress {
+    margin-bottom: var(--spacing-15);
+    &__title {
+      font-size: 10px;
+      color: var(--color-grey);
+      margin-bottom: var(--spacing-5);
+      font-weight: 500;
+    }
+    ::ng-deep {
+      .p-progressbar {
+        height: 0.8rem !important;
+      }
+      .p-progressbar-label {
+        font-size: 10px !important;
+      }
+    }
+  }
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--color-black);
+    z-index: 9;
+
+    &_rounds,
+    &_users {
+      font-size: var(--font-size-small);
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    &_users {
+      &__avatar {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background-color: var(--p-progressbar-background);
+      }
+    }
+    &_rounds,
+    &_users {
+      &__empty,
+      &__list {
+        font-size: var(--font-size-small);
+        margin: 0;
+        overflow-y: auto;
+      }
+      &__item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      &__status {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        align-items: center;
+        background-color: var(--p-progressbar-background);
+        &_completed {
+          background-color: var(--color-success);
+        }
+        &_skip {
+          background-color: var(--color-warn);
+        }
+        &_pending {
+          background-color: var(--p-progressbar-background);
+        }
+      }
+      &__list {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.7rem;
+      }
+    }
+  }
+}
+::ngdeep {
+  .p-popover {
+    border: 10px;
+  }
+}

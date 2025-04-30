@@ -1,11 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectorRef,
-  Component,
-  Input,
-  input,
-  output,
-} from '@angular/core';
+import { Component, Input, input, output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 export type ButtonVariant = 'outlined' | 'text';
 export type Severity =
@@ -31,9 +25,9 @@ export interface ButtonConfig {
   styleUrl: './button.component.scss',
 })
 export class ButtonComponent {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public btnClick = output<any>();
+  public btnClick = output<number | null>();
   public buttonLabel = input();
+  public icon = input<string>();
   public buttonSize = input();
   public buttonWidth = input();
   public isLoading = input();
@@ -41,14 +35,12 @@ export class ButtonComponent {
   public buttonConfig = input<ButtonConfig>();
   public buttonSeverity = input<Severity>();
 
-  @Input() saveDisabled = false;
+  @Input() disabled = false;
   @Input() btnRounded = false;
-
-  constructor(private cdr: ChangeDetectorRef) {}
 
   // Public Events
   public onButtonClick(buttonId?: number): void {
-    if (!this.saveDisabled) {
+    if (!this.disabled) {
       this.btnClick.emit(buttonId ?? null);
     }
   }

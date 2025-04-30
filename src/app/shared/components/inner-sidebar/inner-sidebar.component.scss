@@ -1,0 +1,67 @@
+.inner-sidebar {
+  $root: &;
+  padding-right: var(--spacing-15);
+  position: relative;
+  height: 100%;
+  border-right: 3px solid var(--color-seperator);
+  transition: width 0.3s ease-in-out;
+  ::ng-deep {
+    .p-menu {
+      height: 100%;
+      min-width: unset;
+    }
+    .p-menu-list {
+      padding-top: var(--spacing-20);
+    }
+    .p-menu-item-link {
+      font-size: var(--font-size-base);
+      &.active {
+        background: #f1f5f9;
+      }
+    }
+  }
+  &__btn {
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    font-size: var(--font-size-base);
+    color: var(--primary-color);
+    transition: right 0.3s ease-in-out;
+    &_close {
+      right: 30px;
+    }
+    &_skeleton {
+      margin-bottom: var(--spacing-20);
+    }
+  }
+  &_expand {
+    width: 200px; // Adjust based on expanded size
+    transition: width 0.3s ease-in-out;
+  }
+  &_collapse {
+    width: 75px;
+    transition: width 0.3s ease-in-out;
+    ::ng-deep {
+      .p-menu {
+        min-width: 100%;
+      }
+      .p-menu-item-link {
+        span:last-child {
+          display: none;
+        }
+      }
+    }
+
+    #{$root}__btn_bar {
+      right: 40px;
+      transition: right 0.3s ease-in-out;
+    }
+  }
+  &_skeleton {
+    ::ng-deep {
+      .p-menu-list {
+        margin-top: var(--spacing-20);
+      }
+    }
+  }
+}

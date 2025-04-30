@@ -1,5 +1,6 @@
 <p-button
   class="btn"
+  [icon]="`${icon()}`"
   [loading]="isLoading()"
   [variant]="buttonVariant()"
   [ngClass]="{
@@ -11,4 +12,5 @@
   label="{{ buttonLabel() }}"
   (click)="onButtonClick(buttonConfig()?.id)"
   [rounded]="btnRounded"
-  [disabled]="saveDisabled" />
+  [disabled]="disabled"
+/>

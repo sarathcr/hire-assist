@@ -1,0 +1,38 @@
+<div class="dialog">
+  <div class="dialog__header">
+    <h2>{{ roleAccessData?.title }}</h2>
+  </div>
+  <form [formGroup]="fGroup">
+    <app-input-text
+      [formGroup]="fGroup"
+      type="text"
+      [config]="configMap['name']"
+      [ariaMultiSelectable]=""
+    ></app-input-text>
+
+    <app-input-text
+      [formGroup]="fGroup"
+      type="text"
+      [config]="configMap['email']"
+    ></app-input-text>
+  </form>
+  <app-input-select [formGroup]="fGroup" [config]="configMap['department']" />
+  <div></div>
+  <app-input-multiselect
+    [formGroup]="fGroup"
+    [config]="configMap['roles']"
+    [selectedItems]=""
+  />
+</div>
+<footer class="dialog-footer">
+  <div class="dialog-footer__btn-wrapper">
+    <app-button
+      buttonLabel="Cancel"
+      [buttonVariant]="'outlined'"
+      (btnClick)="onClose()"
+    ></app-button>
+  </div>
+  <div class="dialog-footer__btn-wrapper">
+    <app-button buttonLabel="Submit" (btnClick)="onSubmit()"></app-button>
+  </div>
+</footer>

@@ -2,11 +2,12 @@
   <label for="over_label">{{ customToggleSwitchConfig.labelKey }}</label>
   <p-floatlabel variant="on">
     <p-toggleswitch
-      [(ngModel)]="checked"
-      [ngModelOptions]="{ standalone: true }"
       id="over_label"
       pToggleswitch
-      (input)="onInputChange($event)">
+      [formControlName]="customToggleSwitchConfig.id"
+      [trueValue]="true"
+      [falseValue]="false"
+    >
       <ng-template #handle let-checked="checked">
         <i ngClass="['!text-xs', 'pi', checked ? 'pi-check' : 'pi-times']"></i>
       </ng-template>

@@ -1,0 +1,15 @@
+<h1>Active Tests</h1>
+<div class="card-wrapper">
+  @for (assessment of data; track assessment) {
+    <app-card (startTest)="onAssessmentStart(assessment)">
+      <p>
+        Open position : <span>{{ assessment.assessmentName }}</span>
+      </p>
+      <p>Mode : <span>Online</span></p>
+      <p>No. of Questions : <span>30</span></p>
+      <p>Time : <span>10:30 AM - 11.30 AM</span></p>
+    </app-card>
+  } @empty {
+    <p>No active tests found.</p>
+  }
+</div>

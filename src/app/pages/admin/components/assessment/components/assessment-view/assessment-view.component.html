@@ -1,0 +1,59 @@
+<div class="assessment-schedule">
+  <h1>Assessment Schedule</h1>
+  <div class="assessment-schedule__assessmentround">
+    <h2>Rounds:</h2>
+    <div class="assessment-schedule__stepper">
+      <div
+        cdkDropList
+        [cdkDropListData]="submittedData"
+        (cdkDropListDropped)="onDrop($event)"
+        class="assessment-schedule__stepper-horizontal"
+        cdkDropListOrientation="horizontal"
+      >
+        @for (data of submittedData; let idx = $index; track data) {
+          <div class="assessment-schedule__step-item" cdkDrag>
+            {{ data.name || data }}
+            @if (idx < submittedData.length - 1) {
+              <ng-container>
+                <i
+                  class="pi pi-arrow-right assessment-schedule__step-arrow"
+                ></i>
+              </ng-container>
+            }
+          </div>
+        }
+      </div>
+      <div class="assessment-schedule__button">
+        <app-button
+          [buttonLabel]="'AssessmentRound'"
+          (btnClick)="onNavigateclick()"
+        ></app-button>
+        <app-button
+          [buttonLabel]="'save'"
+          [disabled]="!submittedData || submittedData.length === 0"
+          (btnClick)="onAdd()"
+        ></app-button>
+      </div>
+    </div>
+    <div class="assessment-schedule__candidate">
+      <app-table
+        [tableData]="data"
+        [columnsData]="columns"
+        heading="Manage Candidates and Batches"
+        [importButton]="true"
+        [hasDelete]="false"
+        [hasScheduleButton]="true"
+        [hasAddButton]="true"
+        (import)="importCandidates($event)"
+        (create)="addNewCandidate()"
+        (delete)="deleteCandidate($event)"
+        (deleteSelected)="deleteSelectedCandidates($event)"
+        (batchSelected)="createBatchSelectedCandidates($event)"
+        (Schedule)="scheduleAssessment($event)"
+        (pageChangeAndSort)="onTablePayloadChange($event)"
+      ></app-table>
+
+      <p-toast position="top-right" class="Toast"></p-toast>
+    </div>
+  </div>
+</div>

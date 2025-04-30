@@ -1,6 +1,7 @@
 import { Component, OnInit, output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogData } from '../../models/dialog.models';
 
 @Component({
   selector: 'app-dialog',
@@ -10,19 +11,21 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
   styleUrl: './dialog.component.scss',
 })
 export class DialogComponent implements OnInit {
-  // Public Events
   public btnSubmit = output();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public data: any;
+
+  public data!: DialogData;
+
   constructor(
     private ref: DynamicDialogRef,
-    public config: DynamicDialogConfig
+    public config: DynamicDialogConfig,
   ) {}
 
+  // LifeCycle Hooks
   ngOnInit(): void {
     this.data = this.config.data;
   }
 
+  // Public Events
   public onSubmit() {
     this.ref.close(false);
   }

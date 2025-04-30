@@ -1,31 +1,33 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, input } from '@angular/core';
+import { Component, computed, inject, Input } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
 import { MenuModule } from 'primeng/menu';
+import { PanelMenuModule } from 'primeng/panelmenu';
 import { RippleModule } from 'primeng/ripple';
 import { ToggleMenuService } from '../../services/toggle-menu.service';
 
 @Component({
   selector: 'app-side-nav',
-  imports: [MenuModule, BadgeModule, RippleModule, AvatarModule, CommonModule],
+  imports: [
+    MenuModule,
+    BadgeModule,
+    RippleModule,
+    AvatarModule,
+    CommonModule,
+    PanelMenuModule,
+  ],
   templateUrl: './side-nav.component.html',
   styleUrl: './side-nav.component.scss',
 })
 export class SideNavComponent {
-  items: MenuItem[] | undefined;
-  toggleMenu = inject(ToggleMenuService);
+  public items: MenuItem[] | undefined;
+  public toggleMenu = inject(ToggleMenuService);
   public showMenu = computed(() => this.toggleMenu.getToggleMenu());
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public navLinks: any = input();
+  @Input() public navLinks: MenuItem[] | undefined;
 
-  constructor() {
-    effect(() => {
-      console.log(this.navLinks());
-    });
-  }
-
+  // Public methods
   public closeToggleMenu() {
     this.toggleMenu.setToggleMenu(false);
   }

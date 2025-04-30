@@ -1,0 +1,100 @@
+@if (data()) {
+  <div class="assessment-card">
+    <div class="assessment-card__header">
+      <span class="assessment-card__over-title">{{ lastUpdatedInfo }}</span>
+    </div>
+    @if (showToggleButton()) {
+      <p-speeddial
+        [model]="actionItems"
+        direction="left"
+        mask
+        class="assessment-card__actions"
+      >
+        <ng-template #button let-toggleCallback="toggleCallback">
+          <p-button
+            (click)="onActionButtonClick($event, toggleCallback)"
+            hideOnClickOutside="false"
+            icon="pi pi-ellipsis-v"
+          ></p-button>
+        </ng-template>
+      </p-speeddial>
+    }
+
+    <div class="assessment-card__body">
+      <h1 class="assessment-card__title">{{ data()?.name }}</h1>
+      <div class="assessment-card__progress">
+        <div class="assessment-card__progress__title">PROGRESS</div>
+        <p-progressbar
+          [value]="data()?.activeRoundsPercentage"
+          [color]="getProgressColor(data()?.activeRoundsPercentage)"
+        />
+      </div>
+    </div>
+
+    <div class="assessment-card__footer">
+      <div
+        class="assessment-card__footer_rounds"
+        tabindex="0"
+        (click)="togglePopover(opr, $event)"
+        (keydown.enter)="togglePopover(opr, $event)"
+        (keydown.space)="togglePopover(opr, $event)"
+        role="button"
+        aria-label="Toggle rounds"
+      >
+        <span class="pi pi-sitemap"></span>
+        <span>{{ data()?.rounds?.length ?? 0 }}</span>
+        <p-popover #opr>
+          @if (data()?.rounds?.length) {
+            <ul class="assessment-card__footer_rounds__list">
+              @for (rounds of data()?.rounds; track rounds) {
+                <li class="assessment-card__footer_rounds__item">
+                  <span
+                    class="assessment-card__footer_rounds__status"
+                    tooltipStyleClass="assessment-card__footer_rounds__status"
+                    pTooltip="{{ rounds.roundStatus }}"
+                    tooltipPosition="top"
+                    [ngClass]=" rounds.roundStatus ? `assessment-card__footer_rounds__status_${rounds.roundStatus.toLowerCase()}`:''"
+                  ></span
+                  ><span>{{ rounds.roundName }}</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="assessment-card__footer_rounds__empty">
+              No rounds defined yet
+            </p>
+          }
+        </p-popover>
+      </div>
+
+      <div
+        class="assessment-card__footer_users"
+        tabindex="0"
+        (click)="togglePopover(op, $event)"
+        (keydown.enter)="togglePopover(op, $event)"
+        (keydown.space)="togglePopover(op, $event)"
+        role="button"
+        aria-label="Toggle users"
+      >
+        <span class="pi pi-users"></span>
+        <span>{{ data()?.users?.length ?? 0 }}</span>
+        <p-popover [styleClass]="'assessment-card__popover'" #op>
+          @if (data()?.users?.length) {
+            <ul class="assessment-card__footer_users__list">
+              @for (user of data()?.users; track user) {
+                <li class="assessment-card__footer_users__item">
+                  <span class="assessment-card__footer_users__avatar"></span
+                  ><span>{{ user.userId }}</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="assessment-card__footer_rounds__empty">
+              No users assigned yet
+            </p>
+          }
+        </p-popover>
+      </div>
+    </div>
+  </div>
+}

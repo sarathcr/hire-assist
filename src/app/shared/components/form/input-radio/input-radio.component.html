@@ -1,16 +1,18 @@
 <div class="field-checkbox">
   <p-radiobutton
-    [inputId]="option.id.toString()"
-    [name]="option.text"
+    [inputId]="'option-' + option.id"
+    [name]="option.optionText"
     [value]="option.id"
     [(ngModel)]="selectedValue"
     (ngModelChange)="onValueChange($event)"></p-radiobutton>
-
-  @if (option.text) {
+  @if (option.optionText) {
     <label [for]="option.id" class="ml-2">
-      {{ option.text }}
+      {{ option.optionText }}
     </label>
   } @else {
-    <img [src]="option.image" alt="option image" class="option-image" />
+    <img
+      [src]="option.hasAttachments"
+      alt="option image"
+      class="option-image" />
   }
 </div>

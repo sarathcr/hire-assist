@@ -1,0 +1,23 @@
+// :host {
+//   height: 100%;
+//   position: relative;
+//   ::ng-deep {
+//     .table {
+//       padding-bottom: 100px;
+//     }
+//   }
+// }
+.stepper-view {
+  &__btn-grp {
+    position: absolute;
+    bottom: 0;
+    padding: 20px;
+    left: 0;
+    background: var(--color-white);
+    right: 0;
+    box-shadow: 0px -15px 20px -26px #000;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+}

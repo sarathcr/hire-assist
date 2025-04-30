@@ -1,0 +1,55 @@
+/* Individual Card */
+.dashboard-card {
+  background: var(--color-white);
+  padding: var(--spacing-20);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  border-left: 5px solid var(--secondary-color);
+  height: 100%;
+  cursor: pointer;
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+  &__title {
+    font-size: var(--font-size-18);
+    color: var(--color-dune);
+    margin-bottom: var(--spacing-10);
+    &_skeleton {
+      margin-bottom: 1.2rem;
+    }
+  }
+  &__count {
+    font-size: var(--font-size-28);
+    font-weight: bold;
+    color: var(--secondary-color);
+    margin: var(--spacing-5) 0;
+  }
+  &__status {
+    display: flex;
+    justify-content: flex-start;
+    gap: 1rem;
+    margin-top: var(--spacing-10);
+    font-size: var(--font-size-base);
+    color: var(--color-davy-grey);
+    &_skeleton {
+      margin-top: 1.2rem;
+    }
+  }
+  &__active {
+    color: var(--color-clover-green);
+    font-weight: bold;
+  }
+  &__inactive {
+    color: var(--color-danger);
+    font-weight: bold;
+  }
+  @media (max-width: 768px) {
+    .dashboard-card {
+      grid-template-columns: 1fr;
+    }
+  }
+}

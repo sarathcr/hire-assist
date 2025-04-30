@@ -1,0 +1,24 @@
+<h1>
+  @if (data) {
+    <p>{{ data.name }}</p>
+  } @else {
+    <p-skeleton width="18rem" height="2rem" />
+  }
+</h1>
+@if (stepperConfig && sidebarConfig) {
+  <div class="assessment-detail">
+    @if (sidebarConfig) {
+      <app-inner-sidebar [items]="sidebarConfig"></app-inner-sidebar>
+    } @else {
+      <app-inner-sidebar-skeleton></app-inner-sidebar-skeleton>
+    }
+
+    <app-stepper
+      class="assessment-detail__stepper"
+      [config]="stepperConfig"
+      (stageChange)="onStepperChange($event)"
+    ></app-stepper>
+  </div>
+} @else {
+  <app-stepper-skeleton></app-stepper-skeleton>
+}

@@ -1,0 +1,24 @@
+:host {
+  width: 70%;
+  @media (max-width: 768px) {
+    width: unset;
+  }
+}
+.login {
+  text-align: center;
+  &__title {
+    color: var(--color-grey);
+  }
+  &__sub-title,
+  &__title {
+    margin-top: 0;
+  }
+  @media (max-width: 768px) {
+    background: var(--color-white);
+    border-radius: var(--spacing-20);
+    padding: var(--spacing-30);
+    &__title {
+      color: var(--color-black);
+    }
+  }
+}

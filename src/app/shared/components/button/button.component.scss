@@ -4,6 +4,7 @@
 
 .btn {
   display: block;
+
   &-large {
     width: 100%;
     height: 56px;
@@ -12,7 +13,7 @@
     ::ng-deep {
       .p-button {
         width: 100%;
-        height: 50px;
+        // height: 50px;
       }
     }
   }

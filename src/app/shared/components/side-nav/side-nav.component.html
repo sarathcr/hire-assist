@@ -9,11 +9,13 @@
       (keydown.enter)="closeToggleMenu()"
       (keydown.space)="closeToggleMenu()"
       aria-label="Close menu"
-      role="button">
+      role="button"
+    >
     </span>
   </div>
 
   <nav class="sidebar__nav">
-    <p-menu [model]="navLinks()"></p-menu>
+    <p-panelmenu [model]="navLinks"></p-panelmenu>
+    <!-- <p-menu [model]="navLinks()"></p-menu> -->
   </nav>
 </aside>

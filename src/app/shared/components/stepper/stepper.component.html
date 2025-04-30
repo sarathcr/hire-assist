@@ -1,0 +1,22 @@
+<div class="stepper">
+  <p-stepper [value]="activeStepValue" class="basis-[50rem]" >
+    <p-step-list>
+      @for (step of config; track step) {
+        <p-step [value]="step.value"   (click)="onStepChange(step.value)"><p-step-title [ngStyle]="{ 'color': step.color }">{{
+          step.header
+        }}</p-step-title></p-step>
+      }
+    </p-step-list>
+    <p-step-panels>
+      @for (step of config; track step) {
+        <p-step-panel [value]="step.value">
+          <ng-template #content let-activateCallback="activateCallback">
+            <ng-container *ngIf="activeStepValue === step.value">
+              <ng-container *ngComponentOutlet="step.component"></ng-container>
+            </ng-container>
+          </ng-template>
+        </p-step-panel>
+      }
+    </p-step-panels>
+  </p-stepper>
+</div>

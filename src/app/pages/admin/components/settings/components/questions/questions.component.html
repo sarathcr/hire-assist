@@ -1,0 +1,15 @@
+<div class="questions">
+  <h1>Questions</h1>
+  <app-table
+    [tableData]="data"
+    [columnsData]="columns"
+    heading="Questions"
+    [importButton]="false"
+    [hasDelete]="false"
+    (create)="openAddQuestionModal()"
+    (delete)="deleteQuestion($event)"
+    (pageChangeAndSort)="onTablePayloadChange($event)"
+  ></app-table>
+
+  <p-toast position="top-right" class="Toast"></p-toast>
+</div>

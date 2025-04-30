@@ -1,0 +1,15 @@
+<div class="batch">
+  <h1>Batches</h1>
+  <app-table
+    [tableData]="data"
+    [columnsData]="columns"
+    heading="Manage Batches"
+    [hasDelete]="false"
+    (create)="addNewBatch()"
+    (edit)="editBatch($event)"
+    (delete)="deleteBatch($event)"
+    (pageChangeAndSort)="onTablePayloadChange($event)"
+  >
+  </app-table>
+  <p-toast position="top-right" class="Toast"></p-toast>
+</div>

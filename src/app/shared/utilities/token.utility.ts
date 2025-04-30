@@ -51,7 +51,7 @@ export const isTokenExpired = (token: string): boolean => {
 // };
 export const getTokenPayloadData = (
   token: string,
-  keyAccessor: TokenField
+  keyAccessor: TokenField,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any => {
   if (!token) {
@@ -63,10 +63,10 @@ export const getTokenPayloadData = (
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/'); // Replace Base64Url characters
     const jsonPayload = decodeURIComponent(
       Array.prototype.map
-        .call(window && window.atob(base64), c => {
+        .call(window && window.atob(base64), (c) => {
           return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         })
-        .join('')
+        .join(''),
     );
     const parsedPayload = JSON.parse(jsonPayload); // Parse the payload as JSON
 
@@ -90,7 +90,7 @@ export const getTokenPayloadData = (
 
 export const getTokenNumericPayloadData = (
   token: string,
-  keyAccessor: TokenField
+  keyAccessor: TokenField,
 ): number => {
   return token
     ? JSON.parse(window && window.atob(token.split('.')[1]))[keyAccessor]

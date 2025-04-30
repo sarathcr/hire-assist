@@ -1,0 +1,19 @@
+.timer {
+  font-weight: 700;
+  font-size: var(--font-size-24);
+  color: var(--color-success);
+  &_half-time {
+    ::ng-deep {
+      .count-down {
+        color: var(--color-warn);
+      }
+    }
+  }
+  &_almost-over {
+    ::ng-deep {
+      .count-down {
+        color: var(--color-danger);
+      }
+    }
+  }
+}

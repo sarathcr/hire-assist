@@ -1,0 +1,62 @@
+<div class="profile-container">
+  <div class="profile-banner"></div>
+
+  <div class="profile-content">
+    <div class="profile-picture">
+      <img [src]="profileImage" [alt]="imageAlt" class="image-preview" />
+      <button
+        pButton
+        pRipple
+        type="button"
+        class="edit-icon"
+        (click)="fileInput.click()"
+      >
+        <i class="pi pi-pencil"></i>
+      </button>
+
+      <input
+        #fileInput
+        type="file"
+        (change)="onFileSelected($event)"
+        accept="image/*"
+        class="file-input"
+      />
+    </div>
+  </div>
+  <div class="profile-edit">
+    <div class="fields">
+      <form [formGroup]="fGroup">
+        <div class="row1">
+          <app-input-text-iftalabel
+            [formGroup]="fGroup"
+            [config]="configMap['name']"
+          ></app-input-text-iftalabel>
+
+          <app-input-text-iftalabel
+            [formGroup]="fGroup"
+            [config]="configMap['email']"
+          ></app-input-text-iftalabel>
+        </div>
+      </form>
+
+      <form [formGroup]="fGroup">
+        <div class="fields-rem">
+          <app-input-text-iftalabel
+            [formGroup]="fGroup"
+            [config]="configMap['role']"
+          >
+          </app-input-text-iftalabel>
+        
+        </div>
+      </form>
+    </div>
+    <p-toast position="top-center" class="Toast"></p-toast>
+     
+  </div>
+  <div class="Profile-detail">
+  <app-stepper 
+      [config]="stepperConfig"
+     
+    ></app-stepper>
+  </div>
+</div>

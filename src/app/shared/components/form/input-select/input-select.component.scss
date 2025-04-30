@@ -1,23 +1,27 @@
-.input-input-select {
-    margin-bottom: 25px;
-    position: relative;
-    .p-select {
-      width: 100%;
-        }
-    .p-floatlabel-on:not(input.p-filled) label {
-      font-weight: 300;
-      font-size: var(--font-size-base);
-    }
-    .p-floatlabel-on:has(input.p-filled, input:focus) label {
-      font-size: smaller;
-    }
-    &__validation-label {
-      position: absolute;
-      left: 0;
-      font-size: var(--font-size-small);
-      margin-top: 2px;
-      color: var(--p-form-field-invalid-placeholder-color);
-      padding: 0 var(--spacing-10);
-    }
+:host {
+  width: 100%;
+}
+
+.input-select {
+  margin-bottom: 25px;
+  position: relative;
+
+  .p-select {
+    width: 100%;
   }
-  
+  .p-floatlabel-on:not(input.p-filled) label {
+    font-weight: 300;
+    font-size: var(--font-size-base);
+  }
+  .p-floatlabel-on:has(input.p-filled, input:focus) label {
+    font-size: smaller;
+  }
+  &__validation-label {
+    position: absolute;
+    left: 0;
+    font-size: var(--font-size-small);
+    margin-top: 2px;
+    color: var(--p-form-field-invalid-placeholder-color);
+    padding: 0 var(--spacing-10);
+  }
+}

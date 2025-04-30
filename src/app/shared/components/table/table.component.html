@@ -1,0 +1,277 @@
+<div class="table">
+  <p-toolbar *ngIf="!hideToolbar()" styleClass="mb-6">
+    <ng-template #start>
+      <p-button
+        *ngIf="hasAdd()"
+        label="New"
+        icon="pi pi-plus"
+        class="mr-2"
+        (onClick)="onCreate()"
+      />
+
+      @if (hasDeleteButton()) {
+        <p-button
+          severity="danger"
+          label="Delete"
+          icon="pi pi-trash"
+          outlined
+          [disabled]="!selectedItems || !selectedItems.length"
+          (onClick)="passSelectedItems('delete')"
+        />
+      }
+      @if (hasAddButton()) {
+        <p-button
+          severity="info"
+          label="Batch"
+          icon="pi pi-user-plus"
+          outlined
+          [disabled]="!selectedItems || !selectedItems.length"
+          (onClick)="passSelectedItems('batch')"
+        />
+      }
+      @if (hasScheduleButton()) {
+        <p-button
+          severity="info"
+          label="Schedule"
+          icon="pi pi-calendar-clock"
+          outlined
+          (onClick)="onSchedule()"
+        />
+      }
+    </ng-template>
+    <ng-template #end>
+      @if (importButton()) {
+        <p-fileUpload
+          mode="basic"
+          accept=".csv"
+          [maxFileSize]="1000000"
+          label="Import"
+          chooseLabel="Import"
+          auto
+          customUpload
+          class="mr-2 inline-block"
+          [chooseButtonProps]="{ severity: 'secondary' }"
+          (uploadHandler)="onImport($event)"
+        />
+      }
+      @if (exportButton()) {
+        <p-button label="Export" icon="pi pi-upload" severity="secondary" />
+      }
+    </ng-template>
+  </p-toolbar>
+  @if (tableData()?.totalRecords) {
+    <p-table
+      #dt
+      [value]="tableData()?.data || []"
+      [columns]="columnsData()?.columns"
+      [rows]="tableData()?.pageSize"
+      [totalRecords]="tableData()?.totalRecords || 0"
+      [paginator]="true"
+      [lazy]="true"
+      (onLazyLoad)="onLazyLoad($event)"
+      [rowsPerPageOptions]="[5, 10, 15]"
+      [showCurrentPageReport]="true"
+      [rowHover]="true"
+      dataKey="id"
+      [(selection)]="selectedItems"
+      [scrollable]="true"
+      [scrollDirection]="'both'"
+      [autoLayout]="true"
+      paginatorPosition="bottom"
+      [globalFilterFields]="globalFilterFields"
+    >
+      <ng-template #caption>
+        <div class="flex items-center justify-between">
+          <h5 class="m-0">{{ heading() }}</h5>
+          @if (SearchBar()) {
+            <p-iconfield>
+              <p-inputicon styleClass="pi pi-search" />
+              <input type="text" pInputText />
+            </p-iconfield>
+          }
+          @if (customButton()) {
+            <app-button
+              [buttonLabel]="customButtonLabel()"
+              (btnClick)="handleSchedule()"
+            ></app-button>
+          }
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="header" let-columns>
+        <tr>
+          <th>
+            <p-tableHeaderCheckbox />
+          </th>
+          @if (columnsData()?.hasExpanded) {
+            <th></th>
+          }
+
+          @for (
+            headerColumn of columnsData()?.columns;
+            track headerColumn.field
+          ) {
+            <th
+              [pSortableColumn]="
+                headerColumn.field !== 'actions' ? headerColumn.field : ''
+              "
+              [style.minWidth.px]="150"
+            >
+              {{ headerColumn.displayName }}
+              @if (headerColumn.field !== "actions") {
+                <p-sortIcon [field]="headerColumn.field" />
+              }
+              @if (headerColumn.field === "score") {
+                <p-columnFilter
+                  type="numeric"
+                  field="{{ headerColumn.field }}"
+                  display="menu"
+                />
+              }
+            </th>
+          }
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-product>
+        <tr>
+          <td>
+            <p-tableCheckbox [value]="product"></p-tableCheckbox>
+          </td>
+          @if (columnsData()?.hasExpanded) {
+            <td>
+              <p-button
+                type="button"
+                pRipple
+                [pRowToggler]="product"
+                [text]="true"
+                [rounded]="true"
+                [plain]="true"
+                [icon]="
+                  product.isExpanded
+                    ? 'pi pi-chevron-down'
+                    : 'pi pi-chevron-right'
+                "
+                (onClick)="onRowExpand(product.id)"
+              />
+            </td>
+          }
+          @for (
+            headerColumn of columnsData()?.columns;
+            track headerColumn.field
+          ) {
+            @if (headerColumn.field === "actions") {
+              <td>
+                <div class="flex flex-wrap gap-1">
+                  @if (
+                    headerColumn.actions?.includes(PaginatedDataActions.View)
+                  ) {
+                    <p-button
+                      icon="pi pi-eye"
+                      class="mr-2"
+                      [rounded]="true"
+                      [outlined]="true"
+                      (click)="onEdit(product.id)"
+                    />
+                  }
+                  @if (
+                    headerColumn.actions?.includes(PaginatedDataActions.Edit)
+                  ) {
+                    <p-button
+                      icon="pi pi-eye"
+                      class="mr-2"
+                      [rounded]="true"
+                      [outlined]="true"
+                      (click)="onEdit(product)"
+                    />
+                  }
+                  @if (
+                    headerColumn.actions?.includes(PaginatedDataActions.Delete)
+                  ) {
+                    <p-button
+                      icon="pi pi-trash"
+                      severity="danger"
+                      [rounded]="true"
+                      [outlined]="true"
+                      (click)="onDelete(product.id)"
+                    />
+                  }
+                </div>
+              </td>
+            } @else if (headerColumn.hasChip) {
+              <td>
+                <div class="flex flex-wrap gap-1">
+                  @for (role of product[headerColumn.field]; track $index) {
+                    <p-chip [label]="role" [removable]="false" />
+                  }
+                </div>
+              </td>
+            } @else if (headerColumn.field === "status") {
+              <td>
+                <p-tag
+                  [value]="product[headerColumn.field]"
+                  [severity]="getSeverity(product[headerColumn.field])"
+                />
+              </td>
+            } @else if (headerColumn.field === "isScheduled") {
+              <td>
+                @if (product[headerColumn.field] !== "") {
+                  <p-tag
+                    [value]="product[headerColumn.field]"
+                    [severity]="getSeverity(product[headerColumn.field])"
+                  />
+                }
+              </td>
+            } @else if (headerColumn.field === "score") {
+              <td>
+                <p-badge
+                  [value]="product[headerColumn.field] ?? 'Nil'"
+                  [severity]="`${product[headerColumn.field] ? 'success' : 'warn'}`"
+                />
+              </td>
+            } @else if (headerColumn.field === "button") {
+              <!-- <button (click)="onActionClick(row)"></button> -->
+              <td>
+                <p-button
+                  [outlined]="true"
+                  [raised]="true"
+                  [label]="headerColumn.buttonLabel"
+                  (onClick)="onButtonClick(product)"
+                >
+                </p-button>
+              </td>
+            } @else {
+              <td>{{ product[headerColumn.field] }}</td>
+            }
+          }
+        </tr>
+
+        <!-- Expanded Row Content -->
+        <tr *ngIf="product.isExpanded">
+          <td colspan="100%">
+            <div>
+              <h5>Options</h5>
+              <ol class="table__expanded__optionList">
+                @for (option of product.options; track option) {
+                  @if (option.isCorrect) {
+                    <li class="table__expanded__correctAnswer">
+                      {{ option.optionText }}
+                    </li>
+                  } @else {
+                    <li>
+                      {{ option.optionText }}
+                    </li>
+                  }
+                }
+              </ol>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  } @else if (tableData()?.data?.length === 0) {
+    <p>No Records Found</p>
+  } @else {
+    <app-table-skeleton></app-table-skeleton>
+  }
+</div>

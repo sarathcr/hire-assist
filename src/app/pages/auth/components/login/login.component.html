@@ -1,0 +1,31 @@
+<div class="login">
+  <h1 class="login__title">Login</h1>
+  <p class="login__sub-title">Please enter your credentials to continue</p>
+  <form [formGroup]="fGroup">
+    <app-input-text
+      [formGroup]="fGroup"
+      [type]="'text'"
+      [config]="configMap['email']"
+      type="text"
+    ></app-input-text>
+
+    <!-- <app-input-text
+      [formGroup]="fGroup"
+      [type]="'password'"
+      [config]="configMap['password']"
+    > -->
+    <!-- </app-input-text> -->
+    <app-input-password
+      [formGroup]="fGroup"
+      [config]="configMap['password']"
+    ></app-input-password>
+    <app-button
+      [buttonLabel]="'Login'"
+      [buttonSize]="'large'"
+      [buttonWidth]="'full'"
+      [isLoading]="isLoading"
+      (click)="onSave()"
+    ></app-button>
+  </form>
+</div>
+<p-toast position="top-right" class="Toast"></p-toast>

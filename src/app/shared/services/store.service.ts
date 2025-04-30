@@ -1,9 +1,14 @@
 import { Injectable } from '@angular/core';
 import { TokenData } from '../models/token-data.models';
-import { AppState, initialState } from '../models/app-state.models';
+import {
+  AppState,
+  initialState,
+  Option,
+  UserState,
+} from '../models/app-state.models';
 import { BehaviorSubject, distinctUntilChanged, map, Observable } from 'rxjs';
 import * as _ from 'lodash';
-import { RolesEnum } from '../enum/enum';
+import { RolesEnum } from '../enums/enum';
 
 @Injectable({
   providedIn: 'root',
@@ -11,12 +16,16 @@ import { RolesEnum } from '../enum/enum';
 export class StoreService {
   private STORAGE_KEY = 'appState';
   private state = this.getStateFromLocalStorage();
-  private stateSource = new BehaviorSubject<AppState>(this.state);
+  public stateSource = new BehaviorSubject<AppState>(this.state);
   public state$ = this.stateSource.asObservable();
 
   /** Gets the accessToken and refreshToken */
   public getTokenData(): TokenData {
     return this.state.tokenData;
+  }
+
+  public getUserData(): UserState {
+    return this.state.userState;
   }
 
   /** Checks if the user is authenticated with a token */
@@ -32,9 +41,9 @@ export class StoreService {
 
     if (Array.isArray(roles) && roles.length > 0) {
       const roleNames = roles
-        .map(roleValue => RolesEnum[roleValue] as string) // Map numeric values to role names
-        .filter(roleName => roleName) // Remove undefined/null values
-        .map(roleName => roleName.toLowerCase()); // Convert to lowercase
+        .map((roleValue) => RolesEnum[roleValue] as string) // Map numeric values to role names
+        .filter((roleName) => roleName) // Remove undefined/null values
+        .map((roleName) => roleName.toLowerCase()); // Convert to lowercase
 
       return roleNames;
     }
@@ -52,8 +61,8 @@ export class StoreService {
 
   public selectIsLoading(): Observable<boolean> {
     return this.state$.pipe(
-      map(state => state.isLoading),
-      distinctUntilChanged()
+      map((state) => state.isLoading),
+      distinctUntilChanged(),
     );
   }
 
@@ -65,6 +74,13 @@ export class StoreService {
   public setTokenData(tokenData: TokenData) {
     const state = _.cloneDeep(this.state);
     state.tokenData = tokenData;
+    this.state = state;
+    this.updateStore();
+  }
+
+  public setAccessTokenData(accessToken: string) {
+    const state = _.cloneDeep(this.state);
+    state.tokenData.accessToken = accessToken;
     this.state = state;
     this.updateStore();
   }
@@ -104,5 +120,14 @@ export class StoreService {
 
   private isBrowserEnvironment(): boolean {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+  }
+
+  public setCollection(collection: Option[]) {
+    this.state = { ...this.state, collection }; // Update state
+    this.updateStore(); // Save to local storage
+  }
+
+  public getCollection(): Option[] {
+    return this.state.collection;
   }
 }

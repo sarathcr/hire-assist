@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { Options } from '../../../../pages/candidate/models/candidate-test-question-set.model';
 
 @Component({
   selector: 'app-input-radio',
@@ -9,11 +10,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
   styleUrl: './input-radio.component.scss',
 })
 export class InputRadioComponent {
-  @Input() option!: {
-    id: number;
-    text: string;
-    image?: string;
-  };
+  @Input() option!: Options;
   @Input() selectedValue!: string | number;
   @Input() groupName!: string;
   @Output() selectedValueChange = new EventEmitter<string | number>();

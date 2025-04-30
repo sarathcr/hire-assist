@@ -3,10 +3,10 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import * as Forge from 'node-forge';
 import { Observable, Subject, tap } from 'rxjs';
-import { LOGIN_URL } from '../../constants/api';
 import { initialTokenData, TokenData } from '../models/token-data.models';
 import { getTokenPayloadData, TokenField } from '../utilities/token.utility';
 import { StoreService } from './store.service';
+import { LOGIN_URL } from '../constants/api';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +20,7 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
   constructor(
     private storeService: StoreService,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnDestroy(): void {
@@ -50,15 +50,15 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
     };
 
     return this.http.post<TokenData>(LOGIN_URL, trimmedLoginData).pipe(
-      tap(response => {
+      tap((response) => {
         this.initialize(response);
-      })
+      }),
     );
   }
 
   public logout(): void {
+    this.router.navigate(['/login']);
     this.storeService.reset();
-    this.router.navigateByUrl('/login');
   }
 
   //   Private
@@ -89,13 +89,11 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
     accessToken: string,
     refreshToken: string,
     error: string,
-    status: number
+    status: number,
   ) {
-    console.log('accessToken', accessToken);
-
     const emailAddress = getTokenPayloadData(
       accessToken,
-      TokenField.Emailaddress
+      TokenField.Emailaddress,
     );
     const name = getTokenPayloadData(accessToken, TokenField.Name);
     const roles = getTokenPayloadData(accessToken, TokenField.Role);

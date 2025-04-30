@@ -1,15 +1,14 @@
-<div class="input-input-select" [formGroup]="formGroup">
+<div class="input-select" [formGroup]="formGroup">
   <p-floatlabel variant="on">
     <p-select
       id="over_label"
-      [options]="selectOptions"
-      [(ngModel)]="selectedData"
+      [options]="options"
       [checkmark]="true"
-      optionLabel="name"
+      optionLabel="label"
+      optionValue="value"
       [showClear]="true"
       class="w-full md:w-56"
-      [formControlName]="selectConfig.id"
-      (input)="onInputChange($event)" /><label for="over_label">{{
+      [formControlName]="selectConfig.id" /><label for="over_label">{{
       selectConfig.labelKey
     }}</label></p-floatlabel
   >
@@ -22,6 +21,6 @@
     <span class="input-suffix">{{ dynamicSuffix }}</span>
   }
   @if (formControl.touched && formControl.invalid) {
-    <span class="input-text__validation-label"> {{ errorMsg }}</span>
+    <span class="input-select__validation-label"> {{ errorMsg }}</span>
   }
 </div>

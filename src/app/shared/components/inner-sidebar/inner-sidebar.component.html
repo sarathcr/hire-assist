@@ -1,0 +1,30 @@
+<div
+  class="inner-sidebar"
+  [ngClass]="showMenu ? 'inner-sidebar_expand' : 'inner-sidebar_collapse'"
+>
+  <span
+    class="pi inner-sidebar__btn"
+    [ngClass]="
+      showMenu
+        ? 'pi-arrow-left inner-sidebar__btn_close'
+        : 'pi-arrow-right inner-sidebar__btn_bar'
+    "
+    (click)="showMenu = !showMenu"
+    (keydown.enter)="showMenu = !showMenu"
+    tabindex="0"
+  ></span>
+  <p-menu [model]="items()">
+    <ng-template #item let-item>
+      @if (item) {
+        <a
+          [routerLink]="item.route"
+          class="p-menu-item-link"
+          [ngClass]="{ active: item.index === activeMenuItem }"
+        >
+          <span [class]="item.icon"></span>
+          <span class="ml-2">{{ item.label }} </span>
+        </a>
+      }
+    </ng-template>
+  </p-menu>
+</div>

@@ -1,0 +1,27 @@
+<div class="input-text-calender" [formGroup]="formGroup">
+  <p-floatlabel variant="on">
+    <p-datepicker
+      [size]="'small'"
+      id="over_label"
+      [showIcon]="true"
+      [dateFormat]="'dd-mm-yy'"
+      [formControlName]="inputTextCalendarConfig.id"
+      (input)="onInputChange($event)"
+    >
+    </p-datepicker>
+    <label for="over_label">{{
+      inputTextCalendarConfig.labelKey
+    }}</label></p-floatlabel
+  >
+
+  @if (inputTextCalendarConfig.matSuffix) {
+    <span class="input-suffix">{{ inputTextCalendarConfig.matPrefix }}</span>
+  } @else if (inputTextCalendarConfig.matPrefix) {
+    <span class="input-suffix">{{ inputTextCalendarConfig.matSuffix }}</span>
+  } @else if (dynamicSuffix) {
+    <span class="input-suffix">{{ dynamicSuffix }}</span>
+  }
+  @if (formControl.touched && formControl.invalid) {
+    <span class="input-text-calender__validation-label"> {{ errorMsg }}</span>
+  }
+</div>
