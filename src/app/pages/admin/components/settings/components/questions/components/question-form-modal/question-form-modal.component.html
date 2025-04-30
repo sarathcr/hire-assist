@@ -23,35 +23,35 @@
         </app-input-select>
       </div>
 
-      <!-- Bind the FormArray -->
-
-      <div
-        *ngFor="let option of options.controls; let i = index"
-        class="question-form__option"
-      >
-        <app-input-text
-          [size]="'small'"
-          class="question-form_field-col_two"
-          [formGroup]="data.fGroup"
-          type="text"
-          [formControlName]="i"
-          [config]="data.configMap['options']"
-        >
-        </app-input-text>
-        <p-button
-          type="button"
-          (click)="addOption()"
-          icon="pi pi-plus-circle"
-          aria-label="Add Option"
-        ></p-button>
-        <p-button
-          *ngIf="options.length > 1"
-          type="button"
-          (click)="removeOption(i)"
-          pButton
-          icon="pi pi-times-circle"
-          aria-label="Remove"
-        ></p-button>
+      <div formArrayName="options" class="question-form__options">
+        @for (
+          optionCtrl of optionsArray.controls;
+          let i = $index;
+          track optionCtrl;
+          let last = $last
+        ) {
+          <div class="question-form__options__item">
+            <app-input-text
+              placeholder="Enter Option"
+              [size]="'small'"
+              [formGroup]="optionCtrl"
+              type="text"
+              [config]="data.configMap['options']"
+            ></app-input-text>
+            <p-button
+              class="question-form__options__btn"
+              icon="pi pi-minus"
+              (click)="removeOption(i)"
+            />
+          </div>
+          @if (i === optionsArray.controls.length - 1) {
+            <p-button
+              class="question-form__options__btn"
+              icon="pi pi-plus"
+              (click)="addOption()"
+            />
+          }
+        }
       </div>
 
       <app-input-select
@@ -71,18 +71,18 @@
         >
         </app-toggle-switch>
       </div>
-      <div class="question-form__button">
+      <!-- <div class="question-form__button">
         <app-button
           [buttonLabel]="'Cancel'"
           [buttonVariant]="'outlined'"
           (btnClick)="onClose()"
-        ></app-button>
-        <!-- <app-button
+        ></app-button> -->
+      <!-- <app-button
           [buttonLabel]="'Submit'"
           [saveDisabled]="!data.fGroup.valid"
           (btnClick)="onSubmit()"
         ></app-button> -->
-      </div>
+      <!-- </div> -->
     </div>
   </form>
 </div>

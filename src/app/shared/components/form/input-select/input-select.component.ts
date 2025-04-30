@@ -65,8 +65,15 @@ export class InputSelectComponent
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes && changes['config'] && changes['config'].currentValue) {
-      this.options = changes['config'].currentValue.options;
+    // if (changes && changes['config'] && changes['config'].currentValue ) {
+    //   this.options = changes['config'].currentValue.options;
+
+    //   console.log('==>', this.options);
+    // }
+
+    if (changes['config']?.currentValue) {
+      const newConfig = changes['config'].currentValue as CustomSelectConfig;
+      this.options = newConfig.options || [];
     }
   }
 

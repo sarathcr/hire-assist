@@ -72,7 +72,7 @@ const tableColumns: TableColumnsData = {
       field: 'actions',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.Edit, PaginatedDataActions.Delete],
+      actions: [PaginatedDataActions.View, PaginatedDataActions.Delete],
       sortedColumn: false,
       hasChip: false,
       hasFilter: false,
@@ -264,7 +264,8 @@ export class StepperViewComponent extends BaseComponent implements OnInit {
 
   private openDeleteCandidateConfirmationModal(id: string) {
     const modalData: DialogData = {
-      message: 'Are you sure you want to to delete the user?',
+      message: `Are you sure you want to to delete the user?
+      It will delete the user in all rounds.`,
       isChoice: true,
       cancelButtonText: 'Cancel',
       acceptButtonText: 'Delete',
@@ -392,6 +393,7 @@ export class StepperViewComponent extends BaseComponent implements OnInit {
 
   public onView(data: any) {
     const userid = data.email;
+    console.log('====>');
 
     const assessmentId = this.assessmentRoundList?.[0].assessmentid;
     const route = this.router.navigate(['/profile', userid, assessmentId]);

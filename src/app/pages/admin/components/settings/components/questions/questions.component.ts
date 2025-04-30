@@ -105,6 +105,9 @@ export class QuestionsComponent implements OnInit {
     const data = {
       fGroup: this.fGroup,
       configMap: this.configMap,
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Create',
     };
     this.ref = this.dialog.open(QuestionFormModalComponent, {
       data: data,
@@ -115,11 +118,28 @@ export class QuestionsComponent implements OnInit {
         '960px': '75vw',
         '640px': '90vw',
       },
+      templates: {
+        footer: DialogFooterComponent,
+      },
     });
 
     this.ref?.onClose.subscribe((res) => {
       if (res) {
-        this.Createquestion(res);
+        const raw = this.fGroup.value;
+        const selectedQuestionTypeLabel =
+          this.questionType.find(
+            (type: Option) => type.value === raw.questionType,
+          )?.label || 'default';
+        const transformed = {
+          questionText: raw.questionText,
+          maxMark: raw.maxmark,
+          options: raw.options.map((o: any) => o.options),
+          answer: raw.answer,
+          active: raw.active,
+          hasAttachment: raw.hasAttachments,
+          questionType: selectedQuestionTypeLabel,
+        };
+        this.Createquestion(transformed);
       }
     });
   }
@@ -181,6 +201,68 @@ export class QuestionsComponent implements OnInit {
     });
   }
 
+  public getByIdQuestion(data: number | any) {
+    this.questionService.getQuestion(data.id).subscribe({
+      next: (res: Questionsinterface) => {
+        if (res) {
+          console.log('===?', res);
+          this.openEditQuestionModal(res);
+        }
+      },
+      error: (error: any) => {
+        this.storeService.setIsLoading(false);
+        console.log('ERROR', error);
+      },
+    });
+  }
+  public openEditQuestionModal(question: Questionsinterface): void {
+    const data = {
+      fGroup: this.fGroup,
+      formData: question,
+      configMap: this.configMap,
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Update',
+    };
+
+    this.ref = this.dialog.open(QuestionFormModalComponent, {
+      data: data,
+      header: 'Update Question',
+      width: '50vw',
+      modal: true,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    this.ref?.onClose.subscribe((res) => {
+      if (res) {
+        const raw = this.fGroup.value;
+        const selectedQuestionTypeLabel =
+          this.questionType.find(
+            (type: Option) => type.value === raw.questionType,
+          )?.label || 'default';
+        const transformed = {
+          id: question.id,
+          questionText: raw.questionText,
+          maxMark: raw.maxmark,
+          options: raw.options.map((o: any) => o.options),
+          answer: raw.answer,
+          active: raw.active,
+          hasAttachment: raw.hasAttachments,
+          questionType: selectedQuestionTypeLabel,
+        };
+
+        console.log('updatePAyload', transformed);
+        this.Updatequestion(transformed);
+      }
+    });
+  }
+
   // Private Methods
   private setPaginationEndpoint() {
     this.dataSourceService.setEndpoint(`${ASSESSMENT_URL}/Questionsummary`);
@@ -221,6 +303,7 @@ export class QuestionsComponent implements OnInit {
   }
 
   private Createquestion(payload: Questionsinterface) {
+    console.log('pay', payload);
     const next = () => {
       setTimeout(() => {
         this.messageService.add({
@@ -240,7 +323,35 @@ export class QuestionsComponent implements OnInit {
         detail: 'Creation is failed',
       });
     };
-    this.questionService.createEntity(payload).subscribe({ next, error });
+    console.log('payload', payload);
+
+    this.questionService.addQuestion(payload).subscribe({ next, error });
+  }
+
+  private Updatequestion(payload: Questionsinterface) {
+    console.log('pay', payload);
+    const next = () => {
+      setTimeout(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Updated question Successfully',
+        });
+      }, 200);
+
+      this.getAllPaginatedQuestion(new PaginatedPayload());
+    };
+    const error = (error: string) => {
+      console.log('ERROR', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Updation is failed',
+      });
+    };
+    console.log('payload', payload);
+
+    this.questionService.updateQuestion(payload).subscribe({ next, error });
   }
 
   private loadData(payload: PaginatedPayload): void {

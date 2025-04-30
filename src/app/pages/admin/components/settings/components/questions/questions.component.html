@@ -9,6 +9,7 @@
     (create)="openAddQuestionModal()"
     (delete)="deleteQuestion($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
+    (edit)="getByIdQuestion($event)"
   ></app-table>
 
   <p-toast position="top-right" class="Toast"></p-toast>

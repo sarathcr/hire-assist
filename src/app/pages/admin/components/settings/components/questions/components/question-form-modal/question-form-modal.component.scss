@@ -1,11 +1,7 @@
 :host {
   padding: var(--spacing-30);
 }
-::ng-deep {
-  .p-dialog-content {
-    overflow-y: visible;
-  }
-}
+
 .question-form {
   padding: var(--spacing-10) 0 0;
   &__field {
@@ -31,12 +27,24 @@
     justify-content: flex-start;
     gap: 1rem;
   }
-  &__option {
+  &__options {
     display: flex;
-    flex-direction: row;
     justify-content: flex-start;
     gap: 1rem;
-    flex-basis: 50%;
+    flex-flow: row wrap;
+    &__item {
+      display: flex;
+      gap: 1rem;
+      flex-basis: 44%;
+    }
+    &__btn {
+      height: 43px;
+      ::ng-deep {
+        .p-button {
+          height: 100%;
+        }
+      }
+    }
   }
   &__mark {
     display: flex;

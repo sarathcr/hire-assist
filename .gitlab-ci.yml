@@ -1,0 +1,39 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  PROJECT_NAME: hire-assist-fe
+  DIST_DIR: dist/hire-assist-fe/browser
+  ZIP_NAME: angular.zip
+
+before_script:
+  - echo "Setting up environment variables..."
+  - echo "AZURE_CLIENT_ID=$AZURE_CLIENT_ID"
+  - echo "AZURE_CLIENT_SECRET=$AZURE_CLIENT_SECRET"
+
+# Stage 1: Build the Angular application
+build:
+  stage: build
+  script:
+    - echo "Installing dependencies..."
+    - npm ci
+    - echo "Building Angular application..."
+    - npx ng build --configuration production  # build the app in production mode
+    - echo "Zipping built files..."
+    - Compress-Archive -Path "$DIST_DIR\*" -DestinationPath $ZIP_NAME  # Zip the contents of browser/ folder
+  artifacts:
+    paths:
+      - $ZIP_NAME  # Save the zip file as an artifact for deployment
+
+# Stage 2: Deploy to Azure Web App
+deploy:
+  stage: deploy
+  script:
+    - echo "Logging into Azure..."
+    - az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID  # Log in using Azure service principal
+    - az account set --subscription $AZURE_SUBSCRIPTION_ID  # Set Azure subscription
+    - echo "Deploying to Azure Web App..."
+    - az webapp deploy --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_WEBAPP_NAME --src-path $ZIP_NAME --type zip  # Deploy the zip to Azure Web App
+  only:
+    - dev  # Trigger deployment on the 'dev' branch (adjust according to your setup)

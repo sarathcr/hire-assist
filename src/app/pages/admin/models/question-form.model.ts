@@ -2,13 +2,13 @@ import { Validators } from '@angular/forms';
 import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
 
 export class QuestionForm extends FormEntity {
-  questionText?: '';
-  maxmark?: 0;
-  options?: '';
-  answer?: '';
-  active?: false;
-  hasAttachments?: false;
-  questionType?: '';
+  questionText?: string = '';
+  maxmark?: number = 0;
+  options?: string[] = [];
+  answer?: string = '';
+  active?: boolean = false;
+  hasAttachments?: boolean = false;
+  questionType?: string = '';
 
   metadata: Metadata = {
     validatorsMap: {
@@ -18,7 +18,7 @@ export class QuestionForm extends FormEntity {
       answer: [Validators.required],
     },
     configMap: {
-      questionText: { id: 'questionText', labelKey: 'QuestionText' },
+      questionText: { id: 'questionText', labelKey: 'Question Text' },
       maxmark: { id: 'maxmark', labelKey: 'Max Mark' },
       questionType: { id: 'questionType', labelKey: 'Question Type' },
       options: { id: 'options', labelKey: 'Options' },
