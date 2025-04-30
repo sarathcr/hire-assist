@@ -171,14 +171,14 @@
                       class="mr-2"
                       [rounded]="true"
                       [outlined]="true"
-                      (click)="onEdit(product.id)"
+                      (onClick)="onView(product)"
                     />
                   }
                   @if (
                     headerColumn.actions?.includes(PaginatedDataActions.Edit)
                   ) {
                     <p-button
-                      icon="pi pi-eye"
+                      icon="pi pi-pencil"
                       class="mr-2"
                       [rounded]="true"
                       [outlined]="true"

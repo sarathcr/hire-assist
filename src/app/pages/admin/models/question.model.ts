@@ -2,13 +2,13 @@ import { FormGroup } from '@angular/forms';
 import { ConfigMap } from '../../../shared/utilities/form.utility';
 
 export interface Questionsinterface {
-  id: number;
+  id?: number;
   questionText: string;
-  maxmark: number;
-  options: OptionsInterface;
+  maxMark: number;
+  options: string[];
   answer: string;
   active: boolean;
-  hasAttachments: boolean;
+  hasAttachment: boolean;
   questionType: string;
 }
 

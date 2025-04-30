@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, effect, input, output } from '@angular/core';
+import { AfterViewInit, Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FilterMatchMode, MessageService, SelectItem } from 'primeng/api';
 import { BadgeModule } from 'primeng/badge';
@@ -118,11 +118,7 @@ export class TableComponent<T extends { id: string }> implements AfterViewInit {
   public selectedItemsIds!: string[] | undefined;
   public PaginatedDataActions: any = PaginatedDataActions;
 
-  constructor(private messagesService: MessageService) {
-    effect(() => {
-      console.log(this.tableData());
-    });
-  }
+  constructor(private messagesService: MessageService) {}
 
   ngAfterViewInit(): void {
     this.setGlobalFilterFields();
