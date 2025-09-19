@@ -6,11 +6,7 @@ export interface Batch {
   id: number;
   title: string;
   description: string;
-  assessmentId: number;
-  assessmentName: string;
   isActive: boolean;
-  startDate: string;
-  endDate: string;
   active: string;
   descriptionNew: string;
 }
@@ -27,10 +23,6 @@ export interface PaginationResponse {
   id: number;
   title: string;
   description: string;
-  assessmentId: number;
-  assessmentName: string;
   isActive: boolean;
-  startDate: string;
-  endDate: string;
   payload: PaginatedPayload;
 }

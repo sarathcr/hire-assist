@@ -29,5 +29,5 @@ import { TableModule } from 'primeng/table';
   styleUrl: './table.component.scss',
 })
 export class TableSkeletonComponent {
-  public products = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+  public products = [1, 2, 3, 4, 5];
 }

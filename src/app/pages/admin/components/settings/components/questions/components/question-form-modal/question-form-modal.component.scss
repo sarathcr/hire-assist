@@ -35,7 +35,7 @@
     &__item {
       display: flex;
       gap: 1rem;
-      flex-basis: 44%;
+      flex-basis: 53%;
     }
     &__btn {
       height: 43px;
@@ -68,8 +68,18 @@
       gap: 1rem;
       flex-flow: column;
     }
+    &_hidden {
+      display: none;
+    }
+    &_show {
+      display: block;
+    }
   }
-
+  .preview-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
   @media screen and (max-width: 768px) {
     &_field {
       &-container {

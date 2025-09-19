@@ -37,6 +37,10 @@
   &_expand {
     width: 200px; // Adjust based on expanded size
     transition: width 0.3s ease-in-out;
+    @media (max-width: 768px) {
+      width: 150px; // Adjust width for smaller screens
+      transition: width 0.3s ease-in-out;
+    }
   }
   &_collapse {
     width: 75px;

@@ -1,14 +1,15 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 import { MessageService } from 'primeng/api';
 import { Toast } from 'primeng/toast';
 
-import { InputTextComponent } from '../../../../shared/components/form/input-text/input-text.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
-import { AuthService } from '../../services/auth.service';
-import { LoginData } from '../../models/login-data.models';
+import { InputPasswordComponent } from '../../../../shared/components/form/input-password/input-password.component';
+import { InputTextComponent } from '../../../../shared/components/form/input-text/input-text.component';
+import { RolesEnum } from '../../../../shared/enums/enum';
+import { TokenData } from '../../../../shared/models/token-data.models';
 import {
   buildFormGroup,
   ConfigMap,
@@ -17,13 +18,18 @@ import {
   getTokenPayloadData,
   TokenField,
 } from '../../../../shared/utilities/token.utility';
-import { TokenData } from '../../../../shared/models/token-data.models';
-import { RolesEnum } from '../../../../shared/enums/enum';
-import { InputPasswordComponent } from "../../../../shared/components/form/input-password/input-password.component";
+import { LoginData } from '../../models/login-data.models';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
-  imports: [InputTextComponent, ButtonComponent, ReactiveFormsModule, Toast, InputPasswordComponent],
+  imports: [
+    InputTextComponent,
+    ButtonComponent,
+    ReactiveFormsModule,
+    Toast,
+    InputPasswordComponent,
+  ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
@@ -55,12 +61,17 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  public forgotPassword(): void {
+    this.router.navigate(['forgot-password']);
+  }
+
   private handleLoginSuccess(res: TokenData): void {
     if (res) {
       const userRole = getTokenPayloadData(res.accessToken, TokenField.Role);
+
       this.navigateToUserDashboard(userRole);
     }
-    this.isLoading = false;
+    // this.isLoading = false;
   }
 
   private handleLoginError(error: HttpErrorResponse): void {
@@ -75,12 +86,25 @@ export class LoginComponent implements OnInit {
 
   private navigateToUserDashboard(userRole: number[]): void {
     const routes: Record<number, string> = {
+      [RolesEnum.SuperAdmin]: '/admin/dashboard',
       [RolesEnum.Admin]: '/admin/dashboard',
       [RolesEnum.Interviewer]: '/interviewer',
       [RolesEnum.Candidate]: '/candidate',
+      [RolesEnum.Coordinator]: '/coordinator',
+      [RolesEnum.FrontDesk]: '/frontdesk',
     };
 
-    const route = userRole.find((role) => routes[role]);
-    if (route) this.router.navigateByUrl(routes[route]);
+    const priority: RolesEnum[] = [
+      RolesEnum.SuperAdmin, // 1st choice
+      RolesEnum.Admin,
+      RolesEnum.Interviewer,
+      RolesEnum.FrontDesk,
+      RolesEnum.Coordinator,
+      RolesEnum.Candidate,
+    ];
+
+    const matchedRole = priority.find((r) => userRole.includes(r));
+
+    if (matchedRole) this.router.navigateByUrl(routes[matchedRole]);
   }
 }

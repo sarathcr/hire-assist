@@ -7,7 +7,7 @@
 
 .sidebar {
   padding: var(--spacing-20);
-  text-align: center;
+  text-align: left;
   height: 100%;
   width: 225px;
   &__logo {
@@ -77,8 +77,8 @@
       right: 0;
       top: 0;
       bottom: 0;
-      background-color: #fff;
-      z-index: 9;
+      background-color: var(--color-white);
+      z-index: 10;
     }
     &__logo {
       text-align: left;

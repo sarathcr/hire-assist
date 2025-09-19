@@ -1,33 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Toast } from 'primeng/toast';
+import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
+import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
+import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
+import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
+import { BATCH_URL } from '../../../../../../shared/constants/api';
+import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
+import { DialogData } from '../../../../../../shared/models/dialog.models';
+import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
 import {
   FieldType,
   PaginatedData,
   PaginatedDataActions,
   TableColumnsData,
 } from '../../../../../../shared/models/table.models';
+import { StoreService } from '../../../../../../shared/services/store.service';
 import {
   buildFormGroup,
   ConfigMap,
 } from '../../../../../../shared/utilities/form.utility';
 import { BatchForm } from '../../../../models/batch-form.model';
 import { Batch } from '../../../../models/batch.model';
-import { MessageService } from 'primeng/api';
-import { StoreService } from '../../../../../../shared/services/store.service';
 import { BatchService } from '../../../../services/batch.service';
-import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
-import { BATCH_URL } from '../../../../../../shared/constants/api';
-import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
-import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import { BatchDialogComponent } from './components/batch-dialog/batch-dialog.component';
-import { HttpErrorResponse } from '@angular/common/http';
-import { DialogData } from '../../../../../../shared/models/dialog.models';
-import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
-import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -36,18 +37,25 @@ const tableColumns: TableColumnsData = {
       displayName: 'Title',
       sortedColumn: true,
       hasChip: false,
+      hasTextFilter: true,
+      filterAlias: 'textFilter',
     },
     {
-      field: 'descriptionNew',
+      field: 'description',
       displayName: 'Description',
       sortedColumn: true,
       hasChip: false,
+      hasTextFilter: true,
+      filterAlias: 'textFilter',
     },
     {
       field: 'active',
       displayName: 'Active',
       sortedColumn: true,
       hasChip: false,
+      hasTextFilter: true,
+      filterAlias: 'selectFilter',
+      hasMultiStatus: false,
     },
     {
       field: 'actions',
@@ -62,7 +70,7 @@ const tableColumns: TableColumnsData = {
 };
 @Component({
   selector: 'app-batches',
-  imports: [TableComponent, Toast],
+  imports: [TableComponent, Toast, ButtonComponent],
   providers: [TableDataSourceService],
   templateUrl: './batches.component.html',
   styleUrl: './batches.component.scss',
@@ -76,6 +84,8 @@ export class BatchesComponent implements OnInit {
   public fGroup!: FormGroup;
   public batchFormData = new BatchForm();
   public configMap!: ConfigMap;
+  public isLoading = true;
+
   private ref: DynamicDialogRef | undefined;
 
   constructor(
@@ -105,9 +115,6 @@ export class BatchesComponent implements OnInit {
       fGroup: this.fGroup,
       configMap: this.configMap,
     };
-
-    console.log('Data', data);
-
     this.ref = this.dialog.open(BatchDialogComponent, {
       data: data,
       header: 'Create Batch',
@@ -154,7 +161,7 @@ export class BatchesComponent implements OnInit {
 
   public deleteBatch(id: number) {
     const modalData: DialogData = {
-      message: 'Are you sure you want to to delete the batch?',
+      message: 'Are you sure you want to delete the batch?',
       isChoice: true,
       cancelButtonText: 'Cancel',
       acceptButtonText: 'Delete',
@@ -164,7 +171,7 @@ export class BatchesComponent implements OnInit {
       data: modalData,
       header: 'Warning',
       maximizable: false,
-      width: '50vw',
+      width: '25vw',
       modal: true,
       breakpoints: {
         '960px': '75vw',
@@ -183,21 +190,13 @@ export class BatchesComponent implements OnInit {
     });
   }
 
-  // Private Methods
-  private setPaginationEndpoint() {
-    this.dataSourceService.setEndpoint(`${BATCH_URL}/${this.url}`);
-  }
-
-  private setConfigMaps(): void {
-    const { metadata } = new BatchForm();
-    this.configMap = metadata.configMap || {};
-  }
-
-  private getAllPaginatedBatches(payload: PaginatedPayload) {
+  public getAllPaginatedBatches(payload: PaginatedPayload) {
+    this.isLoading = true;
     const next = (res: any) => {
       if (res) {
         this.data = res;
       }
+      this.isLoading = false;
     };
 
     const error = (error: CustomErrorResponse) => {
@@ -207,6 +206,7 @@ export class BatchesComponent implements OnInit {
         summary: 'Error',
         detail: `Error : ${error.error.type}`,
       });
+      this.isLoading = false;
     };
 
     this.batchService
@@ -220,14 +220,26 @@ export class BatchesComponent implements OnInit {
     });
   }
 
+  // Private Methods
+  private setPaginationEndpoint() {
+    this.dataSourceService.setEndpoint(`${BATCH_URL}/${this.url}`);
+  }
+
+  private setConfigMaps(): void {
+    const { metadata } = new BatchForm();
+    this.configMap = metadata.configMap || {};
+  }
+
   private CreateBatch(payload: Batch, action: boolean) {
-    if (payload.isActive == null) {
-      payload.isActive = false;
+    this.isLoading = true;
+    if (payload) {
+      payload.isActive = true;
+      payload.title = payload.title.trim();
     }
-    payload.title = payload.title.trim();
 
     const next = () => {
       this.storeService.setIsLoading(false);
+      this.isLoading = false;
       setTimeout(() => {
         this.messageService.add({
           severity: 'success',
@@ -238,20 +250,29 @@ export class BatchesComponent implements OnInit {
       this.getAllPaginatedBatches(new PaginatedPayload());
     };
 
-    const error = (error: string) => {
-      this.storeService.setIsLoading(false);
-      console.log('ERROR', error);
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: `${action ? 'Duplication' : 'Creation'} is failed'`,
-      });
+    const error = (error: HttpErrorResponse) => {
+      if (error?.status === 422 && error?.error?.businessError === 3105) {
+        this.isLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: `${error.error.errorValue}`,
+        });
+      } else {
+        this.isLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: `${action ? 'Duplication' : 'Creation'} is failed`,
+        });
+      }
     };
 
     this.batchService.createEntity(payload).subscribe({ next, error });
   }
 
   private updateBatch(payload: Batch) {
+    this.isLoading = true;
     payload.title = payload.title.trim();
 
     const next = () => {
@@ -266,7 +287,6 @@ export class BatchesComponent implements OnInit {
 
     const error = (error: HttpErrorResponse) => {
       this.storeService.setIsLoading(false);
-      console.log('ERROR', error);
       if (error?.status === 422 && error?.error?.businessError === 3107) {
         this.messageService.add({
           severity: 'error',
@@ -281,11 +301,11 @@ export class BatchesComponent implements OnInit {
         });
       }
     };
-
     this.batchService.updateEntity('', payload).subscribe({ next, error });
   }
 
   private deleteBatchItem(id: number) {
+    this.isLoading = true;
     const next = () => {
       this.storeService.setIsLoading(false);
       this.messageService.add({

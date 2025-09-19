@@ -1,6 +1,26 @@
 <div class="question">
   <p class="question-text">{{ question.text }}</p>
-  @if (question.image) {
-    <img [src]="question.image" alt="Question" class="question-image" />
+  @if (previewImageUrls[question.id] && previewImageUrls[question.id].length) {
+    @if (imageLoading) {
+      <app-image-skeleton></app-image-skeleton>
+    } @else {
+      @for (
+        imgUrl of previewImageUrls[question.id];
+        track imgUrl;
+        let i = $index
+      ) {
+        <div class="question-image">
+          <app-image
+            width="100"
+            height="70"
+            [imageUrl]="imgUrl"
+            [paddingTop]="'0'"
+            [isZoomable]="true"
+            [removeIcon]="true"
+          >
+          </app-image>
+        </div>
+      }
+    }
   }
 </div>

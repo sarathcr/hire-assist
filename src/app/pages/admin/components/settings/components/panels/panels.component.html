@@ -1,0 +1,22 @@
+<div class="panel">
+  <h1>Panels</h1>
+  <app-table
+    [tableData]="data"
+    [columnsData]="columns"
+    [parentLoader]="isLoading"
+    [hasSearch]="true"
+    [hasCheckbox]="false"
+    (edit)="editPanel($event)"
+    (delete)="deletePanel($event)"
+    (pageChangeAndSort)="onTablePayloadChange($event)"
+  >
+    <div class="panel__button">
+      <app-button
+        [buttonLabel]="'New'"
+        icon="pi pi-plus"
+        (btnClick)="addNewPanel()"
+      ></app-button>
+    </div>
+  </app-table>
+  <p-toast position="top-right" class="Toast"></p-toast>
+</div>

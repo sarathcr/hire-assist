@@ -1,0 +1,21 @@
+<div class="frontdesk-assessments">
+  <div>
+    <h1 class="frontdesk-assessments__title">Assigned Active Assessments</h1>
+  </div>
+  <div class="frontdesk-assessments__wrapper">
+    <div class="frontdesk-assessments__list">
+      @for (assessment of assessmentDataSource; track assessment) {
+        <app-assessment-card
+          class="frontdesk-assessments__card"
+          [data]="assessment"
+          [showToggleButton]="false"
+          (click)="onClickAssessment(assessment.id ?? 0)"
+        ></app-assessment-card>
+      } @empty {
+        <app-assessment-card-skeleton
+          class="frontdesk-assessments__card"
+        ></app-assessment-card-skeleton>
+      }
+    </div>
+  </div>
+</div>

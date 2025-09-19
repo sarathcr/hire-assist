@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { CandidateComponent } from './candidate/candidate.component';
+import { CandidateComponent } from './candidate.component';
+import { DialogService } from 'primeng/dynamicdialog';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('CandidateComponent', () => {
   let component: CandidateComponent;
@@ -9,6 +10,7 @@ describe('CandidateComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CandidateComponent],
+      providers: [DialogService, provideHttpClientTesting()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CandidateComponent);

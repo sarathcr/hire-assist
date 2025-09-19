@@ -1,0 +1,82 @@
+.coordinator {
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-15);
+    padding-bottom: var(--spacing-10);
+  }
+  &__form-field {
+    flex-basis: var(--spacing-percentage-50);
+  }
+
+  &__section-header {
+    margin-bottom: var(--spacing-10);
+    padding: var(--spacing-10);
+    padding-bottom: var(--spacing-10);
+  }
+  &__section-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+  }
+  &__action-button {
+    justify-content: flex-start;
+    width: fit-content;
+    padding-top: var(--spacing-10);
+  }
+  &__section {
+    background: var(--color-white);
+    border-radius: var(--spacing-10);
+    margin-top: var(--spacing-20);
+    overflow: hidden;
+    padding: var(--spacing-10);
+    border-width: 0.5px;
+    border-style: solid;
+    border-color: var(--color-seperator);
+    &__title {
+      margin: 0;
+      font-size: var(--font-size-16);
+    }
+    &__description {
+      margin-top: var(--spacing-10);
+      margin-bottom: var(--spacing-10);
+      font-size: var(--font-size-base);
+    }
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+  @media screen and (max-width: 768px) {
+    &__row {
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: var(--spacing-10);
+    }
+    &__form-field {
+      flex-basis: 100%;
+      width: 100% !important;
+    }
+  }
+}
+:host ::ng-deep .btn-rounded .p-button-rounded {
+  width: 2rem !important;
+  height: 2rem !important;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--spacing-10);
+  border: 0;
+}
+
+:host ::ng-deep .p-multiselect {
+  width: 100% !important;
+  max-width: 100%;
+}
+
+:host ::ng-deep .p-multiselect-label {
+  white-space: normal;
+  word-break: break-word;
+  overflow: visible;
+  max-height: none;
+}

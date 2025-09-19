@@ -113,10 +113,11 @@ export class UserDialogComponent implements OnInit {
   }
 
   private setOptions() {
-    (this.configMap['department'] as CustomSelectConfig).options =
-      this.optionsMap['departments'];
+    (this.configMap['department'] as CustomSelectConfig).options = this
+      .optionsMap['departments'] as unknown as Option[];
 
-    (this.configMap['roles'] as CustomSelectConfig).options =
-      this.optionsMap['roles'];
+    (this.configMap['roles'] as CustomSelectConfig).options = this.optionsMap[
+      'roles'
+    ] as unknown as Option[];
   }
 }

@@ -1,0 +1,55 @@
+.candidate {
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  &__form-field {
+    flex-basis: 50%;
+  }
+  &__Cuatom-button {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-10);
+  }
+  &__section-header {
+    margin-bottom: var(--spacing-10);
+    padding: var(--spacing-10);
+  }
+  &__section-header-content {
+    display: flex;
+    flex-direction: column;
+    // gap: var(--spacing-5);
+  }
+  &__section {
+    background: var(--color-white);
+    border-radius: var(--spacing-10);
+    margin-top: var(--font-size-20);
+    padding: var(--spacing-10);
+    border-width: 0.5px;
+    border-style: solid;
+    border-color: var(--color-seperator);
+    &:first-child {
+      margin-top: 0;
+    }
+    &__title {
+      margin: 0;
+      font-size: var(--font-size-16);
+    }
+    &__description {
+      margin-top: var(--spacing-10);
+      margin-bottom: var(--spacing-10);
+      font-size: var(--font-size-base);
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__schedule-btn {
+    margin-left: auto;
+  }
+}

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AssessmentDetailComponent } from './assessment-detail.component';
+import { ActivatedRoute } from '@angular/router';
 
 describe('AssessmentDetailComponent', () => {
   let component: AssessmentDetailComponent;
@@ -8,9 +9,9 @@ describe('AssessmentDetailComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AssessmentDetailComponent]
-    })
-    .compileComponents();
+      imports: [AssessmentDetailComponent],
+      providers: [ActivatedRoute],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(AssessmentDetailComponent);
     component = fixture.componentInstance;

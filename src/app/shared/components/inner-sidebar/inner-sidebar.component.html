@@ -19,7 +19,7 @@
         <a
           [routerLink]="item.route"
           class="p-menu-item-link"
-          [ngClass]="{ active: item.index === activeMenuItem }"
+          [ngClass]="{ active: item.index === activeMenuItem() }"
         >
           <span [class]="item.icon"></span>
           <span class="ml-2">{{ item.label }} </span>

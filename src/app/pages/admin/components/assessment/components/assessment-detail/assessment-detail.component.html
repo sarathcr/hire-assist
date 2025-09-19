@@ -1,24 +1,99 @@
-<h1>
-  @if (data) {
-    <p>{{ data.name }}</p>
-  } @else {
-    <p-skeleton width="18rem" height="2rem" />
-  }
-</h1>
-@if (stepperConfig && sidebarConfig) {
-  <div class="assessment-detail">
-    @if (sidebarConfig) {
-      <app-inner-sidebar [items]="sidebarConfig"></app-inner-sidebar>
+<div class="heading assessment-detail__main">
+  <h1 class="assessment-detail__title-wrapper">
+    @if (data) {
+      <p class="assessment-detail__title">{{ data.name }}</p>
     } @else {
-      <app-inner-sidebar-skeleton></app-inner-sidebar-skeleton>
+      <p-skeleton width="18rem" height="2rem" />
     }
-
-    <app-stepper
-      class="assessment-detail__stepper"
-      [config]="stepperConfig"
-      (stageChange)="onStepperChange($event)"
-    ></app-stepper>
+  </h1>
+  <div class="assessment-detail__wrapper">
+    <ul class="assessment-detail__rounds">
+      @for (stepHeader of step; track stepHeader.id; let i = $index) {
+        <li
+          class="assessment-detail__rounds-item"
+          [ngClass]="{ active: i === activeMenuItemIndex }"
+        >
+          <button
+            type="button"
+            tabindex="0"
+            class="assessment-detail__rounds-btn"
+            (click)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
+            (keydown)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
+          >
+            {{ stepHeader.round }}
+          </button>
+        </li>
+      } @empty {
+        <li class="assessment-detail__rounds-item">
+          <p-skeleton width="100%" height="2rem" />
+        </li>
+        <li class="assessment-detail__rounds-item">
+          <p-skeleton width="100%" height="2rem" />
+        </li>
+        <li class="assessment-detail__rounds-item">
+          <p-skeleton width="100%" height="2rem" />
+        </li>
+      }
+    </ul>
+    <div class="assessment-detail__content">
+      <app-table
+        [tableData]="tableData"
+        [columnsData]="columns"
+        [hasView]="true"
+        [hasRowEdit]="false"
+        [hasSearch]="true"
+        [parentLoader]="isLoading"
+        (selectedIds)="getSelectedCandidatesOnTable($event)"
+        (delete)="deleteCandidate($event)"
+        (view)="onView($event)"
+        (pageChangeAndSort)="onTablePayloadChange($event)"
+      >
+        <div class="assessment-detail__custom-button">
+          <p-button
+            icon="pi pi-calendar-plus"
+            pTooltip="Schedule Interview"
+            tooltipPosition="bottom"
+            [outlined]="true"
+            (onClick)="schedule()"
+          />
+          <p-button
+            icon="pi pi-user-plus"
+            pTooltip="Assign Candidate to Panel"
+            tooltipPosition="bottom"
+            severity="warn"
+            [outlined]="true"
+            (onClick)="OnPanelClick()"
+          />
+          <p-button
+            icon="pi pi-check-square"
+            pTooltip="Select Candidate"
+            severity="success"
+            tooltipPosition="bottom"
+            [outlined]="true"
+            (onClick)="selectCandidate()"
+          />
+          <p-button
+            icon="pi pi-ban"
+            severity="danger"
+            pTooltip="Reject Candidate"
+            tooltipPosition="bottom"
+            [outlined]="true"
+            (onClick)="rejectCandidate()"
+          />
+        </div>
+      </app-table>
+    </div>
   </div>
-} @else {
-  <app-stepper-skeleton></app-stepper-skeleton>
-}
+
+  <div class="assessment-detail__complete-btn">
+    <app-button
+      [disabled]="roundStatus"
+      [buttonSize]="'small'"
+      [buttonLabel]="'Complete'"
+      [buttonVariant]="'outlined'"
+      [isLoading]="!tableData"
+      (btnClick)="CompleteAssessmentRound()"
+    ></app-button>
+  </div>
+  <p-toast position="top-right" class="Toast"></p-toast>
+</div>

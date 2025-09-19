@@ -1,16 +1,13 @@
 <div class="schedule-interview">
   <form [formGroup]="fGroup">
-
     <div class="dialog__content">
-  <h4>Selected Candidate IDs</h4>
+      <h4>Selected Candidate IDs</h4>
 
-  <p-chip *ngFor="let id of selectedCandidateIds; let i = index"
-          [label]="id"
-          [removable]="true"
-          (onRemove)="removeCandidate(i)">
-  </p-chip>
-
-</div>
+      @for (id of selectedCandidateIds; track id; let i = $index) {
+        <p-chip [label]="id" [removable]="true" (onRemove)="removeCandidate(i)">
+        </p-chip>
+      }
+    </div>
     <app-input-text-calender
       [formGroup]="fGroup"
       [config]="configMap['scheduleDate']"

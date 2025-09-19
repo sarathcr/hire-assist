@@ -1,11 +1,15 @@
-import { Injectable } from '@angular/core';
-import { Questionsinterface } from '../models/question.model';
-import { ApiService } from '../../../shared/services/api.service';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { StoreService } from '../../../shared/services/store.service';
-import { ASSESSMENT_URL } from '../../../shared/constants/api';
 import { Observable } from 'rxjs';
+import { ASSESSMENT_URL } from '../../../shared/constants/api';
+import { ApiService } from '../../../shared/services/api.service';
+import { StoreService } from '../../../shared/services/store.service';
+import {
+  FileDto,
+  FileRequest,
+  Questionsinterface,
+} from '../models/question.model';
 
 @Injectable({
   providedIn: 'root',
@@ -38,7 +42,48 @@ export class QuestionService extends ApiService<any> {
       `${this.getResourceUrl()}/Question/${id}`,
     );
   }
+
+  public getBlobs(url: string): Observable<Blob> {
+    return this.httpClient.get<Blob>(`${this.getResourceUrl()}/files/${url}`);
+  }
   public updateQuestion(payload: Questionsinterface) {
     return this.httpClient.put(`${this.getResourceUrl()}/Question`, payload);
+  }
+
+  public GetFiles(payload: FileDto): Observable<Blob> {
+    const url = `${this.getResourceUrl()}/files?blobId=${payload.blobId}&attachmentId=${payload.attachmentType}`;
+    return this.httpClient.get(url, { responseType: 'blob' });
+  }
+
+  public uploadFiles(payload: FileRequest) {
+    const formData = new FormData();
+    formData.append('Type', payload.attachmentType.toString());
+    formData.append('File', payload.file);
+
+    return this.httpClient.post<FileDto>(
+      `${this.getResourceUrl()}/files`,
+      formData,
+    );
+  }
+
+  public deleteFiles(payload: FileDto) {
+    return this.httpClient.delete(
+      `${this.getResourceUrl()}/files?blobId=${payload.blobId}&attachmentTypeId=${payload.attachmentType}`,
+    );
+  }
+
+  public uploadMultiFiles(payload: FileRequest) {
+    const formData = new FormData();
+
+    formData.append('Type', payload.attachmentType.toString());
+    if (payload.files) {
+      for (const file of payload.files) {
+        formData.append('Files', file);
+      }
+    }
+    return this.httpClient.post<FileDto[]>(
+      `${this.getResourceUrl()}/files/multifiles`,
+      formData,
+    );
   }
 }

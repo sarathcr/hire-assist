@@ -36,6 +36,12 @@
       display: flex;
       gap: 1rem;
     }
+    &_hidden {
+      display: none;
+    }
+    &_show{
+      display: block;
+    }
   }
 
   ::ng-deep {
@@ -51,4 +57,5 @@
       }
     }
   }
+ 
 }

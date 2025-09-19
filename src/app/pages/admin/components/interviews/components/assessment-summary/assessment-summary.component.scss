@@ -1,0 +1,23 @@
+.assessment-summary {
+  &__title {
+    font-size: var(--font-size-20);
+    color: var(--color-grey);
+  }
+  &__wrapper {
+    height: calc(100vh - 230px);
+    overflow-y: auto;
+  }
+  &__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, 300px);
+    gap: 1rem;
+  }
+  ::ng-deep {
+    .pagination {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      left: 0;
+    }
+  }
+}

@@ -1,0 +1,134 @@
+@if (tabledata && !isLoading) {
+  <!--create round-->
+  <div class="QuestionSet__section">
+    <div class="QuestionSet__section-header">
+      <h2 class="QuestionSet__section__title app-title">Create QuestionSet</h2>
+      <p class="QuestionSet__section__description">
+        Create a new custom QuestionSet and assign to your assessment
+      </p>
+    </div>
+    <div class="QuestionSet-form_field-container">
+      <app-input-text
+        type="text"
+        class="QuestionSet__field-col_one"
+        [formGroup]="fGroup"
+        [config]="configMap['title']"
+      ></app-input-text>
+      <app-input-textarea
+        class="QuestionSet__textarea"
+        [formGroup]="fGroup"
+        type="text"
+        [config]="configMap['description']"
+      ></app-input-textarea>
+    </div>
+    <div class="question-set-form__button">
+      <app-button
+        class="QuestionSet__action-button"
+        [buttonLabel]="'Create'"
+        [disabled]="!fGroup.valid"
+        (btnClick)="onCreateQuestionSet()"
+      ></app-button>
+    </div>
+  </div>
+  <div class="QuestionSet__section">
+    <div class="QuestionSet__section-header">
+      <h2 class="QuestionSet__section__title app-title">Select questionSet</h2>
+      <p class="QuestionSet__section__description">
+        Choose from available questionSet for this assessment
+      </p>
+    </div>
+    <div class="QuestionSet__btn-wrapper">
+      <app-input-select
+        [formGroup]="fGroup"
+        [config]="configMap['questionSet']"
+      />
+
+      <app-button
+        class="QuestionSet__action-button"
+        [buttonLabel]="'Update'"
+        (btnClick)="onUpdateQuestionSet()"
+      ></app-button>
+    </div>
+  </div>
+  <!-- Select Questions -->
+  <div class="QuestionSet__section">
+    <div class="QuestionSet__section-header">
+      <h2 class="QuestionSet__section__title app-title">
+        Select Questions for the set
+      </h2>
+      <p class="QuestionSet__section__description">
+        Select the questions of questionset
+      </p>
+    </div>
+    @if (selectedIds.length > 0) {
+      <div class="QuestionSet__section-header">
+        <h2
+          style="color: var(--secondary-color)"
+          class="QuestionSet__section__title app-title"
+        >
+          Selected Questions
+        </h2>
+        <div class="QuestionSet__table">
+          <div class="QuestionSet__score-table">
+            <p-table
+              [value]="groupedSelectedData"
+              [tableStyle]="{ 'min-width': '10rem' }"
+            >
+              <ng-template #header>
+                <tr>
+                  <th scope="col">QuestionType</th>
+                  <th scope="col">No. questions</th>
+                  <th scope="col">Total mark</th>
+                </tr>
+              </ng-template>
+              <ng-template #body let-group>
+                <tr>
+                  <td>{{ group.type }}</td>
+                  <td>{{ group.count }}</td>
+                  <td>{{ group.totalMarks }}</td>
+                </tr></ng-template
+              >
+            </p-table>
+          </div>
+          <div class="QuestionSet__knob">
+            <p-knob [(ngModel)]="totalScore" [readonly]="true"> </p-knob>
+            <div>Max Score</div>
+          </div>
+        </div>
+      </div>
+    }
+    <app-table
+      [tableData]="tabledata"
+      [columnsData]="columns"
+      [hasSearch]="true"
+      (pageChangeAndSort)="onTablePayloadChange($event)"
+      (selectedIds)="onSelectedIds($event)"
+      [alreadySelected]="selectedIds"
+    ></app-table>
+    <br />
+    <form [formGroup]="fGroup">
+      <div class="questionSets-modal__button">
+        @if (!isUpdate) {
+          <app-button
+            class="QuestionSet__action-button"
+            [buttonLabel]="'Submit'"
+            (btnClick)="onSubmit()"
+            [disabled]="selectedIds.length === 0"
+          ></app-button>
+        } @else {
+          <app-button
+            class="QuestionSet__action-button"
+            [buttonLabel]="'Save'"
+            (btnClick)="onUpdate()"
+            [disabled]="selectedIds.length === 0"
+          ></app-button>
+        }
+      </div>
+    </form>
+  </div>
+
+  <p-toast position="top-right" class="Toast"></p-toast>
+}
+@if (isLoading) {
+  <app-question-set-step-skeleton></app-question-set-step-skeleton>
+}

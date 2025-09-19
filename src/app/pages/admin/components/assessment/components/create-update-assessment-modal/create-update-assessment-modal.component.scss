@@ -44,12 +44,17 @@
       display: flex;
       gap: 1rem;
     }
+    &_hidden {
+      display: none;
+    }
+    &_show {
+      display: block;
+    }
   }
 
   ::ng-deep {
     .p-datepicker {
       display: flex;
-      height: 43px;
     }
   }
 
@@ -59,5 +64,8 @@
         display: block;
       }
     }
+  }
+  #toggle-switch {
+    display: none;
   }
 }

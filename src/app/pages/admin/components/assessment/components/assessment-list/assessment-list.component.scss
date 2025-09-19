@@ -19,16 +19,15 @@
   &__wrapper {
     height: calc(100vh - 255px);
     overflow-y: auto;
-    margin-right: -25px;
+    margin-right: -20px;
     padding-right: 25px;
   }
   &__list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, 300px);
     column-gap: var(--spacing-15);
     row-gap: var(--spacing-15);
     width: 100%;
-    justify-content: center;
     a {
       text-decoration: none !important;
     }
@@ -38,5 +37,17 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+  @media screen and (max-width: 768px) {
+    &__list {
+      grid-template-columns: 1fr;
+    }
+    &__title {
+      margin: 0;
+      font-size: var(--font-size-18);
+    }
+    &__wrapper {
+      height: calc(100vh - 201px);
+    }
   }
 }

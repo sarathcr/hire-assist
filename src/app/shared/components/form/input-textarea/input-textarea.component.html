@@ -13,11 +13,11 @@
   </p-floatlabel>
 
   @if (inputTextAreaConfig.matSuffix) {
-    <span class="input-suffix">{{ inputTextAreaConfig.matPrefix }}</span>
-  } @else if (inputTextAreaConfig.matPrefix) {
     <span class="input-suffix">{{ inputTextAreaConfig.matSuffix }}</span>
+  } @else if (inputTextAreaConfig.matPrefix) {
+    <span class="input-prefix">{{ inputTextAreaConfig.matPrefix }}</span>
   } @else if (dynamicSuffix) {
-    <span class="input-suffix">{{ dynamicSuffix }}</span>
+    <span class="input-dynamicSuffix">{{ dynamicSuffix }}</span>
   }
   @if (formControl.touched && formControl.invalid) {
     <span class="input-text-area__validation-label"> {{ errorMsg }}</span>

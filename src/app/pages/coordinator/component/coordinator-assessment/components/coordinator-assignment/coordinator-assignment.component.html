@@ -1,0 +1,40 @@
+<div class="coordinator-detail">
+  <p-toast></p-toast>
+  <h1 class="coordinator-detail__title">Coordinator Detail</h1>
+  <div class="coordinator-detail__view">
+    <div class="coordinator-detail__view__content">
+      <div class="coordinator-detail__view__content__btn-grp">
+        <app-button
+          [buttonLabel]="'Schedule Panel'"
+          (btnClick)="schedule()"
+        ></app-button>
+      </div>
+      <div class="coordinator-detail__schedule-layout">
+        <div class="coordinator-detail__schedule-layout__left">
+          <h2>Candidates</h2>
+          <app-table
+            [tableData]="data"
+            [columnsData]="candidateColumn"
+            heading="Candidate List"
+            [hasSearch]="true"
+            (pageChangeAndSort)="onTablePayloadChange($event)"
+            (selectedIds)="getSelectedcandidateId($event)"
+          ></app-table>
+        </div>
+        <div class="coordinator-detail__schedule-layout__right">
+          <h2>Available Panels</h2>
+          <app-table
+            [tableData]="panelData"
+            [columnsData]="panelColumn"
+            heading="Panel List"
+            [hasSearch]="true"
+            (edit)="editPanel($event)"
+            (pageChangeAndSort)="onPanelTablePayloadChange($event)"
+            (selectedIds)="getSelectedPanelId($event)"
+            [alreadySelected]="selectedPanel"
+          ></app-table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

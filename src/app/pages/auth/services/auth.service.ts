@@ -3,7 +3,11 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import * as Forge from 'node-forge';
 import { Observable, Subject, tap } from 'rxjs';
-import { LOGIN_URL } from '../../../shared/constants/api';
+import {
+  LOGIN_URL,
+  RESET_CHANGE_PASSWORD_URL,
+  RESET_PASSWORD_URL,
+} from '../../../shared/constants/api';
 import {
   initialTokenData,
   TokenData,
@@ -51,6 +55,43 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
         this.initialize(response);
       }),
     );
+  }
+
+  // Public
+  public ResetPassword(ResetPasswordData: {
+    email: string;
+  }): Observable<boolean> {
+    const { email } = ResetPasswordData;
+
+    const emailForResetPassword = {
+      email: email.trim().toString(),
+    };
+
+    return this.http
+      .post<boolean>(RESET_PASSWORD_URL, emailForResetPassword)
+      .pipe();
+  }
+
+  public ResetPasswordChange(ResetPasswordChangeData: {
+    token: string;
+    id: string;
+    newPassword: string;
+    confirmPassword: string;
+  }): Observable<boolean> {
+    const { token, id, newPassword, confirmPassword } = ResetPasswordChangeData;
+
+    const resetPasswordData = {
+      token: token.trim().toString(),
+      id: id.trim().toString(),
+      newPassword: this.encryptWithPublicKey(newPassword.trim()).toString(),
+      confirmPassword: this.encryptWithPublicKey(
+        confirmPassword.trim(),
+      ).toString(),
+    };
+
+    return this.http
+      .post<boolean>(RESET_CHANGE_PASSWORD_URL, resetPasswordData)
+      .pipe();
   }
 
   /** Initializes User and TokenData in AppState */

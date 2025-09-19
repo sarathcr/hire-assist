@@ -1,0 +1,16 @@
+<div class="file-dialog">
+  <div class="file-dialog__body" (contextmenu)="onRightClick($event)">
+    @if (isLoading) {
+      <app-file-skeleton></app-file-skeleton>
+    } @else {
+      <div class="file-dialog__image-container">
+        <app-image
+          [imageUrl]="imageUrl"
+          [paddingTop]="'0'"
+          [forceCancelRequest]="forceCancelRequest"
+          (closeImage)="onClose()"
+        ></app-image>
+      </div>
+    }
+  </div>
+</div>

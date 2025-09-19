@@ -1,0 +1,124 @@
+.QuestionSet {
+  &__btn-wrapper {
+    display: flex;
+    gap: 1rem;
+  }
+  &__button {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: var(--spacing-15);
+    &_add {
+      justify-content: flex-start;
+    }
+    &_submit {
+      gap: var(--spacing-15);
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+    }
+  }
+  &_field {
+    padding-top: var(--spacing-10);
+    &-row {
+      &_one {
+        flex-basis: var(--spacing-percentage-50);
+      }
+    }
+  }
+  &__textarea {
+    margin-top: 1rem;
+  }
+
+  &__action-button {
+    justify-content: flex-start;
+    width: fit-content;
+    ::ng-deep {
+      .p-button {
+        font-size: var(--font-size-16);
+      }
+    }
+  }
+  &__section-header {
+    margin-bottom: var(--spacing-10);
+    padding: var(--spacing-10);
+  }
+  &__section-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+  }
+  &__section {
+    background: var(--color-white);
+    border-radius: var(--spacing-10);
+    margin-top: var(--spacing-20);
+    overflow: visible;
+    padding: var(--spacing-10);
+    border-width: 0.5px;
+    border-style: solid;
+    border-color: var(--color-seperator);
+    &__skeleton {
+      width: 100%;
+    }
+    &__title {
+      margin: 0;
+      font-size: var(--font-size-16);
+    }
+    &__description {
+      margin-top: var(--spacing-10);
+      margin-bottom: var(--spacing-10);
+      font-size: var(--font-size-base);
+    }
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+  &__field {
+    display: flex;
+    width: 100%;
+    gap: var(--spacing-15);
+    align-items: center;
+  }
+  &__label {
+    margin-bottom: var(--spacing-25);
+    display: flex;
+    align-items: center;
+  }
+  &__table {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  &__score-table {
+    width: var(--spacing-percentage-50);
+  }
+  &__knob {
+    padding-right: var(--spacing-210);
+  }
+  @media screen and (max-width: 768px) {
+    &__action-button {
+      width: 100%;
+    }
+    &__field {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    &__score-table {
+      width: 100%;
+    }
+    &__knob {
+      padding-right: 0;
+    }
+    &__btn-wrapper {
+      display: block;
+      ::ng-deep {
+        .input-select {
+          margin-bottom: var(--spacing-10);
+        }
+      }
+    }
+    &__section-header {
+      padding: 0;
+    }
+  }
+}

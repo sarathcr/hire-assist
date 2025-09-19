@@ -1,0 +1,34 @@
+<app-table
+  [tableData]="panelData"
+  [columnsData]="panelColumn"
+  heading="Panel List"
+  [hasSearch]="true"
+  (edit)="editPanel($event)"
+  (pageChangeAndSort)="onPanelTablePayloadChange($event)"
+  (selectedIds)="getSelectedPanelId($event)"
+  [alreadySelected]="selectedPanel"
+></app-table>
+<footer class="dialog-footer">
+  <div class="dialog-footer__btn-wrapper">
+    <app-button
+      buttonLabel="Cancel"
+      [buttonVariant]="'outlined'"
+      (btnClick)="onClose()"
+    ></app-button>
+  </div>
+  <div class="dialog-footer__btn-wrapper">
+    @if (existingPanel.length > 0) {
+      <app-button
+        buttonLabel="Update"
+        (btnClick)="onSubmit()"
+        [disabled]="IsMultiplePanel"
+      ></app-button>
+    } @else {
+      <app-button
+        buttonLabel="Assign"
+        (btnClick)="onSubmit()"
+        [disabled]="IsMultiplePanel"
+      ></app-button>
+    }
+  </div>
+</footer>

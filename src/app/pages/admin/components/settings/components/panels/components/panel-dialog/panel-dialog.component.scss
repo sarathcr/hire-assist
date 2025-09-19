@@ -1,0 +1,52 @@
+:host {
+  padding: var(--spacing-30);
+}
+
+.panel-form {
+  padding: var(--spacing-10) 0 0;
+
+  &__label {
+    margin-bottom: var(--spacing-25);
+    display: flex;
+    align-items: center;
+  }
+  &__button {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  &__field {
+    width: 100%;
+    &-row {
+      &_one {
+        flex-basis: 50%;
+      }
+    }
+
+    &-container {
+      display: flex;
+      gap: 1rem;
+    }
+    &_hidden {
+      display: none;
+    }
+    &_show {
+      display: block;
+    }
+  }
+
+  ::ng-deep {
+    .p-datepicker {
+      display: flex;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    &__field {
+      &-container {
+        display: block;
+      }
+    }
+  }
+}

@@ -1,15 +1,23 @@
 <div class="batch">
   <h1>Batches</h1>
+  <!-- @if (!isLoading()) { -->
   <app-table
     [tableData]="data"
     [columnsData]="columns"
-    heading="Manage Batches"
-    [hasDelete]="false"
-    (create)="addNewBatch()"
+    [parentLoader]="isLoading"
+    [hasSearch]="true"
+    [hasCheckbox]="false"
     (edit)="editBatch($event)"
     (delete)="deleteBatch($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
   >
+    <div class="batch__button">
+      <app-button
+        [buttonLabel]="'New'"
+        icon="pi pi-plus"
+        (btnClick)="addNewBatch()"
+      ></app-button>
+    </div>
   </app-table>
   <p-toast position="top-right" class="Toast"></p-toast>
 </div>

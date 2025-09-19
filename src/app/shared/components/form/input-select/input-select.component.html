@@ -8,17 +8,16 @@
       optionValue="value"
       [showClear]="true"
       class="w-full md:w-56"
-      [formControlName]="selectConfig.id" /><label for="over_label">{{
-      selectConfig.labelKey
-    }}</label></p-floatlabel
+      [formControlName]="selectConfig.id"
+    /><label for="over_label">{{ selectConfig.labelKey }}</label></p-floatlabel
   >
 
   @if (selectConfig.matSuffix) {
-    <span class="input-suffix">{{ selectConfig.matPrefix }}</span>
-  } @else if (selectConfig.matPrefix) {
     <span class="input-suffix">{{ selectConfig.matSuffix }}</span>
+  } @else if (selectConfig.matPrefix) {
+    <span class="input-prefix">{{ selectConfig.matPrefix }}</span>
   } @else if (dynamicSuffix) {
-    <span class="input-suffix">{{ dynamicSuffix }}</span>
+    <span class="input-dynamicSuffix">{{ dynamicSuffix }}</span>
   }
   @if (formControl.touched && formControl.invalid) {
     <span class="input-select__validation-label"> {{ errorMsg }}</span>

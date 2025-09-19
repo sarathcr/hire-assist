@@ -1,48 +1,66 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, input, output } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import {
+  Component,
+  computed,
+  effect,
+  Input,
+  input,
+  output,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FilterMatchMode, MessageService, SelectItem } from 'primeng/api';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { ChipModule } from 'primeng/chip';
 import { DropdownModule } from 'primeng/dropdown';
-import { FileUpload } from 'primeng/fileupload';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputText, InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule } from 'primeng/paginator';
 import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
-import { TableModule, TableRowCollapseEvent } from 'primeng/table';
+import { Table, TableModule, TableRowCollapseEvent } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
+import { Tooltip } from 'primeng/tooltip';
+import { debounceTime, Subject } from 'rxjs';
 import {
   PaginatedData,
   PaginatedPayload,
 } from '../../models/pagination.models';
 import {
-  ColumnField,
   PaginatedDataActions,
   TableColumnsData,
 } from '../../models/table.models';
-import { ButtonComponent } from '../button/button.component';
-import { TableSkeletonComponent } from './table.skeleton';
+import { BaseComponent } from '../base/base.component';
+import { ImageComponent } from '../image';
+import { ImageSkeletonComponent } from '../image/image-skeleton';
 
 export const matchOptions = [
-  { label: 'Greater Than', value: FilterMatchMode.GREATER_THAN },
-  { label: 'Less Than', value: FilterMatchMode.LESS_THAN },
-  {
-    label: 'Less Than Or Equal To',
-    value: FilterMatchMode.LESS_THAN_OR_EQUAL_TO,
-  },
-  {
-    label: 'Greater Than Or Equal To',
-    value: FilterMatchMode.GREATER_THAN_OR_EQUAL_TO,
-  },
   { label: 'Equals', value: FilterMatchMode.EQUALS },
+  { label: 'Not Equals', value: FilterMatchMode.NOT_EQUALS },
+];
+
+export const uniqueStatuses = [
+  { label: 'Scheduled', value: 'Scheduled' },
+  { label: 'Pending', value: 'Pending' },
+  { label: 'Selected', value: 'Selected' },
+  { label: 'Completed', value: 'Completed' },
+  { label: 'Rejected', value: 'Rejected' },
+];
+
+export const uniqueStatusesForIsSchedule = [
+  { label: 'Scheduled', value: 'Scheduled' },
+  { label: 'NotScheduled', value: 'Not scheduled' },
+];
+export const uniquesActives = [
+  { label: 'Active', value: 'Active' },
+  { label: 'InActive', value: 'InActive' },
 ];
 
 @Component({
@@ -55,7 +73,6 @@ export const matchOptions = [
     ToolbarModule,
     TextareaModule,
     CommonModule,
-    FileUpload,
     DropdownModule,
     InputTextModule,
     FormsModule,
@@ -65,83 +82,121 @@ export const matchOptions = [
     InputText,
     ChipModule,
     PaginatorModule,
-    CommonModule,
     SkeletonModule,
-    TableSkeletonComponent,
     TagModule,
     BadgeModule,
-    ButtonComponent,
+    Tooltip,
+    DatePipe,
+    ImageComponent,
+    ImageSkeletonComponent,
   ],
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss',
 })
-export class TableComponent<T extends { id: string }> implements AfterViewInit {
+export class TableComponent<
+  T extends { id: string; [key: string]: any },
+> extends BaseComponent {
+  public searchValue!: string;
+  private readonly searchSubject = new Subject<PaginatedPayload>();
+  @Input() previewImageUrls: Record<number, string[]> = {};
+  @Input() isImageLoadings: Record<number, boolean> = {};
+  @ViewChild('dt') table!: Table;
+  @Input() hasCheckbox = true;
+  // Track first lazy load event
+  public isFirstLazyLoad = true;
+
   // Input Properties
   public tableData = input<PaginatedData<T>>();
   public columnsData = input<TableColumnsData>();
-  public heading = input<string>();
-  public importButton = input<boolean>(false);
   public exportButton = input<boolean>(false);
-  public SearchBar = input<boolean>(false);
-  public hasAdd = input<boolean>(true);
-  public hasEdit = input<boolean>(true);
-  public hasDelete = input<boolean>(true);
-  public hasFilter = input<boolean>(true);
   public hasView = input<boolean>(false);
   public hasRowEdit = input<boolean>(true);
-  public customButton = input<boolean>(false);
-  public customButtonLabel = input<string>('');
-
-  public hideToolbar = input<boolean>(false);
-
+  public alreadySelected = input<string[]>([]);
   public selectedItems: { id: string }[] = [];
   public expandedRows: Record<string, boolean> = {};
   public matchModeOptions: SelectItem[] = matchOptions;
-  public hasDeleteButton = input<boolean>(false);
-  public hasAddButton = input<boolean>(false);
-  public hasScheduleButton = input<boolean>(false);
+  public activeStatusOptions: SelectItem[] = uniquesActives;
+  public statusOptions: SelectItem[] = uniqueStatuses;
+  public statusOptionsForSchedule: SelectItem[] = uniqueStatusesForIsSchedule;
+  public hasSearch = input<boolean>(false);
+  public activeFilters = new Set<string>();
+  public isAnyFilterActive = false;
+
+  public parentLoader = input<boolean>(false);
+  private readonly internalIsLoading = signal<boolean>(false);
+  public isLoading = computed(
+    () => this.parentLoader() || this.internalIsLoading(),
+  );
 
   // Output Properties
-  public create = output();
   public edit = output<any>();
-  public view = output();
+  public view = output<any>();
+  public btnClick = output<any>();
   public delete = output<any>();
-  public selectedIds = output<string[]>();
-  public deleteSelected = output<string[]>();
+  public selectedIds = output<any>();
+  public select = output<string[]>();
+  public reject = output<string[]>();
   public import = output<File>();
-  public batchSelected = output<string[]>();
-  public Schedule = output<boolean>();
   public pageChangeAndSort = output<PaginatedPayload>();
-  public buttonClick = output();
-
-  public globalFilterFields: string[] = [];
-  public selectedItemsIds!: string[] | undefined;
+  public buttonClick = output<any>();
   public PaginatedDataActions: any = PaginatedDataActions;
 
-  constructor(private messagesService: MessageService) {}
+  constructor(private readonly messagesService: MessageService) {
+    super();
+    effect(() => {
+      if (this.tableData()) {
+        this.internalIsLoading.set(false);
+      }
+      const ids = this.alreadySelected();
+      const data = this.tableData()?.data || [];
+      this.selectedItems = data.filter((item) =>
+        ids.includes(item?.id?.toString()),
+      );
+    });
 
-  ngAfterViewInit(): void {
-    this.setGlobalFilterFields();
+    const sub = this.searchSubject
+      .pipe(debounceTime(400))
+      .subscribe((payload: PaginatedPayload) => {
+        this.pageChangeAndSort.emit(payload);
+      });
+    this.subscriptionList.push(sub);
   }
 
-  public onCreate(): void {
-    this.create.emit();
-  }
+  public displayData = computed(() => {
+    if (this.isLoading()) {
+      return [];
+    }
+    return this.tableData()?.data || [];
+  });
 
   public onEdit(data: any): void {
     this.edit.emit(data);
+  }
+  public onSearch(event: any): void {
+    this.internalIsLoading.set(true);
+    this.isAnyFilterActive = true;
+    this.searchValue = event.target.value ?? '';
+    const payload: PaginatedPayload = new PaginatedPayload();
+    payload.filterMap['searchKey'] = this.searchValue;
+    this.searchSubject.next(payload);
+    if (this.searchValue === '') {
+      this.isAnyFilterActive = false;
+    }
   }
 
   public onDelete(id: string): void {
     this.delete.emit(id);
   }
 
-  public onButtonClick(event: any): void {
-    this.buttonClick.emit(event);
+  public onButtonClick(event: any, fName?: string): void {
+    this.buttonClick.emit({ event, fName });
   }
 
   public onView(data: any): void {
     this.view.emit(data);
+  }
+  public onStartInterview(data: any): void {
+    this.btnClick.emit(data);
   }
 
   public onImport(event: any): void {
@@ -149,32 +204,13 @@ export class TableComponent<T extends { id: string }> implements AfterViewInit {
     this.import.emit(file);
   }
 
-  public handleSchedule(): void {
-    if (this.selectedItems.length > 0) {
-      const selectedIdsList = this.selectedItems.map(
-        (item: any) => item?.email ?? '',
-      );
-      this.selectedIds.emit(selectedIdsList);
-    } else {
-      console.warn('No items selected.');
+  public oncheckBoxClicked(): void {
+    this.selectedIds.emit(this.selectedItems);
+    if (this.selectedItems.length == 0) {
       this.messagesService.add({
         severity: 'warn',
         summary: 'Warning',
-        detail: 'No items selected.',
-      });
-    }
-  }
-
-  public deleteSelectedItems(): void {
-    if (this.selectedItems.length > 0) {
-      const selectedIds = this.selectedItems.map((item) => item.id);
-      this.deleteSelected.emit(selectedIds);
-    } else {
-      console.warn('No selected items to delete.');
-      this.messagesService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'No selected items to delete.',
+        detail: 'No selected items.',
       });
     }
   }
@@ -206,7 +242,7 @@ export class TableComponent<T extends { id: string }> implements AfterViewInit {
     | 'secondary'
     | 'contrast'
     | undefined {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'inactive':
         return 'danger';
       case 'completed':
@@ -217,26 +253,55 @@ export class TableComponent<T extends { id: string }> implements AfterViewInit {
         return 'warn';
       case 'scheduled':
         return 'success';
+      case 'active':
+        return 'success';
+      case 'selected':
+        return 'info';
+      case 'rejected':
+        return 'danger';
+      case 'assigned':
+        return 'success';
       default:
         return 'info';
     }
   }
 
+  public onClear() {
+    this.internalIsLoading.set(true);
+    this.searchValue = '';
+    this.activeFilters.clear();
+    this.isAnyFilterActive = false;
+    this.table.clear();
+    const payload: PaginatedPayload = new PaginatedPayload();
+    this.pageChangeAndSort.emit(payload);
+  }
+
   public onLazyLoad(event: any): void {
+    if (this.isFirstLazyLoad) {
+      this.isFirstLazyLoad = false;
+      return;
+    }
+    this.internalIsLoading.set(true);
+    this.activeFilters.clear();
     const payload: PaginatedPayload = new PaginatedPayload();
     payload.pagination.pageNumber = (event.first ?? 0) / (event.rows ?? 1) + 1;
     payload.pagination.pageSize =
       event.rows ?? this.tableData()?.pageSize ?? 10;
 
-    if (event.sortField) {
+    // Sorting
+    if (event.multiSortMeta) {
+      payload.multiSortedColumns = event.multiSortMeta.map((sort: any) => ({
+        active: sort.field,
+        direction: sort.order === 1 ? 'asc' : 'desc',
+      }));
+    } else if (event.sortField) {
       payload.multiSortedColumns.push({
         active: event.sortField,
         direction: event.sortOrder === 1 ? 'asc' : 'desc',
       });
-
-      this.pageChangeAndSort.emit(payload);
     }
 
+    // Filtering
     if (event.filters) {
       Object.entries(event.filters).forEach(([field, filterMeta]) => {
         const constraints = filterMeta as {
@@ -251,21 +316,30 @@ export class TableComponent<T extends { id: string }> implements AfterViewInit {
           );
 
           if (validConstraints.length > 0) {
+            this.activeFilters.add(field);
             const filterString = validConstraints
               .map((constraint, index) => {
                 const operator =
                   constraint.operator?.toUpperCase() === 'OR' ? 'OR' : 'AND';
-                const condition = `${this.mapMatchModeToOperator(constraint.matchMode)}${constraint.value}`;
+                const condition = this.mapMatchModeToOperator(
+                  constraint.matchMode,
+                  constraint.value,
+                );
                 return index === 0 ? condition : `${operator} ${condition}`;
               })
               .join(' ');
 
             payload.filterMap[field] = filterString;
           }
-          this.pageChangeAndSort.emit(payload);
         }
       });
     }
+    if (this.searchValue) {
+      payload.filterMap['searchKey'] = this.searchValue;
+    }
+
+    this.isAnyFilterActive = this.activeFilters.size > 0 || !!this.searchValue;
+    // Emit the combined filter/sort/page info
     this.pageChangeAndSort.emit(payload);
   }
 
@@ -292,49 +366,48 @@ export class TableComponent<T extends { id: string }> implements AfterViewInit {
     this.expandedRows = {};
   }
 
-  public passSelectedItems(operation: string) {
-    if (this.selectedItems && this.selectedItems.length > 0) {
-      this.selectedItemsIds = this.selectedItems.map((item) => item.id ?? '');
-      console.log(this.selectedItemsIds);
-      if (operation === 'batch') {
-        this.batchSelected.emit(this.selectedItemsIds);
-      } else if (operation === 'delete') {
-        this.deleteSelected.emit(this.selectedItemsIds);
-      }
+  // Private methods
+
+  public getMatchModes(column: any): SelectItem[] | undefined {
+    if (column.hasMultiStatus) {
+      return undefined;
     } else {
-      console.error('No selected items.');
+      return this.matchModeOptions;
     }
   }
 
-  public onSchedule() {
-    this.Schedule.emit(true);
-    console.log('Schedule button clicked');
-  }
-
-  // Private methods
-
-  private setGlobalFilterFields(): void {
-    this.globalFilterFields = (this.columnsData()?.columns || [])
-      .filter((col: ColumnField) => col.field && col.field !== 'actions')
-      .map((col: ColumnField) => col.field);
-  }
-
-  private mapMatchModeToOperator(matchMode: string): string {
+  private mapMatchModeToOperator(matchMode: string, value: any): string {
     switch (matchMode) {
+      case 'contains':
+        return `like %${value}%`;
+      case 'notContains':
+        return `not like %${value}%`;
+      case 'startsWith':
+        return `like ${value}%`;
+      case 'endsWith':
+        return `like %${value}`;
       case 'equals':
-        return '=';
+        return `= ${value}`;
       case 'notEquals':
-        return '!=';
+        return `!= ${value}`;
       case 'lt':
-        return '<';
+        return `< ${value}`;
       case 'lte':
-        return '<=';
+        return `<= ${value}`;
       case 'gt':
-        return '>';
+        return `> ${value}`;
       case 'gte':
-        return '>=';
+        return `>= ${value}`;
+      case 'dateIs':
+        return `= ${value}`;
+      case 'dateIsNot':
+        return `!= ${value}`;
+      case 'dateBefore':
+        return `< ${value}`;
+      case 'dateAfter':
+        return `> ${value}`;
       default:
-        return '=';
+        return `= ${value}`;
     }
   }
 }

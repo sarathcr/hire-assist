@@ -19,10 +19,13 @@
   --background-light-grey: rgba(255, 255, 255, 0.5);
   --background-secondary: #2196f324;
   --dashboard-main-background-color: #f5f6fa;
+  --color-warning-secondary: #f39b2124;
+  --background-blue: rgb(0, 149, 255);
   // Spacing Variables
   // rem
   --spacing-1-rem: 1rem;
   // pixels
+  --spacing-2: 2px;
   --spacing-5: 5px;
   --spacing-10: 10px;
   --spacing-15: 15px;
@@ -31,13 +34,31 @@
   --spacing-30: 30px;
   --spacing-50: 50px;
   --spacing-60: 60px;
+  --spacing-120: 120px;
+  --spacing-210: 210px;
+  --spacing-500: 500px;
+  //percentage
+  --spacing-percentage-5: 5%;
+  --spacing-percentage-15: 15%;
+  --spacing-percentage-50: 50%;
+
+  --spacing-percentage-90: 90%;
+  --spacing-percentage-50--spacing-percentage-50: 50%;
   // Font Size
   --font-size-small: 12px;
   --font-size-base: 14px;
+  --font-size-16: 16px;
   --font-size-18: 18px;
   --font-size-20: 20px;
   --font-size-24: 24px;
   --font-size-28: 28px;
+  --font-size-0_9rem: 0.9rem;
+  --font-size-0_85rem: 0.85rem;
+  //radius
+  --border-radius-20: 20px;
+  --border-radius-15: 15px;
+  //width
+  --width-vw-80: 80vw;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -80,4 +101,8 @@ html {
 
 .m-0 {
   margin: 0;
+}
+
+.mr-10 {
+  margin-right: 10px;
 }

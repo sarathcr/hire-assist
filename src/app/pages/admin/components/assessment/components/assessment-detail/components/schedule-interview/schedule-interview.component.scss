@@ -2,6 +2,10 @@
   display: flex;
   flex-direction: column;
   max-height: 900px;
+  .p-dialog-content {
+    overflow-y: visible !important;
+    background-color: var(--color-white);
+  }
   /* Prevent it from going off screen */
 }
 

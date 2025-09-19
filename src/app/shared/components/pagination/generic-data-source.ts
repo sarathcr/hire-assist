@@ -1,9 +1,9 @@
 import { DataSource } from '@angular/cdk/collections';
 import { Injectable } from '@angular/core';
-import { PaginatedDataPayload, PaginatedDataSource } from './pagination.model';
 import { BehaviorSubject, catchError, finalize, of, Subscription } from 'rxjs';
-import { PaginatedService } from './pagination.service';
 import { PaginatedData } from '../../models/pagination.models';
+import { PaginatedDataPayload, PaginatedDataSource } from './pagination.model';
+import { PaginatedService } from './pagination.service';
 
 @Injectable()
 export class GenericDataSource<T>
@@ -13,12 +13,13 @@ export class GenericDataSource<T>
   private dataSubject = new BehaviorSubject<T[]>([]);
   private loadingSubject = new BehaviorSubject<boolean>(false);
   private totalPages = new BehaviorSubject<number>(0);
-  private totalRecords = new BehaviorSubject<number>(0);
+  public totalRecords = new BehaviorSubject<number>(0);
 
   public loading$ = this.loadingSubject.asObservable();
   public totalPages$ = this.totalPages.asObservable();
   public totalRecords$ = this.totalRecords.asObservable();
   public baseUrl = '';
+  public optionInitialPayload!: PaginatedDataPayload | object;
 
   constructor(private service: PaginatedService<T>) {}
 
@@ -28,7 +29,11 @@ export class GenericDataSource<T>
     this.baseUrl = baseURL;
   }
 
-  public connect() {
+  public connect(payload?: PaginatedDataPayload | object) {
+    if (payload) {
+      this.optionInitialPayload = payload;
+    }
+
     return this.dataSubject.asObservable();
   }
 
@@ -40,7 +45,7 @@ export class GenericDataSource<T>
 
   public loadPaginatedData(payload: PaginatedDataPayload) {
     this.loadingSubject.next(true);
-
+    payload = { ...payload, ...this.optionInitialPayload };
     this.service
       .getPaginatedData(this.baseUrl, payload)
       .pipe(

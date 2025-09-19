@@ -4,7 +4,9 @@
       [size]="'small'"
       id="over_label"
       [showIcon]="true"
-      [dateFormat]="'dd-mm-yy'"
+      [dateFormat]="showTime ? 'dd-mm-yy' : 'dd/mm/yy'"
+      [showTime]="showTime"
+      [maxDate]="maxDate"
       [formControlName]="inputTextCalendarConfig.id"
       (input)="onInputChange($event)"
     >
@@ -15,13 +17,19 @@
   >
 
   @if (inputTextCalendarConfig.matSuffix) {
-    <span class="input-suffix">{{ inputTextCalendarConfig.matPrefix }}</span>
-  } @else if (inputTextCalendarConfig.matPrefix) {
     <span class="input-suffix">{{ inputTextCalendarConfig.matSuffix }}</span>
+  } @else if (inputTextCalendarConfig.matPrefix) {
+    <span class="input-prefix">{{ inputTextCalendarConfig.matPrefix }}</span>
   } @else if (dynamicSuffix) {
-    <span class="input-suffix">{{ dynamicSuffix }}</span>
+    <span class="input-dynamicSuffix">{{ dynamicSuffix }}</span>
   }
   @if (formControl.touched && formControl.invalid) {
     <span class="input-text-calender__validation-label"> {{ errorMsg }}</span>
+  } @else if (hasDateError) {
+    <span
+      class="input-text-calender__validation-label input-text-calender__validation-label_warning"
+    >
+      {{ hasDateError }}
+    </span>
   }
 </div>

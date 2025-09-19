@@ -26,6 +26,8 @@ import { AssessmentForm } from '../../../../models/assessment-form.model';
 import { Assessment } from '../../../../models/assessment.model';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { CreateUpdateAssessmentModalComponent } from '../create-update-assessment-modal/create-update-assessment-modal.component';
+import { AsyncPipe, NgClass } from '@angular/common';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-assessment-list',
@@ -35,6 +37,8 @@ import { CreateUpdateAssessmentModalComponent } from '../create-update-assessmen
     PaginationComponent,
     SkeletonComponent,
     ToastModule,
+    NgClass,
+    AsyncPipe,
   ],
   providers: [GenericDataSource],
   templateUrl: './assessment-list.component.html',
@@ -46,18 +50,22 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   public assessmentFormData = new AssessmentForm();
   public filterMap!: KeyValueMap<string>;
   public assessmentDataSource: Assessment[] = [];
-
+  public totalRecords = 0;
   private ref: DynamicDialogRef | undefined;
+  public isLoading$!: Observable<boolean>;
+  public isInitialLoad = true;
+  public isLoading = false;
 
   constructor(
     public dataSource: GenericDataSource<AssessmentForm>,
     public dialog: DialogService,
     public messageService: MessageService,
-    private assessmentService: AssessmentService,
+    private readonly assessmentService: AssessmentService,
     public router: Router,
   ) {
     super();
     this.fGroup = buildFormGroup(this.assessmentFormData);
+    this.isLoading$ = this.dataSource.loading$;
   }
 
   // LifeCycle Hooks
@@ -65,6 +73,11 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     this.dataSource.init(`${ASSESSMENT_URL}/assessmentsummary`);
     this.setConfigMaps();
     this.subscribeToPaginatedData();
+    const sub = this.dataSource.totalRecords.subscribe((records) => {
+      this.totalRecords = records;
+    });
+
+    this.subscriptionList.push(sub);
   }
 
   // Public Methods
@@ -89,8 +102,16 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     this.openConfirmDeleteDialog(assessmentId);
   }
 
+  public onScheduleAssessment(assessment: Assessment): void {
+    if (assessment) {
+      this.router.navigate([`admin/recruitments/schedule/${assessment.id}`], {
+        state: { assessment },
+      });
+    }
+  }
+
   public onClickAssessment(id: number): void {
-    if (id > 0) this.router.navigate([`admin/assessment/${id}`]);
+    if (id > 0) this.router.navigate([`admin/recruitments/${id}`]);
   }
 
   // Private Methods
@@ -186,7 +207,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     this.ref = this.dialog.open(DialogComponent, {
       data: modalData,
       header: 'Warning',
-      width: '50vw',
+      width: '35vw',
       modal: true,
       breakpoints: {
         '960px': '75vw',
@@ -211,9 +232,11 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   }
 
   private createAssessment(payload: Assessment, isDuplicate?: boolean): void {
+    this.isLoading = true;
     if (payload) {
       payload.startDateTime = formatDate(payload.startDateTime.toString());
       payload.endDateTime = formatDate(payload.endDateTime.toString());
+      payload.isActive = true;
     }
 
     const next = (res: any) => {
@@ -223,8 +246,10 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
         detail: `${isDuplicate ? 'Duplicated' : 'Created'} Assessment Successfully`,
       });
 
-      this.router.navigate([`admin/assessment/schedule/${res.id}`]);
-
+      this.router.navigate([`admin/recruitments/schedule/${res.id}`], {
+        state: { assessment: res },
+      });
+      this.isLoading = false;
       this.reloadPaginatedData();
     };
     const error = (error: CustomErrorResponse) => {
@@ -234,11 +259,13 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
         summary: 'Error',
         detail: `Error : ${error.error.type}`,
       });
+      this.isLoading = false;
     };
     this.assessmentService.createEntity(payload).subscribe({ next, error });
   }
 
   private updateAssessment(payload: Assessment): void {
+    this.isLoading = true;
     if (payload) {
       payload.startDateTime = formatDate(payload.startDateTime.toString());
       payload.endDateTime = formatDate(payload.endDateTime.toString());
@@ -251,6 +278,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
         detail: 'Updated the  Assessment Successfully',
       });
       this.reloadPaginatedData();
+      this.isLoading = false;
     };
 
     const error = (error: CustomErrorResponse) => {
@@ -260,6 +288,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
         summary: 'Error',
         detail: `Error : ${error.error.type}`,
       });
+      this.isLoading = false;
     };
     this.assessmentService
       .updateEntity('', payload, '')
@@ -267,6 +296,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   }
 
   private deleteAssessment(id: number): void {
+    this.isLoading = true;
     const next = () => {
       this.messageService.add({
         severity: 'success',
@@ -274,14 +304,17 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
         detail: 'Deleted Assessment Successfully',
       });
       this.reloadPaginatedData();
+      this.isLoading = false;
     };
     const error = (error: string) => {
       console.log('ERROR', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Deletion is failed',
+        detail:
+          'Cannot delete this assessment because it is referenced in other records.',
       });
+      this.isLoading = false;
     };
 
     this.assessmentService.deleteEntityById(id).subscribe({ next, error });
@@ -290,6 +323,9 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   private subscribeToPaginatedData(): void {
     const sub = this.dataSource.connect().subscribe((data) => {
       this.assessmentDataSource = data;
+      if (this.isInitialLoad && data.length > 0) {
+        this.isInitialLoad = false;
+      }
     });
     this.subscriptionList.push(sub);
   }

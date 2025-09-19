@@ -17,13 +17,19 @@ export abstract class BaseFormComponent {
     const fc = formGroup.get(fcId);
 
     if (fc && fc.errors) {
-      errorKey = Object.keys(fc.errors)[0];
+      const errors = fc.errors;
+      if (errors['errorMessage']) {
+        return errors['errorMessage'];
+      }
+      errorKey = Object.keys(errors)[0];
     }
+
     const isSubmitted = true; //this.formGroup.dirty;
 
     if (fc && isSubmitted) {
       fc.markAsDirty();
     }
+
     const hasToShowError = fc?.dirty && errorKey;
     return hasToShowError ? `Field is ${errorKey}` : '';
   }

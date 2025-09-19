@@ -7,8 +7,14 @@
   </div>
   <div class="card__footer">
     <app-button
-      [buttonLabel]="'Start'"
+      [buttonLabel]="buttonLabel"
       (btnClick)="startAssessment()"
+      [disabled]="
+        statusId() === status.Completed ||
+        (isPreviousAssessment() ?? false) ||
+        disable
+      "
+      [buttonSeverity]="buttonLabel === 'Closed' ? 'danger' : 'primary'"
     ></app-button>
   </div>
 </div>

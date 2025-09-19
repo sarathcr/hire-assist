@@ -4,8 +4,12 @@
 }
 
 .card-wrapper {
-  width: 350px;
-  height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: var(--spacing-20);
+  max-width: 100%;
+  width: fit-content;
+
   @media (max-width: 768px) {
     width: 100%;
   }

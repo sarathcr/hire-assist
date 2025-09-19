@@ -1,0 +1,43 @@
+<div class="d-flex justify-content-end align-items-center pt-3 pb-3">
+  <span
+    role="button"
+    class="fa fa-times color-dark-blue fs-18"
+    tabindex="0"
+    (click)="onClose()"
+    (keyup.enter)="onClose()"
+    (keyup.space)="onClose()"
+  ></span>
+</div>
+<div class="modal-content loader" *ngIf="!loaded">
+  <div
+    class="fa fa-spinner fa-pulse fa-spin fa-4x color-dark-blue"
+    aria-hidden="true"
+  ></div>
+</div>
+<div class="modal-content" *ngIf="loaded">
+  <object
+    [data]="blobURL | safe: 'resourceUrl'"
+    type="application/pdf"
+    width="100%"
+    height="550px"
+  >
+    <div class="preview">
+      <span
+        class="pdf fa fa-file-pdf-o"
+        tabindex="0"
+        (click)="onPdfDownload()"
+        (keyup.enter)="onPdfDownload()"
+        (keyup.space)="onPdfDownload()"
+      ></span>
+    </div>
+    <div class="btns-block px-4">
+      <button
+        id="download-pdf-btn"
+        class="btn btn-rounded btn-blue"
+        (click)="onPdfDownload()"
+      >
+        download
+      </button>
+    </div>
+  </object>
+</div>

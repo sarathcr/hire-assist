@@ -29,7 +29,7 @@ export class PaginationComponent
 {
   @Input() public first = 0;
   @Input() public rows = 10;
-  @Input() public totalRecords = 120;
+  @Input() public totalRecords = 0;
   @Input() filterMap: KeyValueMap<string> = {};
   @Input() public sortRef: { active: string; direction: 'asc' | 'desc' | '' } =
     { active: '', direction: '' };
@@ -42,14 +42,13 @@ export class PaginationComponent
 
   private dataList: any[] = [];
   private search = new Subject<void>();
-  private search$ = this.search.asObservable().pipe(debounceTime(500));
+  private search$ = this.search.asObservable().pipe(debounceTime(150));
 
   ngOnInit(): void {
     const sub = this.dataSource.connect().subscribe((dataList) => {
       this.dataList = dataList;
     });
     this.subscriptionList.push(sub);
-
     this.search$.subscribe(() => {
       this.loadDataSource(); // Debounced search
     });

@@ -7,12 +7,11 @@ import {
 } from '@angular/forms';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { ToggleSwitch } from 'primeng/toggleswitch';
-import { BaseFormComponent } from '../base-form/base-form.component';
 import {
   CustomFormControlConfig,
-  CustomTextInputConfig,
   CustomToggleSwitchConfig,
 } from '../../../utilities/form.utility';
+import { BaseFormComponent } from '../base-form/base-form.component';
 
 @Component({
   selector: 'app-toggle-switch',
@@ -25,12 +24,13 @@ export class ToggleSwitchComponent extends BaseFormComponent implements OnInit {
   @Input() config!: CustomFormControlConfig;
   @Input() dynamicSuffix!: string;
 
-  public formControl!: FormControl<string>;
+  public formControl!: FormControl<string | boolean>;
   public customToggleSwitchConfig!: CustomToggleSwitchConfig;
 
   ngOnInit(): void {
-    this.customToggleSwitchConfig = this.config as CustomTextInputConfig;
+    this.customToggleSwitchConfig = this.config as CustomToggleSwitchConfig;
     this.formControl = this.formGroup.get(this.config.id) as FormControl;
+    if (this.formControl.value == null) this.formControl.setValue(false);
   }
 
   // Public Methods

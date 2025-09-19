@@ -1,14 +1,15 @@
-import { Injectable } from '@angular/core';
-import { ApiService } from '../../../shared/services/api.service';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { StoreService } from '../../../shared/services/store.service';
 import { INTERVIEW_URL } from '../../../shared/constants/api';
-import { AssessmentRound } from '../models/assessment.model';
+import { ApiService } from '../../../shared/services/api.service';
+import { StoreService } from '../../../shared/services/store.service';
+import { interviewerInterface } from '../models/interviewers-model';
 import { Candidate } from '../models/stepper.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class InterviewService extends ApiService<any> {
   constructor(
@@ -22,10 +23,14 @@ export class InterviewService extends ApiService<any> {
     return INTERVIEW_URL;
   }
   public getAssessmentFlow(candidateId: string, assessmentId: number) {
-    console.log('idin api call ');
     return this.httpClient.get<Candidate>(
-      //`${this.getResourceUrl()}/api/assessment/candidate-questions`
-      `${this.getResourceUrl()}/assessmentFlow/candidateId?candidateId=${candidateId}&assessmentId=${assessmentId}`
+      `${this.getResourceUrl()}/assessmentFlow/candidateId?candidateId=${candidateId}&assessmentId=${assessmentId}`,
+    );
+  }
+  public addInterviewer(payload: interviewerInterface[]) {
+    return this.httpClient.post(
+      `${this.getResourceUrl()}/InterviewPanel`,
+      payload,
     );
   }
 }

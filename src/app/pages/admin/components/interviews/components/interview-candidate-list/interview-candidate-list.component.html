@@ -1,0 +1,45 @@
+<div class="interview-candidate">
+  <h1 class="interview-candidate__title app-title">Interview Schedules</h1>
+  <p-tabs value="0">
+    <p-tablist>
+      <p-tab value="0">Today's Interviews</p-tab>
+      <p-tab value="1">Upcoming Interviews</p-tab>
+      <p-tab value="2">Previous Interviews</p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="0">
+        <app-table
+          [tableData]="todayTableData"
+          [parentLoader]="isLoading"
+          [columnsData]="columns"
+          [hasSearch]="true"
+          (btnClick)="onStartInterview($event)"
+          (buttonClick)="onButtonClick($event)"
+          (pageChangeAndSort)="onTablePayloadChange($event)"
+        ></app-table>
+      </p-tabpanel>
+      <p-tabpanel value="1">
+        <app-table
+          [tableData]="upComingTableData"
+          [parentLoader]="isLoading"
+          [columnsData]="columns"
+          [hasSearch]="true"
+          (btnClick)="onStartInterview($event)"
+          (buttonClick)="onButtonClick($event)"
+          (pageChangeAndSort)="onTablePayloadChange($event)"
+        ></app-table>
+      </p-tabpanel>
+      <p-tabpanel value="2">
+        <app-table
+          [tableData]="PreviousTableData"
+          [parentLoader]="isLoading"
+          [columnsData]="columns"
+          [hasSearch]="true"
+          (btnClick)="onStartInterview($event)"
+          (buttonClick)="onButtonClick($event)"
+          (pageChangeAndSort)="onTablePayloadChange($event)"
+        ></app-table>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</div>

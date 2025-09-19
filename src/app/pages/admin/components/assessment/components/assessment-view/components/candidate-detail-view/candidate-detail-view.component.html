@@ -1,0 +1,304 @@
+@if (!isLoading) {
+  <div class="candidate">
+    <p-tabs value="0">
+      <p-tablist>
+        <p-tab value="0">Candidate Details</p-tab>
+        <p-tab value="1">Previous Assessment Details</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="0">
+          <div class="m-0">
+            <h3>Candidate Basic Details</h3>
+            <div class="candidate__details">
+              <div class="candidate__card">
+                <div class="candidate__card-content">
+                  @if (candidateDetailsDataSource !== undefined) {
+                    <div class="candidate__card-info-item">
+                      <i class="pi pi-address-book candidate__card-icon"></i>
+                      <span>{{ candidateDetailsDataSource.name }}</span>
+                    </div>
+                    <div class="candidate__card-info-item">
+                      <i class="pi pi-envelope candidate__card-icon"></i>
+                      <span>{{ candidateDetailsDataSource.email }}</span>
+                    </div>
+                    <div class="candidate__card-info-item">
+                      <i class="pi pi-calendar candidate__card-icon"></i>
+                      <span>{{
+                        candidateDetailsDataSource.dob | date: "dd MMMM yyyy"
+                      }}</span>
+                    </div>
+                    <div class="candidate__card-info-item">
+                      <i class="pi pi-user candidate__card-icon"></i>
+                      <span>{{ candidateDetailsDataSource.gender }}</span>
+                    </div>
+                    <div class="candidate__card-info-item">
+                      <i class="pi pi-phone candidate__card-icon"></i>
+                      <span>{{ candidateDetailsDataSource.phoneNumber }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+            <h3>Candidate Application Details</h3>
+            <div class="candidate__applicationDetails">
+              @if (candidateDetailsDataSource !== undefined) {
+                <p-accordion [value]="0">
+                  @if ((candidateDetailsDataSource.answers?.length ?? 0) > 0) {
+                    @for (
+                      candidateDetailsTab of candidateDetailsDataSource.answers;
+                      track candidateDetailsTab.question
+                    ) {
+                      <p-accordion-panel [value]="candidateDetailsTab.question">
+                        <p-accordion-header>{{
+                          candidateDetailsTab.question
+                        }}</p-accordion-header>
+                        <p-accordion-content>
+                          <p class="m-0">{{ candidateDetailsTab.answer }}</p>
+                        </p-accordion-content>
+                      </p-accordion-panel>
+                    }
+                  } @else {
+                    <div>
+                      <p>No data available</p>
+                    </div>
+                  }
+                </p-accordion>
+              }
+            </div>
+          </div>
+        </p-tabpanel>
+        <p-tabpanel value="1">
+          <div class="m-0">
+            @if (!isLoadingPreviousAssessments) {
+              <div class="candidate__previousAssessmentDetails">
+                @if (candidateAssessmentDataSource !== undefined) {
+                  @if (candidateAssessmentDataSource.length > 0) {
+                    <p-accordion [value]="0">
+                      @for (
+                        candidateAssessmentTab of candidateAssessmentDataSource;
+                        track candidateAssessmentTab.assessmentId
+                      ) {
+                        <p-accordion-panel
+                          [value]="candidateAssessmentTab.assessmentId"
+                        >
+                          <p-accordion-header>{{
+                            candidateAssessmentTab.assessmentName
+                          }}</p-accordion-header>
+                          <p-accordion-content>
+                            <div class="m-0">
+                              <p-accordion [value]="0">
+                                @for (
+                                  roundsDetailsTab of candidateAssessmentTab.roundsDetails;
+                                  track roundsDetailsTab.roundId
+                                ) {
+                                  <p-accordion-panel
+                                    [value]="roundsDetailsTab.roundId"
+                                  >
+                                    <p-accordion-header
+                                      >{{ roundsDetailsTab.roundName }}
+                                    </p-accordion-header>
+                                    <p-accordion-content>
+                                      <p class="m-0">
+                                        <!-- aptitude round -->
+                                        @if (roundsDetailsTab.roundId === 1) {
+                                          @if (
+                                            roundsDetailsTab.assessmentDetails &&
+                                            roundsDetailsTab.assessmentDetails
+                                              .length > 0
+                                          ) {
+                                            <ul>
+                                              <li>
+                                                Question Set:
+                                                <span>{{
+                                                  roundsDetailsTab
+                                                    .assessmentDetails[0]
+                                                    .questionSet
+                                                }}</span>
+                                              </li>
+                                              <li>
+                                                Batch:
+                                                <span>{{
+                                                  roundsDetailsTab
+                                                    .assessmentDetails[0].batch
+                                                }}</span>
+                                              </li>
+                                              <li>
+                                                Total Questions:
+                                                <span>{{
+                                                  roundsDetailsTab
+                                                    .assessmentDetails[0]
+                                                    .totalQuestions
+                                                }}</span>
+                                              </li>
+                                              <li>
+                                                Number of attended Questions:
+                                                <span>{{
+                                                  roundsDetailsTab
+                                                    .assessmentDetails[0]
+                                                    .attendedQuestions
+                                                }}</span>
+                                              </li>
+                                              <li>
+                                                Number of correct answers:
+                                                <span>{{
+                                                  roundsDetailsTab
+                                                    .assessmentDetails[0]
+                                                    .correctAnswers
+                                                }}</span>
+                                              </li>
+                                              <li>
+                                                Number of questions skipped:
+                                                <span>{{
+                                                  roundsDetailsTab
+                                                    .assessmentDetails[0]
+                                                    .skipped
+                                                }}</span>
+                                              </li>
+                                            </ul>
+                                          } @else {
+                                            <p>
+                                              The details of the aptitude round
+                                              are not available.
+                                            </p>
+                                          }
+                                        } @else {
+                                          @if (
+                                            roundsDetailsTab.assessmentDetails
+                                              .length > 0
+                                          ) {
+                                            <p-accordion [value]="0">
+                                              @for (
+                                                interviewerTab of roundsDetailsTab.assessmentDetails;
+                                                track interviewerTab.interviewerId
+                                              ) {
+                                                <p-accordion-panel
+                                                  [value]="
+                                                    interviewerTab.interviewerId
+                                                  "
+                                                >
+                                                  <p-accordion-header
+                                                    >{{
+                                                      interviewerTab.interviewerName
+                                                    }}
+                                                    (Interviewer)
+                                                    <div
+                                                      class="candidate__previousAssessmentDetails-score"
+                                                    >
+                                                      <span
+                                                        >Score:{{
+                                                          interviewerTab.totalScore
+                                                        }}/{{
+                                                          interviewerTab.outofScore
+                                                        }}</span
+                                                      >
+                                                    </div>
+                                                  </p-accordion-header>
+                                                  <p-accordion-content>
+                                                    <p class="m-0">
+                                                      @if (
+                                                        interviewerTab
+                                                          .feedbackListDto
+                                                          .length > 0
+                                                      ) {
+                                                        <p-accordion
+                                                          [value]="0"
+                                                        >
+                                                          @for (
+                                                            feedbackTab of interviewerTab.feedbackListDto;
+                                                            track feedbackTab.criteria
+                                                          ) {
+                                                            <p-accordion-panel
+                                                              [value]="
+                                                                feedbackTab.criteria
+                                                              "
+                                                            >
+                                                              <p-accordion-header
+                                                                >{{
+                                                                  feedbackTab.criteria
+                                                                }}
+                                                                <div
+                                                                  class="candidate__previousAssessmentDetails-score"
+                                                                >
+                                                                  <span
+                                                                    >Score:
+                                                                    @if (
+                                                                      feedbackTab.feedbackScore !==
+                                                                        null &&
+                                                                      feedbackTab.feedbackScore !==
+                                                                        undefined
+                                                                    ) {
+                                                                      {{
+                                                                        feedbackTab.feedbackScore
+                                                                      }}/{{
+                                                                        feedbackTab.maxScore
+                                                                      }}
+                                                                    }
+                                                                  </span>
+                                                                </div>
+                                                              </p-accordion-header>
+                                                              <p-accordion-content>
+                                                                <div
+                                                                  class="m-0"
+                                                                >
+                                                                  <div
+                                                                    class="candidate__accordion-editor"
+                                                                  >
+                                                                    <p-editor
+                                                                      [(ngModel)]="
+                                                                        feedbackTab.feedbackDetails
+                                                                      "
+                                                                      [readonly]="
+                                                                        editorStatus
+                                                                      "
+                                                                    />
+                                                                  </div></div
+                                                              ></p-accordion-content>
+                                                            </p-accordion-panel>
+                                                          }
+                                                        </p-accordion>
+                                                      } @else {
+                                                        <p>
+                                                          No feedback available
+                                                          for this interviewer.
+                                                        </p>
+                                                      }
+                                                    </p></p-accordion-content
+                                                  >
+                                                </p-accordion-panel>
+                                              }
+                                            </p-accordion>
+                                          } @else {
+                                            <p>
+                                              No interviewers available for this
+                                              round.
+                                            </p>
+                                          }
+                                        }
+                                      </p>
+                                    </p-accordion-content>
+                                  </p-accordion-panel>
+                                }
+                              </p-accordion>
+                            </div>
+                          </p-accordion-content>
+                        </p-accordion-panel>
+                      }
+                    </p-accordion>
+                  } @else {
+                    <div>
+                      <p>No data available</p>
+                    </div>
+                  }
+                }
+              </div>
+            } @else {
+              <app-candidate-detail-previous-assessment-skeleton />
+            }
+          </div>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+} @else {
+  <app-candidate-detail-view-skeleton />
+}

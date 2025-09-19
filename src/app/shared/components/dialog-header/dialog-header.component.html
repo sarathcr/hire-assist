@@ -1,7 +1,10 @@
 <div class="dialog-header">
-  <h1 class="dialog-header__title">{{ data.headerTitle }}</h1>
-  <p-tag
-    icon="pi pi-exclamation-triangle"
-    severity="warn"
-    [value]="'Remaining attempts : ' + data.warningCount" />
+  @if (data) {
+    <h1 class="dialog-header__title">{{ data.headerTitle ?? "" }}</h1>
+    <p-tag
+      icon="pi pi-exclamation-triangle"
+      severity="warn"
+      [value]="'Remaining attempts : ' + (data.warningCount ?? '')"
+    />
+  }
 </div>

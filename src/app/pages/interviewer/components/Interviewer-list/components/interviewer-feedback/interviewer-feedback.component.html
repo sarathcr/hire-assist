@@ -1,0 +1,139 @@
+<div class="candidate">
+  @if (responseData && feedbackdetails) {
+    <div>
+      <h2 class="candidate__card-Round">{{ responseData.roundName }}</h2>
+      <h2 class="candidate__card-heading">Candidate Details</h2>
+      <div class="candidate__details">
+        <div class="candidate__card">
+          <div class="candidate__card-content">
+            <div class="candidate__card-info-item">
+              <i class="pi pi-user candidate__card-icon"></i>
+              <span>{{ responseData.candidateName }}</span>
+            </div>
+            <div class="candidate__card-info-item">
+              <i class="pi pi-envelope candidate__card-icon"></i>
+              <span>{{ responseData.candidateId }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="candidate__card-knob">
+          <p-knob [(ngModel)]="totalFeedbackScore" [readonly]="true" />
+          <div class="candidate__knob-label">Score</div>
+        </div>
+      </div>
+    </div>
+
+    <!--feedback-->
+    <div class="candidate__accordion">
+      <h3>Feedback</h3>
+      <p-accordion [value]="0">
+        @for (feedback of feedbackcriteria; track feedback.title) {
+          <p-accordion-panel
+            [value]="feedback.value"
+            [ngClass]="{ 'saved-panel': feedback.isSaved }"
+          >
+            <p-accordion-header>{{ feedback.title }} </p-accordion-header>
+            <p-accordion-content class="candidate__accordion-content">
+              @if (feedback.title === "Attachments") {
+                <p-toast></p-toast>
+
+                <p-fileupload
+                  name="feedbackFiles[]"
+                  [multiple]="true"
+                  accept="image/*"
+                  maxFileSize="1000000"
+                  (onSelect)="onFileChange($event)"
+                >
+                  <ng-template #content let-files>
+                    @if (previewImageUrls.length) {
+                      <div
+                        class="candidate__accordion-content__preview-container"
+                      >
+                        @for (
+                          imgUrl of previewImageUrls;
+                          track imgUrl;
+                          let i = $index
+                        ) {
+                          <div
+                            class="candidate__accordion-content__preview-container__image"
+                          >
+                            <app-image
+                              width="100"
+                              height="70"
+                              [imageUrl]="imgUrl"
+                              [paddingTop]="'0'"
+                              [forceCancelRequest]="[]"
+                              [isZoomable]="true"
+                              (closeImage)="removeImage(i)"
+                            >
+                            </app-image>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </ng-template>
+                </p-fileupload>
+              }
+
+              @if (feedback.title !== "Attachments") {
+                <div class="candidate__accordion-editor">
+                  <p-editor
+                    [(ngModel)]="feedback.content"
+                    [style]="{ height: '220px' }"
+                  />
+                </div>
+                <div class="candidate__accordion-score-input">
+                  <p-floatLabel>
+                    <input
+                      [(ngModel)]="feedback.score"
+                      class="simple-input"
+                      (ngModelChange)="validateScore(feedback)"
+                      [pTooltip]="'Max score is ' + feedback.maxScore"
+                      [tooltipPosition]="'bottom'"
+                    />
+                    <label for="score">Score</label>
+                  </p-floatLabel>
+                  @if (feedback.isScoreInValid) {
+                    <p-message
+                      severity="error"
+                      variant="simple"
+                      size="small"
+                      class="mt-1"
+                    >
+                      Maximum allowed score is {{ feedback.maxScore }}
+                    </p-message>
+                  }
+                </div>
+              }
+              <div class="candidate__savebutton">
+                @if (!feedback.isSaved) {
+                  <app-button
+                    [buttonLabel]="'Save'"
+                    (btnClick)="onsave(feedback)"
+                  ></app-button>
+                } @else {
+                  <app-button
+                    [buttonLabel]="'Edit'"
+                    (btnClick)="onEdit(feedback)"
+                  ></app-button>
+                }
+              </div>
+            </p-accordion-content>
+          </p-accordion-panel>
+        }
+      </p-accordion>
+      @if (!isSubmitted) {
+        <div class="candidate__accordion-upload">
+          <div class="savebutton">
+            <app-button
+              [buttonLabel]="'Review & Submit'"
+              (btnClick)="onSubmit()"
+            ></app-button>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <app-interviewer-feedback-skeleton></app-interviewer-feedback-skeleton>
+  }
+</div>

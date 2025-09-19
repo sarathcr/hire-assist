@@ -2,8 +2,15 @@
   ::ng-deep {
     .p-datatable-table-container {
       overflow: auto;
-      height: calc(100vh - 370px);
+      max-height: calc(100vh - 370px);
       background-color: var(--color-white);
     }
+  }
+}
+.roles-access {
+  &__button {
+    display: flex;
+    gap: 1rem;
+    justify-items: flex-start;
   }
 }

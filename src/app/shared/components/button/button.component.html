@@ -1,6 +1,6 @@
 <p-button
   class="btn"
-  [icon]="`${icon()}`"
+  [icon]="icon() ? `${icon()}` : undefined"
   [loading]="isLoading()"
   [variant]="buttonVariant()"
   [ngClass]="{

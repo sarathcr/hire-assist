@@ -1,0 +1,66 @@
+<div class="duplicates">
+  <div class="duplicates__accordion">
+    <p-accordion [value]="['0']" [multiple]="true">
+      @for (data of data; let idx = $index; track data) {
+        <p-accordion-panel [value]="idx + ''">
+          <p-accordion-header>{{ data.key }}</p-accordion-header>
+          <p-accordion-content>
+            @for (
+              candidates of data.candidates;
+              let idx = $index;
+              track candidates
+            ) {
+              <div
+                class="duplicates__accordion__content"
+                tabindex="0"
+                (click)="onDuplicateRecordClick(data.candidates)"
+                (keyup.enter)="onDuplicateRecordClick(data.candidates)"
+                role="button"
+                aria-pressed="false"
+              >
+                <p>
+                  <strong>Name :</strong> {{ candidates["Candidate Name"] }}
+                </p>
+                <p>
+                  <strong>Mob No :</strong> {{ candidates["Mobile number"] }}
+                </p>
+              </div>
+            }
+          </p-accordion-content>
+        </p-accordion-panel>
+      }
+    </p-accordion>
+  </div>
+  <div class="duplicates__content">
+    <div class="duplicates__split-panel">
+      @if (splitPanelRendered()) {
+        <p-splitter class="duplicates__splitter" [panelSizes]="[50, 50, 50]">
+          @for (candidates of splitPanelList(); track candidates.panelId) {
+            <ng-template #panel>
+              <a
+                class="duplicates__panel"
+                [ngClass]="{
+                  duplicates__panel_selected:
+                    selectedPanelId() === candidates.panelId,
+                }"
+                tabindex="0"
+                (click)="onDetailsClick(candidates)"
+                (keydown)="onDetailsClick(candidates)"
+              >
+                <app-candidate-details
+                  [data]="candidates"
+                ></app-candidate-details
+              ></a>
+            </ng-template>
+          }
+        </p-splitter>
+      }
+    </div>
+    <div class="duplicates__btn">
+      <app-button
+        buttonLabel="Update Candidate"
+        (btnClick)="onSubmit()"
+      ></app-button>
+    </div>
+  </div>
+</div>

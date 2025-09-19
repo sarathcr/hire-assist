@@ -1,34 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, OnInit } from '@angular/core';
-import { ButtonComponent } from '../../button/button.component';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { InputTextCalenderComponent } from '../../form/input-text-calender/input-text-calender.component';
-import { Toast } from 'primeng/toast';
-import { buildFormGroup, ConfigMap } from '../../../utilities/form.utility';
-import { Profile } from '../../../models/profile.models';
-import { MessageService } from 'primeng/api';
-import { InputTextIftalabelComponent } from '../../form/input-text-iftalabel/input-text-iftalabel.component';
-import { StoreService } from '../../../services/store.service';
-import { UserState } from '../../../models/user.models';
-import { RolesEnum } from '../../../enums/enum';
-import { BaseComponent } from '../../base/base.component';
 import { ActivatedRoute } from '@angular/router';
-import { StepperComponent } from '../../stepper/stepper.component';
+import { MessageService } from 'primeng/api';
+import { Toast } from 'primeng/toast';
 import { AssessmentRound } from '../../../../pages/admin/models/assessment.model';
-import { recruitment } from '../../../models/stepper.models';
-import { AssessmentService } from '../../../../pages/admin/services/assessment.service';
 import { Candidate } from '../../../../pages/admin/models/stepper.model';
+import { AssessmentService } from '../../../../pages/admin/services/assessment.service';
 import { InterviewService } from '../../../../pages/admin/services/interview.service';
-import { StepperSkeletonComponent } from '../../stepper/stepper-skeleton';
+import { RolesEnum } from '../../../enums/enum';
+import { Profile } from '../../../models/profile.models';
+import { recruitment } from '../../../models/stepper.models';
+import { UserState } from '../../../models/user.models';
+import { StoreService } from '../../../services/store.service';
+import { buildFormGroup, ConfigMap } from '../../../utilities/form.utility';
+import { BaseComponent } from '../../base/base.component';
+import { InputTextIftalabelComponent } from '../../form/input-text-iftalabel/input-text-iftalabel.component';
 
 @Component({
   selector: 'app-profile',
-  imports: [
-    ReactiveFormsModule,
-    InputTextIftalabelComponent,
-    Toast,
-    StepperComponent,
-  ],
+  imports: [ReactiveFormsModule, InputTextIftalabelComponent, Toast],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
 })
@@ -46,44 +37,39 @@ export class ProfileComponent extends BaseComponent implements OnInit {
   public stepperConfig!: recruitment[];
   public CandidateFLow!: Candidate | null;
 
-  constructor(private messageService: MessageService,
-    private storeService: StoreService,
-    private route: ActivatedRoute,
-    private assessmentService: AssessmentService,
-    private interviewService: InterviewService,
+  constructor(
+    private readonly messageService: MessageService,
+    private readonly storeService: StoreService,
+    private readonly route: ActivatedRoute,
+    private readonly assessmentService: AssessmentService,
+    private readonly interviewService: InterviewService,
   ) {
     super();
     this.fGroup = buildFormGroup(this.profile);
-
   }
 
   ngOnInit(): void {
     this.setConfigMaps();
 
-    this.route.paramMap.subscribe(params => {
-      this.userId = params.get('userid'),
-        this.assessmentId = params.get('assessmentId');
+    this.route.paramMap.subscribe((params) => {
+      this.userId = params.get('userid');
+      this.assessmentId = params.get('recruitmentId');
     });
     if (this.userId && this.assessmentId) {
-      console.log('userId', this.userId, 'assessmentId', this.assessmentId)
-      this.getAssessmentRoundDetails(this.assessmentId)
-      this.getAssessmentFlowDetails(this.userId, Number(this.assessmentId))
-
-
-
-    }
-    else {
-      console.log("...")
+      this.getAssessmentRoundDetails(this.assessmentId);
+      this.getAssessmentFlowDetails(this.userId, Number(this.assessmentId));
+    } else {
       const user = this.storeService.state$.subscribe((value) => {
         this.userData = value.userState;
-        const roleValue = this.userData.role; // Assuming role is a number or an array of numbers
-        const roles = Array.isArray(this.userData.role) ? this.userData.role : [this.userData.role];
+        const roles = Array.isArray(this.userData.role)
+          ? this.userData.role
+          : [this.userData.role];
 
         if (this.userData?.role) {
           this.roleNames = roles
-            .map((roleValue) => RolesEnum[roleValue])            // Returns string | undefined
+            .map((roleValue) => RolesEnum[roleValue]) // Returns string | undefined
             .filter((roleName): roleName is string => !!roleName) // Type guard
-            .map((roleName) => roleName.toLowerCase());          // Now it's safely typed
+            .map((roleName) => roleName.toLowerCase()); // Now it's safely typed
         }
         if (this.roleNames.length > 0 && this.roleNames.includes('admin')) {
           this.roleNames = ['admin'];
@@ -91,14 +77,12 @@ export class ProfileComponent extends BaseComponent implements OnInit {
 
         if (this.userData) {
           this.fGroup.patchValue({
-            name: this.userData.name || '',     // assuming keys match your control names
+            name: this.userData.name || '', // assuming keys match your control names
             email: this.userData.id || '',
-            role: this.roleNames || ''
+            role: this.roleNames || '',
           });
         }
-
       });
-
 
       this.subscriptionList.push(user);
     }
@@ -116,26 +100,6 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     }
   }
 
-  // public async onSave() {
-  //   this.fGroup.markAllAsTouched();
-  //   const isFormValid = this.fGroup.valid;
-  //   if (isFormValid) {
-  //     // Show success message
-  //     this.messageService.add({
-  //       severity: 'success',
-  //       summary: 'Success',
-  //       detail: 'Profile saved successfully',
-  //     });
-  //   } else {
-  //     // Optional: Show an error message
-  //     this.messageService.add({
-  //       severity: 'error',
-  //       summary: 'Error',
-  //       detail: 'Please complete the required fields',
-  //     });
-  //   }
-  // }
-
   private setConfigMaps(): void {
     const { metadata } = new Profile();
     this.configMap = metadata.configMap || {};
@@ -146,48 +110,48 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       this.step = res;
 
       this.stepperConfig = this.step
-        // .filter((round) => round.IsActive) // Optional: Filter only active rounds
         .sort((a, b) => a.sequence - b.sequence)
         .map((round) => ({
-          id: round.id, // Use the `id` property as the ID
-          header: round.round, // Use the `round` property as the header
-          value: round.sequence, // Use the `sequence` property as the value
+          id: round.id,
+          header: round.round,
+          value: round.sequence,
           completed: false,
           statusId: round.statusId,
           assessmentid: Number(this.assessmentId),
         }));
-
     };
     const error = (error: string) => {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: error,
+      });
     };
     this.assessmentService
-      .getAssessmentRoundByAssessmnetId(Number(id)).subscribe({ next, error });
+      .getAssessmentRoundByAssessmnetId(Number(id))
+      .subscribe({ next, error });
   }
 
-
-  private getAssessmentFlowDetails(candidateId: string, assessmentId: number): void {
-    console.log('candidateId', candidateId, 'assessmentId', assessmentId)
+  private getAssessmentFlowDetails(
+    candidateId: string,
+    assessmentId: number,
+  ): void {
     const next = (res: Candidate) => {
       this.CandidateFLow = res;
 
-
       if (this.CandidateFLow) {
         this.fGroup.patchValue({
-          name: this.CandidateFLow.candidateName || '',     // assuming keys match your control names
+          name: this.CandidateFLow.candidateName || '',
           email: this.CandidateFLow.email || '',
-          role: this.CandidateFLow.roles || ''
+          role: this.CandidateFLow.roles || '',
         });
 
-
         if (this.CandidateFLow.assessmentFlow) {
-          console.log("...", this.stepperConfig)
           this.stepperConfig = this.stepperConfig.map((step) => {
             const matchingRound = this.CandidateFLow?.assessmentFlow.find(
-              (round) => round.assessmentRoundId === step.id
+              (round) => round.assessmentRoundId === step.id,
             );
-            console.log('matchingRound', matchingRound, 'step.id', step.id) // Debugging
             if (matchingRound) {
-              console.log("...!", this.getStepColor(matchingRound.statusId))
               return {
                 ...step,
                 statusId: matchingRound.statusId,
@@ -196,22 +160,22 @@ export class ProfileComponent extends BaseComponent implements OnInit {
             }
             return step;
           });
-
-          console.log('Updated stepperConfig:', this.stepperConfig); // Debugging
         }
-
       }
-
     };
     const error = (error: string) => {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: error,
+      });
     };
     this.interviewService
-      .getAssessmentFlow(candidateId, assessmentId).subscribe({ next, error });
+      .getAssessmentFlow(candidateId, assessmentId)
+      .subscribe({ next, error });
   }
 
-
   private getStepColor(status: number): string {
-    console.log('Status:', status); // Debugging
     switch (status) {
       case 7:
         return 'green';
@@ -222,8 +186,5 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       default:
         return 'orange'; // Default color for unknown statuses
     }
-
   }
 }
-
-// Compare this snippet from src/app/shared/components/pages/profile/profile.component.html:

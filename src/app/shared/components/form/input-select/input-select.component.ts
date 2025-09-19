@@ -15,13 +15,13 @@ import {
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { Select } from 'primeng/select';
-import { Option } from '../../../models/app-state.models';
 import {
   CustomFormControlConfig,
   CustomSelectConfig,
 } from '../../../utilities/form.utility';
 import { BaseFormComponent } from '../base-form/base-form.component';
 import { Subscription } from 'rxjs';
+import { Option } from '../../../models/option';
 
 export interface Options {
   name: string;

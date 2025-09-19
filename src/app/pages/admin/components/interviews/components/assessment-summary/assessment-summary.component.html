@@ -1,0 +1,38 @@
+<div class="assessment-summary">
+  <div>
+    <div class="assessment-summary__header">
+      <h1 class="assessment-summary__title">Assigned Interviews</h1>
+    </div>
+    <div class="assessment-summary__wrapper">
+      @if (!isLoading && assessmentDataSource.length > 0) {
+        <div class="assessment-summary__list">
+          @for (assessment of assessmentDataSource; track assessment) {
+            <app-assessment-card
+              class="assessment-summary__card"
+              [data]="assessment"
+              [showToggleButton]="false"
+              (click)="
+                onClickAssessment(assessment.id ?? 0, assessment.panel ?? 0)
+              "
+              (keydown)="
+                onClickAssessment(assessment.id ?? 0, assessment.panel ?? 0)
+              "
+            ></app-assessment-card>
+          } @empty {
+            You have no interviews assigned at this time.
+          }
+        </div>
+      } @else {
+        <app-assessment-card-skeleton
+          class="assessment-summary__card"
+        ></app-assessment-card-skeleton>
+      }
+    </div>
+  </div>
+  <app-pagination
+    [dataSource]="dataSource"
+    [filterMap]="filterMap"
+    [totalRecords]="totalRecords"
+  >
+  </app-pagination>
+</div>

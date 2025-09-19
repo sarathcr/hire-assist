@@ -1,6 +1,3 @@
 <div class="timer" [ngClass]="timerClass">
-  <countdown
-    #cd
-    [config]="config || {}"
-    (event)="handleEvent($event)"></countdown>
+  <countdown #cd [config]="config" (event)="handleEvent($event)"></countdown>
 </div>

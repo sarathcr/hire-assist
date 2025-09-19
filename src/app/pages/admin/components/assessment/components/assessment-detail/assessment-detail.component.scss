@@ -2,14 +2,177 @@
   display: flex;
   width: 100%;
   gap: 1rem;
-  overflow: auto;
-  height: calc(100vh - 286px);
+  height: calc(100vh - var(--spacing-210));
+  overflow: hidden;
+  padding-bottom: 5rem;
+
   &__stepper {
     flex-grow: 1;
-    overflow-x: auto;
-    overflow-y: hidden;
+    overflow: hidden;
+    background-color: var(--color-white);
   }
+
+  &__title {
+    font-size: var(--font-size-18);
+    margin-bottom: var(--spacing-20);
+    &-wrapper {
+      margin-bottom: var(--spacing-20);
+    }
+  }
+
+  &__wrapper {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__rounds {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-basis: 220px;
+    flex-shrink: 0;
+    &-item {
+      background-color: var(--color-white);
+      border-radius: 6px;
+      margin-bottom: var(--spacing-15);
+      border: 1px solid transparent;
+      &.active,
+      &:hover {
+        background: var(--background-secondary);
+        border: 1px solid var(--primary-color);
+        transition: all ease-in-out 0.3s;
+      }
+    }
+    &-btn {
+      padding: var(--spacing-15);
+      font-size: var(--font-size-base);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+    }
+  }
+
+  &__content {
+    background-color: var(--color-white);
+    border-radius: 6px;
+    flex-grow: 2;
+    ::ng-deep {
+      .p-datatable-table-container {
+        max-height: calc(100vh - 343px);
+        height: auto;
+        max-width: calc(100vw - 525px);
+        width: 100%;
+      }
+    }
+  }
+
+  ::ng-deep {
+    .IsnotActive {
+      .p-step-header {
+        .p-step-title {
+          color: var(--color-success);
+        }
+
+        .p-step-number {
+          background-color: var(--color-success);
+          color: var(--color-white);
+        }
+      }
+      &.p-step-active {
+        .p-step-title {
+          color: var(--primary-color);
+        }
+        .p-step-number {
+          background-color: var(--color-white);
+          color: var(--primary-color);
+        }
+      }
+    }
+  }
+
   app-stepper-skeleton {
     flex-grow: 1;
   }
+  &__custom-button {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  ::ng-deep {
+    .p-datatable-table-container {
+      height: calc(100vh - var(--spacing-500));
+      background-color: var(--color-white);
+    }
+    .p-step-title {
+      .IsnotActive {
+        color: var(--color-success);
+      }
+    }
+  }
+
+  &__complete-btn {
+    position: absolute;
+    bottom: 0;
+    padding: var(--spacing-10) var(--spacing-20);
+    left: 0;
+    background: var(--color-white);
+    right: 0;
+    box-shadow: 0px -5px 10px -10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    ::ng-deep {
+      .p-button {
+        font-size: var(--font-size-small);
+      }
+      .p-button-loading-icon {
+        width: var(--font-size-small);
+      }
+    }
+  }
+  @media screen and (max-width: 1080px) {
+    &__wrapper {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    &__rounds {
+      display: flex;
+      flex-basis: auto;
+      flex-shrink: 0;
+      gap: 1rem;
+      width: 100%;
+      overflow: auto;
+      &-item {
+        width: auto;
+        min-width: 100px;
+        flex-shrink: 0;
+        margin:0
+      }
+      &-btn {
+        padding: var(--spacing-10);
+      }
+    }
+    &__content {
+      ::ng-deep {
+        .p-datatable-table-container {
+          max-height: calc(100vh - 415px);
+          max-width: 100%;
+          width: 100%;
+        }
+      }
+    }
+  }
+  @media (max-width: 768px) {
+
+    &__title {
+      &-wrapper {
+        margin-bottom: var(--spacing-20);
+      }
+    }
+  }
 }
+
+

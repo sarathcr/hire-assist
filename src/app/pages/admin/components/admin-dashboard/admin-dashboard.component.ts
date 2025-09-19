@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { DashboardCardSkeletonComponent } from '../../../../shared/components/dashboard-card/dashboard-card-skeleton';
+import { DashboardCardComponent } from '../../../../shared/components/dashboard-card/dashboard-card.component';
 import { ErrorResponse } from '../../../../shared/models/custom-error.models';
 import { StoreService } from '../../../../shared/services/store.service';
 import {
@@ -9,11 +11,10 @@ import {
   Users,
 } from '../../models/dashboard.model';
 import { DashboardService } from '../../services/dashboard.service';
-import { DashboardCardComponent } from '../../../../shared/components/dashboard-card/dashboard-card.component';
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [DashboardCardComponent, RouterLink],
+  imports: [DashboardCardComponent, RouterLink, DashboardCardSkeletonComponent],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
 })
@@ -22,9 +23,9 @@ export class AdminDashboardComponent implements OnInit {
   public usersData!: Users;
   public questionSetData!: QuestionSet;
   constructor(
-    private dashboardService: DashboardService<DashboardData>,
-    private storeService: StoreService,
-  ) { }
+    private readonly dashboardService: DashboardService<DashboardData>,
+    private readonly storeService: StoreService,
+  ) {}
 
   // Lifecycle events
   ngOnInit(): void {

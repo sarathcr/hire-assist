@@ -1,0 +1,53 @@
+<div class="interview-candidate">
+  <h1 class="interview-candidate__title">Candidate List</h1>
+  @if (todayTableData || PreviousTableData || upComingTableData) {
+    <h2>Today's Interviews</h2>
+    @if (todayTableData?.data?.length > 0) {
+      <app-table
+        [tableData]="todayTableData"
+        [columnsData]="columns"
+        [hasSearch]="true"
+        (btnClick)="onStartInterview($event)"
+        (buttonClick)="onButtonClick($event)"
+        (pageChangeAndSort)="onTablePayloadChange($event)"
+      ></app-table>
+    } @else {
+      <div class="interview-candidate__message">
+        No interviews scheduled for today.
+      </div>
+    }
+    <h2>Previous Interviews</h2>
+    @if (PreviousTableData?.data?.length > 0) {
+      <app-table
+        [tableData]="PreviousTableData"
+        [columnsData]="columns"
+        [hasSearch]="true"
+        (btnClick)="onStartInterview($event)"
+        (buttonClick)="onButtonClick($event)"
+        (pageChangeAndSort)="onTablePayloadChange($event)"
+      ></app-table>
+    } @else {
+      <div class="interview-candidate__message">
+        No previous interviews found.
+      </div>
+    }
+
+    <h2>UpComing Interviews</h2>
+    @if (upComingTableData?.data?.length > 0) {
+      <app-table
+        [tableData]="upComingTableData"
+        [columnsData]="columns"
+        [hasSearch]="true"
+        (btnClick)="onStartInterview($event)"
+        (buttonClick)="onButtonClick($event)"
+        (pageChangeAndSort)="onTablePayloadChange($event)"
+      ></app-table>
+    } @else {
+      <div class="interview-candidate__message">
+        No upcoming interviews scheduled.
+      </div>
+    }
+  } @else {
+    <app-interviewer-candidate-list-skeleton></app-interviewer-candidate-list-skeleton>
+  }
+</div>

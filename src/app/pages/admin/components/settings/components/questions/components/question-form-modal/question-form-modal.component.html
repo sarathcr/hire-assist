@@ -9,7 +9,6 @@
       ></app-input-textarea>
       <div class="question-form__mark">
         <app-input-text
-          [size]="'small'"
           class="question-form_field-col_one"
           [formGroup]="data.fGroup"
           type="text"
@@ -22,7 +21,13 @@
         >
         </app-input-select>
       </div>
-
+      <div class="question-form__switch">
+        <app-toggle-switch
+          [formGroup]="data.fGroup"
+          [config]="data.configMap['optionHasAttachments']"
+        >
+        </app-toggle-switch>
+      </div>
       <div formArrayName="options" class="question-form__options">
         @for (
           optionCtrl of optionsArray.controls;
@@ -33,7 +38,6 @@
           <div class="question-form__options__item">
             <app-input-text
               placeholder="Enter Option"
-              [size]="'small'"
               [formGroup]="optionCtrl"
               type="text"
               [config]="data.configMap['options']"
@@ -43,22 +47,58 @@
               icon="pi pi-minus"
               (click)="removeOption(i)"
             />
+
+            @if (data.fGroup.get("optionHasAttachments")?.value) {
+              <p-button
+                icon="pi pi-paperclip"
+                class="mr-2"
+                [rounded]="true"
+                [outlined]="true"
+                (click)="openAttachmentModal(i)"
+              />
+              @if (optionCtrl.get("fileDto")?.value?.length > 0) {
+                <p-button
+                  icon="pi pi-eye"
+                  class="mr-2"
+                  [rounded]="true"
+                  [outlined]="true"
+                  (click)="previewAttachment(optionCtrl)"
+                />
+              }
+            }
+            @if (i === optionsArray.controls.length - 1) {
+              <p-button
+                class="question-form__options__btn"
+                icon="pi pi-plus"
+                (click)="addOption()"
+              />
+            }
           </div>
-          @if (i === optionsArray.controls.length - 1) {
-            <p-button
-              class="question-form__options__btn"
-              icon="pi pi-plus"
-              (click)="addOption()"
-            />
-          }
         }
       </div>
 
-      <app-input-select
-        [formGroup]="data.fGroup"
-        [config]="data.configMap['answer']"
-      >
-      </app-input-select>
+      <div class="question-form__switch">
+        <app-toggle-switch
+          [formGroup]="data.fGroup"
+          [config]="data.configMap['isMultipleChoice']"
+        >
+        </app-toggle-switch>
+      </div>
+      @if (data.fGroup.get("isMultipleChoice")?.value) {
+        <app-input-multiselect
+          class="interviewer_field"
+          k
+          [formGroup]="data.fGroup"
+          [config]="data.configMap['answer']"
+          [selectedItems]=""
+        />
+      } @else {
+        <app-input-select
+          [formGroup]="data.fGroup"
+          [config]="data.configMap['answer']"
+        >
+        </app-input-select>
+      }
       <div class="question-form__switch">
         <app-toggle-switch
           [formGroup]="data.fGroup"
@@ -66,23 +106,33 @@
         >
         </app-toggle-switch>
         <app-toggle-switch
+          [ngClass]="
+            isEdit ? 'question-form_field_show' : 'question-form_field_hidden'
+          "
           [formGroup]="data.fGroup"
           [config]="data.configMap['active']"
         >
         </app-toggle-switch>
+        @if (questionForm.get("hasAttachments")?.value) {
+          <p-button
+            icon="pi pi-paperclip"
+            class="mr-2"
+            [rounded]="true"
+            [outlined]="true"
+            (click)="openAttachmentModal('question')"
+          />
+
+          @if (data.fGroup.get("fileDto")?.value) {
+            <p-button
+              icon="pi pi-eye"
+              class="mr-2"
+              [rounded]="true"
+              [outlined]="true"
+              (click)="previewAttachment(null)"
+            />
+          }
+        }
       </div>
-      <!-- <div class="question-form__button">
-        <app-button
-          [buttonLabel]="'Cancel'"
-          [buttonVariant]="'outlined'"
-          (btnClick)="onClose()"
-        ></app-button> -->
-      <!-- <app-button
-          [buttonLabel]="'Submit'"
-          [saveDisabled]="!data.fGroup.valid"
-          (btnClick)="onSubmit()"
-        ></app-button> -->
-      <!-- </div> -->
     </div>
   </form>
 </div>

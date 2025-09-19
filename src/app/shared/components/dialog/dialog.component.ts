@@ -22,7 +22,7 @@ export class DialogComponent implements OnInit {
 
   // LifeCycle Hooks
   ngOnInit(): void {
-    this.data = this.config.data;
+    this.data = this.config.data ?? { title: '', message: '' };
   }
 
   // Public Events

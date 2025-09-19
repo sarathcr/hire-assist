@@ -1,25 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { CardComponent } from './components/card/card.component';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { CandidateAssessment } from './models/candidate.model';
 import { Router } from '@angular/router';
-import { CandidateService } from './services/candidate.service';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { BaseComponent } from '../../shared/components/base/base.component';
-import { DialogData } from '../../shared/models/dialog.models';
-import { DialogComponent } from '../../shared/components/dialog/dialog.component';
 import { DialogFooterComponent } from '../../shared/components/dialog-footer/dialog-footer.component';
+import { DialogComponent } from '../../shared/components/dialog/dialog.component';
+import { StatusEnum } from '../../shared/enums/status.enum';
+import { DialogData } from '../../shared/models/dialog.models';
+import { CardComponent } from './components/card/card.component';
+import { CandidateAssessment } from './models/candidate.model';
+import { CandidateService } from './services/candidate.service';
 
 @Component({
   selector: 'app-candidate',
-  imports: [CardComponent],
+  imports: [CardComponent, DatePipe],
   templateUrl: './candidate.component.html',
   styleUrl: './candidate.component.scss',
 })
 export class CandidateComponent extends BaseComponent implements OnInit {
-  public data: CandidateAssessment[] = [];
-
+  public activeAssessments: CandidateAssessment[] = [];
+  public previousAssessments: CandidateAssessment[] = [];
   private ref: DynamicDialogRef | undefined;
+  public statusEnum = StatusEnum;
 
   constructor(
     public dialog: DialogService,
@@ -33,10 +36,20 @@ export class CandidateComponent extends BaseComponent implements OnInit {
   ngOnInit(): void {
     this.candidateService.getCandidateAssessment().subscribe({
       next: (res: CandidateAssessment[]) => {
-        this.data = res;
-      },
-      error: (error: any) => {
-        console.error('Error fetching assessments:', error);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize to 00:00:00.000
+
+        this.activeAssessments = res.filter((a) => {
+          const assessmentDate = new Date(a.date);
+          assessmentDate.setHours(0, 0, 0, 0);
+          return assessmentDate >= today;
+        });
+
+        this.previousAssessments = res.filter((a) => {
+          const assessmentDate = new Date(a.date);
+          assessmentDate.setHours(0, 0, 0, 0);
+          return assessmentDate < today;
+        });
       },
     });
   }
@@ -66,7 +79,6 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     });
     this.ref.onClose.subscribe((result) => {
       if (result) {
-        console.log('Assessment instructions', assessment);
         this.router.navigate(['/candidate/test'], {
           state: { assessment: assessment },
         });

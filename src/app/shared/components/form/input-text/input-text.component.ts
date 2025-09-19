@@ -18,12 +18,19 @@ export class InputTextComponent extends BaseFormComponent implements OnInit {
   @Input() formGroup!: FormGroup;
   @Input() config!: CustomFormControlConfig;
   @Input() dynamicSuffix!: string;
-  @Input() type!: string;
-  @Input() size!: string;
-
+  @Input() type!: string | 'text'; // Default to 'text' if not provided
+  @Input() values!: string;
   public formControl!: FormControl<string>;
   public inputTextConfig!: CustomTextInputConfig;
   ngOnInit(): void {
+    if (!this.config || !this.formGroup) {
+      console.warn(
+        '[InputTextComponent] Missing required input:',
+        !this.config ? 'config' : '',
+        !this.formGroup ? 'formGroup' : '',
+      );
+      return;
+    }
     this.inputTextConfig = this.config as CustomTextInputConfig;
     this.formControl = this.formGroup.get(this.config.id) as FormControl;
   }

@@ -1,0 +1,96 @@
+@if (panelOptions) {
+  <div class="Panel__section">
+    <div class="Panel__section-header">
+      <h2 class="Panel__section__title app-title">
+        Assign interviewers to panels
+      </h2>
+      <p class="Panel__section__description">
+        Select the panel and choose the interviewers to be assigned.
+      </p>
+    </div>
+
+    <form [formGroup]="fGroup">
+      <div formArrayName="paneldetails">
+        @for (roundGroup of panelDetailsFormArray.controls; track $index) {
+          <div [formGroupName]="$index" class="Panel__row">
+            <app-input-multiselect
+              style="width: fit-content"
+              class="Panel__form-field"
+              [formGroup]="roundGroup"
+              [config]="configMap['panel']"
+              [selectedItems]="[]"
+            />
+            <app-input-multiselect
+              style="width: 100%"
+              class="Panel__form-field"
+              [formGroup]="roundGroup"
+              [config]="configMap['interviewers']"
+              [selectedItems]="[]"
+            />
+            <app-button
+              class="button-romove"
+              [icon]="'pi pi-trash'"
+              [buttonVariant]="'outlined'"
+              [buttonSeverity]="'danger'"
+              [buttonLabel]="'Remove'"
+              (btnClick)="removeRound($index)"
+            ></app-button>
+          </div>
+        } @empty {
+          <p>No interviewers assigned to panel. Click "Add Round" to begin.</p>
+        }
+      </div>
+    </form>
+
+    @if (
+      panelDetailsFormArray.hasError("duplicateRounds") &&
+      panelDetailsFormArray.dirty
+    ) {
+      <div class="p-error Panel__global-error">
+        Each panel can only be assigned once.
+      </div>
+    }
+
+    <footer class="Panel__section__btn-grp dialog-footer">
+      <app-button
+        [icon]="'pi pi-plus'"
+        buttonLabel="Add Panel"
+        [buttonVariant]="'outlined'"
+        (btnClick)="addRound()"
+        type="button"
+      ></app-button>
+      <app-button buttonLabel="Submit" (btnClick)="onSubmit()"></app-button>
+    </footer>
+  </div>
+
+  <div class="Panel__section">
+    <div class="Panel__section-header">
+      <h2 class="Panel__section__title app-title">Create Panel</h2>
+      <p class="Panel__section__description">Create a new custom panel</p>
+    </div>
+
+    <form [formGroup]="createPanelForm">
+      <div formArrayName="paneldetails">
+        <app-input-text
+          class="Panel__form-field"
+          [formGroup]="createPanelForm"
+          [config]="configMap['panelName']"
+        ></app-input-text>
+
+        <app-input-textarea
+          class="Panel__form-field"
+          [formGroup]="createPanelForm"
+          [config]="configMap['description']"
+        ></app-input-textarea>
+      </div>
+    </form>
+
+    <footer class="dialog-footer">
+      <app-button buttonLabel="Save" (btnClick)="onSave()"></app-button>
+    </footer>
+  </div>
+
+  <p-toast position="top-right" class="Toast"></p-toast>
+} @else {
+  <app-assign-panel-interviewer-skeleton></app-assign-panel-interviewer-skeleton>
+}

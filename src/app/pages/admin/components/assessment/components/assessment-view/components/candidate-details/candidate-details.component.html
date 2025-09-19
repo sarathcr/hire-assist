@@ -1,0 +1,7 @@
+<div class="candidate-details">
+  @for (entry of entries(); track entry) {
+    <p>
+      <strong>{{ entry[0] }}:</strong> {{ entry[1] || "N/A" }}
+    </p>
+  }
+</div>
