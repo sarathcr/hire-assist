@@ -1,0 +1,21 @@
+<div class="dialog">
+  
+  <app-input-textarea
+    [formGroup]="fGroup"
+    [config]="configMap['comments']"
+  ></app-input-textarea>
+</div>
+<footer class="dialog__footer">
+  <div class="dialog__footer__btn-wrapper">
+    <app-button
+      buttonLabel="Cancel"
+      [buttonVariant]="'outlined'"
+      (btnClick)="onClose()"
+    ></app-button>
+  </div>
+  <div class="dialog__footer__btn-wrapper">
+    <app-button buttonLabel="Submit" (btnClick)="onSubmit()"></app-button>
+  </div>
+</footer>
+
+

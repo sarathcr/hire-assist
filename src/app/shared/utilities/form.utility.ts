@@ -5,7 +5,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-import { Option } from '../models/app-state.models';
+import { Option } from '../models/option';
 
 // CONFIGS
 
@@ -35,6 +35,7 @@ export interface CustomSelectConfig extends BaseCustomConfig {
   matPrefix?: string;
   matSuffix?: string;
   readonly?: boolean;
+  disabled?: boolean;
 }
 
 // TOGGLE SWITCH
@@ -92,7 +93,7 @@ export abstract class FormEntity {
 export const getPropertyTypeMap = (obj: any): Record<string, string> => {
   const propertyTypeMap: Record<string, string> = {};
   const properties = Object.getOwnPropertyNames(obj).filter(
-    (x) => x !== 'metadata'
+    (x) => x !== 'metadata',
   );
   properties.forEach((prop) => {
     const propertyValue = obj[prop];

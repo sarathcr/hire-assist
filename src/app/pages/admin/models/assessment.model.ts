@@ -1,12 +1,17 @@
 import { FormGroup } from '@angular/forms';
-import { ConfigMap } from '../../../shared/utilities/form.utility';
 import { PaginatedPayload } from '../../../shared/models/pagination.models';
+import {
+  ConfigMap,
+  FormEntity,
+  Metadata,
+} from '../../../shared/utilities/form.utility';
 
 export interface Assessment {
   id?: number;
   name: string;
-  description: string;
+  description?: string;
   statusId: number;
+  panel?: number;
   startDateTime: string;
   endDateTime: string;
   isActive: boolean;
@@ -68,4 +73,93 @@ export interface AssessmentRound {
   status: string;
   sequence: number;
   isActive: boolean;
+}
+
+export class Score extends FormEntity {
+  score = '';
+  file?: File;
+  metadata: Metadata = {
+    validatorsMap: {},
+    configMap: {
+      score: { id: 'score', labelKey: 'Score' },
+      file: {
+        id: 'file',
+        labelKey: 'Files',
+      },
+    },
+  };
+}
+
+export interface AssessmentRoundFormGroup {
+  id: string;
+  name: string;
+}
+
+export interface CoordinatorRoundDto {
+  assessmentRoundId: number;
+  coordinatorId?: string[]; // optional (matches List<string>?)
+}
+
+export interface CoordinatorRoundItemDto {
+  assessmentRoundId: string[];
+  coordinatorId: string[];
+}
+
+export interface CoordinatorDto {
+  assessmentId: number;
+  coordinatorRound: CoordinatorRoundItemDto[];
+}
+export interface CoordinatorResponseDto {
+  id: number;
+  coordinatorId: string;
+  assessmentId: number;
+  assessmentRoundId: number;
+}
+
+export interface Batch {
+  id: string;
+  name: string;
+  scheduledTime: string;
+}
+
+export interface Candidate {
+  id: string;
+  name: string;
+  email: string;
+  reportingTime: string;
+  statusId?: number;
+  batchQuestionSetsId?: string | number;
+}
+
+export interface CoordinatorAssessmentRounds {
+  id: number;
+  name: string;
+  assessmentId: number;
+  assessmentRoundId: number;
+  statusId: number;
+  startDateTime: string;
+  endDateTime: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface FileDto {
+  Id: string;
+  Name: string;
+  Path: string;
+  Url: string;
+  AttachmentType: number;
+}
+
+export interface IdProofRequest {
+  blobId: string;
+  attachmentTypeId: number;
+  candidateId: string;
+}
+
+export interface IdProofUploadRequest {
+  CandidateId: string;
+  IdType: number;
+  Description: string;
+  File: File;
 }

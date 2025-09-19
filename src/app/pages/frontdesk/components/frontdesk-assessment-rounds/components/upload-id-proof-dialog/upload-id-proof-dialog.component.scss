@@ -1,0 +1,26 @@
+:host {
+  padding: var(--spacing-20);
+}
+.proofUpload {
+  &__button {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
+  &__field {
+    flex-basis: var(--spacing-percentage-50);
+  }
+  &__choosefile {
+    margin-right: 10px;
+  }
+  &__proofUpload__preview {
+    margin-bottom: 1rem;
+    &__img {
+      max-width: 100%;
+      max-height: 200px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  }
+}

@@ -13,7 +13,6 @@
     &__content {
       flex-grow: 1;
       padding: var(--spacing-20) var(--spacing-30);
-      position: relative;
       padding-top: 90px;
     }
   }
@@ -21,6 +20,11 @@
     display: block;
     .main {
       height: 100%;
+      &__content {
+        flex-grow: 1;
+        padding: var(--spacing-20);
+        padding-top: 66px;
+      }
     }
   }
 }

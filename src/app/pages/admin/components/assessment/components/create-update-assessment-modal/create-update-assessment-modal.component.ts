@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NgClass } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -6,9 +8,13 @@ import { InputTextCalenderComponent } from '../../../../../../shared/components/
 import { InputTextComponent } from '../../../../../../shared/components/form/input-text/input-text.component';
 import { InputTextareaComponent } from '../../../../../../shared/components/form/input-textarea/input-textarea.component';
 import { ToggleSwitchComponent } from '../../../../../../shared/components/form/toggle-switch/toggle-switch.component';
-import { formatDate } from '../../../../../../shared/utilities/date.utility';
+import {
+  formatDate,
+  validateStartAndEndDates,
+} from '../../../../../../shared/utilities/date.utility';
 import { Metadata } from '../../../../../../shared/utilities/form.utility';
 import { AssessmentFormGroup } from '../../../../models/assessment.model';
+import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 
 @Component({
   selector: 'app-create-update-assessment-modal',
@@ -19,11 +25,15 @@ import { AssessmentFormGroup } from '../../../../models/assessment.model';
     InputTextareaComponent,
     InputTextCalenderComponent,
     ToggleSwitchComponent,
+    NgClass,
   ],
   templateUrl: './create-update-assessment-modal.component.html',
   styleUrl: './create-update-assessment-modal.component.scss',
 })
-export class CreateUpdateAssessmentModalComponent implements OnInit, OnDestroy {
+export class CreateUpdateAssessmentModalComponent
+  extends BaseComponent
+  implements OnInit, OnDestroy
+{
   public data!: AssessmentFormGroup;
   public metadata!: Metadata[];
   public isEdit = false;
@@ -31,24 +41,30 @@ export class CreateUpdateAssessmentModalComponent implements OnInit, OnDestroy {
   constructor(
     private ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
-  ) {}
+  ) {
+    super();
+  }
 
   // LifeCycle Hooks
   ngOnInit(): void {
     this.getFormData();
+    this.setupDateValidation();
+    this.isEdit = this.data.formData?.id ? true : false;
   }
 
-  ngOnDestroy(): void {
+  override ngOnDestroy(): void {
     this.data.fGroup.reset();
   }
 
   // Public Methods
+
   public onSubmit() {
     this.data.fGroup.markAllAsTouched();
     this.data.fGroup.updateValueAndValidity();
     if (this.data.fGroup.invalid) {
       return;
     }
+
     if (this.isEdit && this.ref) {
       this.ref?.close({ ...this.data.fGroup.value, id: this.data.formData.id });
     } else {
@@ -82,6 +98,42 @@ export class CreateUpdateAssessmentModalComponent implements OnInit, OnDestroy {
     formData.endDateTime = formatDate(
       this.data.formData.endDateTime.toString(),
     );
-    this.data.fGroup.patchValue({ ...formData });
+    const startFormatted = formatDate(
+      this.data.formData.startDateTime.toString(),
+    );
+    const endFormatted = formatDate(this.data.formData.endDateTime.toString());
+    this.data.fGroup.patchValue({
+      ...formData,
+      startDateTime: this.parseDDMMYYYY(startFormatted) as any,
+      endDateTime: this.parseDDMMYYYY(endFormatted) as any,
+    });
+  }
+  private parseDDMMYYYY(dateStr: string): Date | null {
+    if (!dateStr) return null;
+    const [day, month, year] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  private setupDateValidation(): void {
+    const startDate = 'startDateTime';
+    const endDate = 'endDateTime';
+
+    const startDateSub = this.data.fGroup
+      .get(startDate)
+      ?.valueChanges.subscribe(() => {
+        validateStartAndEndDates(this.data.fGroup, startDate, endDate);
+      });
+    if (startDateSub) {
+      this.subscriptionList.push(startDateSub);
+    }
+
+    const endDateSub = this.data.fGroup
+      .get(endDate)
+      ?.valueChanges.subscribe(() => {
+        validateStartAndEndDates(this.data.fGroup, startDate, endDate);
+      });
+    if (endDateSub) {
+      this.subscriptionList.push(endDateSub);
+    }
   }
 }

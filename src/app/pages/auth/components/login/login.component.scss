@@ -13,7 +13,17 @@
   &__title {
     margin-top: 0;
   }
+  &__back {
+    background: none;
+    border: none;
+    color: var(--color-grey);
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: var(--font-size-0_9rem);
+    padding: 0;
+  }
   @media (max-width: 768px) {
+    width: var(--width-vw-80);
     background: var(--color-white);
     border-radius: var(--spacing-20);
     padding: var(--spacing-30);

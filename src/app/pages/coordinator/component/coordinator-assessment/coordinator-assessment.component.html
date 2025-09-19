@@ -1,0 +1,27 @@
+<div class="coordinator-assessment">
+  <div>
+    <h1 class="coordinator-assessment__title">Assigned Interviews</h1>
+  </div>
+  <div class="coordinator-assessment__wrapper">
+    <div class="coordinator-assessment__list">
+      @if (!isLoading && assessmentRoundDataSource.length) {
+        @for (assessment of assessmentRoundDataSource; track assessment) {
+          <app-assessment-card
+            class="coordinator-assessment__card"
+            [data]="assessment"
+            [showToggleButton]="false"
+            [showContent]="false"
+            (click)="onClickAssessment(assessment.assessmentRoundId)"
+            (keydown)="onClickAssessment(assessment.assessmentRoundId)"
+          ></app-assessment-card>
+        } @empty {
+          <p>No results found</p>
+        }
+      } @else {
+        <app-assessment-card-skeleton
+          class="coordinator-assessment__card"
+        ></app-assessment-card-skeleton>
+      }
+    </div>
+  </div>
+</div>

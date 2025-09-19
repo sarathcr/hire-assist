@@ -13,9 +13,15 @@ export interface ColumnField {
   actionsConfig?: ActionConfig;
   sortedColumn?: boolean;
   hasChip?: boolean;
-  hasFilter?: boolean;
   buttonLabel?: string;
+  buttonTooltip?: string;
+  buttonIcon?: string;
+  buttonTooltips?: string[];
+  buttonIcons?: string[];
   buttonClick?: (cell: unknown) => void;
+  filterAlias?: string;
+  hasTextFilter?: boolean;
+  hasMultiStatus?: boolean;
 }
 
 export enum FieldType {
@@ -28,6 +34,7 @@ export enum FieldType {
   ListLength = 'listLength',
   Action = 'action',
   Button = 'button',
+  inputtext = 'inputtext',
 }
 
 export enum ColumnType {
@@ -46,6 +53,7 @@ export enum PaginatedDataActions {
   Postpone = 'postpone',
   Manage = 'manage',
   Preview = 'visibility',
+  StartInterview = 'StartInterview',
 }
 
 export type ActionConfig = Record<string, BaseActionConfig>;

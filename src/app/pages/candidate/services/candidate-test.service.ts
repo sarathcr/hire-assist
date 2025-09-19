@@ -1,9 +1,10 @@
-import { Injectable } from '@angular/core';
-import { ApiService } from '../../../shared/services/api.service';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { StoreService } from '../../../shared/services/store.service';
 import { ASSESSMENT_URL } from '../../../shared/constants/api';
+import { ApiService } from '../../../shared/services/api.service';
+import { StoreService } from '../../../shared/services/store.service';
 import { CandidateTestQuestionSet } from '../models/candidate-test-question-set.model';
 
 interface Payload {
@@ -14,9 +15,14 @@ interface Payload {
   questionId: number;
   answerOptionId: string | number;
   statusId: number;
-  duration: Date | null;
+  duration: string;
 }
-
+export interface candidateTestTermination {
+  candidateId: string;
+  assessmentId: number;
+  terminatedTime: string;
+  terminatedStatus: number;
+}
 @Injectable({
   providedIn: 'root',
 })
@@ -67,6 +73,23 @@ export class CandidateTestService extends ApiService<any> {
     return this.httpClient.post<any>(
       `${this.getResourceUrl()}/calculate-score/assessmentId/${assessmentId}/assessmentRoundId/${assessmentRoundId}`,
       {},
+    );
+  }
+
+  public addcandidateTestTerminationTime(payload: candidateTestTermination) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return this.httpClient.post<any>(
+      `${this.getResourceUrl()}/candidateTermination`,
+      payload,
+    );
+  }
+
+  public getCandidateTestTerminationTime(
+    assessmentId: number,
+    candidateId: string,
+  ) {
+    return this.httpClient.get<any>(
+      `${this.getResourceUrl()}/candidateTermination/${candidateId}/${assessmentId}`,
     );
   }
 }

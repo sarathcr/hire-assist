@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, output } from '@angular/core';
-import { DropDownComponent } from '../drop-down/drop-down.component';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToggleMenuService } from '../../services/toggle-menu.service';
+import { DropDownComponent } from '../drop-down/drop-down.component';
 
 @Component({
   selector: 'app-header',
@@ -13,7 +13,6 @@ import { ToggleMenuService } from '../../services/toggle-menu.service';
 export class HeaderComponent {
   constructor(public router: Router) {}
 
-  public menuOpen = output<boolean>();
   toggleMenu = inject(ToggleMenuService);
 
   public onMenuClick() {

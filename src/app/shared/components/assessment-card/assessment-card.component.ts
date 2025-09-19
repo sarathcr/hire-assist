@@ -1,10 +1,11 @@
-import { NgClass } from '@angular/common';
+import { DecimalPipe, NgClass } from '@angular/common';
 import { Component, input, OnInit, output } from '@angular/core';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { PopoverModule } from 'primeng/popover';
 import { ProgressBar } from 'primeng/progressbar';
 import { SpeedDial } from 'primeng/speeddial';
+import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { Assessment } from '../../../pages/admin/models/assessment.model';
 
@@ -17,6 +18,8 @@ import { Assessment } from '../../../pages/admin/models/assessment.model';
     ButtonModule,
     NgClass,
     TooltipModule,
+    DecimalPipe,
+    TagModule,
   ],
   templateUrl: './assessment-card.component.html',
   styleUrl: './assessment-card.component.scss',
@@ -27,9 +30,10 @@ export class AssessmentCardComponent implements OnInit {
   public duplicate = output<Assessment>();
   public delete = output<number>();
   public showToggleButton = input<boolean>(true);
-
+  public schedule = output<Assessment>();
   public actionItems: MenuItem[] = [];
   public lastUpdatedInfo = '';
+  public showContent = input<boolean>(true);
 
   ngOnInit(): void {
     this.setActionItems();
@@ -76,12 +80,17 @@ export class AssessmentCardComponent implements OnInit {
         icon: 'pi pi-trash',
         command: (e) => this.handleActionClick(e, 'delete'),
       },
+      {
+        label: 'Schedule', // New Schedule button
+        icon: 'pi pi-calendar',
+        command: (e) => this.handleActionClick(e, 'schedule'),
+      },
     ];
   }
 
   private handleActionClick(
     event: MenuItemCommandEvent,
-    type: 'edit' | 'duplicate' | 'delete',
+    type: 'edit' | 'duplicate' | 'delete' | 'schedule',
   ): void {
     event.originalEvent?.stopPropagation();
     const assessment = this.data();
@@ -99,6 +108,9 @@ export class AssessmentCardComponent implements OnInit {
         if (assessment.id) {
           this.delete.emit(assessment.id);
         }
+        break;
+      case 'schedule':
+        this.schedule.emit(assessment);
         break;
     }
   }

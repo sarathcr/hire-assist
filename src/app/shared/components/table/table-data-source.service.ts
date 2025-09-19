@@ -1,33 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // table-data-source.service.ts
 import { Injectable } from '@angular/core';
-import {
-  BehaviorSubject,
-  combineLatest,
-  Observable,
-  skip,
-  switchMap,
-} from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, switchMap } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
-import {
-  PaginatedData,
-  PaginatedPayload,
-} from '../../models/pagination.models';
+import { PaginatedPayload } from '../../models/pagination.models';
+import { PaginatedData } from '../../models/table.models';
 
 @Injectable()
 export class TableDataSourceService<T> {
   private endpointUrl!: string;
-  private payloadSubject = new BehaviorSubject<PaginatedPayload>(
+  private readonly payloadSubject = new BehaviorSubject<PaginatedPayload>(
     new PaginatedPayload(),
   );
-  private externalFilterSubject = new BehaviorSubject<Record<string, any>>({});
+  private readonly externalFilterSubject = new BehaviorSubject<Record<string, any>>({});
 
   public data$: Observable<PaginatedData<T>>;
 
-  constructor(private http: HttpClient) {
+  constructor(private readonly http: HttpClient) {
     this.data$ = combineLatest([
-      this.payloadSubject.asObservable().pipe(skip(1)),
+      this.payloadSubject.asObservable(),
       this.externalFilterSubject,
     ]).pipe(
       switchMap(([payload, externalFilters]) => {
@@ -49,11 +41,11 @@ export class TableDataSourceService<T> {
     this.endpointUrl = url;
   }
 
-  getData(payload: PaginatedPayload): Observable<T[]> {
+  getData(payload: PaginatedPayload): Observable<PaginatedData<T>> {
     if (!this.endpointUrl) {
       throw new Error('Endpoint URL not set in TableDataSourceService.');
     }
-    return this.http.post<T[]>(this.endpointUrl, payload);
+    return this.http.post<PaginatedData<T>>(this.endpointUrl, payload);
   }
 
   updatePayload(payload: PaginatedPayload) {

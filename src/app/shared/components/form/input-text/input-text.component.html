@@ -6,6 +6,7 @@
       pInputText
       [formControlName]="inputTextConfig.id"
       (input)="onInputChange($event)"
+      [value]="values"
     />
     <label for="over_label">{{ inputTextConfig.labelKey }}</label>
   </p-floatlabel>

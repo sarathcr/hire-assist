@@ -1,34 +1,45 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Chip } from 'primeng/chip';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
+import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputTextCalenderComponent } from '../../../../../../../../shared/components/form/input-text-calender/input-text-calender.component';
+import { isValidStartDate } from '../../../../../../../../shared/utilities/date.utility';
 import {
   buildFormGroup,
   ConfigMap,
 } from '../../../../../../../../shared/utilities/form.utility';
 import { ScheduleInterview } from '../../../../../../models/schedule-interview.model';
-import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
-import { Chip } from 'primeng/chip';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-schedule-interview',
-  imports: [ReactiveFormsModule, InputTextCalenderComponent, ButtonComponent, CommonModule, Chip],
+  imports: [
+    ReactiveFormsModule,
+    InputTextCalenderComponent,
+    ButtonComponent,
+    CommonModule,
+    Chip,
+  ],
   templateUrl: './schedule-interview.component.html',
   styleUrl: './schedule-interview.component.scss',
 })
-export class ScheduleInterviewComponent implements OnInit {
+export class ScheduleInterviewComponent
+  extends BaseComponent
+  implements OnInit
+{
   public fGroup!: FormGroup;
   public interviewModel = new ScheduleInterview();
   public configMap!: ConfigMap;
   public data!: string;
-  selectedCandidateIds: string[] = [];
-
+  public selectedCandidateIds: string[] = [];
 
   constructor(
     private ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
   ) {
+    super();
     this.fGroup = buildFormGroup(this.interviewModel);
   }
 
@@ -37,7 +48,7 @@ export class ScheduleInterviewComponent implements OnInit {
     this.data = this.config.data;
     this.setConfigMap();
     this.selectedCandidateIds = this.config.data || [];
-    console.log("in dialogbox", this.data);
+    this.setupDateValidation();
   }
 
   // Public methods
@@ -58,7 +69,25 @@ export class ScheduleInterviewComponent implements OnInit {
     const { metadata } = new ScheduleInterview();
     this.configMap = metadata.configMap || {};
   }
-  removeCandidate(index: number): void {
+  public removeCandidate(index: number): void {
     this.selectedCandidateIds.splice(index, 1);
+  }
+  private setupDateValidation(): void {
+    const scheduleDateControl = this.fGroup.get('scheduleDate');
+
+    const sub = scheduleDateControl?.valueChanges.subscribe(
+      (newValue: Date) => {
+        if (newValue && !isValidStartDate(newValue)) {
+          scheduleDateControl?.setErrors({
+            errorMessage: 'Schedule Date must be today or later.',
+          });
+        } else {
+          scheduleDateControl?.setErrors(null);
+        }
+      },
+    );
+    if (sub) {
+      this.subscriptionList.push(sub);
+    }
   }
 }

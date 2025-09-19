@@ -5,25 +5,39 @@ import { AdminDashboardComponent } from './pages/admin/components/admin-dashboar
 import { AssessmentComponent } from './pages/admin/components/assessment/assessment.component';
 import { AssessmentDetailComponent } from './pages/admin/components/assessment/components/assessment-detail/assessment-detail.component';
 import { AssessmentListComponent } from './pages/admin/components/assessment/components/assessment-list/assessment-list.component';
+
+import { AssessmentViewComponent } from './pages/admin/components/assessment/components/assessment-view/assessment-view.component';
+import { CandidateDetailViewComponent } from './pages/admin/components/assessment/components/assessment-view/components/candidate-detail-view/candidate-detail-view.component';
+import { AssessmentSummaryComponent } from './pages/admin/components/interviews/components/assessment-summary/assessment-summary.component';
+import { InterviewCandidateListComponent } from './pages/admin/components/interviews/components/interview-candidate-list/interview-candidate-list.component';
+import { InterviewDetailComponent } from './pages/admin/components/interviews/components/interview-detail/interview-detail.component';
+import { InterviewsComponent } from './pages/admin/components/interviews/interviews.component';
 import { RolesAccessComponent } from './pages/admin/components/roles-access/roles-access.component';
 import { BatchesComponent } from './pages/admin/components/settings/components/batches/batches.component';
+import { InterviewerPanelAssignmentComponent } from './pages/admin/components/settings/components/interviewer-panel-assignment/interviewer-panel-assignment.component';
+import { PanelsComponent } from './pages/admin/components/settings/components/panels/panels.component';
 import { QuestionsComponent } from './pages/admin/components/settings/components/questions/questions.component';
 import { SettingsComponent } from './pages/admin/components/settings/settings.component';
 import { LoginComponent } from './pages/auth/components/login/login.component';
+import { ResetPasswordChangeComponent } from './pages/auth/components/reset-password-change/reset-password-change.component';
+import { ResetPasswordComponent } from './pages/auth/components/reset-password/reset-password.component';
 import { CandidateComponent } from './pages/candidate/candidate.component';
 import { CandidateTestComponent } from './pages/candidate/components/candidate-test/candidate-test.component';
 import { CandidateThankyouComponent } from './pages/candidate/components/candidate-thankyou/candidate-thankyou.component';
-import { AssessmentsComponent } from './pages/interviewer/components/assessment/assessments.component';
-import { InterviewerCandidateAssessmentComponent } from './pages/interviewer/components/assessment/components/interviewer-assessment-details/components/interviewer-candidate-assessment/interviewer-candidate-assessment.component';
-import { InterviewerAssessmentDetailsComponent } from './pages/interviewer/components/assessment/components/interviewer-assessment-details/interviewer-assessment-details.component';
-import { InterviewerAssessmentComponent } from './pages/interviewer/components/assessment/components/interviewer-assessment/interviewer-assessment.component';
-import { InterviewerAsssessmentListComponent } from './pages/interviewer/components/assessment/components/interviewer-asssessment-list/interviewer-asssessment-list.component';
+import { CoordinatorAssignmentComponent } from './pages/coordinator/component/coordinator-assessment/components/coordinator-assignment/coordinator-assignment.component';
+import { CoordinatorDetailsComponent } from './pages/coordinator/component/coordinator-assessment/components/coordinator-details/coordinator-details.component';
+import { CoordinatorAssessmentComponent } from './pages/coordinator/component/coordinator-assessment/coordinator-assessment.component';
+import { CoordinatorDashboardComponent } from './pages/coordinator/component/coordinator-dashboard/coordinator-dashboard.component';
+import { FrontdeskBatchAssignmentComponent } from './pages/frontdesk/components/frontdesk-assessment-rounds/components/frontdesk-batch-assignment/frontdesk-batch-assignment.component';
+import { FrontdeskAssessmentRoundsComponent } from './pages/frontdesk/components/frontdesk-assessment-rounds/frontdesk-assessment-rounds.component';
+import { FrontdeskDashboardComponent } from './pages/frontdesk/components/frontdesk-dashboard/frontdesk-dashboard.component';
 import { InterviewerDashboardComponent } from './pages/interviewer/components/interviewer-dashboard/interviewer-dashboard.component';
+import { InterviewerCandidateListComponent } from './pages/interviewer/components/Interviewer-list/components/interviewer-candidate-list/interviewer-candidate-list.component';
+import { InterviewerFeedbackComponent } from './pages/interviewer/components/Interviewer-list/components/interviewer-feedback/interviewer-feedback.component';
 import { ProfileComponent } from './shared/components/pages/profile/profile.component';
-import { backButtonGuard } from './shared/guards/back-button.guard';
 import { DeviceWidthGuard } from './shared/guards/device-width.guard';
 import { collectionResolver } from './shared/resolvers/collection.resolver';
-import { AssessmentViewComponent } from './pages/admin/components/assessment/components/assessment-view/assessment-view.component';
+import { backButtonGuard } from './shared/guards/back-button.guard';
 
 export const routes: Routes = [
   {
@@ -32,9 +46,16 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: 'login',
+    path: '',
     component: AuthComponent,
-    children: [{ path: '', component: LoginComponent }],
+    children: [
+      { path: 'login', component: LoginComponent },
+      { path: 'forgot-password', component: ResetPasswordComponent },
+      {
+        path: 'reset-password',
+        component: ResetPasswordChangeComponent,
+      },
+    ],
   },
   {
     path: 'admin',
@@ -45,7 +66,7 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: AdminDashboardComponent },
       {
-        path: 'assessment',
+        path: 'recruitments',
         component: AssessmentComponent,
         children: [
           {
@@ -53,7 +74,44 @@ export const routes: Routes = [
             component: AssessmentListComponent,
           },
           { path: ':id', component: AssessmentDetailComponent },
-          { path: 'schedule/:id', component: AssessmentViewComponent },
+          {
+            path: 'schedule/:id',
+            component: AssessmentViewComponent,
+          },
+          {
+            path: 'candidateDetail/:recruitmentId/:candidateId',
+            component: CandidateDetailViewComponent,
+          },
+        ],
+      },
+      {
+        path: 'interviews',
+        component: InterviewsComponent,
+        children: [
+          {
+            path: '',
+            component: AssessmentSummaryComponent,
+          },
+          {
+            path: ':id/:panel',
+            component: InterviewCandidateListComponent,
+          },
+          {
+            path: ':recruitmentId/:assessmentRoundId/:interviewId/:email',
+            component: InterviewDetailComponent,
+          },
+        ],
+      },
+      {
+        path: 'coordinator',
+
+        component: CoordinatorDashboardComponent,
+        children: [
+          { path: ':id', component: CoordinatorAssessmentComponent },
+          {
+            path: ':recruitmentId/:assessmentRoundId',
+            component: CoordinatorAssignmentComponent,
+          },
         ],
       },
       {
@@ -69,6 +127,11 @@ export const routes: Routes = [
             path: 'batches',
             component: BatchesComponent,
           },
+          { path: 'panels', component: PanelsComponent },
+          {
+            path: 'interviewerPanel',
+            component: InterviewerPanelAssignmentComponent,
+          },
         ],
       },
     ],
@@ -82,7 +145,7 @@ export const routes: Routes = [
         component: ProfileComponent,
       },
       {
-        path: ':userid/:assessmentId',
+        path: ':userid/:recruitmentId',
         component: ProfileComponent,
       },
     ],
@@ -90,31 +153,22 @@ export const routes: Routes = [
   {
     path: 'interviewer',
     component: DashboardComponent,
+    resolve: {
+      collection: collectionResolver,
+    },
     children: [
       { path: '', component: InterviewerDashboardComponent },
       {
-        path: 'assessment',
-        component: AssessmentsComponent,
-        children: [
-          {
-            path: '',
-            component: InterviewerAsssessmentListComponent,
-          },
-          {
-            path: ':id',
-            component: InterviewerAssessmentComponent,
-            children: [
-              { path: '', component: InterviewerAssessmentDetailsComponent },
-              {
-                path: ':email',
-                component: InterviewerCandidateAssessmentComponent,
-              },
-            ],
-          },
-        ],
+        path: ':id/:panel',
+        component: InterviewerCandidateListComponent,
+      },
+      {
+        path: ':recruitmentId/:assessmentRoundId/:interviewId/:email',
+        component: InterviewerFeedbackComponent,
       },
     ],
   },
+
   {
     path: 'candidate',
     component: DashboardComponent,
@@ -133,5 +187,49 @@ export const routes: Routes = [
     canActivate: [DeviceWidthGuard],
     canDeactivate: [backButtonGuard],
     runGuardsAndResolvers: 'always',
+  },
+  {
+    path: 'coordinator',
+    component: DashboardComponent,
+    resolve: {
+      collection: collectionResolver,
+    },
+    children: [
+      { path: '', component: CoordinatorDashboardComponent },
+
+      {
+        path: 'recruitments',
+        component: CoordinatorDetailsComponent,
+        children: [
+          { path: ':id', component: CoordinatorAssessmentComponent },
+          {
+            path: ':recruitmentId/:assessmentRoundId',
+            component: CoordinatorAssignmentComponent,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    path: 'frontdesk',
+    component: DashboardComponent,
+    resolve: {
+      collection: collectionResolver,
+    },
+    children: [
+      { path: '', component: FrontdeskDashboardComponent },
+      {
+        path: 'recruitments',
+        children: [
+          { path: ':id', component: FrontdeskAssessmentRoundsComponent },
+          {
+            path: ':recruitmentId/round',
+            children: [
+              { path: ':id', component: FrontdeskBatchAssignmentComponent },
+            ],
+          },
+        ],
+      },
+    ],
   },
 ];

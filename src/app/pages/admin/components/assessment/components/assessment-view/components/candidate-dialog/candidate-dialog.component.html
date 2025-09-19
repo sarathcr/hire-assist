@@ -15,14 +15,57 @@
       type="text"
       [config]="configMap['email']"
     ></app-input-text>
-  </form>
-  <app-input-select [formGroup]="fGroup" [config]="configMap['batch']" />
-  @if (fGroup.get("batch")?.value) {
-    <app-input-select
+    <app-input-text-calender
       [formGroup]="fGroup"
-      [config]="configMap['questionSet']"
-    />
-  }
+      [config]="configMap['dob']"
+      [showTime]="false"
+      [maxDate]="today"
+    ></app-input-text-calender>
+    <app-input-select [formGroup]="fGroup" [config]="configMap['gender']" />
+    <app-input-text
+      [formGroup]="fGroup"
+      type="text"
+      [config]="configMap['phone']"
+    ></app-input-text>
+    <app-input-select [formGroup]="fGroup" [config]="configMap['batch']" />
+    @if (fGroup.get("batch")?.value) {
+      <app-input-text-calender
+        class="batch-form_field-col_one"
+        [formGroup]="fGroup"
+        [config]="configMap['startDate']"
+        [showTime]="true"
+        [hasDateError]="
+          isDateChanged('startDate')
+            ? 'Modifying the StartDateTime will update the entire batch schedule.'
+            : ''
+        "
+      ></app-input-text-calender>
+
+      <app-input-text-calender
+        class="batch-form_field-col_one"
+        [formGroup]="fGroup"
+        [config]="configMap['endDate']"
+        [showTime]="true"
+        [hasDateError]="
+          isDateChanged('endDate')
+            ? 'Modifying the EndDateTime will update the entire batch schedule.'
+            : ''
+        "
+      ></app-input-text-calender>
+
+      <app-input-select
+        [formGroup]="fGroup"
+        [config]="configMap['questionSet']"
+      />
+    }
+    @for (q of applicationQuestions; track q.id) {
+      <app-input-text
+        [formGroup]="fGroup"
+        type="text"
+        [config]="{ id: q.id.toString(), labelKey: q.question }"
+      />
+    }
+  </form>
 </div>
 <footer class="dialog-footer">
   <div class="dialog-footer__btn-wrapper">

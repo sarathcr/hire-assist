@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 
 import { CandidateService } from './candidate.service';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('CandidateService', () => {
   let service: CandidateService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      providers: [provideHttpClientTesting()],
+    });
     service = TestBed.inject(CandidateService);
   });
 

@@ -1,59 +1,327 @@
 <div class="assessment-schedule">
-  <h1>Assessment Schedule</h1>
-  <div class="assessment-schedule__assessmentround">
-    <h2>Rounds:</h2>
-    <div class="assessment-schedule__stepper">
-      <div
-        cdkDropList
-        [cdkDropListData]="submittedData"
-        (cdkDropListDropped)="onDrop($event)"
-        class="assessment-schedule__stepper-horizontal"
-        cdkDropListOrientation="horizontal"
-      >
-        @for (data of submittedData; let idx = $index; track data) {
-          <div class="assessment-schedule__step-item" cdkDrag>
-            {{ data.name || data }}
-            @if (idx < submittedData.length - 1) {
-              <ng-container>
-                <i
-                  class="pi pi-arrow-right assessment-schedule__step-arrow"
-                ></i>
-              </ng-container>
-            }
-          </div>
-        }
+  <h1 class="app-title">Schedule Recruitment</h1>
+  @if (assessment) {
+    <div class="assessment-schedule__header">
+      <div class="assessment-schedule__assessment-item">
+        <h4>Name</h4>
+        <p>{{ assessment.name }}</p>
       </div>
-      <div class="assessment-schedule__button">
-        <app-button
-          [buttonLabel]="'AssessmentRound'"
-          (btnClick)="onNavigateclick()"
-        ></app-button>
-        <app-button
-          [buttonLabel]="'save'"
-          [disabled]="!submittedData || submittedData.length === 0"
-          (btnClick)="onAdd()"
-        ></app-button>
+      <div class="assessment-schedule__assessment-item">
+        <h4>Status</h4>
+        <p>{{ getStatus(assessment.statusId) }}</p>
+      </div>
+      <div class="assessment-schedule__assessment-item">
+        <h4>Starts Date</h4>
+        <p>{{ assessment.startDateTime | date: "dd-MM-yyyy" }}</p>
+      </div>
+      <div class="assessment-schedule__assessment-item">
+        <h4>End Date</h4>
+        <p>{{ assessment.endDateTime | date: "dd-MM-yyyy" }}</p>
+      </div>
+      <div class="assessment-schedule__assessment-item">
+        <h4>Description</h4>
+        <p>{{ assessment.description }}</p>
       </div>
     </div>
-    <div class="assessment-schedule__candidate">
-      <app-table
-        [tableData]="data"
-        [columnsData]="columns"
-        heading="Manage Candidates and Batches"
-        [importButton]="true"
-        [hasDelete]="false"
-        [hasScheduleButton]="true"
-        [hasAddButton]="true"
-        (import)="importCandidates($event)"
-        (create)="addNewCandidate()"
-        (delete)="deleteCandidate($event)"
-        (deleteSelected)="deleteSelectedCandidates($event)"
-        (batchSelected)="createBatchSelectedCandidates($event)"
-        (Schedule)="scheduleAssessment($event)"
-        (pageChangeAndSort)="onTablePayloadChange($event)"
-      ></app-table>
-
-      <p-toast position="top-right" class="Toast"></p-toast>
+  }
+  <div class="assessment-schedule__wrapper">
+    <ul class="assessment-schedule__steps">
+      <li
+        class="assessment-schedule__steps-item"
+        [ngClass]="{ active: this.activeStep === 0 }"
+      >
+        <button
+          type="button"
+          tabindex="0"
+          class="assessment-schedule__steps-btn"
+          (click)="setActiveStep(0)"
+        >
+          Rounds
+        </button>
+      </li>
+      <li
+        class="assessment-schedule__steps-item"
+        [ngClass]="{ active: this.activeStep === 1 }"
+      >
+        <button
+          type="button"
+          tabindex="0"
+          class="assessment-schedule__steps-btn"
+          (click)="setActiveStep(1)"
+        >
+          Question Set
+        </button>
+      </li>
+      <li
+        class="assessment-schedule__steps-item"
+        [ngClass]="{ active: this.activeStep === 2 }"
+      >
+        <button
+          type="button"
+          tabindex="0"
+          class="assessment-schedule__steps-btn"
+          (click)="setActiveStep(2)"
+        >
+          Coordinators
+        </button>
+      </li>
+      <li
+        class="assessment-schedule__steps-item"
+        [ngClass]="{ active: this.activeStep === 3 }"
+      >
+        <button
+          type="button"
+          tabindex="0"
+          class="assessment-schedule__steps-btn"
+          (click)="setActiveStep(3)"
+        >
+          Front Desk
+        </button>
+      </li>
+      <li
+        class="assessment-schedule__steps-item"
+        [ngClass]="{ active: this.activeStep === 4 }"
+      >
+        <button
+          type="button"
+          tabindex="0"
+          class="assessment-schedule__steps-btn"
+          (click)="setActiveStep(4)"
+        >
+          Interviewers
+        </button>
+      </li>
+      <li
+        class="assessment-schedule__steps-item"
+        [ngClass]="{ active: this.activeStep === 5 }"
+      >
+        <button
+          type="button"
+          tabindex="0"
+          class="assessment-schedule__steps-btn"
+          (click)="setActiveStep(5)"
+        >
+          Schedule
+        </button>
+      </li>
+    </ul>
+    <div class="assessment-schedule__content">
+      @if (this.activeStep === 0) {
+        <app-assessment-round
+          [assessmentId]="assessmentId"
+        ></app-assessment-round>
+      } @else if (this.activeStep === 1) {
+        <app-select-quesionset-step
+          [assessmentId]="assessmentId"
+        ></app-select-quesionset-step>
+      } @else if (this.activeStep === 2) {
+        <app-coordinator-step
+          [assessmentId]="assessmentId"
+        ></app-coordinator-step>
+      } @else if (this.activeStep === 3) {
+        <app-front-desk [assessmentId]="assessmentId"></app-front-desk>
+      } @else if (this.activeStep === 4) {
+        <app-assign-panel-interviewer></app-assign-panel-interviewer>
+      } @else if (this.activeStep === 5) {
+        <app-import-candidate-list-step
+          [assessmentId]="assessmentId"
+        ></app-import-candidate-list-step>
+      }
     </div>
   </div>
+
+  <!-- <p-stepper [value]="1">
+    <p-step-item [value]="1">
+      <p-step
+        ><div class="assessment-schedule__step-content">
+          ASSESSMENT ROUNDS
+        </div></p-step
+      >
+      <p-step-panel>
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="assessment-schedule__box">
+            <app-assessment-round
+              [assessmentId]="assessmentId"
+            ></app-assessment-round>
+          </div>
+
+          <div class="assessment-schedule__footer">
+            <p-button
+              label="Complete"
+              (onClick)="onCompleteStep(1)"
+              [disabled]="isdisableCompleted"
+            />
+            <p-button
+              label="Next"
+              *ngIf="completedSteps.includes(1) || isdisableCompleted"
+              (onClick)="activateCallback(2)"
+            />
+          </div>
+        </ng-template>
+      </p-step-panel>
+    </p-step-item>
+
+    <p-step-item [value]="2">
+      <p-step
+        ><div class="assessment-schedule__step-content">
+          SELECT ASSESSMENT QUESTIONS AND SET QUESTION SET
+        </div></p-step
+      >
+      <p-step-panel>
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="assessment-schedule__box">
+            <app-select-quesionset-step
+              [assessmentId]="assessmentId"
+            ></app-select-quesionset-step>
+          </div>
+          <div class="assessment-schedule__footer">
+            <app-button
+              [buttonLabel]="'Back'"
+              [buttonVariant]="'outlined'"
+              (btnClick)="activateCallback(1)"
+            ></app-button>
+            <p-button
+              label="Complete"
+              (onClick)="onCompleteStep(2)"
+              [disabled]="completedSteps.includes(2)"
+            />
+            <p-button
+              label="Next"
+              *ngIf="completedSteps.includes(2)"
+              (onClick)="activateCallback(3)"
+            />
+          </div>
+        </ng-template>
+      </p-step-panel>
+    </p-step-item> -->
+
+  <!--FrontDesk-->
+
+  <!-- <p-step-item [value]="3">
+      <p-step
+        ><div class="assessment-schedule__step-content">
+          CHOOSE COORDINATORS
+        </div></p-step
+      >
+      <p-step-panel>
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="assessment-schedule__box">
+            <app-coordinator-step
+              [assessmentId]="assessmentId"
+            ></app-coordinator-step>
+          </div>
+          <div class="assessment-schedule__footer">
+            <app-button
+              [buttonLabel]="'Back'"
+              [buttonVariant]="'outlined'"
+              (btnClick)="activateCallback(2)"
+            ></app-button>
+            <p-button
+              label="Complete"
+              (onClick)="onCompleteStep(3)"
+              [disabled]="completedSteps.includes(3)"
+            />
+            <p-button
+              label="Next"
+              *ngIf="completedSteps.includes(3)"
+              (onClick)="activateCallback(4)"
+            />
+          </div>
+        </ng-template>
+      </p-step-panel>
+    </p-step-item>
+    <p-step-item [value]="4">
+      <p-step
+        ><div class="assessment-schedule__step-content">
+          CHOOSE FRONTDESK COORDINATORS
+        </div></p-step
+      >
+      <p-step-panel>
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="assessment-schedule__box">
+            <app-front-desk [assessmentId]="assessmentId"></app-front-desk>
+          </div>
+
+          <div class="assessment-schedule__footer">
+            <app-button
+              [buttonLabel]="'Back'"
+              [buttonVariant]="'outlined'"
+              (btnClick)="activateCallback(3)"
+            ></app-button>
+            <p-button
+              label="Complete"
+              (onClick)="onCompleteStep(4)"
+              [disabled]="completedSteps.includes(4)"
+            />
+            <p-button
+              label="Next"
+              *ngIf="completedSteps.includes(4)"
+              (onClick)="activateCallback(5)"
+            />
+          </div>
+        </ng-template>
+      </p-step-panel>
+    </p-step-item>
+
+    <p-step-item [value]="5">
+      <p-step
+        ><div class="assessment-schedule__step-content">
+          ASSIGN INTERVIEWERS
+        </div></p-step
+      >
+      <p-step-panel>
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="assessment-schedule__box">
+            <app-assign-panel-interviewer></app-assign-panel-interviewer>
+          </div>
+          <div class="assessment-schedule__footer">
+            <app-button
+              [buttonLabel]="'Back'"
+              [buttonVariant]="'outlined'"
+              (btnClick)="activateCallback(4)"
+            ></app-button>
+            <p-button
+              label="Complete"
+              (onClick)="onCompleteStep(5)"
+              [disabled]="completedSteps.includes(5)"
+            />
+            <p-button
+              label="Next"
+              *ngIf="completedSteps.includes(5)"
+              (onClick)="activateCallback(6)"
+            />
+          </div>
+        </ng-template>
+      </p-step-panel>
+    </p-step-item>
+
+    <p-step-item [value]="6">
+      <p-step
+        ><div class="assessment-schedule__step-content">
+          IMPORT CANDIDATE LIST AND SCHEDULE ASSESSMENT
+        </div></p-step
+      >
+      <p-step-panel>
+        <ng-template #content let-activateCallback="activateCallback">
+          <div class="assessment-schedule__box">
+            <app-import-candidate-list-step
+              [assessmentId]="assessmentId"
+            ></app-import-candidate-list-step>
+          </div>
+          <div class="assessment-schedule__footer">
+            <app-button
+              [buttonLabel]="'Back'"
+              [buttonVariant]="'outlined'"
+              (btnClick)="activateCallback(5)"
+            ></app-button>
+            <p-button
+              label="Complete"
+              (onClick)="onCompleteStep(6)"
+              [disabled]="isdisableCompleted"
+            />
+          </div>
+        </ng-template>
+      </p-step-panel>
+    </p-step-item>
+  </p-stepper> -->
 </div>

@@ -1,0 +1,25 @@
+<div class="interviewerPanels">
+  <div class="interviewerPanels__title">
+    <h2>Available Panels</h2>
+  </div>
+  <div class="interviewerPanels__table">
+    <app-table
+      [tableData]="panelData"
+      [columnsData]="panelColumn"
+      [parentLoader]="isLoading"
+      [hasSearch]="true"
+      [hasCheckbox]="false"
+      (edit)="getByIdPanel($event)"
+      (delete)="deletePanelAssignment($event)"
+      (pageChangeAndSort)="onTablePayloadChange($event)"
+    >
+      <div class="interviewerPanels__button">
+        <app-button
+          [buttonLabel]="'New'"
+          icon="pi pi-plus"
+          (btnClick)="createInterviewerPanel()"
+        ></app-button></div
+    ></app-table>
+  </div>
+  <p-toast position="top-right" class="Toast"></p-toast>
+</div>

@@ -1,0 +1,51 @@
+<div class="proofUpload">
+  <app-input-select [formGroup]="fGroup" [config]="idTypeSelectConfig" />
+
+  <p-fileupload
+    class="proofUpload__choosefile"
+    mode="basic"
+    chooseLabel="Upload File"
+    chooseIcon="pi pi-upload"
+    name="demo[]"
+    url="https://www.primefaces.org/cdn/api/upload.php"
+    accept="image/*"
+    (onSelect)="onFileChange($event)"
+    maxFileSize="1000000"
+  />
+  @if (uploadedFileUrl) {
+    @if (isLoading) {
+      <app-upload-id-proof-skeleton></app-upload-id-proof-skeleton>
+    } @else {
+      @for (imgUrl of imageUrl; track imgUrl; let i = $index) {
+        <div class="proofUpload__preview">
+          <app-image
+            [imageUrl]="imgUrl"
+            [paddingTop]="'0'"
+            [forceCancelRequest]="forceCancelRequest"
+            (closeImage)="onClose()"
+          ></app-image>
+          <div class="proofUpload__preview__delete">
+            <app-button
+              icon="pi pi-trash"
+              [buttonVariant]="'text'"
+              (btnClick)="onDeleteImage(i)"
+            ></app-button>
+          </div>
+        </div>
+      }
+    }
+  }
+
+  <div class="proofUpload__button">
+    <app-button
+      [buttonLabel]="'Cancel'"
+      [buttonVariant]="'outlined'"
+      (btnClick)="onClose()"
+    ></app-button>
+    <app-button
+      [buttonLabel]="'Submit'"
+      [disabled]="!fGroup.valid"
+      (btnClick)="onSubmit()"
+    ></app-button>
+  </div>
+</div>

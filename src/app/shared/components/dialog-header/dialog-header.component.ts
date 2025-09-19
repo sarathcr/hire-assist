@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DynamicDialogConfig } from 'primeng/dynamicdialog';
 import { Tag } from 'primeng/tag';
+import { DialogData } from '../../models/dialog.models';
 
 @Component({
   selector: 'app-dialog-header',
@@ -9,12 +10,8 @@ import { Tag } from 'primeng/tag';
   styleUrl: './dialog-header.component.scss',
 })
 export class DialogHeaderComponent implements OnInit {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public data: any;
-  constructor(
-    private ref: DynamicDialogRef,
-    public config: DynamicDialogConfig
-  ) {}
+  public data!: DialogData;
+  constructor(public config: DynamicDialogConfig) {}
 
   ngOnInit(): void {
     this.data = this.config.data;

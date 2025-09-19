@@ -26,7 +26,7 @@ export interface ButtonConfig {
 })
 export class ButtonComponent {
   public btnClick = output<number | null>();
-  public buttonLabel = input();
+  public buttonLabel = input<string>();
   public icon = input<string>();
   public buttonSize = input();
   public buttonWidth = input();

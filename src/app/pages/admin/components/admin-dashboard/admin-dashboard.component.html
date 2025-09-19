@@ -1,25 +1,42 @@
 <div class="dashboard">
-  <div id="assessment" routerLink="/admin/assessment">
-    <app-dashboard-card
-      class="dashboard-card"
-      [title]="'Total Assessments'"
-      [count]="assessmentData && assessmentData.total"
-      [activeCount]="assessmentData && assessmentData.active"
-      [inactiveCount]="assessmentData && assessmentData.inactive"
-      [routerLink]="'/assessment'"
-    ></app-dashboard-card>
+  <div id="assessment" routerLink="/admin/recruitments">
+    @if (assessmentData !== undefined) {
+      <app-dashboard-card
+        class="dashboard-card"
+        [title]="'Recruitments'"
+        [icon]="'pi pi-user-plus'"
+        [count]="assessmentData && assessmentData.total"
+        [activeCount]="assessmentData && assessmentData.active"
+        [inactiveCount]="assessmentData && assessmentData.inactive"
+      ></app-dashboard-card>
+    } @else {
+      <app-dashboard-card-skeleton></app-dashboard-card-skeleton>
+    }
   </div>
-
-  <app-dashboard-card
-    class="dashboard-card"
-    id="users"
-    [title]="'Total Users'"
-    [count]="usersData && usersData.total"
-  ></app-dashboard-card>
-  <app-dashboard-card
-    class="dashboard-card"
-    id="question-set"
-    [title]="'Total Question Sets'"
-    [count]="usersData && questionSetData.total"
-  ></app-dashboard-card>
+  <div id="users" routerLink="/admin/roles-access">
+    @if (usersData !== undefined) {
+      <app-dashboard-card
+        class="dashboard-card"
+        id="users"
+        [icon]="'pi pi-users'"
+        [title]="'Users'"
+        [count]="usersData && usersData.total"
+      ></app-dashboard-card>
+    } @else {
+      <app-dashboard-card-skeleton></app-dashboard-card-skeleton>
+    }
+  </div>
+  <div id="question-set" routerLink="/admin/settings/questions">
+    @if (usersData !== undefined) {
+      <app-dashboard-card
+        class="dashboard-card"
+        id="question-set"
+        [icon]="'pi pi-question-circle'"
+        [title]="'Question Sets'"
+        [count]="usersData && questionSetData.total"
+      ></app-dashboard-card>
+    } @else {
+      <app-dashboard-card-skeleton></app-dashboard-card-skeleton>
+    }
+  </div>
 </div>

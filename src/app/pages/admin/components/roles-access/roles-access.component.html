@@ -1,16 +1,25 @@
 <div class="roles-access">
-  <h1>Roles and Access</h1>
+  <h1 class="app-title">Roles and Access</h1>
+
   <app-table
     [tableData]="data"
     [columnsData]="columns"
-    heading="Manage Roles and Access"
-    [hasDelete]="true"
-    (create)="AddNewUser()"
+    [hasSearch]="true"
+    [parentLoader]="isLoading"
     (edit)="editUser($event)"
     (delete)="deleteUser($event)"
-    (deleteSelected)="deleteSelectedUsers($event)"
+    (selectedIds)="getSelectedItems($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
   >
+    <div class="roles-access__button">
+      <app-button [buttonLabel]="'New'" (btnClick)="AddNewUser()"></app-button>
+      <app-button
+        [buttonLabel]="'Delete All'"
+        [buttonSeverity]="'danger'"
+        [disabled]="!selectedUsers || selectedUsers.length === 0"
+        (btnClick)="deleteSelectedUsers()"
+      ></app-button>
+    </div>
   </app-table>
 
   <p-toast position="top-right" class="Toast"></p-toast>

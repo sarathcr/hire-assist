@@ -8,19 +8,21 @@ export enum PageLayout {
 }
 
 export enum RolesEnum {
-  User = 1,
+  Coordinator = 1,
   SuperAdmin = 2,
   Admin = 3,
   Interviewer = 4,
   Candidate = 5,
+  FrontDesk = 6,
 }
 
 export enum RoleStateEnum {
   Admin = 'admin',
   SuperAdmin = 'superAdmin',
-  User = 'user',
+  Coordinator = 'coordinator',
   Interviewer = 'interviewer',
   Candidate = 'candidate',
+  FrontDesk = 'frontDesk',
 }
 
 export enum ButtonType {

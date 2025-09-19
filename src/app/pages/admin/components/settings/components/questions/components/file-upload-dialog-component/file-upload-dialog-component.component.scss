@@ -1,0 +1,30 @@
+:host {
+  padding: var(--spacing-10);
+}
+.file-upload {
+  // padding: var(--spacing-10) 0 0;
+  &__item {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 1rem;
+    &_field {
+      &-col {
+        &_one {
+          flex-basis: 50%;
+        }
+        &_two {
+          width: 80%;
+          flex-basis: 50%;
+        }
+      }
+    }
+  }
+
+  &__button {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
+}

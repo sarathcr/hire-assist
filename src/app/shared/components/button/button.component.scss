@@ -4,16 +4,35 @@
 
 .btn {
   display: block;
+  ::ng-deep {
+    .p-button {
+      width: 100%;
+    }
+    @media screen and (max-width: 768px) {
+      .p-button {
+        width: 100%;
+      }
+      .pi,
+      .p-button {
+        font-size: var(--font-size-small);
+      }
+    }
+  }
 
   &-large {
     width: 100%;
     height: 56px;
+
+    ::ng-deep {
+      .p-button {
+        width: 100%;
+      }
+    }
   }
   &-full {
     ::ng-deep {
       .p-button {
         width: 100%;
-        // height: 50px;
       }
     }
   }

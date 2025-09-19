@@ -15,13 +15,13 @@
   </p-floatlabel>
 
   @if (customToggleSwitchConfig.matSuffix) {
-    <span class="input-suffix">{{ customToggleSwitchConfig.matPrefix }}</span>
-  } @else if (customToggleSwitchConfig.matPrefix) {
     <span class="input-suffix">{{ customToggleSwitchConfig.matSuffix }}</span>
+  } @else if (customToggleSwitchConfig.matPrefix) {
+    <span class="input-prefix">{{ customToggleSwitchConfig.matPrefix }}</span>
   } @else if (dynamicSuffix) {
-    <span class="input-suffix">{{ dynamicSuffix }}</span>
+    <span class="input-dynamicSuffix">{{ dynamicSuffix }}</span>
   }
   @if (formControl.touched && formControl.invalid) {
-    <span class="input-text-area__validation-label"> {{ errorMsg }}</span>
+    <span class="toggle-switch__validation-label"> {{ errorMsg }}</span>
   }
 </div>

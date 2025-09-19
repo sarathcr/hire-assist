@@ -7,7 +7,6 @@ import { PaginatedDataPayload } from './pagination.model';
 @Injectable({
   providedIn: 'root',
 })
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class PaginatedService<T> {
   private baseURL = '';
 

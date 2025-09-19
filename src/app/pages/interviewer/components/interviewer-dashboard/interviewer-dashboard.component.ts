@@ -1,67 +1,56 @@
 import { Component, OnInit } from '@angular/core';
-import { DashboardCardComponent } from '../../../../shared/components/dashboard-card/dashboard-card.component';
-import {
-  Assessment,
-  DashboardData,
-} from '../../../admin/models/dashboard.model';
-import { DashboardService } from '../../../admin/services/dashboard.service';
-import { StoreService } from '../../../../shared/services/store.service';
-import { ErrorResponse } from '../../../../shared/models/custom-error.models';
-import { InterviewerAssessmentService } from '../../services/interviewer-assessment.service';
+import { Router } from '@angular/router';
+import { SkeletonComponent } from '../../../../shared/components/assessment-card/assessment-card-skeleton';
+import { AssessmentCardComponent } from '../../../../shared/components/assessment-card/assessment-card.component';
+import { BaseComponent } from '../../../../shared/components/base/base.component';
+import { GenericDataSource } from '../../../../shared/components/pagination/generic-data-source';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { ASSESSMENT_URL } from '../../../../shared/constants/api';
+import { KeyValueMap } from '../../../../shared/models/common.models';
+import { AssessmentForm } from '../../../admin/models/assessment-form.model';
+import { Assessment } from '../../../admin/models/assessment.model';
 
 @Component({
   selector: 'app-interviewer-dashboard',
-  imports: [DashboardCardComponent],
+  imports: [AssessmentCardComponent, SkeletonComponent, PaginationComponent],
   templateUrl: './interviewer-dashboard.component.html',
   styleUrl: './interviewer-dashboard.component.scss',
+  providers: [GenericDataSource],
 })
-export class InterviewerDashboardComponent implements OnInit {
-  public assessmentData!: Assessment;
+export class InterviewerDashboardComponent
+  extends BaseComponent
+  implements OnInit
+{
+  public assessmentData!: Assessment[];
+  public totalRecords = 0;
+  public filterMap!: KeyValueMap<string>;
 
   constructor(
-    private dashboardService: DashboardService<DashboardData>,
-    private storeService: StoreService,
-    private interviewerAssessmentService: InterviewerAssessmentService,
-  ) {}
+    public dataSource: GenericDataSource<AssessmentForm>,
+    private router: Router,
+  ) {
+    super();
+  }
 
   // Life Cycle Hooks
   ngOnInit(): void {
-    this.getInterviewerDashboardDetails();
-    this.getUserData();
-  }
-
-  // Private Methods
-  private getInterviewerDashboardDetails(): void {
-    const next = (res: DashboardData) => {
-      this.assessmentData = res.data.assessment;
-    };
-    const error = (error: ErrorResponse) => {
-      console.log('ERROR', error);
-    };
-    const resourceUrl = this.interviewerAssessmentService.getResourceUrl();
-    this.interviewerAssessmentService.getEntityById(resourceUrl).subscribe({
-      next,
-      error,
+    this.dataSource.init(`${ASSESSMENT_URL}/AssessmentSummaryInterviewer`);
+    this.subscribeToPaginatedData();
+    const sub = this.dataSource.totalRecords$.subscribe((records) => {
+      this.totalRecords = records;
     });
-    console.log('Resource URL:', resourceUrl);
+    this.subscriptionList.push(sub);
   }
 
-  private getUserData(): void {
-    const userData = this.storeService.getUserData();
-    if (userData.id) {
-      console.log('userData', userData);
-
-      this.getDashboardDetails(userData.id);
-    }
+  // Public Methods
+  public onClickAssessment(id: number, panel: number): void {
+    if (id > 0) this.router.navigate([`interviewer/${id}/${panel}`]);
   }
 
-  private getDashboardDetails(id: string): void {
-    const next = (res: DashboardData) => {
-      this.assessmentData = res.data.assessment;
-    };
-    const error = (error: ErrorResponse) => {
-      console.log('ERROR', error);
-    };
-    this.dashboardService.getEntityById(id).subscribe({ next, error });
+  private subscribeToPaginatedData(): void {
+    const sub = this.dataSource.connect().subscribe((data) => {
+      this.assessmentData = data;
+    });
+    this.subscriptionList.push(sub);
   }
 }

@@ -1,15 +1,64 @@
 <h1>Active Tests</h1>
 <div class="card-wrapper">
-  @for (assessment of data; track assessment) {
-    <app-card (startTest)="onAssessmentStart(assessment)">
+  @for (assessment of activeAssessments; track assessment) {
+    <app-card
+      (startTest)="onAssessmentStart(assessment)"
+      [statusId]="assessment.statusId"
+      [isPreviousAssessment]="false"
+      [startTime]="assessment.startTime"
+      [endTime]="assessment.endTime"
+      [interviewDate]="assessment.date"
+    >
       <p>
-        Open position : <span>{{ assessment.assessmentName }}</span>
+        <b> Open position : </b><span>{{ assessment.assessmentName }}</span>
       </p>
-      <p>Mode : <span>Online</span></p>
-      <p>No. of Questions : <span>30</span></p>
-      <p>Time : <span>10:30 AM - 11.30 AM</span></p>
+      <p><b>Mode : </b><span>Online</span></p>
+      <p>
+        <b> No. of Questions : </b> <span>{{ assessment.totalQuestions }}</span>
+      </p>
+      <p>
+        <b> Date : </b><span>{{ assessment.date | date: "yyyy-MM-dd" }}</span>
+      </p>
+      <p>
+        <b> Time : </b>
+        <span
+          >{{ assessment.startTime | date: "hh:mm a" }} -
+          {{ assessment.endTime | date: "hh:mm a" }}</span
+        >
+      </p>
     </app-card>
   } @empty {
     <p>No active tests found.</p>
+  }
+</div>
+<h1>Previous Tests</h1>
+<div class="card-wrapper">
+  @for (assessment of previousAssessments; track assessment) {
+    <app-card
+      (startTest)="onAssessmentStart(assessment)"
+      [statusId]="assessment.statusId"
+      [isPreviousAssessment]="true"
+      [interviewDate]="assessment.date"
+    >
+      <p>
+        <b> Open position : </b><span>{{ assessment.assessmentName }}</span>
+      </p>
+      <p><b>Mode : </b><span>Online</span></p>
+      <p>
+        <b> No. of Questions : </b> <span>{{ assessment.totalQuestions }}</span>
+      </p>
+      <p>
+        <b> Date : </b><span>{{ assessment.date | date: "yyyy-MM-dd" }}</span>
+      </p>
+      <p>
+        <b> Time : </b>
+        <span
+          >{{ assessment.startTime | date: "hh:mm aa" }} -
+          {{ assessment.endTime | date: "hh:mm aa" }}</span
+        >
+      </p>
+    </app-card>
+  } @empty {
+    <p>No previous tests found.</p>
   }
 </div>

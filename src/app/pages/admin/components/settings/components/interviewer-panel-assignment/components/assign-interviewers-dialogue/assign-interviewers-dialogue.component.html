@@ -1,0 +1,32 @@
+<div class="interviewer">
+  <form [formGroup]="fGroup">
+    @if (isEdit) {
+      <div class="interviewer__panel-names">{{ getPanelNames() }}</div>
+    } @else {
+      <app-input-select
+        class="interviewer_field"
+        [formGroup]="fGroup"
+        [config]="configMap['panels']"
+      />
+    }
+    <app-input-multiselect
+      class="interviewer_field"
+      [formGroup]="fGroup"
+      [config]="configMap['interviewers']"
+      [selectedItems]=""
+    />
+
+    <div class="interviewer__button">
+      <app-button
+        [buttonLabel]="'Cancel'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"
+      ></app-button>
+      <app-button
+        [buttonLabel]="'Submit'"
+        [disabled]="!fGroup.valid"
+        (btnClick)="onSubmit()"
+      ></app-button>
+    </div>
+  </form>
+</div>

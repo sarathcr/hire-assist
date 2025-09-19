@@ -3,7 +3,6 @@
     <div>
       <div class="assessment-form_field-container">
         <app-input-text
-          [size]="'small'"
           class="assessment-form_field-col_one"
           [formGroup]="data.fGroup"
           type="text"
@@ -13,14 +12,12 @@
           class="assessment-form_field-col_one"
           [formGroup]="data.fGroup"
           [config]="data.configMap['startDateTime']"
-          [showTime]="true"
         ></app-input-text-calender>
 
         <app-input-text-calender
           class="assessment-form_field-col_one"
           [formGroup]="data.fGroup"
           [config]="data.configMap['endDateTime']"
-          [showTime]="true"
         >
         </app-input-text-calender>
       </div>
@@ -30,16 +27,10 @@
         [config]="data.configMap['description']"
       >
       </app-input-textarea>
-      <!-- <app-input-select
-        [formGroup]="data.fGroup"
-        [config]="data.configMap['statusId']"
-        optionLabel="name"
-        placeholder="Status"
-        class="w-full md:w-56"
-        [selectOptions]="data.inputSelect">
-      </app-input-select> -->
-
       <app-toggle-switch
+        [ngClass]="
+          isEdit ? 'assessment-form_field_show' : 'assessment-form_field_hidden'
+        "
         [formGroup]="data.fGroup"
         [config]="data.configMap['isActive']"
       >

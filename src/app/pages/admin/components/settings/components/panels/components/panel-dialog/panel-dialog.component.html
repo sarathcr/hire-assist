@@ -1,0 +1,36 @@
+<div class="panel-form">
+  <form [formGroup]="data.fGroup">
+    <div class="panel-form__field-container">
+      <app-input-text
+        class="panel-form__field"
+        [formGroup]="data.fGroup"
+        type="text"
+        [config]="data.configMap['name']"
+      ></app-input-text>
+    </div>
+    <app-input-textarea
+      class="panel-form__field"
+      [formGroup]="data.fGroup"
+      [config]="data.configMap['description']"
+    >
+    </app-input-textarea>
+    <app-toggle-switch
+      [ngClass]="isEdit ? 'panel-form__field_show' : 'panel-form__field_hidden'"
+      [formGroup]="data.fGroup"
+      [config]="data.configMap['isActive']"
+    >
+    </app-toggle-switch>
+    <div class="panel-form__button">
+      <app-button
+        [buttonLabel]="'Cancel'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"
+      ></app-button>
+      <app-button
+        [buttonLabel]="'Submit'"
+        [disabled]="!data.fGroup.valid"
+        (btnClick)="onSubmit()"
+      ></app-button>
+    </div>
+  </form>
+</div>

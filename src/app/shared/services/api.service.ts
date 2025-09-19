@@ -2,8 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { catchError, Observable, tap, throwError } from 'rxjs';
-import { StoreService } from './store.service';
 import { PaginatedPayload } from '../models/pagination.models';
+import { PaginatedData } from '../models/table.models';
+import { StoreService } from './store.service';
 
 @Injectable({
   providedIn: 'root',
@@ -87,7 +88,6 @@ export abstract class ApiService<T> {
   }
 
   /** Update (T entity) list request */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public updateEntity(
     id?: string | number,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -139,10 +139,10 @@ export abstract class ApiService<T> {
     }
   }
   /** Paginated (T entity) list request */
-  public paginationEntity(
+  public paginationEntity<T>(
     url: string,
     payload: PaginatedPayload,
-  ): Observable<T[]> {
+  ): Observable<PaginatedData<T>> {
     this.store.setIsLoading(true);
 
     const sanitizedUrl = this.sanitize.sanitize(
@@ -152,10 +152,10 @@ export abstract class ApiService<T> {
       ),
     );
     if (sanitizedUrl) {
-      return this.http.post<T[]>(sanitizedUrl, payload).pipe(
-        tap(() => this.store.setIsLoading(false)), // Stop loading on success
+      return this.http.post<PaginatedData<T>>(sanitizedUrl, payload).pipe(
+        tap(() => this.store.setIsLoading(false)),
         catchError((error) => {
-          this.store.setIsLoading(false); // Stop loading on error
+          this.store.setIsLoading(false);
           return throwError(() => error);
         }),
       );
@@ -185,5 +185,62 @@ export abstract class ApiService<T> {
     } else {
       throw Error('invalid operation');
     }
+  }
+
+  public uploadFileAndParseCsv(file: File, url?: string): Observable<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const sanitizedUrl = this.sanitize.sanitize(
+      4,
+      this.sanitize.bypassSecurityTrustResourceUrl(
+        `${this.getResourceUrl()}${url ? '/' + url : ''}`,
+      ),
+    );
+
+    if (sanitizedUrl) {
+      return this.http
+        .post(sanitizedUrl, formData, {
+          responseType: 'text', // get raw CSV string
+        })
+        .pipe(
+          tap(() => this.store.setIsLoading(false)),
+          catchError((error) => throwError(() => error)),
+        );
+    } else {
+      throw Error('invalid operation');
+    }
+  }
+
+  public getBlob(url: string): Observable<Blob> {
+    return this.http.get(url, {
+      responseType: 'blob',
+    });
+  }
+  public downloadBlobInBrowser(
+    url: string,
+    fileName: string,
+    cb?: () => void,
+  ): void {
+    this.store.setIsLoading(true);
+    const next = (res: Blob) => {
+      const blob = new Blob([res]);
+      const blobURL = URL.createObjectURL(blob);
+      const name = decodeURI(fileName);
+      const a = document.createElement('a');
+      a.href = blobURL;
+      a.download = name;
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(blobURL);
+      this.store.setIsLoading(false);
+      if (cb) cb();
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const error = (err: any) => {
+      console.error('Error downloading blob in browser', err);
+      this.store.setIsLoading(false);
+    };
+    this.getBlob(url).subscribe({ next, error });
   }
 }

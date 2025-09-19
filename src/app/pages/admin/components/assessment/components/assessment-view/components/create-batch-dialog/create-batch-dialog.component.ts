@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -9,15 +9,18 @@ import { InputMultiselectComponent } from '../../../../../../../../shared/compon
 import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
 import { Option } from '../../../../../../../../shared/models/option';
-import { StoreService } from '../../../../../../../../shared/services/store.service';
 import {
   buildFormGroup,
   ConfigMap,
   CustomSelectConfig,
 } from '../../../../../../../../shared/utilities/form.utility';
 import { Candidate } from '../../../../../../models/assessment-schedule.model';
+import { BatchFormGroup } from '../../../../../../models/batch.model';
 import { CreateBatchDataModel } from '../../../../../../models/CreateBatchDataModel';
-import { AssessmentService } from '../../../../../../services/assessment.service';
+import { InputTextCalenderComponent } from '../../../../../../../../shared/components/form/input-text-calender/input-text-calender.component';
+import { CandidateModel } from '../../../../../../models/candidate-data.model';
+import { debounceTime } from 'rxjs';
+import { isValidStartDate } from '../../../../../../../../shared/utilities/date.utility';
 
 @Component({
   selector: 'app-create-batch-dialog',
@@ -28,43 +31,73 @@ import { AssessmentService } from '../../../../../../services/assessment.service
     InputSelectComponent,
     ButtonComponent,
     InputMultiselectComponent,
+    InputTextCalenderComponent,
   ],
   templateUrl: './create-batch-dialog.component.html',
   styleUrl: './create-batch-dialog.component.scss',
 })
 export class CreateBatchDialogComponent implements OnInit {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public candidateData: any;
   public fGroup!: FormGroup;
   public candidateDataModel = new CreateBatchDataModel();
   public configMap!: ConfigMap;
   public optionsMap!: OptionsMap;
-
+  public startDateChanged = false;
+  public endDateChanged = false;
   public batches!: Option[];
   public questionSets!: Option[];
-
+  private originalDates: Record<string, Date> = {};
   constructor(
     private ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
-    private storeService: StoreService,
-    private assessmentService: AssessmentService,
-    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.fGroup = buildFormGroup(this.candidateDataModel);
     this.candidateData = this.config.data;
 
-    // if (this.config.header != 'Create Candidate') {
-    //   const updatedUser = this.replaceNamesWithCodes(
-    //     this.candidateData
-    //   );
-    //   this.fGroup.patchValue(updatedUser);
-    // }
-
     this.fGroup.updateValueAndValidity();
     this.setConfigMaps();
     this.setOptions();
+
+    this.fGroup
+      .get('batch')
+      ?.valueChanges.pipe(debounceTime(0))
+      .subscribe(() => {
+        const { startDate, endDate } = this.extractSharedDateTimes();
+
+        if (startDate) {
+          this.originalDates['startDate'] = startDate;
+          this.fGroup
+            .get('startDate')
+            ?.setValue(startDate, { emitEvent: false });
+        } else {
+          this.fGroup.get('startDate')?.reset({ emitEvent: false });
+        }
+
+        if (endDate) {
+          this.originalDates['endDate'] = endDate;
+          this.fGroup.get('endDate')?.setValue(endDate, { emitEvent: false });
+        } else {
+          this.fGroup.get('endDate')?.reset({ emitEvent: false });
+        }
+      });
+
+    this.fGroup.get('startDate')?.valueChanges.subscribe((val) => {
+      const original = this.originalDates['startDate'];
+      this.startDateChanged = original
+        ? new Date(original).getTime() !== new Date(val).getTime()
+        : false;
+      this.validateStartAndEndDates(this.fGroup, 'startDate', '');
+    });
+
+    this.fGroup.get('endDate')?.valueChanges.subscribe((val) => {
+      const original = this.originalDates['endDate'];
+      this.endDateChanged = original
+        ? new Date(original).getTime() !== new Date(val).getTime()
+        : false;
+      this.validateStartAndEndDates(this.fGroup, '', 'endDate');
+    });
   }
 
   // Private
@@ -78,7 +111,6 @@ export class CreateBatchDialogComponent implements OnInit {
     const isFormValid = this.fGroup.valid;
     if (isFormValid) {
       this.ref.close(this.fGroup.value);
-      // this.router.navigate(['/candidate']);
     }
   }
 
@@ -101,18 +133,128 @@ export class CreateBatchDialogComponent implements OnInit {
       questionSet: updatedQuestionSet,
     };
   }
-
+  public isDateChanged(key: 'startDate' | 'endDate'): boolean {
+    const original = this.originalDates[key];
+    const current = this.fGroup.get(key)?.value;
+    const result =
+      original && current
+        ? new Date(original).getTime() !== new Date(current).getTime()
+        : false;
+    if (result) {
+      this.validateStartAndEndDates(this.fGroup, 'startDate', 'endDate');
+    }
+    return result;
+  }
   private setOptions() {
-    (this.configMap['batch'] as CustomSelectConfig).options =
-      this.candidateData?.batches?.map((batch: any) => ({
+    const batches = this.candidateData?.batches || [];
+    const questionSets = this.candidateData?.questionSets || [];
+    (this.configMap['batch'] as CustomSelectConfig).options = batches?.map(
+      (batch: BatchFormGroup) => ({
         label: batch.title,
         value: batch.id.toString(),
-      }));
+      }),
+    );
 
     (this.configMap['questionSet'] as CustomSelectConfig).options =
-      this.candidateData.questionSets.map((batch: any) => ({
+      questionSets.map((batch: BatchFormGroup) => ({
         label: batch.title,
         value: batch.id.toString(),
       }));
   }
+
+  private extractSharedDateTimes(): { startDate?: Date; endDate?: Date } {
+    const selectedBatchId = this.fGroup?.get('batch')?.value;
+    if (!selectedBatchId) return {};
+    const data: CandidateModel[] =
+      this.candidateData?.candidateData?.data || [];
+
+    const batchCandidates = data.filter(
+      (c) => String(c.batchId) === String(selectedBatchId),
+    );
+    const validDates = batchCandidates.filter(
+      (c) =>
+        c.startDateTime &&
+        c.startDateTime !== '0001-01-01T00:00:00' &&
+        c.endDateTime &&
+        c.endDateTime !== '0001-01-01T00:00:00',
+    );
+
+    if (validDates.length === 0 && batchCandidates.length === 0) return {};
+
+    const first = validDates[0];
+    return {
+      startDate: new Date(first.startDateTime!),
+      endDate: new Date(first.endDateTime!),
+    };
+  }
+  private validateStartAndEndDates(
+    form: FormGroup,
+    startDate?: string,
+    endDate?: string,
+  ): void {
+    const startDateControl = startDate ? form.get(startDate) : null;
+    const endDateControl = endDate ? form.get(endDate) : null;
+
+    const startValue = startDateControl?.value;
+    const endValue = endDateControl?.value;
+
+    startDateControl?.setErrors(null);
+    endDateControl?.setErrors(null);
+
+    let hasStartError = false;
+    let hasEndError = false;
+
+    if (startDateControl) {
+      if (!startValue) {
+        startDateControl.setErrors({ required: true });
+        hasStartError = true;
+      } else {
+        const startDateTime = new Date(startValue);
+        if (!isValidStartDate(startDateTime)) {
+          startDateControl.setErrors({
+            errorMessage: 'Start date must be today or later.',
+          });
+          hasStartError = true;
+        }
+      }
+    }
+
+    if (endDateControl) {
+      if (!endValue) {
+        endDateControl.setErrors({ required: true });
+        hasEndError = true;
+      }
+    }
+
+    if (
+      startDateControl &&
+      endDateControl &&
+      !hasStartError &&
+      !hasEndError &&
+      startValue &&
+      endValue
+    ) {
+      const startDateTime = new Date(startValue);
+      const endDateTime = new Date(endValue);
+
+      const endDateValidation = this.isValidEndDates(
+        startDateTime,
+        endDateTime,
+      );
+      if (!endDateValidation.valid) {
+        const error = 'End date must follow start date.';
+        endDateControl.setErrors({ errorMessage: error });
+      }
+    }
+  }
+  private isValidEndDates = (
+    startDate: Date,
+    endDate: Date,
+  ): { valid: boolean; error?: 'beforeStart' } => {
+    if (endDate < startDate) {
+      return { valid: false, error: 'beforeStart' };
+    }
+
+    return { valid: true };
+  };
 }

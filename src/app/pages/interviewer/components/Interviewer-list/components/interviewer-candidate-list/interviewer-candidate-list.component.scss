@@ -1,0 +1,16 @@
+.interview-candidate {
+  &__title {
+    font-size: var(--font-size-20);
+    color: var(--color-grey);
+  }
+  ::ng-deep {
+    .p-datatable-table-container {
+      max-height: calc(100vh - 275px);
+    }
+  }
+  &__message {
+    font-size: var(--font-size-20);
+    color: var(--color-grey);
+    margin-top: 20px;
+  }
+}

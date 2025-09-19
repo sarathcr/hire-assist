@@ -1,0 +1,19 @@
+:host {
+  padding: var(--spacing-20);
+}
+.interviewer {
+  &__button {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: flex-end;
+  }
+  &_field {
+    flex-basis: var(--spacing-percentage-50);
+  }
+  &__panel-names {
+    padding-bottom: var(--spacing-15);
+    font-size: medium;
+    font-weight: 500;
+  }
+}

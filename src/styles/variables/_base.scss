@@ -1,0 +1,9 @@
+.app {
+  &-title {
+    text-align: left;
+    font-weight: 700;
+    color: var(--color-grey);
+    font-size: var(--font-size-20);
+    margin-bottom: var(--spacing-20);
+  }
+}

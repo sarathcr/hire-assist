@@ -1,0 +1,33 @@
+<div class="frontdesk">
+  <div class="frontdesk__section">
+    <div class="frontdesk__section-header">
+      <h2 class="frontdesk__section__title app-title">
+        Select Front Desk Coordinators
+      </h2>
+      <p class="frontdesk__section__description">
+        Select FrontDesk Coordinators for the assessment
+      </p>
+    </div>
+    @if (frontDesk) {
+      <form [formGroup]="fGroup">
+        <app-input-multiselect
+          class="frontdesk__field"
+          [formGroup]="fGroup"
+          [config]="configMap['users']"
+          [selectedItems]=""
+        />
+
+        <div class="frontdesk__button">
+          <app-button
+            [buttonLabel]="'Submit'"
+            [disabled]="!fGroup.valid"
+            (btnClick)="onSubmit()"
+          ></app-button>
+        </div>
+      </form>
+      <p-toast position="top-right" class="Toast"></p-toast>
+    } @else {
+      <app-frontdesk-skeleton></app-frontdesk-skeleton>
+    }
+  </div>
+</div>

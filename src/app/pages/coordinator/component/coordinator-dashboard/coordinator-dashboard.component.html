@@ -1,0 +1,32 @@
+<div class="coordinator-assessment">
+  <div>
+    <h1 class="coordinator-assessment__title">Assessments</h1>
+  </div>
+  <div class="coordinator-assessment__wrapper">
+    @if (assessmentDataSource !== undefined) {
+      <div class="coordinator-assessment__list">
+        @for (assessment of assessmentDataSource; track assessment) {
+          <app-assessment-card
+            class="coordinator-assessment__card"
+            [data]="assessment"
+            [showToggleButton]="false"
+            [showContent]="false"
+            (click)="onClickAssessment(assessment.id ?? 0)"
+          ></app-assessment-card>
+        } @empty {
+          <p>No data available</p>
+        }
+      </div>
+    } @else {
+      <app-assessment-card-skeleton
+        class="coordinator-assessment__card"
+      ></app-assessment-card-skeleton>
+    }
+  </div>
+  <app-pagination
+    [dataSource]="dataSource"
+    [filterMap]="filterMap"
+    [totalRecords]="totalRecords"
+  >
+  </app-pagination>
+</div>

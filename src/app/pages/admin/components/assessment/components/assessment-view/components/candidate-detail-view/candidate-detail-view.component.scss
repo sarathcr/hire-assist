@@ -1,0 +1,79 @@
+.candidate {
+  padding: var(--spacing-30) 0;
+  ::ng-deep {
+    .p-tabpanels {
+      background-color: transparent !important;
+    }
+  }
+  &__card-heading {
+    margin-bottom: var(--spacing-15);
+    color: var(--primary-color);
+    text-align: center;
+  }
+  &__details {
+    display: flex;
+    flex-direction: row;
+  }
+  &__card {
+    background-color: var(--color-white);
+    border: 1px var(--dashboard-main-background-color);
+    border-radius: var(--spacing-10);
+    padding: var(--spacing-15);
+    box-shadow: 0 2px 4px var(--dashboard-main-background-color);
+    width: 100%;
+  }
+  &__card-content {
+    display: flex;
+    flex-flow: row wrap;
+    gap: var(--spacing-30);
+  }
+
+  &__card-info-item {
+    display: flex;
+    align-items: center;
+    flex-basis: 46%;
+    gap: var(--spacing-30);
+    font-size: var(--font-size-18);
+  }
+
+  &__card-icon {
+    font-size: var(--font-size-20);
+    color: var(--secondary-color);
+  }
+  &__applicationDetails {
+    &__card-info-item {
+      display: flex;
+      align-items: center;
+      flex-basis: 46%;
+      gap: var(--spacing-30);
+      font-size: var(--font-size-18);
+      margin-bottom: var(--spacing-15);
+    }
+  }
+  &__previousAssessmentDetails {
+    &-score {
+      margin-left: auto;
+      padding-right: var(--spacing-15);
+    }
+  }
+}
+
+::ng-deep {
+  .p-card-body {
+    background-color: #f3f3f3;
+    border-radius: var(--spacing-20);
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .candidate {
+    &__card {
+      width: 100%;
+
+      &__card-info-item {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

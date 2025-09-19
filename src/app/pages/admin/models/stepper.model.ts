@@ -7,9 +7,7 @@ export interface StepperData {
   nextRoundId?: number;
   payload?: {
     assessmentRoundId?: number;
-
   };
-
 }
 export interface AssessmentFlow {
   id: number;
@@ -30,4 +28,21 @@ export interface Candidate {
   email: string;
   roles: string[];
   assessmentFlow: AssessmentFlow[];
+}
+export interface CandidatePayload {
+  candidateId: string;
+  assessmentRoundId: number | null;
+  isActive: boolean;
+  statusId: number;
+  assessmentId: number;
+}
+export interface CandidateData {
+  id: string;
+  name: string;
+  email: string;
+  score: string;
+  status: string;
+  isScheduled: string;
+  scheduledDate: string;
+  assessmentRoundId: number;
 }

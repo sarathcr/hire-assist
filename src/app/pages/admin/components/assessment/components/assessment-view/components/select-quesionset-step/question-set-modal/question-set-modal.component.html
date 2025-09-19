@@ -1,0 +1,31 @@
+<div class="question-set-form">
+  <form [formGroup]="questionSetFGroup">
+    <div class="question-set-form_field-container">
+      <app-input-text
+        type="text"
+        class="question-set-form_field-col_one"
+        [formGroup]="questionSetFGroup"
+        [config]="configMap['title']"
+      ></app-input-text>
+      <app-input-textarea
+        class="question-set-form_field"
+        [formGroup]="questionSetFGroup"
+        type="text"
+        [config]="configMap['description']"
+      ></app-input-textarea>
+    </div>
+    <div class="question-set-form__button">
+      <app-button
+        [buttonLabel]="'Cancel'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"
+      ></app-button>
+      <app-button
+        [buttonLabel]="'Submit'"
+        [disabled]="!questionSetFGroup.valid"
+        (btnClick)="onSubmit()"
+      ></app-button>
+    </div>
+  </form>
+</div>
+<p-toast position="top-right" class="Toast"></p-toast>

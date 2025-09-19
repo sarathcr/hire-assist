@@ -1,19 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Injectable } from '@angular/core';
-import { ApiService } from '../../../../../shared/services/api.service';
 import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { StoreService } from '../../../../../shared/services/store.service';
 import { ASSESSMENT_URL } from '../../../../../shared/constants/api';
+import { ApiService } from '../../../../../shared/services/api.service';
+import { StoreService } from '../../../../../shared/services/store.service';
 import {
   AssessmentRoundsInterface,
   RoundsInterface,
 } from '../../../models/assessment-schedule.model';
+import { AssessmentRound } from '../../../models/assessment.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class assessmentScheduleService extends ApiService<any> {
+export class AssessmentScheduleService extends ApiService<any> {
   constructor(
     private httpClient: HttpClient,
     sanitizer: DomSanitizer,
@@ -31,10 +32,24 @@ export class assessmentScheduleService extends ApiService<any> {
   }
 
   public CreateAssessmentRound(
-    payload: AssessmentRoundsInterface,
+    payload: AssessmentRoundsInterface[],
     assessmentId: number,
   ) {
     return this.httpClient.put<any>(
+      `${this.getResourceUrl()}/AssessmentRound?assessmentId=${assessmentId}`,
+      payload,
+    );
+  }
+  public GetAssessmentRound(assessmentId: number) {
+    return this.httpClient.get<AssessmentRound[]>(
+      `${this.getResourceUrl()}/AssessmentRound/assessmentId?assessmentId=${assessmentId}`,
+    );
+  }
+  public updateAssessmentRound(
+    assessmentId: number,
+    payload: AssessmentRound[],
+  ) {
+    return this.httpClient.put<AssessmentRound[]>(
       `${this.getResourceUrl()}/AssessmentRound?assessmentId=${assessmentId}`,
       payload,
     );

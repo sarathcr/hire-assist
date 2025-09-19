@@ -5,13 +5,13 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { FloatLabelModule } from 'primeng/floatlabel';
 import { DatePickerModule } from 'primeng/datepicker';
-import { BaseFormComponent } from '../base-form/base-form.component';
+import { FloatLabelModule } from 'primeng/floatlabel';
 import {
   CustomFormControlConfig,
   CustomInputTextCalenderConfig,
 } from '../../../utilities/form.utility';
+import { BaseFormComponent } from '../base-form/base-form.component';
 
 @Component({
   selector: 'app-input-text-calender',
@@ -32,6 +32,8 @@ export class InputTextCalenderComponent
   @Input() config!: CustomFormControlConfig;
   @Input() dynamicSuffix!: string;
   @Input() showTime = false;
+  @Input() maxDate!: Date;
+  @Input() hasDateError!: string;
 
   public formControl!: FormControl<string>;
   public inputTextCalendarConfig!: CustomInputTextCalenderConfig;

@@ -1,0 +1,51 @@
+.batch-detail {
+  overflow-x: hidden;
+  &__title {
+    text-align: left;
+    font-weight: 700;
+    color: var(--color-grey);
+    font-size: var(--font-size-20);
+    margin-bottom: var(--spacing-20);
+  }
+  &__view {
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    position: relative;
+    overflow: auto;
+    height: calc(100vh - 180px);
+    box-sizing: border-box;
+    &__content {
+      flex-grow: 1;
+      overflow: auto;
+      &__btn-grp {
+        bottom: 0;
+        padding-right: var(--spacing-10);
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+      }
+    }
+    app-stepper-skeleton {
+      flex-grow: 1;
+    }
+  }
+  &__schedule-layout {
+    display: flex;
+    gap: 2rem;
+
+    &__left,
+    &__right {
+      flex: 1;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+  }
+  ::ng-deep {
+    .p-accordion .p-accordioncontent {
+      overflow: unset;
+    }
+  }
+}

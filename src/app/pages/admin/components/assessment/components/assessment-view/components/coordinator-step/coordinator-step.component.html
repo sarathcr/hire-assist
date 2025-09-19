@@ -1,0 +1,68 @@
+<div class="coordinator__section">
+  <div class="coordinator__section-header">
+    <h2 class="coordinator__section__title app-title">Select Coordinator</h2>
+    <p class="coordinator__section__description">
+      Select the round and coordinators to handle the round
+    </p>
+  </div>
+  @if (coordinatorData) {
+    <form [formGroup]="fGroup" (ngSubmit)="onSubmit()">
+      <div formArrayName="assessmentRoundsDetails">
+        @for (
+          roundGroup of assessmentRoundsDetailsFormArray.controls;
+          track $index
+        ) {
+          <div [formGroupName]="$index" class="coordinator__row">
+            <app-input-multiselect
+              style="width: fit-content"
+              class="coordinator__form-field"
+              [formGroup]="roundGroup"
+              [config]="configMap['assessmentRound']"
+              [selectedItems]="[]"
+            />
+            <app-input-multiselect
+              style="width: 100%"
+              class="coordinator__form-field"
+              [formGroup]="roundGroup"
+              [config]="configMap['coordinator']"
+              [selectedItems]="[]"
+            />
+            <app-button
+              class="button-romove"
+              [icon]="'pi pi-trash'"
+              [buttonVariant]="'outlined'"
+              [buttonLabel]="'Remove'"
+              [buttonSeverity]="'danger'"
+              (btnClick)="removeRound($index)"
+            ></app-button>
+          </div>
+        } @empty {
+          <p>No assessment rounds configured. Click "Add Round" to begin.</p>
+        }
+      </div>
+    </form>
+
+    @if (
+      assessmentRoundsDetailsFormArray.hasError("duplicateRounds") &&
+      assessmentRoundsDetailsFormArray.dirty
+    ) {
+      <div class="p-error coordinator__global-error">
+        Each assessment round can only be assigned once.
+      </div>
+    }
+
+    <footer class="dialog-footer">
+      <app-button
+        [icon]="'pi pi-plus'"
+        buttonLabel="Add Round"
+        [buttonVariant]="'outlined'"
+        (btnClick)="addRound()"
+        type="button"
+      ></app-button>
+      <app-button buttonLabel="Submit" (btnClick)="onSubmit()"></app-button>
+    </footer>
+  } @else {
+    <app-coordinator-step-skeleton></app-coordinator-step-skeleton>
+  }
+</div>
+<p-toast position="top-right" class="Toast"></p-toast>

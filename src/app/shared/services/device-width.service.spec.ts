@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { DeviceWidthService } from './device-width.service';
+import { DeviceWarningService } from './device-width.service';
 
-describe('DeviceWidthService', () => {
-  let service: DeviceWidthService;
+describe('DeviceWarningService', () => {
+  let service: DeviceWarningService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(DeviceWidthService);
+    service = TestBed.inject(DeviceWarningService);
   });
 
   it('should be created', () => {

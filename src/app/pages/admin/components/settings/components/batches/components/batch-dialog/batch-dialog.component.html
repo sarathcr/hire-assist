@@ -7,20 +7,6 @@
         type="text"
         [config]="data.configMap['title']"
       ></app-input-text>
-      <app-input-text-calender
-        class="batch-form_field-col_one"
-        [formGroup]="data.fGroup"
-        [config]="data.configMap['startDate']"
-        [showTime]="true"
-      ></app-input-text-calender>
-
-      <app-input-text-calender
-        class="batch-form_field-col_one"
-        [formGroup]="data.fGroup"
-        [config]="data.configMap['endDate']"
-        [showTime]="true"
-      >
-      </app-input-text-calender>
     </div>
     <app-input-textarea
       class="batch-form_field"
@@ -29,6 +15,7 @@
     >
     </app-input-textarea>
     <app-toggle-switch
+      [ngClass]="isEdit ? 'batch-form_field_show' : 'batch-form_field_hidden'"
       [formGroup]="data.fGroup"
       [config]="data.configMap['isActive']"
     >

@@ -1,237 +1,356 @@
 <div class="table">
-  <p-toolbar *ngIf="!hideToolbar()" styleClass="mb-6">
-    <ng-template #start>
-      <p-button
-        *ngIf="hasAdd()"
-        label="New"
-        icon="pi pi-plus"
-        class="mr-2"
-        (onClick)="onCreate()"
-      />
-
-      @if (hasDeleteButton()) {
-        <p-button
-          severity="danger"
-          label="Delete"
-          icon="pi pi-trash"
-          outlined
-          [disabled]="!selectedItems || !selectedItems.length"
-          (onClick)="passSelectedItems('delete')"
-        />
-      }
-      @if (hasAddButton()) {
-        <p-button
-          severity="info"
-          label="Batch"
-          icon="pi pi-user-plus"
-          outlined
-          [disabled]="!selectedItems || !selectedItems.length"
-          (onClick)="passSelectedItems('batch')"
-        />
-      }
-      @if (hasScheduleButton()) {
-        <p-button
-          severity="info"
-          label="Schedule"
-          icon="pi pi-calendar-clock"
-          outlined
-          (onClick)="onSchedule()"
-        />
-      }
-    </ng-template>
-    <ng-template #end>
-      @if (importButton()) {
-        <p-fileUpload
-          mode="basic"
-          accept=".csv"
-          [maxFileSize]="1000000"
-          label="Import"
-          chooseLabel="Import"
-          auto
-          customUpload
-          class="mr-2 inline-block"
-          [chooseButtonProps]="{ severity: 'secondary' }"
-          (uploadHandler)="onImport($event)"
-        />
-      }
-      @if (exportButton()) {
-        <p-button label="Export" icon="pi pi-upload" severity="secondary" />
-      }
-    </ng-template>
-  </p-toolbar>
-  @if (tableData()?.totalRecords) {
-    <p-table
-      #dt
-      [value]="tableData()?.data || []"
-      [columns]="columnsData()?.columns"
-      [rows]="tableData()?.pageSize"
-      [totalRecords]="tableData()?.totalRecords || 0"
-      [paginator]="true"
-      [lazy]="true"
-      (onLazyLoad)="onLazyLoad($event)"
-      [rowsPerPageOptions]="[5, 10, 15]"
-      [showCurrentPageReport]="true"
-      [rowHover]="true"
-      dataKey="id"
-      [(selection)]="selectedItems"
-      [scrollable]="true"
-      [scrollDirection]="'both'"
-      [autoLayout]="true"
-      paginatorPosition="bottom"
-      [globalFilterFields]="globalFilterFields"
-    >
-      <ng-template #caption>
-        <div class="flex items-center justify-between">
-          <h5 class="m-0">{{ heading() }}</h5>
-          @if (SearchBar()) {
-            <p-iconfield>
-              <p-inputicon styleClass="pi pi-search" />
-              <input type="text" pInputText />
-            </p-iconfield>
-          }
-          @if (customButton()) {
-            <app-button
-              [buttonLabel]="customButtonLabel()"
-              (btnClick)="handleSchedule()"
-            ></app-button>
-          }
+  <p-table
+    #dt
+    [value]="displayData() || []"
+    [columns]="columnsData()?.columns"
+    [rows]="tableData()?.pageSize"
+    [totalRecords]="tableData()?.totalRecords || 0"
+    [paginator]="true"
+    [lazy]="true"
+    (onLazyLoad)="onLazyLoad($event)"
+    [rowsPerPageOptions]="[5, 10, 15]"
+    [showCurrentPageReport]="false"
+    [rowHover]="true"
+    dataKey="id"
+    filterOn="input"
+    [(selection)]="selectedItems"
+    [resizableColumns]="true"
+    [scrollable]="true"
+    [scrollDirection]="'both'"
+    [autoLayout]="true"
+    paginatorPosition="bottom"
+    [globalFilterFields]=""
+    [loading]="isLoading()"
+    [showLoader]="false"
+  >
+    <ng-template #caption>
+      <div class="table__globalFilters">
+        <div>
+          <ng-content></ng-content>
         </div>
-      </ng-template>
-
-      <ng-template pTemplate="header" let-columns>
-        <tr>
-          <th>
-            <p-tableHeaderCheckbox />
-          </th>
-          @if (columnsData()?.hasExpanded) {
-            <th></th>
-          }
-
-          @for (
-            headerColumn of columnsData()?.columns;
-            track headerColumn.field
-          ) {
-            <th
-              [pSortableColumn]="
-                headerColumn.field !== 'actions' ? headerColumn.field : ''
+        <div class="table__globalFilters_filters">
+          <div class="table__globalFilters_clear">
+            <p-button
+              label="Clear"
+              [outlined]="true"
+              [icon]="
+                isAnyFilterActive ? 'pi pi-filter-fill' : 'pi pi-filter-slash'
               "
-              [style.minWidth.px]="150"
-            >
-              {{ headerColumn.displayName }}
-              @if (headerColumn.field !== "actions") {
-                <p-sortIcon [field]="headerColumn.field" />
+              [disabled]="!isAnyFilterActive"
+              iconPosition="left"
+              (click)="onClear()"
+              (onKeyDown)="onClear()"
+            />
+          </div>
+          <div class="table__globalFilters_search">
+            @if (hasSearch()) {
+              <p-iconfield iconPosition="right" class="ml-auto">
+                <p-inputicon>
+                  <i class="pi pi-search"></i>
+                </p-inputicon>
+                <input
+                  pInputText
+                  type="text"
+                  [(ngModel)]="searchValue"
+                  (input)="onSearch($event)"
+                  placeholder="Search keyword"
+                />
+              </p-iconfield>
+            }
+          </div>
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header" let-columns>
+      <tr>
+        <th class="table__headerCheckbox">
+          @if (hasCheckbox) {
+            <p-tableHeaderCheckbox (change)="oncheckBoxClicked()" />
+          }
+        </th>
+
+        @if (columnsData()?.hasExpanded) {
+          <th></th>
+        }
+        @for (
+          headerColumn of columnsData()?.columns;
+          track headerColumn.field
+        ) {
+          <th
+            [pSortableColumn]="
+              headerColumn.field !== 'actions' &&
+              headerColumn.field !== 'button'
+                ? headerColumn.field
+                : ''
+            "
+            [style.minWidth.px]="150"
+          >
+            {{ headerColumn.displayName }}
+            @if (
+              headerColumn.field !== "actions" &&
+              headerColumn.field !== "button"
+            ) {
+              <p-sortIcon [field]="headerColumn.field" />
+            }
+            @if (headerColumn.hasTextFilter) {
+              @if (headerColumn.filterAlias === "textFilter") {
+                <p-columnFilter
+                  type="text"
+                  field="{{ headerColumn.field }}"
+                  display="menu"
+                >
+                  <ng-template pTemplate="filtericon">
+                    @if (activeFilters.has(headerColumn.field)) {
+                      <i class="pi pi-filter-fill"></i>
+                    } @else {
+                      <i class="pi pi-filter"></i>
+                    }
+                  </ng-template>
+                </p-columnFilter>
               }
-              @if (headerColumn.field === "score") {
+              @if (headerColumn.filterAlias === "selectFilter") {
+                <p-columnFilter
+                  field="{{ headerColumn.field }}"
+                  display="menu"
+                  [matchMode]="
+                    headerColumn.hasMultiStatus ? undefined : 'equals'
+                  "
+                  [matchModeOptions]="getMatchModes(headerColumn)"
+                  ><ng-template pTemplate="filtericon">
+                    @if (activeFilters.has(headerColumn.field)) {
+                      <i class="pi pi-filter-fill"></i>
+                    } @else {
+                      <i class="pi pi-filter"></i>
+                    }
+                  </ng-template>
+                  <ng-template #filter let-value let-filter="filterCallback">
+                    <p-select
+                      [ngModel]="value"
+                      (ngModelChange)="filter($event)"
+                      [options]="activeStatusOptions"
+                      placeholder="Select One"
+                      styleClass="w-full"
+                    >
+                      <ng-template let-option #item>
+                        <p-tag
+                          [value]="option.value"
+                          [severity]="getSeverity(option.value)"
+                        ></p-tag>
+                      </ng-template>
+                    </p-select>
+                  </ng-template>
+                </p-columnFilter>
+              }
+              @if (headerColumn.filterAlias === "scoreFilter") {
                 <p-columnFilter
                   type="numeric"
                   field="{{ headerColumn.field }}"
                   display="menu"
-                />
+                >
+                  <ng-template pTemplate="filtericon">
+                    @if (activeFilters.has(headerColumn.field)) {
+                      <i class="pi pi-filter-fill"></i>
+                    } @else {
+                      <i class="pi pi-filter"></i>
+                    }
+                  </ng-template>
+                </p-columnFilter>
               }
-            </th>
-          }
-        </tr>
-      </ng-template>
+              @if (headerColumn.filterAlias === "statusFilter") {
+                <p-columnFilter
+                  [field]="headerColumn.field"
+                  display="menu"
+                  [matchMode]="
+                    headerColumn.hasMultiStatus ? undefined : 'equals'
+                  "
+                  [matchModeOptions]="getMatchModes(headerColumn)"
+                  ><ng-template pTemplate="filtericon">
+                    @if (activeFilters.has(headerColumn.field)) {
+                      <i class="pi pi-filter-fill"></i>
+                    } @else {
+                      <i class="pi pi-filter"></i>
+                    }
+                  </ng-template>
+                  <ng-template #filter let-value let-filter="filterCallback">
+                    <p-select
+                      [ngModel]="value"
+                      (ngModelChange)="filter($event)"
+                      [options]="
+                        headerColumn.hasMultiStatus
+                          ? statusOptions
+                          : statusOptionsForSchedule
+                      "
+                      placeholder="Select One"
+                      styleClass="w-full"
+                    >
+                      <ng-template let-option #item>
+                        <p-tag
+                          [value]="option.value"
+                          [severity]="getSeverity(option.value)"
+                        ></p-tag>
+                      </ng-template>
+                    </p-select>
+                  </ng-template>
+                </p-columnFilter>
+              }
+              @if (headerColumn.filterAlias === "dateFilter") {
+                <p-columnFilter
+                  type="date"
+                  field="date"
+                  display="menu"
+                  class="ml-auto"
+                  ><ng-template pTemplate="filtericon">
+                    @if (activeFilters.has(headerColumn.field)) {
+                      <i class="pi pi-filter-fill"></i>
+                    } @else {
+                      <i class="pi pi-filter"></i>
+                    }
+                  </ng-template>
+                </p-columnFilter>
+              }
+            }
+          </th>
+        }
+      </tr>
+    </ng-template>
 
-      <ng-template #body let-product>
-        <tr>
+    <ng-template pTemplate="body" let-product let-columns="columns">
+      <tr
+        [ngClass]="
+          product.isAlreadyExist
+            ? 'table_isAlready'
+            : product.isDuplicate
+              ? 'table_isDuplicate'
+              : ''
+        "
+        [pTooltip]="
+          product.isAlreadyExist
+            ? 'We already have this record in our records.'
+            : product.isDuplicate
+              ? 'Duplicate records were discovered in the sheet.'
+              : ''
+        "
+      >
+        <td>
+          @if (hasCheckbox) {
+            <p-tableCheckbox
+              [value]="product"
+              (change)="oncheckBoxClicked()"
+            ></p-tableCheckbox>
+          }
+        </td>
+
+        @if (columnsData()?.hasExpanded) {
           <td>
-            <p-tableCheckbox [value]="product"></p-tableCheckbox>
+            <p-button
+              type="button"
+              pRipple
+              [pRowToggler]="product"
+              [text]="true"
+              [rounded]="true"
+              [plain]="true"
+              [icon]="
+                product.isExpanded
+                  ? 'pi pi-chevron-down'
+                  : 'pi pi-chevron-right'
+              "
+              (onClick)="onRowExpand(product.id)"
+            />
           </td>
-          @if (columnsData()?.hasExpanded) {
+        }
+        @for (
+          headerColumn of columnsData()?.columns;
+          track headerColumn.field
+        ) {
+          @if (headerColumn.field === "actions") {
             <td>
-              <p-button
-                type="button"
-                pRipple
-                [pRowToggler]="product"
-                [text]="true"
-                [rounded]="true"
-                [plain]="true"
-                [icon]="
-                  product.isExpanded
-                    ? 'pi pi-chevron-down'
-                    : 'pi pi-chevron-right'
-                "
-                (onClick)="onRowExpand(product.id)"
+              <div class="flex flex-wrap gap-1">
+                @if (
+                  headerColumn.actions?.includes(PaginatedDataActions.View)
+                ) {
+                  <p-button
+                    icon="pi pi-eye"
+                    class="mr-2"
+                    [rounded]="true"
+                    [outlined]="true"
+                    (onClick)="onView(product)"
+                  />
+                }
+                @if (
+                  headerColumn.actions?.includes(
+                    PaginatedDataActions.StartInterview
+                  )
+                ) {
+                  <p-button
+                    icon="pi pi-play"
+                    [label]="'Start Interview'"
+                    class="mr-2"
+                    [outlined]="true"
+                    severity="success"
+                    (onClick)="onStartInterview(product)"
+                  />
+                }
+                @if (
+                  headerColumn.actions?.includes(PaginatedDataActions.Edit)
+                ) {
+                  <p-button
+                    icon="pi pi-pencil"
+                    class="mr-2"
+                    [rounded]="true"
+                    [outlined]="true"
+                    (click)="onEdit(product)"
+                  />
+                }
+                @if (
+                  headerColumn.actions?.includes(PaginatedDataActions.Delete)
+                ) {
+                  <p-button
+                    icon="pi pi-trash"
+                    severity="danger"
+                    [rounded]="true"
+                    [outlined]="true"
+                    (click)="onDelete(product.id)"
+                  />
+                }
+              </div>
+            </td>
+          } @else if (headerColumn.hasChip) {
+            <td>
+              <div class="flex flex-wrap gap-1">
+                @for (role of product[headerColumn.field]; track $index) {
+                  <p-chip [label]="role" [removable]="false" />
+                }
+              </div>
+            </td>
+          } @else if (headerColumn.field === "status") {
+            <td>
+              <p-tag
+                [value]="product[headerColumn.field]"
+                [severity]="getSeverity(product[headerColumn.field])"
               />
             </td>
-          }
-          @for (
-            headerColumn of columnsData()?.columns;
-            track headerColumn.field
-          ) {
-            @if (headerColumn.field === "actions") {
-              <td>
-                <div class="flex flex-wrap gap-1">
-                  @if (
-                    headerColumn.actions?.includes(PaginatedDataActions.View)
-                  ) {
-                    <p-button
-                      icon="pi pi-eye"
-                      class="mr-2"
-                      [rounded]="true"
-                      [outlined]="true"
-                      (onClick)="onView(product)"
-                    />
-                  }
-                  @if (
-                    headerColumn.actions?.includes(PaginatedDataActions.Edit)
-                  ) {
-                    <p-button
-                      icon="pi pi-pencil"
-                      class="mr-2"
-                      [rounded]="true"
-                      [outlined]="true"
-                      (click)="onEdit(product)"
-                    />
-                  }
-                  @if (
-                    headerColumn.actions?.includes(PaginatedDataActions.Delete)
-                  ) {
-                    <p-button
-                      icon="pi pi-trash"
-                      severity="danger"
-                      [rounded]="true"
-                      [outlined]="true"
-                      (click)="onDelete(product.id)"
-                    />
-                  }
-                </div>
-              </td>
-            } @else if (headerColumn.hasChip) {
-              <td>
-                <div class="flex flex-wrap gap-1">
-                  @for (role of product[headerColumn.field]; track $index) {
-                    <p-chip [label]="role" [removable]="false" />
-                  }
-                </div>
-              </td>
-            } @else if (headerColumn.field === "status") {
-              <td>
+          } @else if (headerColumn.field === "isScheduled") {
+            <td>
+              @if (product[headerColumn.field] !== "") {
                 <p-tag
                   [value]="product[headerColumn.field]"
                   [severity]="getSeverity(product[headerColumn.field])"
                 />
-              </td>
-            } @else if (headerColumn.field === "isScheduled") {
-              <td>
-                @if (product[headerColumn.field] !== "") {
-                  <p-tag
-                    [value]="product[headerColumn.field]"
-                    [severity]="getSeverity(product[headerColumn.field])"
-                  />
-                }
-              </td>
-            } @else if (headerColumn.field === "score") {
-              <td>
-                <p-badge
-                  [value]="product[headerColumn.field] ?? 'Nil'"
-                  [severity]="`${product[headerColumn.field] ? 'success' : 'warn'}`"
-                />
-              </td>
-            } @else if (headerColumn.field === "button") {
-              <!-- <button (click)="onActionClick(row)"></button> -->
-              <td>
+              }
+            </td>
+          } @else if (headerColumn.field === "score") {
+            <td>
+              <p-badge
+                [value]="product[headerColumn.field] ?? 'Nil'"
+                [severity]="
+                  `${product[headerColumn.field] ? 'success' : 'warn'}`
+                "
+              />
+            </td>
+          } @else if (headerColumn.field === "button") {
+            <td class="table__buttonColumn">
+              @if (headerColumn?.buttonIcons?.length === 0) {
                 <p-button
                   [outlined]="true"
                   [raised]="true"
@@ -239,39 +358,187 @@
                   (onClick)="onButtonClick(product)"
                 >
                 </p-button>
-              </td>
-            } @else {
-              <td>{{ product[headerColumn.field] }}</td>
-            }
+              }
+              @for (
+                icon of headerColumn.buttonIcons;
+                let i = $index;
+                track icon
+              ) {
+                @if (product.toggleTooltipIconIndex !== i) {
+                  <p-button
+                    [outlined]="true"
+                    [raised]="true"
+                    [icon]="icon"
+                    [pTooltip]="headerColumn.buttonTooltips?.[i] ?? ''"
+                    (onClick)="
+                      onButtonClick(
+                        product,
+                        headerColumn.buttonTooltips?.[i] ?? ''
+                      )
+                    "
+                    styleClass="mr-10"
+                  ></p-button>
+                }
+              }
+            </td>
+          } @else if (headerColumn.field === "active") {
+            <td>
+              <p-tag
+                [value]="product[headerColumn.field]"
+                [severity]="getSeverity(product[headerColumn.field])"
+              />
+            </td>
+          } @else if (headerColumn.fieldType === "stringToDate") {
+            <td>{{ product[headerColumn.field] | date: "dd/MM/yyyy" }}</td>
+          } @else if (headerColumn.fieldType === "stringToDateTime") {
+            <td>
+              <ng-container
+                *ngIf="
+                  product[headerColumn.field] !== '0001-01-01T00:00:00';
+                  else nilTpl
+                "
+              >
+                {{ product[headerColumn.field] | date: "dd/MM/yyyy, hh:mm a" }}
+              </ng-container>
+              <ng-template #nilTpl>
+                <p-chip label="Not Reported" />
+              </ng-template>
+            </td>
+          } @else {
+            <td>{{ product[headerColumn.field] }}</td>
           }
-        </tr>
+        }
+      </tr>
 
-        <!-- Expanded Row Content -->
-        <tr *ngIf="product.isExpanded">
-          <td colspan="100%">
-            <div>
-              <h5>Options</h5>
-              <ol class="table__expanded__optionList">
-                @for (option of product.options; track option) {
-                  @if (option.isCorrect) {
-                    <li class="table__expanded__correctAnswer">
-                      {{ option.optionText }}
-                    </li>
+      <tr *ngIf="product.isExpanded">
+        <td colspan="100%">
+          <div>
+            @for (
+              headerColumn of columnsData()?.columns;
+              track headerColumn.field
+            ) {
+              @if (headerColumn.field === "questionText") {
+                @if (
+                  previewImageUrls[product.id] &&
+                  previewImageUrls[product.id].length &&
+                  product.hasAttachment
+                ) {
+                  @if (isImageLoadings[product.id]) {
+                    <app-image-skeleton></app-image-skeleton>
                   } @else {
-                    <li>
-                      {{ option.optionText }}
-                    </li>
+                    @for (
+                      imgUrl of previewImageUrls[product.id];
+                      track imgUrl;
+                      let i = $index
+                    ) {
+                      <div class="table__previewImage">
+                        <app-image
+                          width="100"
+                          height="70"
+                          [imageUrl]="imgUrl"
+                          [paddingTop]="'0'"
+                          [forceCancelRequest]="[]"
+                          [isZoomable]="true"
+                          [removeIcon]="true"
+                        >
+                        </app-image>
+                      </div>
+                    }
                   }
                 }
-              </ol>
-            </div>
+              }
+            }
+          </div>
+          <div>
+            <h5>Options</h5>
+            <ol
+              [ngClass]="
+                product.options[0]?.hasAttachments
+                  ? 'table__expanded__optionListForImage'
+                  : 'table__expanded__optionList'
+              "
+            >
+              @for (option of product.options; track option) {
+                @if (option.isCorrect) {
+                  <li class="table__expanded__correctAnswer">
+                    {{ option.optionText }}
+                  </li>
+                } @else {
+                  <li>
+                    {{ option.optionText }}
+                  </li>
+                }
+                @if (
+                  previewImageUrls[option.id] &&
+                  previewImageUrls[option.id].length &&
+                  option.hasAttachments
+                ) {
+                  @if (isImageLoadings[option.id]) {
+                    <app-image-skeleton></app-image-skeleton>
+                  } @else {
+                    @for (
+                      imgUrl of previewImageUrls[option.id];
+                      track imgUrl;
+                      let i = $index
+                    ) {
+                      <div class="table__previewImage">
+                        <app-image
+                          width="100"
+                          height="70"
+                          [imageUrl]="imgUrl"
+                          [paddingTop]="'0'"
+                          [forceCancelRequest]="[]"
+                          [isZoomable]="true"
+                          [removeIcon]="true"
+                        >
+                        </app-image>
+                      </div>
+                    }
+                  }
+                }
+              }
+            </ol>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="loadingbody" let-columns>
+      @for (item of [1, 2, 3, 4, 5]; track item) {
+        <tr>
+          <td>
+            <p-skeleton
+              shape="circle"
+              size="2rem"
+              styleClass="mr-2"
+            ></p-skeleton>
           </td>
+
+          @if (columnsData()?.hasExpanded) {
+            <td>
+              <p-skeleton
+                shape="circle"
+                size="2rem"
+                styleClass="mr-2"
+              ></p-skeleton>
+            </td>
+          }
+
+          @for (col of columns; track col.field) {
+            <td>
+              <p-skeleton height="2rem" styleClass="mb-2"></p-skeleton>
+            </td>
+          }
         </tr>
-      </ng-template>
-    </p-table>
-  } @else if (tableData()?.data?.length === 0) {
-    <p>No Records Found</p>
-  } @else {
-    <app-table-skeleton></app-table-skeleton>
-  }
+      }
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td [attr.colspan]="(columnsData()?.columns?.length || 0) + 2">
+          No Records found.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
 </div>

@@ -1,17 +1,24 @@
 .table {
-  // overflow-x: auto;
-  // overflow-y: auto; // optional, if you don't want vertical scroll here
-  // width: 100%;
-  // height: 100%;
-  // min-width: 100%;
-  // display: block; // Ensure it's scrollable
+  font-size: var(--font-size-base);
+
   ::ng-deep {
+    .p-badge,
+    .p-tag,
+    .p-button,
+    .p-inputtext {
+      font-size: var(--font-size-small);
+    }
+
     .p-toolbar-start {
       display: flex;
       gap: 1rem;
     }
     .p-table-wrapper {
       min-width: 1200px;
+    }
+    .p-datatable-thead > tr > th.p-datatable-column-sorted {
+      background-color: rgb(255, 255, 255);
+      color: rgb(0, 0, 0);
     }
   }
   &_skeleton {
@@ -28,6 +35,104 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
       list-style-type: lower-alpha;
+    }
+
+    &__optionListForImage {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      list-style-type: lower-alpha;
+    }
+  }
+  &_isAlready {
+    background-color: rgb(255, 255, 237);
+    &:hover {
+      background-color: rgb(255, 255, 237) !important;
+    }
+  }
+  &_isDuplicate {
+    background-color: rgb(255, 182, 182);
+    &:hover {
+      background-color: rgb(255, 182, 182) !important;
+    }
+  }
+  &__globalFilters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 1rem;
+    flex-wrap: nowrap;
+    &_filters {
+      display: flex;
+      gap: 1rem;
+    }
+    &_search {
+      display: flex;
+      justify-content: flex-end;
+    }
+    &_clear {
+      display: flex;
+      justify-content: flex-start;
+    }
+  }
+  &__buttonColumn {
+    display: flex;
+    flex-direction: row;
+  }
+  @media screen and (max-width: 768px) {
+    &__globalFilters {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      &_search,
+      &_clear {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+    &__previewImage {
+      margin-top: 10px;
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-left: 6%;
+      position: relative;
+      cursor: pointer;
+    }
+  }
+
+  ::ng-deep {
+    .p-datatable-filter-overlay,
+    .p-datatable-filter-buttonbar {
+      font-size: var(--font-size-small);
+    }
+    .p-datatable-tbody > tr > td {
+      white-space: wrap !important;
+    }
+  }
+  :host ::ng-deep {
+    .p-datatable-loading-overlay {
+      background: transparent !important;
+    }
+    @media (max-width: 768px) {
+      .p-paginator-page {
+        max-width: 30px;
+        min-width: 30px;
+        height: 30px;
+      }
+    }
+  }
+  .button-group {
+    display: flex;
+    gap: 1rem;
+    app-button {
+      margin: 0;
+    }
+    @media (max-width: 768px) {
+      gap: 0.5rem;
+      justify-content: center;
     }
   }
 }

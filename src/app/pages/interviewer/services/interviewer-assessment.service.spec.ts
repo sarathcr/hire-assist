@@ -5,8 +5,10 @@ import { InterviewerAssessmentService } from './interviewer-assessment.service';
 describe('InterviewerAssessmentService', () => {
   let service: InterviewerAssessmentService;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [],
+    });
     service = TestBed.inject(InterviewerAssessmentService);
   });
 

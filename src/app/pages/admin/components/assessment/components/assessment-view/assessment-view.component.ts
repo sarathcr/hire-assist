@@ -1,479 +1,160 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  CdkDragDrop,
-  DragDropModule,
-  moveItemInArray,
-} from '@angular/cdk/drag-drop';
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Toast } from 'primeng/toast';
-import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
-import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
-import { TableComponent } from '../../../../../../shared/components/table/table.component';
-import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
-import {
-  FieldType,
-  PaginatedDataActions,
-  TableColumnsData,
-} from '../../../../../../shared/models/table.models';
-import { StoreService } from '../../../../../../shared/services/store.service';
-import {
-  buildFormGroup,
-  ConfigMap,
-} from '../../../../../../shared/utilities/form.utility';
-import { AssessmentScheduleModal } from '../../../../models/assessment-schedule.model';
-import { AssessmentService } from '../../../../services/assessment.service';
-import { UserService } from '../../../../services/user.service';
-import { assessmentScheduleService } from '../../services/assessment-schedule.service';
-import { AssessmentScheduleModalComponent } from './components/assessment-schedule-modal/assessment-schedule-modal.component';
-import { CandidateDialogComponent } from './components/candidate-dialog/candidate-dialog.component';
-import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
-import { CandidateService } from '../../services/candidate.service';
-import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
-import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
-import { DialogData } from '../../../../../../shared/models/dialog.models';
-import { CreateBatchDialogComponent } from './components/create-batch-dialog/create-batch-dialog.component';
+import { ActivatedRoute } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { DialogService } from 'primeng/dynamicdialog';
+import { StepperModule } from 'primeng/stepper';
+import { BaseComponent } from '../../../../../../shared/components/base/base.component';
+import { StatusEnum } from '../../../../../../shared/enums/status.enum';
+import { Option } from '../../../../../../shared/models/option';
+import { CordinatorData } from '../../../../models/assessment-schedule.model';
+import { Assessment } from '../../../../models/assessment.model';
+import { AssessmentRoundComponent } from './components/assessment-round/assessment-round.component';
+import { AssignPanelInterviewerComponent } from './components/assign-panel-interviewer/assign-panel-interviewer.component';
+import { CoordinatorStepComponent } from './components/coordinator-step/coordinator-step.component';
+import { FrontDeskComponent } from './components/front-desk/front-desk.component';
+import { ImportCandidateListStepComponent } from './components/import-candidate-list-step/import-candidate-list-step.component';
+import { SelectQuesionsetStepComponent } from './components/select-quesionset-step/select-quesionset-step.component';
 
-const tableColumns: TableColumnsData = {
-  columns: [
-    { field: 'name', displayName: 'Name', sortedColumn: true, hasChip: false },
-    {
-      field: 'email',
-      displayName: 'Email',
-      sortedColumn: true,
-      hasChip: false,
-    },
-    {
-      field: 'batchName',
-      displayName: 'Batch',
-      sortedColumn: true,
-      hasChip: false,
-    },
+export interface AssessmentViewModel {
+  id?: string;
+  name?: string;
+  email?: string;
+  batchId?: number;
+  batchName?: string;
+}
 
-    {
-      field: 'actions',
-      displayName: 'Actions',
-      fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.View, PaginatedDataActions.Delete],
-      sortedColumn: false,
-      hasChip: false,
-    },
-  ],
-  displayedColumns: ['registeredName', 'actions'],
-};
+export interface CollectionInterface {
+  departments: Option[];
+  batches: Option[];
+  interviewers: Option[];
+  users: Option[];
+  rounds: Option[];
+  roles: Option[];
+  questionType: Option[];
+  panels: Option[];
+}
+
+export interface RoundModel {
+  id?: number;
+  assessment?: string;
+  isActive?: boolean;
+  round: string;
+  roundId: number;
+  sequence: number;
+  status?: string;
+  statusId?: number;
+}
 
 @Component({
   selector: 'app-assessment-view',
-  imports: [ButtonComponent, TableComponent, Toast, DragDropModule],
-  providers: [TableDataSourceService],
+  imports: [
+    CommonModule,
+    StepperModule,
+    ButtonModule,
+    SelectQuesionsetStepComponent,
+    CoordinatorStepComponent,
+    AssessmentRoundComponent,
+    FrontDeskComponent,
+    ImportCandidateListStepComponent,
+    AssignPanelInterviewerComponent,
+  ],
+
   templateUrl: './assessment-view.component.html',
   styleUrl: './assessment-view.component.scss',
 })
-export class AssessmentViewComponent implements OnInit {
-  public url = 'AssessmentRound';
-  public data!: any;
-  public columns: TableColumnsData = tableColumns;
-  public fGroup!: FormGroup;
-  public assessmentSchedule = new AssessmentScheduleModal();
-  public configMap!: ConfigMap;
-  public submittedData!: any;
+export class AssessmentViewComponent extends BaseComponent implements OnInit {
+  public assessment!: Assessment;
 
-  private ref: DynamicDialogRef | undefined;
-  private batches!: any;
-  private assessmentId!: number;
-  private questionSets!: any;
+  public assessmentId!: number;
+
+  public activeStep = 0;
+  public completedSteps: number[] = [0];
+  public visitedSteps: number[] = [];
+  public isdisableCompleted = false;
+  public coordinatorData!: CordinatorData;
 
   constructor(
-    private storeService: StoreService,
-    private assessmentService: AssessmentService,
-    private userService: UserService,
-    private messageService: MessageService,
     private route: ActivatedRoute,
-    private router: Router,
     public dialog: DialogService,
-    private assessmentScheduleService: assessmentScheduleService,
-    private dataSourceService: TableDataSourceService<any>,
-    private candidateService: CandidateService,
   ) {
-    this.fGroup = buildFormGroup(this.assessmentSchedule);
+    super();
   }
 
   // LifeCycle Hooks
   ngOnInit(): void {
-    this.setPaginationEndpoint();
+    if (history.state.assessment) {
+      this.assessment = history.state.assessment;
+      localStorage.setItem('assessment', JSON.stringify(this.assessment));
+    } else {
+      const saved = localStorage.getItem('assessment');
+      if (saved) {
+        this.assessment = JSON.parse(saved);
+      }
+    }
+    if (this.assessment) {
+      this.normalizeDates(this.assessment);
+    }
     this.getCurrentRouteId();
-    this.getAllCandidates(new PaginatedPayload());
-    this.getAllBatches(new PaginatedPayload());
   }
-
-  // Public Methods
-  public onDrop(event: CdkDragDrop<any[]>) {
-    moveItemInArray(
-      this.submittedData,
-      event.previousIndex,
-      event.currentIndex,
-    );
-  }
-
-  public onNavigateclick(): void {
-    const data = {
-      fGroup: this.fGroup,
-      configMap: this.configMap,
-    };
-    this.ref = this.dialog.open(AssessmentScheduleModalComponent, {
-      data: data,
-      header: 'Select Rounds',
-      width: '50vw',
-      modal: true,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-    });
-
-    this.ref.onClose.subscribe((formData: any) => {
-      if (formData?.round?.length) {
-        const collections: any = this.storeService.getCollection();
-        this.submittedData = collections['rounds']
-          .filter((item: any) =>
-            formData.round.includes(item.value, item.label),
-          )
-          .map((item: any) => ({
-            id: item.value,
-            name: item.label,
-          }));
-
-        console.log('submittedData', this.submittedData);
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'Rounds are not selected',
-        });
-        console.log('Error in selecting rounds');
-      }
-    });
-  }
-
-  public onAdd(): void {
-    const payload = this.submittedData.map((item: any, index: number) => ({
-      RoundId: item.id,
-      name: item.name,
-      sequence: index + 1,
-    }));
-
-    this.assessmentScheduleService
-      .CreateAssessmentRound(payload, this.assessmentId)
-      .subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Rounds ordered successfully!',
-          });
-        },
-        error: (error: any) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to save round order.',
-          });
-          console.error(error);
-        },
-      });
-  }
-
-  public importCandidates(file: File) {
-    const next = (val: any) => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: `Imported the ${val.total} candidates Successfully`,
-      });
-
-      if (val.existingCandidates) {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Warning',
-          detail: `There were ${val.existingCandidates} existing candidates`,
-        });
-      }
-      this.getAllCandidates(new PaginatedPayload());
-    };
-    const error = (error: string) => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Import failed',
-      });
-      console.log('ERROR', error);
-    };
-    this.assessmentService
-      .uploadFile(file, `import-candidates?asessmentId=${this.assessmentId}`)
-      .subscribe({ next, error });
-  }
-
-  public onTablePayloadChange(payload: PaginatedPayload): void {
-    this.loadData(payload);
-  }
-
-  public addNewCandidate() {
-    this.ref = this.dialog.open(CandidateDialogComponent, {
-      data: { batches: this.batches, questionSets: this.questionSets },
-      header: 'Create Candidate',
-      maximizable: false,
-      width: '40vw',
-      modal: true,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-    });
-    this.ref.onClose.subscribe((result) => {
-      if (result) {
-        result.assessmentId = this.assessmentId;
-        // api call to create the Candidate
-        const next = () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Created the Candidate Successfully',
-          });
-
-          this.getAllCandidates(new PaginatedPayload());
-          console.log('successfully created the Candidate', this.data);
-        };
-        const error = (error: CustomErrorResponse) => {
-          const businerssErrorCode = error.error.businessError;
-          if (businerssErrorCode === 4001) {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Candidate Already Exists',
-            });
-          }
-
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Creation failed',
-          });
-          console.log('ERROR', error);
-        };
-        this.candidateService.createEntity(result).subscribe({ next, error });
-      }
-    });
-  }
-
-  public deleteCandidate(userId: string) {
-    const modalData: DialogData = {
-      message: 'Are you sure you want to to delete the candidate?',
-      isChoice: true,
-      cancelButtonText: 'Cancel',
-      acceptButtonText: 'Delete',
-    };
-    this.ref = this.dialog.open(DialogComponent, {
-      data: modalData,
-      header: 'Warning',
-      maximizable: false,
-      width: '50vw',
-      modal: true,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-      templates: {
-        footer: DialogFooterComponent,
-      },
-    });
-    this.ref.onClose.subscribe((result) => {
-      if (result) {
-        // api call to delete the user
-        const next = () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Deleted the Candidate Successfully',
-          });
-          this.getAllCandidates(new PaginatedPayload());
-        };
-        const error = (error: string) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Deletion is failed',
-          });
-          console.log('ERROR', error);
-        };
-        this.candidateService
-          .deleteEntityById(userId, this.assessmentId)
-          .subscribe({ next, error });
-      }
-    });
-  }
-
-  public deleteSelectedCandidates(selectedUsersIds: string[]) {
-    const payload = {
-      candidateIds: selectedUsersIds,
-      assessmentId: this.assessmentId,
-    };
-    const modalData: DialogData = {
-      message: 'Are you sure you want to to delete the selected candidates?',
-      isChoice: true,
-      cancelButtonText: 'Cancel',
-      acceptButtonText: 'Delete',
-    };
-    this.ref = this.dialog.open(DialogComponent, {
-      data: modalData,
-      header: 'Warning',
-      maximizable: false,
-      width: '50vw',
-      modal: true,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-      templates: {
-        footer: DialogFooterComponent,
-      },
-    });
-
-    this.ref.onClose.subscribe((result) => {
-      if (result) {
-        // api call to delete the users
-        const next = () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Deleted the Selected Candidates Successfully',
-          });
-          this.getAllCandidates(new PaginatedPayload());
-        };
-        const error = (error: string) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Deletion is failed',
-          });
-          console.log('ERROR', error);
-        };
-        this.candidateService
-          .updateEntity('', payload, 'remove')
-          .subscribe({ next, error });
-      }
-    });
-  }
-
-  public createBatchSelectedCandidates(selectedUsersIds: string[]) {
-    this.ref = this.dialog.open(CreateBatchDialogComponent, {
-      data: { batches: this.batches, questionSets: this.questionSets },
-      header: 'Add Candidates to Batch',
-      maximizable: false,
-      width: '40vw',
-      modal: true,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-    });
-    this.ref.onClose.subscribe((result) => {
-      if (result) {
-        console.log(result);
-        const payload = {
-          candidatesIds: selectedUsersIds,
-          questionSetIds: result.questionSet,
-          batchId: result.batch,
-        };
-        // api call to create the Candidate
-        const next = () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Added the Candidates Successfully',
-          });
-
-          this.getAllCandidates(new PaginatedPayload());
-        };
-        const error = (error: CustomErrorResponse) => {
-          const businerssErrorCode = error.error.businessError;
-          if (businerssErrorCode === 4001) {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Candidate Already Exists',
-            });
-          }
-
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Creation failed',
-          });
-          console.log('ERROR', error);
-        };
-        this.candidateService
-          .createEntity(payload, 'add-batch')
-          .subscribe({ next, error });
-      }
-    });
-  }
-
-  public scheduleAssessment(value: boolean): void {
-    if (value) {
-      const modalData: DialogData = {
-        message: 'Are you sure you want to schedule the assessment?',
-        isChoice: true,
-        cancelButtonText: 'Cancel',
-        acceptButtonText: 'Yes',
-      };
-      this.ref = this.dialog.open(DialogComponent, {
-        data: modalData,
-        header: 'Warning',
-        maximizable: false,
-        width: '50vw',
-        modal: true,
-        breakpoints: {
-          '960px': '75vw',
-          '640px': '90vw',
-        },
-        templates: {
-          footer: DialogFooterComponent,
-        },
-      });
-
-      this.ref.onClose.subscribe((result) => {
-        if (result) {
-          // api call to schedule the assessment
-          const next = () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'Scheduled the Assessment Successfully',
-            });
-          };
-          const error = (error: CustomErrorResponse) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Schedule failed',
-            });
-            console.log('ERROR', error);
-          };
-          this.assessmentService
-            .createEntity({ assessmentId: this.assessmentId }, 'schedule')
-            .subscribe({ next, error });
-        }
-      });
+  public onCompleteStep(step: number): void {
+    if (!this.completedSteps.includes(step)) {
+      this.completedSteps.push(step);
     }
   }
 
-  // Private Methods
-  private setPaginationEndpoint() {
-    this.dataSourceService.setEndpoint(`${this.url}`);
+  public setActiveStep(step: number): void {
+    this.activeStep = step;
   }
+
+  public onNextStep(currentStep: number): void {
+    const nextStep = currentStep + 1;
+
+    if (this.completedSteps.includes(currentStep)) {
+      this.activeStep = nextStep;
+
+      if (!this.visitedSteps.includes(nextStep)) {
+        this.visitedSteps.push(nextStep);
+      }
+    }
+  }
+
+  public onStepClick(step: number): void {
+    if (this.canActivateStep(step)) {
+      this.activeStep = step;
+
+      if (!this.visitedSteps.includes(step)) {
+        this.visitedSteps.push(step);
+      }
+    }
+  }
+
+  public onStepChange(event: any): void {
+    const newStep = event.value;
+
+    if (this.canActivateStep(newStep)) {
+      this.activeStep = newStep;
+
+      if (!this.visitedSteps.includes(newStep)) {
+        this.visitedSteps.push(newStep);
+      }
+    }
+  }
+
+  public canActivateStep(step: number): boolean {
+    if (step === 1) {
+      return true;
+    }
+    const canActivate = this.completedSteps.includes(step - 1);
+    return canActivate;
+  }
+
+  public getStatus(statusId: number): string {
+    return StatusEnum[statusId] || 'Unknown Status';
+  }
+
+  // Private Methods
 
   private getCurrentRouteId() {
     this.route.paramMap.subscribe((params) => {
@@ -481,44 +162,27 @@ export class AssessmentViewComponent implements OnInit {
     });
   }
 
-  private getAllCandidates(payload: PaginatedPayload) {
-    payload.filterMap = {
-      assessmentId: this.assessmentId,
-      roles: ['5'],
-    };
-    const next = (res: any) => {
-      this.data = res;
-    };
-    const error = (error: string) => {
-      console.log('ERROR', error);
-    };
-    this.userService
-      .paginationEntity('all', payload)
-      .subscribe({ next, error });
+  private normalizeDates(assessment: Assessment): void {
+    if (assessment.startDateTime) {
+      assessment.startDateTime = this.parseDate(assessment.startDateTime) || '';
+    }
+    if (assessment.endDateTime) {
+      assessment.endDateTime = this.parseDate(assessment.endDateTime) || '';
+    }
   }
+  private parseDate(date: string): string | null {
+    const isoDate = new Date(date);
+    if (!isNaN(isoDate.getTime())) {
+      return isoDate.toISOString();
+    }
 
-  private loadData(payload: PaginatedPayload): void {
-    this.dataSourceService.getData(payload).subscribe((response: any) => {
-      this.data = response;
-    });
-  }
-
-  private getAllBatches(payload: PaginatedPayload): void {
-    payload.filterMap = {
-      assessmentId: this.assessmentId,
-    };
-
-    const next = (res: any) => {
-      console.log(res.data);
-      this.batches = res.data;
-    };
-
-    const error = (err: any) => {
-      console.error('ERROR', err);
-    };
-
-    this.assessmentService
-      .paginationEntity('Batch/Batchsummary', payload)
-      .subscribe({ next, error });
+    const parts = date.split('-');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+      return new Date(year, month, day).toISOString();
+    }
+    return null;
   }
 }

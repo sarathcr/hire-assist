@@ -1,21 +1,20 @@
 <aside class="sidebar" [ngClass]="{ sidebar_mobile: this.showMenu() }">
   <div class="sidebar__header">
     <figure class="sidebar__logo"><img src="logo.png" alt="logo" /></figure>
-    <!-- Add tabindex="0" for focusability and keydown event for keyboard interaction -->
-    <span
+    <button
       class="pi pi-times-circle"
+      type="button"
       tabindex="0"
       (click)="closeToggleMenu()"
-      (keydown.enter)="closeToggleMenu()"
-      (keydown.space)="closeToggleMenu()"
       aria-label="Close menu"
-      role="button"
-    >
-    </span>
+    ></button>
   </div>
 
   <nav class="sidebar__nav">
-    <p-panelmenu [model]="navLinks"></p-panelmenu>
-    <!-- <p-menu [model]="navLinks()"></p-menu> -->
+    <p-panelmenu
+      [model]="navLinks"
+      (click)="closeToggleMenu()"
+      (keydown)="closeToggleMenu()"
+    ></p-panelmenu>
   </nav>
 </aside>

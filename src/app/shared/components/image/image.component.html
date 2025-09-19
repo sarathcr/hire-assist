@@ -1,0 +1,28 @@
+<div class="image-container">
+  <div class="image-container__header">
+    @if (!removeIcon) {
+      <i
+        class="pi pi-times"
+        (click)="onCloseClick()"
+        tabindex="0"
+        (keyup.enter)="onCloseClick()"
+        (keyup.space)="onCloseClick()"
+      ></i>
+    }
+  </div>
+  @if (!loaded) {
+    <app-image-skeleton></app-image-skeleton>
+  }
+  <div class="image-container__loader" *ngIf="!loaded">
+    <div class="fa fa-spinner fa-pulse fa-spin fa-4x color-dark-blue"></div>
+  </div>
+
+  <ng-container *ngIf="loaded && blobURL">
+    <p-image
+      [src]="blobURL"
+      [preview]="true"
+      alt="Preview Image"
+      [ngStyle]="{ 'max-width': '100%', 'max-height': '100%' }"
+    ></p-image>
+  </ng-container>
+</div>

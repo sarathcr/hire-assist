@@ -34,7 +34,6 @@ export class InputPasswordComponent
 {
   @Input() formGroup!: FormGroup;
   @Input() config!: CustomFormControlConfig;
-  @Input() dynamicSuffix!: string;
 
   public formControl!: FormControl<string>;
   public inputTextConfig!: CustomTextInputConfig;

@@ -9,6 +9,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 })
 export class DashboardCardComponent {
   public title = input<string>('');
+  public icon = input<string>('');
   public count = input<number>(0);
   public activeCount = input<number>(0);
   public inactiveCount = input<number>(0);

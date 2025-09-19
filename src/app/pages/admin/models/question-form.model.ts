@@ -8,14 +8,20 @@ export class QuestionForm extends FormEntity {
   answer?: string = '';
   active?: boolean = false;
   hasAttachments?: boolean = false;
-  questionType?: string = '';
-
+  questionType?: string;
+  optionHasAttachments?: boolean = false;
+  isMultipleChoice?: boolean = false;
+  attachmentType?: string;
+  optionAttachmentType?: string;
+  file?: File;
   metadata: Metadata = {
     validatorsMap: {
       questionText: [Validators.required],
       questionType: [Validators.required],
       options: [Validators.required],
       answer: [Validators.required],
+      optionAttachmentType: [Validators.required],
+      file: [Validators.required],
     },
     configMap: {
       questionText: { id: 'questionText', labelKey: 'Question Text' },
@@ -25,6 +31,23 @@ export class QuestionForm extends FormEntity {
       answer: { id: 'answer', labelKey: 'Answer' },
       hasAttachments: { id: 'hasAttachments', labelKey: 'Attachments' },
       active: { id: 'active', labelKey: 'Active' },
+      optionHasAttachments: {
+        id: 'optionHasAttachments',
+        labelKey: 'optionHasAttachments',
+      },
+      isMultipleChoice: {
+        id: 'isMultipleChoice',
+        labelKey: 'isMultipleChoice',
+      },
+      attachmentType: { id: 'attachmentType', labelKey: 'AttachmentType' },
+      optionAttachmentType: {
+        id: 'optionAttachmentType',
+        labelKey: 'Option AttachmentType',
+      },
+      file: {
+        id: 'file',
+        labelKey: 'Files',
+      },
     },
   };
 }

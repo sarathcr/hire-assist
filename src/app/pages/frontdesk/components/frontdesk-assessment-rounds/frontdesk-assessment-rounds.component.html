@@ -1,0 +1,28 @@
+<div class="frontdesk-assessment-rounds">
+  <div>
+    <h1 class="frontdesk-assessment-rounds__title">
+      Assigned Assessment Active Rounds
+    </h1>
+  </div>
+  <div class="frontdesk-assessment-rounds__wrapper">
+    <div class="frontdesk-assessment-rounds__list">
+      @if (!isLoading) {
+        @for (assessment of assessmentDataSource; track assessment) {
+          <app-assessment-card
+            class="frontdesk-assessment-rounds__card"
+            [data]="assessment"
+            [showToggleButton]="false"
+            (click)="onClickAssessment(assessment.id ?? 0)"
+            (keydown)="onClickAssessment(assessment.id ?? 0)"
+          ></app-assessment-card>
+        } @empty {
+          <h1 class="frontdesk-assessment-rounds__content">No Active Rounds</h1>
+        }
+      } @else {
+        <app-assessment-card-skeleton
+          class="frontdesk-assessment-rounds__card"
+        ></app-assessment-card-skeleton>
+      }
+    </div>
+  </div>
+</div>

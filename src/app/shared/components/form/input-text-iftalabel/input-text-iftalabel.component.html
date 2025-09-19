@@ -13,11 +13,9 @@
   </ng-container>
 
   @if (inputTextConfig.matSuffix) {
-    <span class="input-suffix">{{ inputTextConfig.matPrefix }}</span>
-  } @else if (inputTextConfig.matPrefix) {
     <span class="input-suffix">{{ inputTextConfig.matSuffix }}</span>
-  } @else if (dynamicSuffix) {
-    <span class="input-suffix">{{ dynamicSuffix }}</span>
+  } @else if (inputTextConfig.matPrefix) {
+    <span class="input-prefix">{{ inputTextConfig.matPrefix }}</span>
   }
   @if (formControl.touched && formControl.invalid) {
     <span class="input-text__validation-label"> {{ errorMsg }}</span>
