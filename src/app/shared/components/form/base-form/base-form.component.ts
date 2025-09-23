@@ -1,36 +1,39 @@
 import { FormGroup } from '@angular/forms';
 import { CustomFormControlConfig } from '../../../utilities/form.utility';
 
-// import { TranslateService } from '@ngx-translate/core';
-
 export abstract class BaseFormComponent {
   abstract formGroup: FormGroup;
   abstract config: CustomFormControlConfig;
 
-  //   constructor() {}
-
-  // eslint-disable-next-line complexity
   get errorMsg(): string {
-    let errorKey = '';
-    const fcId = this.config.id;
-    const formGroup = this.formGroup;
-    const fc = formGroup.get(fcId);
+    const fc = this.formGroup.get(this.config.id);
 
-    if (fc && fc.errors) {
-      const errors = fc.errors;
-      if (errors['errorMessage']) {
-        return errors['errorMessage'];
-      }
-      errorKey = Object.keys(errors)[0];
+    if (!fc || !fc.touched || !fc.errors) {
+      return '';
     }
 
-    const isSubmitted = true; //this.formGroup.dirty;
+    const errors = fc.errors;
 
-    if (fc && isSubmitted) {
-      fc.markAsDirty();
+    if (errors['errorMessage']) {
+      return errors['errorMessage'];
     }
 
-    const hasToShowError = fc?.dirty && errorKey;
-    return hasToShowError ? `Field is ${errorKey}` : '';
+    if (errors['required']) {
+      return 'This field is required.';
+    }
+
+    if (errors['maxlength']) {
+      const requiredLength = errors['maxlength'].requiredLength;
+      return `This field accepts a maximum of ${requiredLength} characters.`;
+    }
+
+    if (errors['minlength']) {
+      const requiredLength = errors['minlength'].requiredLength;
+      return `This field must be at least ${requiredLength} characters long.`;
+    }
+    if (errors['pattern']) {
+      return `This field must be start with alphabetics`;
+    }
+    return 'This field has an invalid value.';
   }
 }

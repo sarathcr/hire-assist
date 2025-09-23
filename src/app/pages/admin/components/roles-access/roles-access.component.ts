@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Toast } from 'primeng/toast';
@@ -59,7 +59,7 @@ const tableColumns: TableColumnsData = {
   templateUrl: './roles-access.component.html',
   styleUrl: './roles-access.component.scss',
 })
-export class RolesAccessComponent implements OnInit {
+export class RolesAccessComponent implements OnInit, OnDestroy {
   public data!: any;
   public columns: TableColumnsData = tableColumns;
   public selectedUsers: any = [];
@@ -80,7 +80,11 @@ export class RolesAccessComponent implements OnInit {
     this.setPaginationEndpoint();
     this.getAllUsers(new PaginatedPayload());
   }
-
+  ngOnDestroy() {
+    if (this.ref) {
+      this.ref.close();
+    }
+  }
   // Public Methods
   public AddNewUser() {
     this.ref = this.dialog.open(UserDialogComponent, {

@@ -11,10 +11,6 @@
   </div>
 
   <nav class="sidebar__nav">
-    <p-panelmenu
-      [model]="navLinks"
-      (click)="closeToggleMenu()"
-      (keydown)="closeToggleMenu()"
-    ></p-panelmenu>
+    <p-panelmenu [model]="navLinkInterceptor"></p-panelmenu>
   </nav>
 </aside>

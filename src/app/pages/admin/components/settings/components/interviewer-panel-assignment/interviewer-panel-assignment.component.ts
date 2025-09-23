@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -79,7 +79,7 @@ export interface interviewerEditResponse {
   templateUrl: './interviewer-panel-assignment.component.html',
   styleUrl: './interviewer-panel-assignment.component.scss',
 })
-export class InterviewerPanelAssignmentComponent implements OnInit {
+export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
   public panelData!: any;
   public selectedPanelIds: PanelSummary[] = [];
   public panelColumn: TableColumnsData = panelTable;
@@ -90,6 +90,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit {
   private ref: DynamicDialogRef | undefined;
   public interviewersData!: interviewerFormGroup[];
   public isLoading = true;
+  private currentPayload: PaginatedPayload = new PaginatedPayload();
 
   constructor(
     public dialog: DialogService,
@@ -101,22 +102,25 @@ export class InterviewerPanelAssignmentComponent implements OnInit {
   ngOnInit(): void {
     this.setPaginationEndpoint();
     this.setPanelPaginationEndpoint();
-    this.getPaginatedPanelData();
+    this.getPaginatedPanelData(new PaginatedPayload());
   }
-
+  ngOnDestroy() {
+    if (this.ref) {
+      this.ref.close();
+    }
+  }
   public onTablePayloadChange(payload: PaginatedPayload): void {
-    this.loadData(payload);
-  }
-  public getPaginatedPanelData() {
-    this.isLoading = true;
-    const payload = {
-      multiSortedColumns: [],
-      filterMap: {},
+    this.currentPayload = {
+      ...payload,
       pagination: {
+        ...payload.pagination,
         pageNumber: 1,
-        pageSize: 5,
       },
     };
+    this.loadData(payload);
+  }
+  public getPaginatedPanelData(payload: PaginatedPayload) {
+    this.isLoading = true;
 
     this.coordinatorPanelBridgeService
       .paginationEntity('panel/activePanelSummary', payload)
@@ -175,7 +179,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit {
           .subscribe({
             next: () => {
               this.isLoading = false;
-              this.getPaginatedPanelData();
+              this.getPaginatedPanelData(this.currentPayload);
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
@@ -285,7 +289,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit {
         detail: 'Deleted the Panel Assignment Successfully',
       });
       this.isLoading = false;
-      this.getPaginatedPanelData();
+      this.getPaginatedPanelData(this.currentPayload);
       console.log('delete panel called');
     };
 
@@ -338,7 +342,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit {
           .subscribe({
             next: () => {
               this.isLoading = false;
-              this.getPaginatedPanelData();
+              this.getPaginatedPanelData(this.currentPayload);
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',

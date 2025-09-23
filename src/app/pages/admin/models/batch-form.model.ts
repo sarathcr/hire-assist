@@ -8,7 +8,12 @@ export class BatchForm extends FormEntity {
 
   metadata: Metadata = {
     validatorsMap: {
-      title: [Validators.required],
+      title: [
+        Validators.required,
+        Validators.pattern('^[A-Za-z].*'),
+        Validators.minLength(3),
+        Validators.maxLength(25),
+      ],
     },
     configMap: {
       title: { id: 'title', labelKey: 'Title' },

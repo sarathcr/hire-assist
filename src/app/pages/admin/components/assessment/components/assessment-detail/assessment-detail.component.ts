@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NgClass } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -140,7 +140,7 @@ export interface AssesmentRoundResponse {
   templateUrl: './assessment-detail.component.html',
   styleUrl: './assessment-detail.component.scss',
 })
-export class AssessmentDetailComponent implements OnInit {
+export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public assessmentId!: number;
   public sidebarConfig!: MenuItem[];
   public data!: Assessment;
@@ -188,7 +188,11 @@ export class AssessmentDetailComponent implements OnInit {
     this.setSidebarConfig();
     this.setPaginationEndpoint();
   }
-
+  ngOnDestroy() {
+    if (this.ref) {
+      this.ref.close();
+    }
+  }
   // Public Methods
 
   public getSelectedCandidatesOnTable(selectedIds: InterviewSummary[]) {

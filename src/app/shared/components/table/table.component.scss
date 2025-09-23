@@ -102,6 +102,13 @@
       cursor: pointer;
     }
   }
+  @media screen and (max-width: 375px) {
+    &__globalFilters {
+      &_search input {
+        width: 150px;
+      }
+    }
+  }
 
   ::ng-deep {
     .p-datatable-filter-overlay,
