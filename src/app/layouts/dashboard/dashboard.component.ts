@@ -146,6 +146,7 @@ export class DashboardComponent implements OnInit {
       {
         label: 'Settings',
         icon: 'pi pi-cog',
+        hasRouterLink: false,
         items: [
           {
             label: 'Questions',

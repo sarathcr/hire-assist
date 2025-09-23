@@ -1,7 +1,7 @@
 import { PaginatedData } from '../../../../../../shared/models/table.models';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -79,7 +79,7 @@ const tableColumns: TableColumnsData = {
   templateUrl: './panels.component.html',
   styleUrl: './panels.component.scss',
 })
-export class PanelsComponent implements OnInit {
+export class PanelsComponent implements OnInit, OnDestroy {
   public url = 'summary';
   public data!: PaginatedData<any>;
   public optionsMap = {};
@@ -89,6 +89,7 @@ export class PanelsComponent implements OnInit {
   public PanelFormData = new PanelForm();
   public configMap!: ConfigMap;
   public isLoading = true;
+  private currentPayload: PaginatedPayload = new PaginatedPayload();
 
   private ref: DynamicDialogRef | undefined;
 
@@ -107,10 +108,21 @@ export class PanelsComponent implements OnInit {
     this.getAllPaginatedPanels(new PaginatedPayload());
     this.setConfigMaps();
   }
-
+  ngOnDestroy() {
+    if (this.ref) {
+      this.ref.close();
+    }
+  }
   // Public Methods
   public onTablePayloadChange(payload: PaginatedPayload): void {
     this.loadData(payload);
+    this.currentPayload = {
+      ...payload,
+      pagination: {
+        ...payload.pagination,
+        pageNumber: 1,
+      },
+    };
   }
 
   public addNewPanel() {
@@ -249,7 +261,7 @@ export class PanelsComponent implements OnInit {
         detail: `${action ? 'Duplicated' : 'Created'} Panel Successfully`,
       });
 
-      this.getAllPaginatedPanels(new PaginatedPayload());
+      this.getAllPaginatedPanels(this.currentPayload);
     };
 
     const error = (error: HttpErrorResponse) => {
@@ -282,7 +294,7 @@ export class PanelsComponent implements OnInit {
         summary: 'Success',
         detail: 'Updated the Panel Successfully',
       });
-      this.getAllPaginatedPanels(new PaginatedPayload());
+      this.getAllPaginatedPanels(this.currentPayload);
     };
 
     const error = (error: HttpErrorResponse) => {
@@ -314,7 +326,7 @@ export class PanelsComponent implements OnInit {
         summary: 'Success',
         detail: 'Deleted the Panel Successfully',
       });
-      this.getAllPaginatedPanels(new PaginatedPayload());
+      this.getAllPaginatedPanels(this.currentPayload);
     };
 
     const error = (error: HttpErrorResponse) => {

@@ -179,6 +179,7 @@ export class SelectQuesionsetStepComponent
 
     childRef.onClose.subscribe();
   }
+
   public onSelectedIds(newIds: QuestionsModel[]) {
     const questionSetSelected = this.fGroup.get('questionSet')?.value;
     if (!questionSetSelected) {
@@ -189,36 +190,38 @@ export class SelectQuesionsetStepComponent
       });
       return;
     }
-    this.selectedIds = Array.from(
-      new Set([...newIds.map((item) => item.id.toString())]),
+
+    this.selectedIds = newIds.map((item) => item.id.toString());
+
+    const currentPageIds = (this.tabledata?.data || []).map((q) =>
+      q.id.toString(),
     );
-    const pageSelected = (this.tabledata?.data || [])
-      .filter((q: QuestionsModel) =>
-        newIds.map((n) => n.id.toString()).includes(q.id.toString()),
-      )
-      .map((q: QuestionsModel) => ({
+
+    this.allSelectedQuestions = this.allSelectedQuestions.filter(
+      (q) => !currentPageIds.includes(q.questionId.toString()),
+    );
+
+    const selectedOnPage = (this.tabledata?.data || [])
+      .filter((q) => this.selectedIds.includes(q.id.toString()))
+      .map((q) => ({
         questionId: Number(q.id),
         questionType: q.questionType ?? '',
         maxMark: q.maxMark ?? 0,
       }));
 
-    const existingIds = new Set(
-      this.allSelectedQuestions.map((q) => q.questionId),
-    );
+    this.allSelectedQuestions = [
+      ...this.allSelectedQuestions,
+      ...selectedOnPage,
+    ];
 
-    const merged = [...this.allSelectedQuestions];
-    pageSelected.forEach((q) => {
-      if (!existingIds.has(q.questionId)) {
-        merged.push(q);
-      }
-    });
-    this.allSelectedQuestions = merged;
+    this.selectedIds = this.allSelectedQuestions.map((q) =>
+      q.questionId.toString(),
+    );
 
     const selectedQuestions: GetSelectedQuestionsForSet = {
       questionSetId: questionSetSelected,
       questions: this.allSelectedQuestions,
     };
-
     this.groupQuestionSet(selectedQuestions);
   }
 
@@ -239,6 +242,7 @@ export class SelectQuesionsetStepComponent
         detail: 'Questions and set are saved Successfully',
       });
       this.isUpdate = true;
+      this.getAllQuestionSets(new PaginatedPayload());
     };
 
     const error = () => {
@@ -266,6 +270,8 @@ export class SelectQuesionsetStepComponent
         detail: 'Questions and set are updated Successfully',
       });
       this.isLoading = false;
+
+      if (!this.isLoading) this.getAllPaginatedQuestion(new PaginatedPayload());
     };
     const error = (error: CustomErrorResponse) => {
       this.messageService.add({
@@ -332,6 +338,7 @@ export class SelectQuesionsetStepComponent
     };
   }
   private getAllQuestionSets(payload: PaginatedPayload): void {
+    console.log('payload2', payload);
     this.isLoading = true;
     payload.filterMap = {
       assessmentId: Number(this.assessmentId()),
@@ -385,6 +392,7 @@ export class SelectQuesionsetStepComponent
   }
 
   private getAllPaginatedQuestion(payload: PaginatedPayload) {
+    console.log('payload1', payload);
     this.isLoading = true;
     const next = (res: PaginatedData<QuestionsModel>) => {
       if (res) {
@@ -427,6 +435,7 @@ export class SelectQuesionsetStepComponent
     this.assessmentService.getQuestionsBySet(selectedId).subscribe({
       next: (res: GetSelectedQuestionsForSet) => {
         this.questiondata = res;
+        this.allSelectedQuestions = res.questions;
         this.selectedIds = res.questions.map((item: QuestionsSetQuesions) =>
           item.questionId.toString(),
         );

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -68,7 +68,7 @@ const tableColumns: TableColumnsData = {
   templateUrl: './questions.component.html',
   styleUrl: './questions.component.scss',
 })
-export class QuestionsComponent implements OnInit {
+export class QuestionsComponent implements OnInit, OnDestroy {
   public data!: PaginatedData<any>;
   public columns: TableColumnsData = tableColumns;
   public questionFormData = new QuestionForm();
@@ -85,6 +85,8 @@ export class QuestionsComponent implements OnInit {
   public isImageLoadings: Record<number, boolean> = {};
   public questionId!: number;
   public isLoading = true;
+
+  private currentPayload: PaginatedPayload = new PaginatedPayload();
   constructor(
     private questionService: QuestionService,
     private storeService: StoreService,
@@ -112,8 +114,20 @@ export class QuestionsComponent implements OnInit {
     this.setOptions();
   }
 
+  ngOnDestroy() {
+    if (this.ref) {
+      this.ref.close();
+    }
+  }
   // Public Methods
   public onTablePayloadChange(payload: PaginatedPayload): void {
+    this.currentPayload = {
+      ...payload,
+      pagination: {
+        ...payload.pagination,
+        pageNumber: 1,
+      },
+    };
     this.loadData(payload);
   }
 
@@ -240,7 +254,7 @@ export class QuestionsComponent implements OnInit {
             summary: 'Success',
             detail: 'Deleted the User Successfully',
           });
-          this.getAllPaginatedQuestion(new PaginatedPayload());
+          this.getAllPaginatedQuestion(this.currentPayload);
         };
         const error = (error: CustomErrorResponse) => {
           const businerssErrorCode = error.error.businessError;
@@ -437,7 +451,7 @@ export class QuestionsComponent implements OnInit {
         });
       }, 200);
 
-      this.getAllPaginatedQuestion(new PaginatedPayload());
+      this.getAllPaginatedQuestion(this.currentPayload);
     };
     const error = (error: CustomErrorResponse) => {
       const businerssErrorCode = error.error.businessError;
@@ -471,7 +485,7 @@ export class QuestionsComponent implements OnInit {
         });
       }, 200);
 
-      this.getAllPaginatedQuestion(new PaginatedPayload());
+      this.getAllPaginatedQuestion(this.currentPayload);
     };
     const error = (error: CustomErrorResponse) => {
       const businerssErrorCode = error.error.businessError;

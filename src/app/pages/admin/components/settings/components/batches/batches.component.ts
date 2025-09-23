@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -75,7 +75,7 @@ const tableColumns: TableColumnsData = {
   templateUrl: './batches.component.html',
   styleUrl: './batches.component.scss',
 })
-export class BatchesComponent implements OnInit {
+export class BatchesComponent implements OnInit, OnDestroy {
   public url = 'Batchsummary';
   public data!: PaginatedData<any>;
   public optionsMap = {};
@@ -85,6 +85,7 @@ export class BatchesComponent implements OnInit {
   public batchFormData = new BatchForm();
   public configMap!: ConfigMap;
   public isLoading = true;
+  private currentPayload: PaginatedPayload = new PaginatedPayload();
 
   private ref: DynamicDialogRef | undefined;
 
@@ -104,9 +105,20 @@ export class BatchesComponent implements OnInit {
     this.getAllPaginatedBatches(new PaginatedPayload());
     this.setConfigMaps();
   }
-
+  ngOnDestroy(): void {
+    if (this.ref) {
+      this.ref.close();
+    }
+  }
   // Public Methods
   public onTablePayloadChange(payload: PaginatedPayload): void {
+    this.currentPayload = {
+      ...payload,
+      pagination: {
+        ...payload.pagination,
+        pageNumber: 1,
+      },
+    };
     this.loadData(payload);
   }
 
@@ -247,7 +259,7 @@ export class BatchesComponent implements OnInit {
           detail: `${action ? 'Duplicated' : 'Created'} Batch Successfully`,
         });
       }, 200);
-      this.getAllPaginatedBatches(new PaginatedPayload());
+      this.getAllPaginatedBatches(this.currentPayload);
     };
 
     const error = (error: HttpErrorResponse) => {
@@ -282,7 +294,8 @@ export class BatchesComponent implements OnInit {
         summary: 'Success',
         detail: 'Updated the Batch Successfully',
       });
-      this.getAllPaginatedBatches(new PaginatedPayload());
+
+      this.getAllPaginatedBatches(this.currentPayload);
     };
 
     const error = (error: HttpErrorResponse) => {
@@ -313,12 +326,12 @@ export class BatchesComponent implements OnInit {
         summary: 'Success',
         detail: 'Deleted the Batch Successfully',
       });
-      this.getAllPaginatedBatches(new PaginatedPayload());
+      this.getAllPaginatedBatches(this.currentPayload);
     };
 
     const error = (error: HttpErrorResponse) => {
       this.storeService.setIsLoading(false);
-      console.log('ERROR', error);
+      this.isLoading = false;
       if (
         error?.status === 422 &&
         (error?.error?.businessError === 5003 ||

@@ -39,5 +39,9 @@ export class InputTextComponent extends BaseFormComponent implements OnInit {
     const inputElement = event.target as HTMLInputElement;
     const inputValue: string = inputElement.value;
     this.formControl.setValue(inputValue);
+    if (!this.formControl.touched) {
+      this.formControl.markAsTouched({ onlySelf: true });
+    }
+    this.formControl.updateValueAndValidity({ onlySelf: true });
   }
 }

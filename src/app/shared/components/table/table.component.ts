@@ -144,14 +144,26 @@ export class TableComponent<
   constructor(private readonly messagesService: MessageService) {
     super();
     effect(() => {
-      if (this.tableData()) {
+      const currentTableData = this.tableData();
+
+      if (currentTableData) {
         this.internalIsLoading.set(false);
+
+        if (this.table) {
+          const newFirstIndex =
+            (currentTableData.pageNumber - 1) * currentTableData.pageSize;
+
+          if (this.table.first !== newFirstIndex) {
+            this.table.first = newFirstIndex;
+          }
+        }
+
+        const ids = this.alreadySelected();
+        const data = currentTableData.data || [];
+        this.selectedItems = data.filter((item) =>
+          ids.includes(item?.id?.toString()),
+        );
       }
-      const ids = this.alreadySelected();
-      const data = this.tableData()?.data || [];
-      this.selectedItems = data.filter((item) =>
-        ids.includes(item?.id?.toString()),
-      );
     });
 
     const sub = this.searchSubject
