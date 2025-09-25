@@ -110,6 +110,26 @@
     }
   }
 
+  @media screen and (min-width: 450px) {
+    .table__globalFilters {
+      flex-direction: row !important;
+      align-items: center !important;
+      flex-wrap: nowrap !important;
+    }
+
+    .table__globalFilters_filters {
+      flex-direction: row !important;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .table__globalFilters_search,
+    .table__globalFilters_clear {
+      width: auto !important;
+      justify-content: flex-start;
+    }
+  }
+
   ::ng-deep {
     .p-datatable-filter-overlay,
     .p-datatable-filter-buttonbar {

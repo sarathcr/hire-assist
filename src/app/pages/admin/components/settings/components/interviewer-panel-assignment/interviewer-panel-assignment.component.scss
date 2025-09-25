@@ -1,1 +1,7 @@
-
+::ng-deep {
+  .p-datatable-table-container {
+    overflow: auto;
+    max-height: calc(100vh - 309px);
+    background-color: var(--color-white);
+  }
+}

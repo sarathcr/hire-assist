@@ -127,6 +127,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
       fGroup: this.fGroup,
       configMap: this.configMap,
     };
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(BatchDialogComponent, {
       data: data,
       header: 'Create Batch',
@@ -139,6 +140,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
     });
 
     this.ref?.onClose.subscribe((res) => {
+      document.body.style.overflow = 'auto';
       if (res) {
         this.CreateBatch(res, false);
       }
@@ -152,6 +154,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
       configMap: this.configMap,
       formData: batchData,
     };
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(BatchDialogComponent, {
       data: data,
       header: 'Update Batch',
@@ -164,6 +167,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
     });
 
     this.ref?.onClose.subscribe((res) => {
+      document.body.style.overflow = 'auto';
       if (res) {
         this.updateBatch(res);
       }
@@ -178,7 +182,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
       cancelButtonText: 'Cancel',
       acceptButtonText: 'Delete',
     };
-
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(DialogComponent, {
       data: modalData,
       header: 'Warning',
@@ -195,6 +199,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
     });
 
     this.ref.onClose.subscribe((result) => {
+      document.body.style.overflow = 'auto';
       if (result) {
         this.deleteBatchItem(id);
       }

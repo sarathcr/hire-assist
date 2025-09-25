@@ -64,12 +64,11 @@
 
     <ng-template pTemplate="header" let-columns>
       <tr>
-        <th class="table__headerCheckbox">
-          @if (hasCheckbox) {
+        @if (hasCheckbox) {
+          <th class="table__headerCheckbox">
             <p-tableHeaderCheckbox (change)="oncheckBoxClicked()" />
-          }
-        </th>
-
+          </th>
+        }
         @if (columnsData()?.hasExpanded) {
           <th></th>
         }
@@ -232,15 +231,14 @@
               : ''
         "
       >
-        <td>
-          @if (hasCheckbox) {
+        @if (hasCheckbox) {
+          <td>
             <p-tableCheckbox
               [value]="product"
               (change)="oncheckBoxClicked()"
             ></p-tableCheckbox>
-          }
-        </td>
-
+          </td>
+        }
         @if (columnsData()?.hasExpanded) {
           <td>
             <p-button

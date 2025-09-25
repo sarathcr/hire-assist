@@ -140,6 +140,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       acceptButtonText: 'Create',
       previewCallback: this.previewFile.bind(this),
     };
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(QuestionFormModalComponent, {
       data: data,
       header: 'Create Question',
@@ -155,6 +156,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     });
 
     this.ref?.onClose.subscribe((res) => {
+      document.body.style.overflow = 'auto';
       if (res) {
         console.log('res', res);
         const formValue = this.fGroup.value;
@@ -230,6 +232,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       cancelButtonText: 'Cancel',
       acceptButtonText: 'Delete',
     };
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(DialogComponent, {
       data: modalData,
       header: 'Warning',
@@ -245,6 +248,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       },
     });
     this.ref.onClose.subscribe((result) => {
+      document.body.style.overflow = 'auto';
       if (result) {
         this.isLoading = true;
         // api call to delete the user
@@ -303,6 +307,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       questionType: this.questionType,
       previewCallback: this.previewFile.bind(this),
     };
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(QuestionFormModalComponent, {
       data: data,
       header: 'Update Question',
@@ -318,6 +323,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     });
 
     this.ref?.onClose.subscribe((res) => {
+      document.body.style.overflow = 'auto';
       if (res) {
         console.log('response', res);
         const raw = this.fGroup.value;
@@ -351,7 +357,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
           file: raw.fileDto ?? null,
         };
-        console.log('payload', transformed);
+
         this.Updatequestion(transformed);
       }
     });

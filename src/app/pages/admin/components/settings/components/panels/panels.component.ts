@@ -130,6 +130,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
       fGroup: this.fGroup,
       configMap: this.configMap,
     };
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(PanelDialogComponent, {
       data: data,
       header: 'Create Panel',
@@ -143,6 +144,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
     });
 
     this.ref?.onClose.subscribe((res) => {
+      document.body.style.overflow = 'auto';
       if (res) {
         this.CreatePanel(res, false);
       }
@@ -156,6 +158,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
       configMap: this.configMap,
       formData: panelData,
     };
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(PanelDialogComponent, {
       data: data,
       header: 'Update Panel',
@@ -168,6 +171,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
     });
 
     this.ref?.onClose.subscribe((res) => {
+      document.body.style.overflow = 'auto';
       if (res) {
         this.updatePanel(res);
       }
@@ -182,7 +186,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
       cancelButtonText: 'Cancel',
       acceptButtonText: 'Delete',
     };
-
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(DialogComponent, {
       data: modalData,
       header: 'Warning',
@@ -199,6 +203,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
     });
 
     this.ref.onClose.subscribe((result) => {
+      document.body.style.overflow = 'auto';
       if (result) {
         this.deletePanelItem(id);
       }

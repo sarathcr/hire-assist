@@ -154,6 +154,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       fGroup: this.fGroup,
       configMap: this.configMap,
     };
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(AssignInterviewersDialogueComponent, {
       data: data,
       header: 'Select Interviewer and Panels',
@@ -166,6 +167,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       },
     });
     this.ref.onClose.subscribe((formData: interviewerResponse) => {
+      document.body.style.overflow = 'auto';
       if (formData?.panels && formData?.interviewers?.length) {
         this.isLoading = true;
         const payload: panelAssignment[] = [
@@ -235,6 +237,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       cancelButtonText: 'Cancel',
       acceptButtonText: 'Delete',
     };
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(DialogComponent, {
       data: modalData,
       header: 'Warning',
@@ -251,6 +254,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
     });
 
     this.ref.onClose.subscribe((result) => {
+      document.body.style.overflow = 'auto';
       if (result) {
         this.isLoading = true;
         this.deletePanelAssignmentById(id);
@@ -317,7 +321,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       configMap: this.configMap,
       formData: formData,
     };
-
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(AssignInterviewersDialogueComponent, {
       data: data,
       header: 'Update Panel',
@@ -329,6 +333,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       },
     });
     this.ref.onClose.subscribe((formData: interviewerEditResponse) => {
+      document.body.style.overflow = 'auto';
       if (formData?.panels && formData?.interviewers?.length) {
         this.isLoading = true;
         const payload: panelAssignment[] = [

@@ -8,7 +8,12 @@ export class PanelForm extends FormEntity {
 
   metadata: Metadata = {
     validatorsMap: {
-      name: [Validators.required, Validators.maxLength(150)],
+      name: [
+        Validators.required,
+        Validators.maxLength(150),
+        Validators.minLength(3),
+        Validators.pattern('^[A-Za-z].*'),
+      ],
     },
     configMap: {
       name: {

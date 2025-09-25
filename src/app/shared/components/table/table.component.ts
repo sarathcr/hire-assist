@@ -121,6 +121,7 @@ export class TableComponent<
   public hasSearch = input<boolean>(false);
   public activeFilters = new Set<string>();
   public isAnyFilterActive = false;
+  public globalPayload = new PaginatedPayload();
 
   public parentLoader = input<boolean>(false);
   private readonly internalIsLoading = signal<boolean>(false);
@@ -188,7 +189,7 @@ export class TableComponent<
     this.internalIsLoading.set(true);
     this.isAnyFilterActive = true;
     this.searchValue = event.target.value ?? '';
-    const payload: PaginatedPayload = new PaginatedPayload();
+    const payload: PaginatedPayload = { ...this.globalPayload };
     payload.filterMap['searchKey'] = this.searchValue;
     this.searchSubject.next(payload);
     if (this.searchValue === '') {
@@ -349,7 +350,7 @@ export class TableComponent<
     if (this.searchValue) {
       payload.filterMap['searchKey'] = this.searchValue;
     }
-
+    this.globalPayload = payload;
     this.isAnyFilterActive = this.activeFilters.size > 0 || !!this.searchValue;
     // Emit the combined filter/sort/page info
     this.pageChangeAndSort.emit(payload);

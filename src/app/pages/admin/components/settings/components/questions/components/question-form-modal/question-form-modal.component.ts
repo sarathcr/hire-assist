@@ -214,7 +214,7 @@ export class QuestionFormModalComponent
             }),
       },
     };
-
+    document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(FileUploadDialogComponentComponent, {
       data: data,
       header: 'Upload File',
@@ -228,6 +228,7 @@ export class QuestionFormModalComponent
     });
 
     this.ref?.onClose.subscribe((result: FileDto) => {
+      document.body.style.overflow = 'auto';
       if (!result) return;
       if (typeof this.selectedOptionIndex === 'number') {
         const optionCtrl = this.optionsArray.at(this.selectedOptionIndex);
