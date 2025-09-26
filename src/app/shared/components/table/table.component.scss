@@ -88,8 +88,12 @@
 
       &_search,
       &_clear {
-        width: 100%;
         justify-content: space-between;
+        ::ng-deep {
+          .pi {
+            font-size: unset !important;
+          }
+        }
       }
     }
     &__previewImage {
@@ -105,7 +109,9 @@
   @media screen and (max-width: 375px) {
     &__globalFilters {
       &_search input {
-        width: 150px;
+        text-overflow: ellipsis;
+        flex-grow: 1;
+        width: 100%;
       }
     }
   }

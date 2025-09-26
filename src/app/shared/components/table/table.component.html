@@ -504,13 +504,15 @@
     <ng-template pTemplate="loadingbody" let-columns>
       @for (item of [1, 2, 3, 4, 5]; track item) {
         <tr>
-          <td>
-            <p-skeleton
-              shape="circle"
-              size="2rem"
-              styleClass="mr-2"
-            ></p-skeleton>
-          </td>
+          @if (hasCheckbox) {
+            <td>
+              <p-skeleton
+                shape="circle"
+                size="2rem"
+                styleClass="mr-2"
+              ></p-skeleton>
+            </td>
+          }
 
           @if (columnsData()?.hasExpanded) {
             <td>

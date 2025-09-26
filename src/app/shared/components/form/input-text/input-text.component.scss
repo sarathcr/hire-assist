@@ -28,3 +28,8 @@ input::-ms-clear {
 .p-button-text.p-button-plain:not(:disabled):hover {
   background: transparent;
 }
+@media screen and (max-width: 374px) {
+  .input-text__validation-label {
+    font-size: 10px;
+  }
+}

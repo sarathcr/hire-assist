@@ -66,6 +66,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public isLoading = false;
 
   private ref: DynamicDialogRef | undefined;
+  private currentPayload: PaginatedPayload = new PaginatedPayload();
 
   constructor(
     public dialog: DialogService,
@@ -109,7 +110,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             detail: 'Created the User Successfully',
           });
           this.isLoading = false;
-          this.getAllUsers(new PaginatedPayload());
+          this.getAllUsers(this.currentPayload);
         };
         const error = (error: CustomErrorResponse) => {
           this.isLoading = false;
@@ -165,7 +166,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Updated the User Successfully',
           });
-          this.getAllUsers(new PaginatedPayload());
+          this.getAllUsers(this.currentPayload);
           this.isLoading = false;
         };
         const error = (error: CustomErrorResponse) => {
@@ -222,7 +223,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Deleted the User Successfully',
           });
-          this.getAllUsers(new PaginatedPayload());
+          this.getAllUsers(this.currentPayload);
           this.isLoading = false;
         };
         const error = () => {
@@ -274,7 +275,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Deleted the Selected Users Successfully',
           });
-          this.getAllUsers(new PaginatedPayload());
+          this.getAllUsers(this.currentPayload);
           this.isLoading = false;
         };
         const error = () => {
@@ -293,6 +294,13 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   public onTablePayloadChange(payload: PaginatedPayload): void {
+    this.currentPayload = {
+      ...payload,
+      pagination: {
+        ...payload.pagination,
+        pageNumber: 1,
+      },
+    };
     this.loadData(payload);
   }
 
@@ -372,7 +380,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Activated the User Successfully',
           });
-          this.getAllUsers(new PaginatedPayload());
+          this.getAllUsers(this.currentPayload);
           this.isLoading = false;
         };
         const error = () => {

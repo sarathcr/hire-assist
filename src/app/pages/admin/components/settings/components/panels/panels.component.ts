@@ -265,7 +265,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
         summary: 'Success',
         detail: `${action ? 'Duplicated' : 'Created'} Panel Successfully`,
       });
-
+      this.isLoading = false;
       this.getAllPaginatedPanels(this.currentPayload);
     };
 
@@ -283,6 +283,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
           detail: `${action ? 'Duplication' : 'Creation'} is failed'`,
         });
       }
+      this.isLoading = false;
     };
 
     this.panelService.createEntity(payload).subscribe({ next, error });
@@ -299,6 +300,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
         summary: 'Success',
         detail: 'Updated the Panel Successfully',
       });
+      this.isLoading = false;
       this.getAllPaginatedPanels(this.currentPayload);
     };
 
@@ -317,6 +319,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
           detail: 'Updation is failed',
         });
       }
+      this.isLoading = false;
     };
     this.panelService
       .updateEntity(payload.id, payload)
@@ -331,6 +334,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
         summary: 'Success',
         detail: 'Deleted the Panel Successfully',
       });
+      this.isLoading = false;
       this.getAllPaginatedPanels(this.currentPayload);
     };
 
@@ -350,6 +354,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
           detail: 'Deletion is failed',
         });
       }
+      this.isLoading = false;
     };
     this.panelService.deleteEntityById(id).subscribe({ next, error });
   }

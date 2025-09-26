@@ -24,15 +24,15 @@ export abstract class BaseFormComponent {
 
     if (errors['maxlength']) {
       const requiredLength = errors['maxlength'].requiredLength;
-      return `This field accepts a maximum of ${requiredLength} characters.`;
+      return `Must not exceed ${requiredLength} characters.`;
     }
 
     if (errors['minlength']) {
       const requiredLength = errors['minlength'].requiredLength;
-      return `This field must be at least ${requiredLength} characters long.`;
+      return `Must be at least ${requiredLength} characters.`;
     }
     if (errors['pattern']) {
-      return `This field must be start with alphabetics`;
+      return `Must begin with an alphabetics`;
     }
     return 'This field has an invalid value.';
   }
