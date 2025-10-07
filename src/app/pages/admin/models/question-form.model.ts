@@ -16,33 +16,35 @@ export class QuestionForm extends FormEntity {
   file?: File;
   metadata: Metadata = {
     validatorsMap: {
-      questionText: [Validators.required],
+      questionText: [Validators.required, Validators.minLength(10)],
       questionType: [Validators.required],
       options: [Validators.required],
       answer: [Validators.required],
-      optionAttachmentType: [Validators.required],
-      file: [Validators.required],
+      maxmark: [Validators.required, Validators.min(1), Validators.max(10)],
     },
     configMap: {
-      questionText: { id: 'questionText', labelKey: 'Question Text' },
-      maxmark: { id: 'maxmark', labelKey: 'Max Mark' },
-      questionType: { id: 'questionType', labelKey: 'Question Type' },
+      questionText: { id: 'questionText', labelKey: 'Question text' },
+      maxmark: { id: 'maxmark', labelKey: 'Max mark' },
+      questionType: { id: 'questionType', labelKey: 'Question type' },
       options: { id: 'options', labelKey: 'Options' },
       answer: { id: 'answer', labelKey: 'Answer' },
-      hasAttachments: { id: 'hasAttachments', labelKey: 'Attachments' },
+      hasAttachments: {
+        id: 'hasAttachments',
+        labelKey: 'Enable question attachments',
+      },
       active: { id: 'active', labelKey: 'Active' },
       optionHasAttachments: {
         id: 'optionHasAttachments',
-        labelKey: 'optionHasAttachments',
+        labelKey: 'Enable option attachments',
       },
       isMultipleChoice: {
         id: 'isMultipleChoice',
-        labelKey: 'isMultipleChoice',
+        labelKey: 'Allow multiple answers',
       },
-      attachmentType: { id: 'attachmentType', labelKey: 'AttachmentType' },
+      attachmentType: { id: 'attachmentType', labelKey: 'Attachment type' },
       optionAttachmentType: {
         id: 'optionAttachmentType',
-        labelKey: 'Option AttachmentType',
+        labelKey: 'Option attachment type',
       },
       file: {
         id: 'file',

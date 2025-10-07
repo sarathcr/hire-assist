@@ -164,6 +164,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
       header: 'Update Panel',
       width: '50vw',
       modal: true,
+
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -220,7 +221,6 @@ export class PanelsComponent implements OnInit, OnDestroy {
     };
 
     const error = (error: CustomErrorResponse) => {
-      console.log('ERROR', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Error',

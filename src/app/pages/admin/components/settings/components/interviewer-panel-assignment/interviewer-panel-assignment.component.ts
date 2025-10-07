@@ -35,7 +35,7 @@ import { panelAssignment } from '../../../../../coordinator/models/interview-pan
 const panelTable: TableColumnsData = {
   columns: [
     {
-      field: 'panelName',
+      field: 'name',
       displayName: 'Panel Name',
       sortedColumn: true,
       hasChip: false,

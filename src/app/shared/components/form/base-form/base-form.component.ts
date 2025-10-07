@@ -32,7 +32,26 @@ export abstract class BaseFormComponent {
       return `Must be at least ${requiredLength} characters.`;
     }
     if (errors['pattern']) {
-      return `Must begin with an alphabetics`;
+      if (this.config.labelKey === 'Title' || this.config.labelKey === 'Name') {
+        return `Must begin with an alphabetics`;
+      } else if (this.config.labelKey === 'User Name') {
+        return `please enter a valid uesr name`;
+      } else if (this.config.labelKey === 'Contact Number') {
+        return `Please enter a valid phone number`;
+      } else if (this.config.labelKey === 'Email') {
+        return `Please enter a valid email address`;
+      } else {
+        return `This field has an invalid value.`;
+      }
+    }
+    if (errors['max']) {
+      const requiredLength = errors['max'].max;
+      return `Value must not exceed  ${requiredLength}.`;
+    }
+
+    if (errors['min']) {
+      const requiredLength = errors['min'].min;
+      return `Value must be at least ${requiredLength}.`;
     }
     return 'This field has an invalid value.';
   }

@@ -27,6 +27,7 @@ export class interviewerModal extends FormEntity {
   metadata: Metadata = {
     validatorsMap: {
       interviewers: [Validators.required],
+      panels: [Validators.required],
     },
     configMap: {
       interviewers: { id: 'interviewers', labelKey: 'Interviewers' },

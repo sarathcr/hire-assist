@@ -19,13 +19,23 @@ export class UserRoleAccessDataModel extends FormEntity {
 
   metadata: Metadata = {
     validatorsMap: {
-      name: [Validators.required],
-      email: [Validators.required],
+      name: [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(150),
+        Validators.pattern('^[A-Za-z]+([ .][A-Za-z]+)*$'),
+      ],
+      email: [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(150),
+        Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/),
+      ],
       roles: [Validators.required],
       department: [Validators.required],
     },
     configMap: {
-      name: { id: 'name', labelKey: 'Name' },
+      name: { id: 'name', labelKey: 'User Name' },
       email: { id: 'email', labelKey: 'Email' },
       department: { id: 'department', labelKey: 'Department' },
       roles: { id: 'roles', labelKey: 'Roles' },

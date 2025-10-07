@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Toast } from 'primeng/toast';
@@ -223,6 +223,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Deleted the User Successfully',
           });
+          this.selectedUsers = [];
           this.getAllUsers(this.currentPayload);
           this.isLoading = false;
         };

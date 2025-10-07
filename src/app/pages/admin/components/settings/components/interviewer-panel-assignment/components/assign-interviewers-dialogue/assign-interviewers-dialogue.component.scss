@@ -1,3 +1,22 @@
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: var(--spacing-20);
+  box-shadow: 0px -15px 20px -26px #000;
+}
+.dialog__header {
+  box-shadow: 0px 15px 10px -20px #000;
+  &__warning-indicator {
+    position: relative;
+    left: 0;
+    font-size: var(--font-size-small);
+    margin-top: 2px;
+    color: #c01523;
+  }
+}
+
 :host {
   padding: var(--spacing-20);
 }

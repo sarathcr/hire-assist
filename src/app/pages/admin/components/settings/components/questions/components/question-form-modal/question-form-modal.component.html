@@ -2,11 +2,45 @@
   <form [formGroup]="data.fGroup">
     <div class="question-form_field-container">
       <app-input-textarea
-        class="assessment-form_field"
+        class="question-form_field"
         [formGroup]="data.fGroup"
         type="text"
         [config]="data.configMap['questionText']"
       ></app-input-textarea>
+      <div class="question-form__switch">
+        <app-toggle-switch
+          [formGroup]="data.fGroup"
+          [config]="data.configMap['hasAttachments']"
+        >
+        </app-toggle-switch>
+        <app-toggle-switch
+          [ngClass]="
+            isEdit ? 'question-form_field_show' : 'question-form_field_hidden'
+          "
+          [formGroup]="data.fGroup"
+          [config]="data.configMap['active']"
+        >
+        </app-toggle-switch>
+        @if (questionForm.get("hasAttachments")?.value) {
+          <p-button
+            icon="pi pi-paperclip"
+            class="mr-2"
+            [rounded]="true"
+            [outlined]="true"
+            (click)="openAttachmentModal('question')"
+          />
+
+          @if (data.fGroup.get("fileDto")?.value) {
+            <p-button
+              icon="pi pi-eye"
+              class="mr-2"
+              [rounded]="true"
+              [outlined]="true"
+              (click)="previewAttachment(null)"
+            />
+          }
+        }
+      </div>
       <div class="question-form__mark">
         <app-input-text
           class="question-form_field-col_one"
@@ -99,40 +133,23 @@
         >
         </app-input-select>
       }
-      <div class="question-form__switch">
-        <app-toggle-switch
-          [formGroup]="data.fGroup"
-          [config]="data.configMap['hasAttachments']"
-        >
-        </app-toggle-switch>
-        <app-toggle-switch
-          [ngClass]="
-            isEdit ? 'question-form_field_show' : 'question-form_field_hidden'
-          "
-          [formGroup]="data.fGroup"
-          [config]="data.configMap['active']"
-        >
-        </app-toggle-switch>
-        @if (questionForm.get("hasAttachments")?.value) {
-          <p-button
-            icon="pi pi-paperclip"
-            class="mr-2"
-            [rounded]="true"
-            [outlined]="true"
-            (click)="openAttachmentModal('question')"
-          />
-
-          @if (data.fGroup.get("fileDto")?.value) {
-            <p-button
-              icon="pi pi-eye"
-              class="mr-2"
-              [rounded]="true"
-              [outlined]="true"
-              (click)="previewAttachment(null)"
-            />
-          }
-        }
-      </div>
     </div>
+    <footer class="dialog-footer">
+      <div class="dialog-footer__btn-wrapper">
+        <app-button
+          buttonLabel="Cancel"
+          [buttonVariant]="'outlined'"
+          (btnClick)="onClose()"
+        ></app-button>
+      </div>
+
+      <div class="dialog-footer__btn-wrapper">
+        <app-button
+          buttonLabel="Submit"
+          [disabled]="!data.fGroup.valid"
+          (btnClick)="onSubmit()"
+        ></app-button>
+      </div>
+    </footer>
   </form>
 </div>

@@ -129,6 +129,9 @@ export const routes: Routes = [
           },
           { path: 'panels', component: PanelsComponent },
           {
+            resolve: {
+              collection: collectionResolver,
+            },
             path: 'interviewerPanel',
             component: InterviewerPanelAssignmentComponent,
           },

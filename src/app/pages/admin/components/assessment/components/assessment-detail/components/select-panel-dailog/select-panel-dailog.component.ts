@@ -38,7 +38,7 @@ import { InterviewService } from '../../../../services/interview.service';
 const tableColumns: TableColumnsData = {
   columns: [
     {
-      field: 'panelName',
+      field: 'name',
       displayName: 'Panel Name',
       sortedColumn: true,
       hasChip: false,
@@ -236,6 +236,7 @@ export class SelectPanelDailogComponent implements OnInit {
     this.loadData(payload);
   }
   private loadData(payload: PaginatedPayload): void {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.dataSourceService.getData(payload).subscribe((response: any) => {
       const resData = response.data.map((item: InterviewSummary) => {
         return {

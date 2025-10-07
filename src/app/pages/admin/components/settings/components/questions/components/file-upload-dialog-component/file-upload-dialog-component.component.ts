@@ -55,7 +55,7 @@ export class FileUploadDialogComponentComponent implements OnInit {
       if (!this.fGroup.contains(this.attachmentTypeFieldKey)) {
         this.fGroup.addControl(
           this.attachmentTypeFieldKey,
-          this.fb.control('', Validators.required),
+          this.fb.control(null, Validators.required),
         );
       }
 

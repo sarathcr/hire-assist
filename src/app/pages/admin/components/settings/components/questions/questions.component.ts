@@ -136,22 +136,17 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       fGroup: this.fGroup,
       configMap: this.configMap,
       isChoice: true,
-      cancelButtonText: 'Cancel',
-      acceptButtonText: 'Create',
       previewCallback: this.previewFile.bind(this),
     };
     document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(QuestionFormModalComponent, {
       data: data,
-      header: 'Create Question',
+      header: 'Create question',
       width: '50vw',
       modal: true,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
-      },
-      templates: {
-        footer: DialogFooterComponent,
       },
     });
 
@@ -302,8 +297,6 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       formData: question,
       configMap: this.configMap,
       isChoice: true,
-      cancelButtonText: 'Cancel',
-      acceptButtonText: 'Update',
       questionType: this.questionType,
       previewCallback: this.previewFile.bind(this),
     };
@@ -316,9 +309,6 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
-      },
-      templates: {
-        footer: DialogFooterComponent,
       },
     });
 
@@ -365,7 +355,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
   public previewFile(blobId: string, attachmentType: number) {
     this.dialog.open(FileComponent, {
-      header: 'Preview File',
+      header: 'Preview file',
       width: '50vw',
       modal: true,
       closable: false,

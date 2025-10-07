@@ -41,6 +41,7 @@ import {
 } from '../../../../../../models/question.model';
 import { QuestionService } from '../../../../../../services/question.service';
 import { FileUploadDialogComponentComponent } from '../file-upload-dialog-component/file-upload-dialog-component.component';
+import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-question-form-modal',
@@ -55,6 +56,7 @@ import { FileUploadDialogComponentComponent } from '../file-upload-dialog-compon
     FileUploadModule,
     FormsModule,
     InputMultiselectComponent,
+    ButtonComponent,
   ],
   templateUrl: './question-form-modal.component.html',
   styleUrl: './question-form-modal.component.scss',
@@ -104,11 +106,13 @@ export class QuestionFormModalComponent
       this.questionForm = this.data.fGroup;
       const options = this.optionsArray;
       if (options.length === 0) {
-        options.push(this.fb.group({ options: [''] }));
+        options.push(this.fb.group({ options: [] }));
+        options.push(this.fb.group({ options: [] }));
       }
       if (!this.isEdit) {
         options.clear();
-        options.push(this.fb.group({ options: [''] }));
+        options.push(this.fb.group({ options: [] }));
+        options.push(this.fb.group({ options: [] }));
       }
     }
     this.subscribeToOptionArray();
@@ -151,6 +155,9 @@ export class QuestionFormModalComponent
   }
 
   override ngOnDestroy(): void {
+    if (this.ref) {
+      this.ref.close();
+    }
     this.data.fGroup.reset();
   }
 
@@ -184,12 +191,28 @@ export class QuestionFormModalComponent
         attachmentType: [''],
       }),
     });
+    if (this.optionsArray.length >= 7) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Validation',
+        detail: 'Allowed option count was exceeded.',
+      });
+      return;
+    }
     this.optionsArray.push(optionGroup);
     this.cdr.detectChanges();
   }
 
   public removeOption(index: number): void {
     const optionsArray = this.questionForm.get('options') as FormArray;
+    if (this.optionsArray.length <= 2) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Validation',
+        detail: 'At least 2 options are required.',
+      });
+      return;
+    }
     optionsArray.removeAt(index);
   }
 
@@ -197,7 +220,7 @@ export class QuestionFormModalComponent
     this.selectedOptionIndex = index;
     const isQuestion = index === 'question';
     const attachmentForm = this.fb.group({
-      optionAttachmentType: ['', Validators.required],
+      optionAttachmentType: [null, Validators.required],
       file: [null, Validators.required],
     });
 
@@ -217,7 +240,7 @@ export class QuestionFormModalComponent
     document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(FileUploadDialogComponentComponent, {
       data: data,
-      header: 'Upload File',
+      header: 'Upload file',
       width: '50vw',
       modal: true,
       styleClass: 'fileUpload__dialog',

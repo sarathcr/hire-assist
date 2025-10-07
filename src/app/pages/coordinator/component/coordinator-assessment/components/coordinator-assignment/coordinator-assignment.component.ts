@@ -64,7 +64,7 @@ export const PANEL_TABLE = 'PANEL_TABLE';
 const panelTable: TableColumnsData = {
   columns: [
     {
-      field: 'panelName',
+      field: 'name',
       displayName: 'Panel Name',
       sortedColumn: true,
       hasChip: false,

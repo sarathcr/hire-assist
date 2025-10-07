@@ -74,12 +74,12 @@ export class AssignInterviewersDialogueComponent implements OnInit {
       const interviewers = this.data.formData.interviewers;
       this.fGroup.patchValue({
         interviewers: interviewers || [],
-        panels: panelId,
+        panels: panelId ?? null,
       });
     } else {
       this.fGroup.patchValue({
         interviewers: [],
-        panels: [],
+        panels: null,
       });
     }
   }

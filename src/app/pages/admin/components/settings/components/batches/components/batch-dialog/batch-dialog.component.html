@@ -20,17 +20,21 @@
       [config]="data.configMap['isActive']"
     >
     </app-toggle-switch>
-    <div class="batch-form__button">
-      <app-button
-        [buttonLabel]="'Cancel'"
-        [buttonVariant]="'outlined'"
-        (btnClick)="onClose()"
-      ></app-button>
-      <app-button
-        [buttonLabel]="'Submit'"
-        [disabled]="!data.fGroup.valid"
-        (btnClick)="onSubmit()"
-      ></app-button>
-    </div>
+    <footer class="dialog-footer">
+      <div class="dialog-footer__btn-wrapper">
+        <app-button
+          buttonLabel="Cancel"
+          [buttonVariant]="'outlined'"
+          (btnClick)="onClose()"
+        ></app-button>
+      </div>
+      <div class="dialog-footer__btn-wrapper">
+        <app-button
+          buttonLabel="Submit"
+          [disabled]="!data.fGroup.valid"
+          (btnClick)="onSubmit()"
+        ></app-button>
+      </div>
+    </footer>
   </form>
 </div>
