@@ -125,6 +125,7 @@ export class TableComponent<
 
   public parentLoader = input<boolean>(false);
   private readonly internalIsLoading = signal<boolean>(false);
+  private selectedMap = new Map<string, any>();
   public isLoading = computed(
     () => this.parentLoader() || this.internalIsLoading(),
   );
@@ -161,9 +162,12 @@ export class TableComponent<
 
         const ids = this.alreadySelected();
         const data = currentTableData.data || [];
-        this.selectedItems = data.filter((item) =>
-          ids.includes(item?.id?.toString()),
-        );
+        data.forEach((item) => {
+          if (ids.includes(item?.id?.toString())) {
+            this.selectedMap.set(item.id, item);
+          }
+        });
+        this.selectedItems = Array.from(this.selectedMap.values());
       }
     });
 
@@ -218,6 +222,8 @@ export class TableComponent<
   }
 
   public oncheckBoxClicked(): void {
+    this.selectedItems.forEach((item) => this.selectedMap.set(item.id, item));
+    this.selectedItems = Array.from(this.selectedMap.values());
     this.selectedIds.emit(this.selectedItems);
     if (this.selectedItems.length == 0) {
       this.messagesService.add({

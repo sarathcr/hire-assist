@@ -62,7 +62,7 @@ const tableColumns: TableColumnsData = {
 export class RolesAccessComponent implements OnInit, OnDestroy {
   public data!: any;
   public columns: TableColumnsData = tableColumns;
-  public selectedUsers: any = [];
+  public selectedUsers: string[] = [];
   public isLoading = false;
 
   private ref: DynamicDialogRef | undefined;
@@ -166,6 +166,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Updated the User Successfully',
           });
+
           this.getAllUsers(this.currentPayload);
           this.isLoading = false;
         };
@@ -223,7 +224,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Deleted the User Successfully',
           });
-          this.selectedUsers = [];
+          this.selectedUsers = this.selectedUsers.filter((id) => id !== userId);
           this.getAllUsers(this.currentPayload);
           this.isLoading = false;
         };
@@ -241,7 +242,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   public getSelectedItems(selectedUsersIds: RolesAccess[]) {
-    this.selectedUsers = selectedUsersIds.map((item: RolesAccess) => item.id);
+    this.selectedUsers = selectedUsersIds.map((item: RolesAccess) => item.id!);
   }
 
   public deleteSelectedUsers() {
@@ -276,6 +277,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Deleted the Selected Users Successfully',
           });
+          this.selectedUsers = [];
           this.getAllUsers(this.currentPayload);
           this.isLoading = false;
         };
@@ -299,18 +301,17 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       ...payload,
       pagination: {
         ...payload.pagination,
-        pageNumber: 1,
       },
     };
-    this.loadData(payload);
+    this.loadData(this.currentPayload);
   }
 
   public getAllUsers(payload: PaginatedPayload) {
     this.isLoading = true;
-    payload.filterMap = {
-      excludedRoles: ['5'],
+    const payloadData = {
+      ...payload,
+      filterMap: { excludedRoles: ['5'], ...payload.filterMap },
     };
-
     const next = (res: any) => {
       const formattedData = res.data.map((item: any) => ({
         ...item,
@@ -329,7 +330,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       this.isLoading = false;
     };
 
-    this.userService.paginationEntity('all', payload).subscribe({
+    this.userService.paginationEntity('all', payloadData).subscribe({
       next,
       error,
     });
