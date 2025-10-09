@@ -35,7 +35,7 @@ export abstract class BaseFormComponent {
       if (this.config.labelKey === 'Title' || this.config.labelKey === 'Name') {
         return `Must begin with an alphabetics`;
       } else if (this.config.labelKey === 'User Name') {
-        return `please enter a valid uesr name`;
+        return `Please enter a valid user name`;
       } else if (this.config.labelKey === 'Contact Number') {
         return `Please enter a valid phone number`;
       } else if (this.config.labelKey === 'Email') {
