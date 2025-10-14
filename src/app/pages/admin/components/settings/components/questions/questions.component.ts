@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -144,6 +144,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       header: 'Create question',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -234,6 +235,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       maximizable: false,
       width: '35vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -358,6 +360,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       header: 'Preview file',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       closable: false,
       data: { blobId, attachmentType },
     });

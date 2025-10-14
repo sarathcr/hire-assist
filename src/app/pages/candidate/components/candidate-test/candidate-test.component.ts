@@ -293,6 +293,7 @@ export class CandidateTestComponent
       header: 'Warning!',
       width: '30vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -524,6 +525,7 @@ export class CandidateTestComponent
       data: modalData,
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -563,6 +565,7 @@ export class CandidateTestComponent
       header: 'Sorry',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -614,6 +617,7 @@ export class CandidateTestComponent
         header: 'Warning',
         width: '50vw',
         modal: true,
+        focusOnShow: false,
         breakpoints: {
           '960px': '75vw',
           '640px': '90vw',

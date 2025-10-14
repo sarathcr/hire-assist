@@ -142,6 +142,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       maximizable: false,
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -257,6 +258,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       maximizable: false,
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -312,6 +314,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       maximizable: false,
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -364,6 +367,7 @@ export class ImportCandidateListStepComponent implements OnInit {
         maximizable: false,
         width: '50vw',
         modal: true,
+        focusOnShow: false,
         breakpoints: {
           '960px': '75vw',
           '640px': '90vw',
@@ -415,6 +419,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       maximizable: false,
       width: '40vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -461,6 +466,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       width: '50vw',
       closable: false,
       modal: false,
+      focusOnShow: false,
       styleClass: 'manage-duplicate-records-dialog',
       breakpoints: {
         '960px': '75vw',

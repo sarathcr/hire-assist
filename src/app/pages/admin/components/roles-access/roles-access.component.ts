@@ -94,6 +94,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       width: '40vw',
       modal: true,
       styleClass: 'user__dialog',
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -150,6 +151,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       maximizable: false,
       width: '40vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -206,6 +208,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       maximizable: false,
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -258,6 +261,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       maximizable: false,
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -365,6 +369,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       maximizable: false,
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',

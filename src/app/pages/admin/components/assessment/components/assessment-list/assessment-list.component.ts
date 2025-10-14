@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { AsyncPipe, NgClass } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
+import { Observable } from 'rxjs';
 import { SkeletonComponent } from '../../../../../../shared/components/assessment-card/assessment-card-skeleton';
 import { AssessmentCardComponent } from '../../../../../../shared/components/assessment-card/assessment-card.component';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
@@ -26,8 +28,6 @@ import { AssessmentForm } from '../../../../models/assessment-form.model';
 import { Assessment } from '../../../../models/assessment.model';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { CreateUpdateAssessmentModalComponent } from '../create-update-assessment-modal/create-update-assessment-modal.component';
-import { AsyncPipe, NgClass } from '@angular/common';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-assessment-list',
@@ -133,6 +133,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       header: 'Create Assessment',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -160,6 +161,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       header: 'Update Assessment',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -188,6 +190,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       header: 'Duplicate Assessment',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -209,6 +212,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       header: 'Warning',
       width: '35vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',

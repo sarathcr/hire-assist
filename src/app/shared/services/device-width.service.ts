@@ -1,9 +1,9 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Observable, of } from 'rxjs';
-import { DialogComponent } from '../components/dialog/dialog.component';
 import { DialogFooterComponent } from '../components/dialog-footer/dialog-footer.component';
+import { DialogComponent } from '../components/dialog/dialog.component';
 import { DialogData } from '../models/dialog.models';
 
 @Injectable({
@@ -29,6 +29,7 @@ export class DeviceWarningService {
           header: 'Sorry',
           width: '50vw',
           modal: true,
+          focusOnShow: false,
           breakpoints: {
             '960px': '75vw',
             '640px': '90vw',

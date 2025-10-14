@@ -171,6 +171,7 @@ export class SelectQuesionsetStepComponent
       header: 'Update Question Set',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',

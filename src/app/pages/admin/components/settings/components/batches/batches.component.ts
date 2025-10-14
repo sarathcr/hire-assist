@@ -133,6 +133,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
       header: 'Create Batch',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -160,6 +161,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
       header: 'Update Batch',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -189,6 +191,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
       maximizable: false,
       width: '25vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',

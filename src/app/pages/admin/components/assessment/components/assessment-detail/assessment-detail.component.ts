@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NgClass } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -236,6 +236,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         maximizable: false,
         width: '25vw',
         modal: true,
+        focusOnShow: false,
         breakpoints: {
           '960px': '75vw',
           '640px': '90vw',
@@ -286,6 +287,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         maximizable: false,
         width: '25vw',
         modal: true,
+        focusOnShow: false,
         breakpoints: {
           '960px': '75vw',
           '640px': '90vw',
@@ -375,6 +377,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       maximizable: false,
       width: '40vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -522,6 +525,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       maximizable: false,
       width: '25vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -650,6 +654,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       maximizable: false,
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -735,6 +740,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       height: '40vh',
       width: '40vw',
       modal: true,
+      focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',

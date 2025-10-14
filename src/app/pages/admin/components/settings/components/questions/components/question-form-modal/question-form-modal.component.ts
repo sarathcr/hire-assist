@@ -18,6 +18,7 @@ import {
 } from 'primeng/dynamicdialog';
 import { FileSelectEvent, FileUploadModule } from 'primeng/fileupload';
 import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
+import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
 import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
 import { InputTextComponent } from '../../../../../../../../shared/components/form/input-text/input-text.component';
@@ -41,7 +42,6 @@ import {
 } from '../../../../../../models/question.model';
 import { QuestionService } from '../../../../../../services/question.service';
 import { FileUploadDialogComponentComponent } from '../file-upload-dialog-component/file-upload-dialog-component.component';
-import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-question-form-modal',
@@ -243,6 +243,7 @@ export class QuestionFormModalComponent
       header: 'Upload file',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       styleClass: 'fileUpload__dialog',
       breakpoints: {
         '960px': '75vw',
