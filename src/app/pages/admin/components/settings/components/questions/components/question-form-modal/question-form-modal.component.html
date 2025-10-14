@@ -24,7 +24,7 @@
         @if (questionForm.get("hasAttachments")?.value) {
           <p-button
             icon="pi pi-paperclip"
-            class="mr-2"
+            class="small-icon-mr-2"
             [rounded]="true"
             [outlined]="true"
             (click)="openAttachmentModal('question')"
@@ -100,15 +100,15 @@
                 />
               }
             }
-            @if (i === optionsArray.controls.length - 1) {
-              <p-button
-                class="question-form__options__btn"
-                icon="pi pi-plus"
-                (click)="addOption()"
-              />
-            }
           </div>
         }
+      </div>
+      <div class="question-form__switch">
+        <app-button
+          buttonLabel="Add New Option"
+          [buttonVariant]="'outlined'"
+          (btnClick)="addOption()"
+        ></app-button>
       </div>
 
       <div class="question-form__switch">

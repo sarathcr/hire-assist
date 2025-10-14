@@ -19,10 +19,8 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     const userRole = this.storeService?.getUserRole();
     if (userRole) {
-      if (userRole.includes('admin')) {
+      if (userRole.includes('admin') || userRole.includes('superadmin')) {
         this.links = this.getAdminLinks(userRole);
-      } else if (userRole.includes('superadmin')) {
-        this.links = this.getSuperAdminLinks(userRole);
       } else if (userRole.includes('candidate')) {
         this.links = this.getCandidateLinks();
       } else if (userRole.includes('interviewer')) {
@@ -98,83 +96,6 @@ export class DashboardComponent implements OnInit {
         routerLinkActiveOptions: { exact: false },
       });
     }
-    if (userRole.includes('coordinator')) {
-      links.push({
-        label: 'Coordinator',
-        icon: 'pi pi-sitemap',
-        routerLink: ['/admin/coordinator'],
-        routerLinkActiveOptions: { exact: false },
-      });
-    }
-    if (userRole.includes('frontdesk')) {
-      links.push({
-        label: 'Frontdesk',
-        icon: 'pi pi-home',
-        routerLink: ['/frontdesk'],
-        routerLinkActiveOptions: { exact: true },
-      });
-    }
-    return links;
-  }
-
-  private getSuperAdminLinks(userRole: string[]): MenuItem[] {
-    const links: MenuItem[] = [
-      {
-        label: 'Dashboard',
-        icon: 'pi pi-home',
-        routerLink: ['/admin/dashboard'],
-        routerLinkActiveOptions: { exact: true },
-      },
-      {
-        label: 'Recruitments',
-        icon: 'pi pi-file-edit',
-        routerLink: ['/admin/recruitments'],
-        routerLinkActiveOptions: { exact: false },
-      },
-      {
-        label: 'Interviews',
-        icon: 'pi pi-calendar',
-        routerLink: ['/admin/interviews'],
-        routerLinkActiveOptions: { exact: false },
-      },
-      {
-        label: 'Roles & Access',
-        icon: 'pi pi-users',
-        routerLink: ['/admin/roles-access'],
-        routerLinkActiveOptions: { exact: true },
-      },
-      {
-        label: 'Settings',
-        icon: 'pi pi-cog',
-        hasRouterLink: false,
-        items: [
-          {
-            label: 'Questions',
-            icon: 'pi pi-file-check',
-            routerLink: ['/admin/settings/questions'],
-            routerLinkActiveOptions: { exact: true },
-          },
-          {
-            label: 'Batches',
-            icon: 'pi pi-file-check',
-            routerLink: ['/admin/settings/batches'],
-            routerLinkActiveOptions: { exact: true },
-          },
-          {
-            label: 'Panels',
-            icon: 'pi pi-clone',
-            routerLink: ['/admin/settings/panels'],
-            routerLinkActiveOptions: { exact: true },
-          },
-          {
-            label: 'Panel Assignment',
-            icon: 'pi pi-user-plus',
-            routerLink: ['/admin/settings/interviewerPanel'],
-            routerLinkActiveOptions: { exact: true },
-          },
-        ],
-      },
-    ];
     if (userRole.includes('coordinator')) {
       links.push({
         label: 'Coordinator',

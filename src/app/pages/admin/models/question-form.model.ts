@@ -23,28 +23,28 @@ export class QuestionForm extends FormEntity {
       maxmark: [Validators.required, Validators.min(1), Validators.max(10)],
     },
     configMap: {
-      questionText: { id: 'questionText', labelKey: 'Question text' },
-      maxmark: { id: 'maxmark', labelKey: 'Max mark' },
-      questionType: { id: 'questionType', labelKey: 'Question type' },
+      questionText: { id: 'questionText', labelKey: 'Question Text' },
+      maxmark: { id: 'maxmark', labelKey: 'Max Mark' },
+      questionType: { id: 'questionType', labelKey: 'Question Type' },
       options: { id: 'options', labelKey: 'Options' },
       answer: { id: 'answer', labelKey: 'Answer' },
       hasAttachments: {
         id: 'hasAttachments',
-        labelKey: 'Enable question attachments',
+        labelKey: 'Enable Question Attachments',
       },
       active: { id: 'active', labelKey: 'Active' },
       optionHasAttachments: {
         id: 'optionHasAttachments',
-        labelKey: 'Enable option attachments',
+        labelKey: 'Enable Option Attachments',
       },
       isMultipleChoice: {
         id: 'isMultipleChoice',
-        labelKey: 'Allow multiple answers',
+        labelKey: 'Allow Multiple Answers',
       },
-      attachmentType: { id: 'attachmentType', labelKey: 'Attachment type' },
+      attachmentType: { id: 'attachmentType', labelKey: 'Attachment Type' },
       optionAttachmentType: {
         id: 'optionAttachmentType',
-        labelKey: 'Option attachment type',
+        labelKey: 'Option Attachment Type',
       },
       file: {
         id: 'file',

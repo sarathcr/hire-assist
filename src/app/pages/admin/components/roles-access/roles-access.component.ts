@@ -299,6 +299,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public onTablePayloadChange(payload: PaginatedPayload): void {
     this.currentPayload = {
       ...payload,
+      filterMap: { excludedRoles: ['5'], ...payload.filterMap },
       pagination: {
         ...payload.pagination,
       },
