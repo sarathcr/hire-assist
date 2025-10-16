@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -22,15 +22,14 @@ import {
   TableColumnsData,
 } from '../../../../../../shared/models/table.models';
 import { ConfigMap } from '../../../../../../shared/utilities/form.utility';
+import { panelAssignment } from '../../../../../coordinator/models/interview-panels.model';
 import { CoordinatorPanelBridgeService } from '../../../../../coordinator/services/coordinator-panel-bridge.service';
 import { PanelSummary } from '../../../../models/assessment-schedule.model';
 import {
   interviewerFormGroup,
   interviewerInterface,
-  InterviewerPanelAssignment,
 } from '../../../../models/interviewers-model';
 import { AssignInterviewersDialogueComponent } from './components/assign-interviewers-dialogue/assign-interviewers-dialogue.component';
-import { panelAssignment } from '../../../../../coordinator/models/interview-panels.model';
 
 const panelTable: TableColumnsData = {
   columns: [
@@ -160,6 +159,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       header: 'Select Interviewer and Panels',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
       styleClass: 'interviewerPanels__dialog',
       breakpoints: {
         '960px': '75vw',
@@ -197,6 +197,12 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
                   summary: 'Error',
                   detail: 'Panel is already exists but not actived yet!',
                 });
+              } else if (businerssErrorCode === 3105) {
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Error',
+                  detail: `${error.error.errorValue}`,
+                });
               } else {
                 this.messageService.add({
                   severity: 'error',
@@ -209,25 +215,6 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
           });
       }
     });
-  }
-
-  public getByIdPanel(data: number | any) {
-    this.coordinatorPanelBridgeService
-      .getinterviewPanlesAssignment(data.id)
-      .subscribe({
-        next: (res: InterviewerPanelAssignment[]) => {
-          if (res) {
-            this.editPanel(res);
-          }
-        },
-        error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Error in getting data',
-          });
-        },
-      });
   }
 
   public deletePanelAssignment(id: number) {
@@ -243,6 +230,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       header: 'Warning',
       maximizable: false,
       width: '25vw',
+      focusOnShow: false,
       modal: true,
       breakpoints: {
         '960px': '75vw',
@@ -294,7 +282,6 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       });
       this.isLoading = false;
       this.getPaginatedPanelData(this.currentPayload);
-      console.log('delete panel called');
     };
 
     const error = () => {
@@ -309,11 +296,12 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       .deletePanelAssignments(id)
       .subscribe({ next, error });
   }
-  private editPanel(panelData: InterviewerPanelAssignment[]) {
+
+  public editPanel(panelData: interviewerInterface): void {
     const formData: interviewerInterface = {
-      id: panelData[0].id,
-      panelId: panelData[0].panelId,
-      interviewers: panelData.map((p) => p.interviewerId),
+      id: panelData.id,
+      panelId: panelData.id,
+      interviewers: panelData.interviewers?.map((i: any) => i.id) || [],
     };
 
     const data = {
@@ -321,64 +309,80 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       configMap: this.configMap,
       formData: formData,
     };
+
     document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(AssignInterviewersDialogueComponent, {
-      data: data,
-      header: 'Update Panel',
+      data,
+      header: 'Update Panel Assignment',
       width: '50vw',
       modal: true,
+      focusOnShow: false,
+      styleClass: 'interviewerPanels__dialog',
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
       },
     });
-    this.ref.onClose.subscribe((formData: interviewerEditResponse) => {
+
+    this.ref.onClose.subscribe((updatedData: interviewerEditResponse) => {
       document.body.style.overflow = 'auto';
-      if (formData?.panels && formData?.interviewers?.length) {
-        this.isLoading = true;
-        const payload: panelAssignment[] = [
-          {
-            panelId: formData.panels,
-            interviewers: formData.interviewers,
-          },
-        ];
-        this.coordinatorPanelBridgeService
-          .addInterviewerPanels(payload)
-          .subscribe({
-            next: () => {
-              this.isLoading = false;
-              this.getPaginatedPanelData(this.currentPayload);
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Updated interviewers into panels',
-              });
-            },
-            error: (error: CustomErrorResponse) => {
-              const businerssErrorCode = error.error.businessError;
-              if (businerssErrorCode === 4004) {
-                this.messageService.add({
-                  severity: 'error',
-                  summary: 'Error',
-                  detail: 'Panel is already exists but not actived yet!',
-                });
-              } else {
-                this.messageService.add({
-                  severity: 'error',
-                  summary: 'Error',
-                  detail: 'interviewers are not updated to Panels',
-                });
-              }
-              this.isLoading = false;
-            },
-          });
+      if (updatedData?.panels && updatedData?.interviewers?.length) {
+        this.updatePanelAssignment(updatedData);
       } else {
         this.messageService.add({
           severity: 'info',
           summary: 'Info',
-          detail: 'interviewers are not updated to Panels',
+          detail: 'No updates made to panel interviewers',
         });
       }
     });
+  }
+
+  private updatePanelAssignment(payload: interviewerEditResponse): void {
+    this.isLoading = true;
+
+    const requestBody: panelAssignment[] = [
+      {
+        panelId: payload.panels,
+        interviewers: payload.interviewers,
+      },
+    ];
+
+    this.coordinatorPanelBridgeService
+      .addInterviewerPanels(requestBody)
+      .subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.getPaginatedPanelData(this.currentPayload);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Updated interviewers successfully',
+          });
+        },
+        error: (error: CustomErrorResponse) => {
+          this.isLoading = false;
+          const businessErrorCode = error.error.businessError;
+          if (businessErrorCode === 4004) {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Panel exists but not activated yet!',
+            });
+          } else if (businessErrorCode === 3105) {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: `${error.error.errorValue}`,
+            });
+          } else {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to update panel interviewers',
+            });
+          }
+        },
+      });
   }
 }

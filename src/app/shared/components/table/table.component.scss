@@ -1,6 +1,54 @@
 .table {
   font-size: var(--font-size-base);
+  :host ::ng-deep .p-paginator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  &.table-loading {
+    ::ng-deep {
+      .p-paginator-rpp-options {
+        display: none;
+        width: 0 !important;
+        pointer-events: none;
+      }
 
+      .p-paginator-content-start {
+        display: block !important;
+      }
+
+      .p-paginator {
+        display: block;
+        width: 100%;
+      }
+
+      .p-paginator-pages {
+        display: none;
+      }
+
+      .p-paginator-first,
+      .p-paginator-prev,
+      .p-paginator-next,
+      .p-paginator-last,
+      .p-paginator-rpp-dropdown {
+        display: none;
+      }
+    }
+  }
+
+  @media (max-width: 440px) {
+    ::ng-deep {
+      .p-paginator p-component {
+        .p-button {
+          min-width: 2rem;
+          height: 2rem;
+        }
+        .p-paginator-content-start {
+          display: none !important;
+        }
+      }
+    }
+  }
   ::ng-deep {
     .p-badge,
     .p-tag,
@@ -8,7 +56,6 @@
     .p-inputtext {
       font-size: var(--font-size-small);
     }
-
     .p-toolbar-start {
       display: flex;
       gap: 1rem;
@@ -19,6 +66,24 @@
     .p-datatable-thead > tr > th.p-datatable-column-sorted {
       background-color: rgb(255, 255, 255);
       color: rgb(0, 0, 0);
+    }
+    p-paginator {
+      display: flex;
+      width: 100%;
+      justify-content: center;
+      background: var(--color-white);
+    }
+
+    .p-paginator-content-start {
+      display: none;
+    }
+    .p-paginator-page,
+    .p-paginator-next,
+    .p-paginator-last,
+    .p-paginator-first,
+    .p-paginator-prev {
+      min-width: 2rem;
+      height: 2rem !important;
     }
   }
   &_skeleton {
@@ -36,7 +101,6 @@
       gap: 10px;
       list-style-type: lower-alpha;
     }
-
     &__optionListForImage {
       display: flex;
       flex-direction: column;
@@ -56,6 +120,18 @@
       background-color: rgb(255, 182, 182) !important;
     }
   }
+  &__custom-paginator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    background: var(--p-paginator-background);
+    color: var(--p-paginator-color);
+    padding: var(--p-paginator-padding);
+    border-radius: var(--p-paginator-border-radius);
+    gap: var(--p-paginator-gap);
+  }
+
   &__globalFilters {
     display: flex;
     justify-content: space-between;
@@ -81,11 +157,15 @@
     flex-direction: row;
   }
   @media screen and (max-width: 768px) {
+    ::ng-deep {
+      .hideOnMobile {
+        display: none;
+      }
+    }
     &__globalFilters {
       flex-direction: column;
       align-items: flex-start;
       gap: 0.5rem;
-
       &_search,
       &_clear {
         justify-content: space-between;
@@ -115,27 +195,31 @@
       }
     }
   }
-
   @media screen and (min-width: 450px) {
     .table__globalFilters {
       flex-direction: row !important;
       align-items: center !important;
       flex-wrap: nowrap !important;
     }
-
     .table__globalFilters_filters {
       flex-direction: row !important;
       align-items: center;
       gap: 1rem;
     }
-
     .table__globalFilters_search,
     .table__globalFilters_clear {
       width: auto !important;
       justify-content: flex-start;
     }
   }
-
+  :host ::ng-deep .p-paginator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  :host ::ng-deep .p-skeleton {
+    border-radius: 8px;
+  }
   ::ng-deep {
     .p-datatable-filter-overlay,
     .p-datatable-filter-buttonbar {

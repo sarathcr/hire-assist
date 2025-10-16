@@ -1,4 +1,4 @@
-<div class="table">
+<div class="table" [class.table-loading]="isLoading()">
   <p-table
     #dt
     [value]="displayData() || []"
@@ -22,6 +22,7 @@
     [globalFilterFields]=""
     [loading]="isLoading()"
     [showLoader]="false"
+    (selectionChange)="onSelectionChange($event)"
   >
     <ng-template #caption>
       <div class="table__globalFilters">
@@ -66,7 +67,7 @@
       <tr>
         @if (hasCheckbox) {
           <th class="table__headerCheckbox">
-            <p-tableHeaderCheckbox (change)="oncheckBoxClicked()" />
+            <p-tableHeaderCheckbox />
           </th>
         }
         @if (columnsData()?.hasExpanded) {
@@ -98,6 +99,7 @@
                   type="text"
                   field="{{ headerColumn.field }}"
                   display="menu"
+                  hideOnClear="true"
                 >
                   <ng-template pTemplate="filtericon">
                     @if (activeFilters.has(headerColumn.field)) {
@@ -112,6 +114,7 @@
                 <p-columnFilter
                   field="{{ headerColumn.field }}"
                   display="menu"
+                  hideOnClear="true"
                   [matchMode]="
                     headerColumn.hasMultiStatus ? undefined : 'equals'
                   "
@@ -146,6 +149,7 @@
                   type="numeric"
                   field="{{ headerColumn.field }}"
                   display="menu"
+                  hideOnClear="true"
                 >
                   <ng-template pTemplate="filtericon">
                     @if (activeFilters.has(headerColumn.field)) {
@@ -160,6 +164,7 @@
                 <p-columnFilter
                   [field]="headerColumn.field"
                   display="menu"
+                  hideOnClear="true"
                   [matchMode]="
                     headerColumn.hasMultiStatus ? undefined : 'equals'
                   "
@@ -199,6 +204,7 @@
                   field="date"
                   display="menu"
                   class="ml-auto"
+                  hideOnClear="true"
                   ><ng-template pTemplate="filtericon">
                     @if (activeFilters.has(headerColumn.field)) {
                       <i class="pi pi-filter-fill"></i>
@@ -233,10 +239,7 @@
       >
         @if (hasCheckbox) {
           <td>
-            <p-tableCheckbox
-              [value]="product"
-              (change)="oncheckBoxClicked()"
-            ></p-tableCheckbox>
+            <p-tableCheckbox [value]="product"></p-tableCheckbox>
           </td>
         }
         @if (columnsData()?.hasExpanded) {
@@ -532,7 +535,30 @@
         </tr>
       }
     </ng-template>
-
+    <ng-template pTemplate="paginatorleft">
+      <div class="table__custom-paginator">
+        @if (isLoading()) {
+          <!-- Skeleton Loader -->
+          <div class="flex justify-center items-center gap-1 p-2">
+            <p-skeleton
+              class="hideOnMobile"
+              width="2rem"
+              height="2rem"
+            ></p-skeleton>
+            <p-skeleton width="2rem" height="2rem"></p-skeleton>
+            <p-skeleton width="2rem" height="2rem" shape="circle"></p-skeleton>
+            <p-skeleton width="2rem" height="2rem" shape="circle"></p-skeleton>
+            <p-skeleton width="2rem" height="2rem"></p-skeleton>
+            <p-skeleton
+              class="hideOnMobile"
+              width="2rem"
+              height="2rem"
+            ></p-skeleton>
+          </div>
+        }
+      </div>
+    </ng-template>
+    <ng-template pTemplate="pagina3torright"></ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
         <td [attr.colspan]="(columnsData()?.columns?.length || 0) + 2">

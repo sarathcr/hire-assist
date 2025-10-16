@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input, OnInit, ViewChild } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
@@ -93,6 +93,8 @@ const tableColumns: TableColumnsData = {
   providers: [TableDataSourceService],
 })
 export class ImportCandidateListStepComponent implements OnInit {
+  @ViewChild(TableComponent) tableComponent!: TableComponent<any>;
+
   public url = `${ASSESSMENT_URL}/candidates/all`;
   public data!: PaginatedData<CandidateModel>;
   public columns: TableColumnsData = tableColumns;
@@ -333,6 +335,8 @@ export class ImportCandidateListStepComponent implements OnInit {
             summary: 'Success',
             detail: 'Deleted the Selected Candidates Successfully',
           });
+          // Clear all selections in the table component
+          this.tableComponent?.clearAllSelections();
           this.getAllCandidates(new PaginatedPayload());
           this.checkIsAllCandidatesAssigned();
         };

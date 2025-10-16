@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   effect,
+  HostBinding,
   Input,
   input,
   output,
@@ -112,7 +113,11 @@ export class TableComponent<
   public hasView = input<boolean>(false);
   public hasRowEdit = input<boolean>(true);
   public alreadySelected = input<string[]>([]);
+  // Allows parent to clear selection for specific ids after API success
+  public clearSelectionIds = input<string[] | null>(null);
   public selectedItems: { id: string }[] = [];
+  // Persist selection across pages using ids
+  private readonly persistedSelectedIds = new Set<string>();
   public expandedRows: Record<string, boolean> = {};
   public matchModeOptions: SelectItem[] = matchOptions;
   public activeStatusOptions: SelectItem[] = uniquesActives;
@@ -158,6 +163,18 @@ export class TableComponent<
             this.table.first = newFirstIndex;
           }
         }
+
+        // Resync current page visual selection from persisted ids
+        const currentPageData = currentTableData.data || [];
+        this.selectedItems = currentPageData.filter((item) =>
+          this.persistedSelectedIds.has(item.id),
+        );
+
+        // Emit persisted selection so parent controls reflect cross-page selection
+        const selectedAcrossPagesOnData = Array.from(
+          this.persistedSelectedIds,
+        ).map((id) => ({ id }));
+        this.selectedIds.emit(selectedAcrossPagesOnData);
       }
     });
 
@@ -167,6 +184,26 @@ export class TableComponent<
         this.pageChangeAndSort.emit(payload);
       });
     this.subscriptionList.push(sub);
+
+    // Effect to clear selection for provided ids from parent (e.g., after delete)
+    effect(() => {
+      const idsToClear = this.clearSelectionIds();
+      if (idsToClear && idsToClear.length > 0) {
+        for (const id of idsToClear) {
+          this.persistedSelectedIds.delete(id);
+        }
+        // Recompute page selection
+        const pageData = this.tableData()?.data || [];
+        this.selectedItems = pageData.filter((item) =>
+          this.persistedSelectedIds.has(item.id),
+        );
+        // Emit updated cross-page selection
+        const selectedAcrossPages = Array.from(this.persistedSelectedIds).map(
+          (id) => ({ id }),
+        );
+        this.selectedIds.emit(selectedAcrossPages);
+      }
+    });
   }
 
   public displayData = computed(() => {
@@ -179,19 +216,34 @@ export class TableComponent<
   public onEdit(data: any): void {
     this.edit.emit(data);
   }
+
   public onSearch(event: any): void {
     this.internalIsLoading.set(true);
-    this.isAnyFilterActive = true;
     this.searchValue = event.target.value ?? '';
     const payload: PaginatedPayload = { ...this.globalPayload };
-    payload.filterMap['searchKey'] = this.searchValue;
-    this.searchSubject.next(payload);
-    if (this.searchValue === '') {
-      this.isAnyFilterActive = false;
+
+    if (this.searchValue) {
+      this.isAnyFilterActive = true;
+      payload.filterMap['searchKey'] = this.searchValue;
+    } else {
+      delete payload.filterMap['searchKey'];
+
+      this.isAnyFilterActive = this.activeFilters.size > 0;
     }
+
+    this.searchSubject.next(payload);
   }
 
   public onDelete(id: string): void {
+    // Optimistically prune selection for this id so header buttons update
+    this.persistedSelectedIds.delete(id);
+    this.selectedItems = (this.tableData()?.data || []).filter((item) =>
+      this.persistedSelectedIds.has(item.id),
+    );
+    const selectedAcrossPages = Array.from(this.persistedSelectedIds).map(
+      (sid) => ({ id: sid }),
+    );
+    this.selectedIds.emit(selectedAcrossPages);
     this.delete.emit(id);
   }
 
@@ -211,15 +263,39 @@ export class TableComponent<
     this.import.emit(file);
   }
 
-  public oncheckBoxClicked(): void {
-    this.selectedIds.emit(this.selectedItems);
-    if (this.selectedItems.length == 0) {
-      this.messagesService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'No selected items.',
-      });
+  // Keep persistedSelectedIds in sync with UI selection changes (row or header)
+  public onSelectionChange(newSelection: { id: string }[]): void {
+    const currentPageIds = (this.tableData()?.data || []).map((d) => d.id);
+
+    // Remove any current page ids first (we will re-add based on newSelection)
+    for (const id of currentPageIds) {
+      this.persistedSelectedIds.delete(id);
     }
+
+    // Add selected ids from current page
+    for (const item of newSelection || []) {
+      if (item?.id) {
+        this.persistedSelectedIds.add(item.id);
+      }
+    }
+
+    // Update selectedItems to reflect persisted set on current page
+    this.selectedItems = (this.tableData()?.data || []).filter((item) =>
+      this.persistedSelectedIds.has(item.id),
+    );
+
+    // Emit full selection ids (persisted across pages)
+    const selectedAcrossPages = Array.from(this.persistedSelectedIds).map(
+      (id) => ({ id }),
+    );
+    this.selectedIds.emit(selectedAcrossPages);
+  }
+
+  // Public helper for parent via ViewChild to clear all selections (e.g., after bulk delete)
+  public clearAllSelections(): void {
+    this.persistedSelectedIds.clear();
+    this.selectedItems = [];
+    this.selectedIds.emit([]);
   }
 
   public onRowExpand(id: string): void {
@@ -282,7 +358,10 @@ export class TableComponent<
     const payload: PaginatedPayload = new PaginatedPayload();
     this.pageChangeAndSort.emit(payload);
   }
-
+  // Inside your component's @Component decorator or class body
+  @HostBinding('class.table-loading') get loadingClass() {
+    return this.isLoading(); // Assuming isLoading() returns a boolean or signal value
+  }
   public onLazyLoad(event: any): void {
     if (this.isFirstLazyLoad) {
       this.isFirstLazyLoad = false;

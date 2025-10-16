@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Toast } from 'primeng/toast';
@@ -60,6 +60,8 @@ const tableColumns: TableColumnsData = {
   styleUrl: './roles-access.component.scss',
 })
 export class RolesAccessComponent implements OnInit, OnDestroy {
+  @ViewChild(TableComponent) tableComponent!: TableComponent<any>;
+
   public data!: any;
   public columns: TableColumnsData = tableColumns;
   public selectedUsers: string[] = [];
@@ -282,6 +284,8 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             detail: 'Deleted the Selected Users Successfully',
           });
           this.selectedUsers = [];
+          // Clear all selections in the table component
+          this.tableComponent?.clearAllSelections();
           this.getAllUsers(this.currentPayload);
           this.isLoading = false;
         };

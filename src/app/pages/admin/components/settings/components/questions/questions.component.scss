@@ -1,7 +1,18 @@
-::ng-deep {
-  .p-datatable-table-container {
-    overflow: auto;
-    max-height: calc(100vh - 286px);
-    background-color: var(--color-white);
+.questions {
+  &__header {
+    color: var(--color-grey);
+  }
+
+  ::ng-deep {
+    .p-datatable-table-container {
+      overflow: auto;
+      max-height: calc(100vh - 286px);
+      background-color: var(--color-white);
+    }
+    @media (max-width: 450px) {
+      .p-datatable-table-container {
+        max-height: calc(100vh - 339px);
+      }
+    }
   }
 }
