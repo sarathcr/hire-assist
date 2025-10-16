@@ -14,6 +14,7 @@ export class BatchForm extends FormEntity {
         Validators.minLength(3),
         Validators.maxLength(25),
       ],
+      description: [Validators.maxLength(150)],
     },
     configMap: {
       title: { id: 'title', labelKey: 'Title' },

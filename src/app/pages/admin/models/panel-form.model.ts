@@ -14,6 +14,7 @@ export class PanelForm extends FormEntity {
         Validators.minLength(3),
         Validators.pattern('^[A-Za-z].*'),
       ],
+      description: [Validators.maxLength(150)],
     },
     configMap: {
       name: {
