@@ -203,11 +203,17 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
                   summary: 'Error',
                   detail: `${error.error.errorValue}`,
                 });
+              } else if (businerssErrorCode === 3103) {
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Error',
+                  detail: `Cannot assign the interviewers to the panel ${error.error.errorValue}, because the panel is currently assigned to an interview.`,
+                });
               } else {
                 this.messageService.add({
                   severity: 'error',
                   summary: 'Error',
-                  detail: 'Interviewer not created',
+                  detail: 'Assigning interviewers failed',
                 });
               }
               this.isLoading = false;
