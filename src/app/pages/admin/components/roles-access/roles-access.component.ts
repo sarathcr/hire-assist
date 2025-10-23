@@ -66,7 +66,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public columns: TableColumnsData = tableColumns;
   public selectedUsers: string[] = [];
   public isLoading = false;
-
+  public activateUserPayload!: any;
   private ref: DynamicDialogRef | undefined;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
 
@@ -104,6 +104,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     });
     this.ref.onClose.subscribe((result) => {
       if (result) {
+        console.log('Creating user with data:', result);
         this.isLoading = true;
         // api call to create the user
         const next = () => {
@@ -119,7 +120,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           const businerssErrorCode = error.error.businessError;
           if (businerssErrorCode === 4002) {
-            this.openActivateUserModal(error.error.errorValue);
+            this.openActivateUserModal(error.error.errorValue, result);
           } else if (businerssErrorCode === 4001) {
             this.messageService.add({
               severity: 'error',
@@ -359,7 +360,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     });
   }
 
-  private openActivateUserModal(userId: string) {
+  private openActivateUserModal(userId: string, result: any) {
     const modalData: DialogData = {
       message:
         'This user already exist but is not active. Do you want to activate the user.',
@@ -367,6 +368,8 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       cancelButtonText: 'Close',
       acceptButtonText: 'Activate',
     };
+    const payload = { ...result, id: userId };
+    console.log('Activate payload:', payload);
     this.ref = this.dialog.open(DialogComponent, {
       data: modalData,
       header: 'Warning',
@@ -384,6 +387,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     });
     this.ref.onClose.subscribe((res: boolean) => {
       if (res) {
+        console.log('Activating user with ID:', res);
         this.isLoading = true;
         // api call to activate the user
         const next = () => {
@@ -403,7 +407,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
           });
           this.isLoading = false;
         };
-        this.userService.updateEntity(userId).subscribe({ next, error });
+        this.userService.ActivateUser(payload).subscribe({ next, error });
       }
     });
   }

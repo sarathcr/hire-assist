@@ -53,6 +53,9 @@ export abstract class BaseFormComponent {
       const requiredLength = errors['min'].min;
       return `Value must be at least ${requiredLength}.`;
     }
+    if (errors['extraSpaces']) {
+      return 'No consecutive spaces allowed.';
+    }
     return 'This field has an invalid value.';
   }
 }

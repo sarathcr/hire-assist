@@ -1,0 +1,28 @@
+.department {
+  &__title {
+    color: var(--color-grey);
+  }
+}
+
+::ng-deep {
+  .p-datatable-table-container {
+    overflow: auto;
+    max-height: calc(100vh - 306px);
+    background-color: var(--color-white);
+  }
+  // @media (max-width: 400px) {
+  //   .p-datatable-table-container {
+  //     max-height: calc(100vh - 354px);
+  //   }
+  // }
+  // @media (min-width: 401px) and (max-width: 450px) {
+  //   .p-datatable-table-container {
+  //     max-height: calc(100vh - 320px);
+  //   }
+  // }
+  // @media (min-width: 451px) {
+  //   .p-datatable-table-container {
+  //     max-height: calc(100vh - 274px);
+  //   }
+  // }
+}

@@ -1,0 +1,63 @@
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: var(--spacing-20);
+  box-shadow: 0px -15px 20px -26px #000;
+}
+.dialog__header {
+  box-shadow: 0px 15px 10px -20px #000;
+  &__warning-indicator {
+    position: relative;
+    left: 0;
+    font-size: var(--font-size-small);
+    margin-top: 3px;
+    color: #c01523;
+  }
+}
+
+.department-form {
+  padding: var(--spacing-10) 0 0;
+  padding-top: var(--spacing-25);
+  &__label {
+    margin-bottom: var(--spacing-25);
+    display: flex;
+    align-items: center;
+  }
+
+  &__field {
+    width: 100%;
+    &-row {
+      &_one {
+        flex-basis: 50%;
+      }
+    }
+
+    &-container {
+      display: flex;
+      gap: 1rem;
+    }
+    &_hidden {
+      display: none;
+    }
+    &_show {
+      display: block;
+      padding-bottom: 16px;
+    }
+  }
+
+  ::ng-deep {
+    .p-datepicker {
+      display: flex;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    &__field {
+      &-container {
+        display: block;
+      }
+    }
+  }
+}

@@ -258,7 +258,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     if (payload) {
       payload.isActive = true;
-      payload.name = payload.name.trim().toUpperCase();
+      payload.name = payload.name.trim().toUpperCase().replace(/\s+/g, ' ');
     }
 
     const next = () => {
@@ -293,7 +293,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
 
   private updatePanel(payload: Panel) {
     this.isLoading = true;
-    payload.name = payload.name.trim().toUpperCase();
+    payload.name = payload.name.trim().toUpperCase().replace(/\s+/g, ' ');
     payload.id = payload.id.toString();
 
     const next = () => {

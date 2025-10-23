@@ -74,6 +74,12 @@ export class DashboardComponent implements OnInit {
             routerLinkActiveOptions: { exact: true },
           },
           {
+            label: 'Departments',
+            icon: 'pi pi-database',
+            routerLink: ['/admin/settings/departments'],
+            routerLinkActiveOptions: { exact: true },
+          },
+          {
             label: 'Panels',
             icon: 'pi pi-clone',
             routerLink: ['/admin/settings/panels'],
