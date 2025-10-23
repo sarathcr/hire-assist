@@ -134,6 +134,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
       width: '50vw',
       modal: true,
       focusOnShow: false,
+      styleClass: 'batch-form',
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -162,6 +163,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
       width: '50vw',
       modal: true,
       focusOnShow: false,
+      styleClass: 'batch-form',
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',

@@ -36,6 +36,12 @@
     overflow-y: visible;
   }
 }
+.batch-form {
+  .p-dialog-content {
+    overflow-y: visible;
+    padding-bottom: unset;
+  }
+}
 .frontdeskIdproof__Dialog {
   .p-fileupload-basic {
     justify-content: start;

@@ -22,9 +22,8 @@ export class UserService extends ApiService<any> {
   override getResourceUrl(): string {
     return USER_URL;
   }
-  // In UserService:
+
   public ActivateUser(payload: RolesAccess) {
-    // Use the explicit 'activate' segment in the URL
     return this.httpClient.put<RolesAccess>(
       `${this.getResourceUrl()}/activate/${payload.id}`,
       payload,

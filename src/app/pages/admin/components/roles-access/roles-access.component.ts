@@ -114,7 +114,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             detail: 'Created the User Successfully',
           });
           this.isLoading = false;
-          this.getAllUsers(this.currentPayload);
+          this.getAllUsers(new PaginatedPayload());
         };
         const error = (error: CustomErrorResponse) => {
           this.isLoading = false;
@@ -172,7 +172,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             detail: 'Updated the User Successfully',
           });
 
-          this.getAllUsers(this.currentPayload);
+          this.getAllUsers(new PaginatedPayload());
           this.isLoading = false;
         };
         const error = (error: CustomErrorResponse) => {
@@ -231,7 +231,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             detail: 'Deleted the User Successfully',
           });
           this.selectedUsers = this.selectedUsers.filter((id) => id !== userId);
-          this.getAllUsers(this.currentPayload);
+          this.getAllUsers(new PaginatedPayload());
           this.isLoading = false;
         };
         const error = () => {
@@ -287,7 +287,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
           this.selectedUsers = [];
           // Clear all selections in the table component
           this.tableComponent?.clearAllSelections();
-          this.getAllUsers(this.currentPayload);
+          this.getAllUsers(new PaginatedPayload());
           this.isLoading = false;
         };
         const error = () => {
@@ -396,7 +396,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Activated the User Successfully',
           });
-          this.getAllUsers(this.currentPayload);
+          this.getAllUsers(new PaginatedPayload());
           this.isLoading = false;
         };
         const error = () => {
