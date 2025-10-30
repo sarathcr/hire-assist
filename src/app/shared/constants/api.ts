@@ -44,3 +44,6 @@ export const BATCH_URL = `${assessmentUrl}/api/assessment/Batch`;
 
 //Panels
 export const Panel_URL = `${intreviewUrl}/api/interview/panel`;
+
+//Panels
+export const Department_URL = `${assessmentUrl}/api/assessment/Department`;

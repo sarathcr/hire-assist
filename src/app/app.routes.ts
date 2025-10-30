@@ -38,6 +38,7 @@ import { ProfileComponent } from './shared/components/pages/profile/profile.comp
 import { DeviceWidthGuard } from './shared/guards/device-width.guard';
 import { collectionResolver } from './shared/resolvers/collection.resolver';
 import { backButtonGuard } from './shared/guards/back-button.guard';
+import { DepartmentsComponent } from './pages/admin/components/settings/components/departments/departments.component';
 
 export const routes: Routes = [
   {
@@ -127,6 +128,7 @@ export const routes: Routes = [
             path: 'batches',
             component: BatchesComponent,
           },
+          { path: 'departments', component: DepartmentsComponent },
           { path: 'panels', component: PanelsComponent },
           {
             resolve: {

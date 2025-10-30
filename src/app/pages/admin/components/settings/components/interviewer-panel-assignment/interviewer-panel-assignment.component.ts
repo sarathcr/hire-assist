@@ -203,11 +203,17 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
                   summary: 'Error',
                   detail: `${error.error.errorValue}`,
                 });
+              } else if (businerssErrorCode === 3103) {
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Error',
+                  detail: `Cannot assign the interviewers to the panel ${error.error.errorValue}, because the panel is currently assigned to an interview.`,
+                });
               } else {
                 this.messageService.add({
                   severity: 'error',
                   summary: 'Error',
-                  detail: 'Interviewer not created',
+                  detail: 'Assigning interviewers failed',
                 });
               }
               this.isLoading = false;
@@ -284,12 +290,23 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       this.getPaginatedPanelData(this.currentPayload);
     };
 
-    const error = () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Deletion is failed',
-      });
+    const error = (error: CustomErrorResponse) => {
+      this.isLoading = false;
+      const businessErrorCode = error.error.businessError;
+      if (businessErrorCode === 3104) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail:
+            'Cannot delete the panel interviewers as it is used in interview Or the panel interviewers is not exists',
+        });
+      } else {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Deletion is failed',
+        });
+      }
       this.isLoading = false;
     };
     this.coordinatorPanelBridgeService
@@ -374,6 +391,13 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
               severity: 'error',
               summary: 'Error',
               detail: `${error.error.errorValue}`,
+            });
+          } else if (businessErrorCode === 3103) {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail:
+                'Cannot update the panel interviewers, because the panel is currently assigned to an interview.',
             });
           } else {
             this.messageService.add({

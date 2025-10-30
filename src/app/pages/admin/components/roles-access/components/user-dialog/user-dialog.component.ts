@@ -116,8 +116,8 @@ export class UserDialogComponent implements OnInit {
     (this.configMap['department'] as CustomSelectConfig).options = this
       .optionsMap['departments'] as unknown as Option[];
 
-    (this.configMap['roles'] as CustomSelectConfig).options = this.optionsMap[
-      'roles'
-    ] as unknown as Option[];
+    (this.configMap['roles'] as CustomSelectConfig).options = (
+      this.optionsMap['roles'] as unknown as Option[]
+    ).filter((role) => role.value !== '5');
   }
 }

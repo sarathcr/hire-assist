@@ -1,0 +1,26 @@
+<div class="department">
+  <div class="department__title">
+    <h1>Departments</h1>
+  </div>
+
+  <!-- @if (!isLoading()) { -->
+  <app-table
+    [tableData]="data"
+    [columnsData]="columns"
+    [parentLoader]="isLoading"
+    [hasSearch]="true"
+    [hasCheckbox]="false"
+    (edit)="editDepartment($event)"
+    (delete)="deleteDepartment($event)"
+    (pageChangeAndSort)="onTablePayloadChange($event)"
+  >
+    <div class="department__button">
+      <app-button
+        [buttonLabel]="'New'"
+        icon="pi pi-plus"
+        (btnClick)="addNewDepartment()"
+      ></app-button>
+    </div>
+  </app-table>
+  <p-toast position="top-right" class="Toast"></p-toast>
+</div>

@@ -3,38 +3,41 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Toast } from 'primeng/toast';
-import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
+import { DynamicDialogRef, DialogService } from 'primeng/dynamicdialog';
 import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
-import { TableComponent } from '../../../../../../shared/components/table/table.component';
-import { BATCH_URL } from '../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
-import { DialogData } from '../../../../../../shared/models/dialog.models';
-import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
+import {
+  PaginatedData,
+  PaginatedPayload,
+} from '../../../../../../shared/models/pagination.models';
 import {
   FieldType,
-  PaginatedData,
   PaginatedDataActions,
   TableColumnsData,
 } from '../../../../../../shared/models/table.models';
 import { StoreService } from '../../../../../../shared/services/store.service';
 import {
-  buildFormGroup,
   ConfigMap,
+  buildFormGroup,
 } from '../../../../../../shared/utilities/form.utility';
-import { BatchForm } from '../../../../models/batch-form.model';
-import { Batch } from '../../../../models/batch.model';
-import { BatchService } from '../../../../services/batch.service';
-import { BatchDialogComponent } from './components/batch-dialog/batch-dialog.component';
 
+import { DepartmentForm } from '../../../../models/department-from.model';
+import { Department } from '../../../../models/department.model';
+import { DepartmentService } from '../../../../services/department.service';
+
+import { DepartmentDialogComponent } from './components/department-dialog/department-dialog.component';
+import { ASSESSMENT_URL } from '../../../../../../shared/constants/api';
+import { DialogData } from '../../../../../../shared/models/dialog.models';
+import { TableComponent } from '../../../../../../shared/components/table/table.component';
+import { Toast } from 'primeng/toast';
+import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 const tableColumns: TableColumnsData = {
   columns: [
     {
-      field: 'title',
-      displayName: 'Title',
+      field: 'name',
+      displayName: 'Department',
       sortedColumn: true,
       hasChip: false,
       hasTextFilter: true,
@@ -66,23 +69,25 @@ const tableColumns: TableColumnsData = {
       hasChip: false,
     },
   ],
-  displayedColumns: ['title', 'descriptionNew', 'active', 'actions'],
+  displayedColumns: ['name', 'description', 'active', 'actions'],
 };
+
 @Component({
-  selector: 'app-batches',
+  selector: 'app-departments',
   imports: [TableComponent, Toast, ButtonComponent],
   providers: [TableDataSourceService],
-  templateUrl: './batches.component.html',
-  styleUrl: './batches.component.scss',
+  templateUrl: './departments.component.html',
+  styleUrl: './departments.component.scss',
 })
-export class BatchesComponent implements OnInit, OnDestroy {
-  public url = 'Batchsummary';
+export class DepartmentsComponent implements OnInit, OnDestroy {
+  public url = 'DepartmentSummary';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public data!: PaginatedData<any>;
   public optionsMap = {};
   public columns: TableColumnsData = tableColumns;
-  public item!: Batch;
+  public item!: Department;
   public fGroup!: FormGroup;
-  public batchFormData = new BatchForm();
+  public departmentFormData = new DepartmentForm();
   public configMap!: ConfigMap;
   public isLoading = true;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
@@ -91,18 +96,18 @@ export class BatchesComponent implements OnInit, OnDestroy {
 
   constructor(
     public dialog: DialogService,
-    private batchService: BatchService,
+    private departmentService: DepartmentService,
     public messageService: MessageService,
     private storeService: StoreService,
     private dataSourceService: TableDataSourceService<any>,
   ) {
-    this.fGroup = buildFormGroup(this.batchFormData);
+    this.fGroup = buildFormGroup(this.departmentFormData);
   }
 
   // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
-    this.getAllPaginatedBatches(new PaginatedPayload());
+    this.getAllPaginateddepartmentes(new PaginatedPayload());
     this.setConfigMaps();
   }
   ngOnDestroy(): void {
@@ -122,19 +127,18 @@ export class BatchesComponent implements OnInit, OnDestroy {
     this.loadData(payload);
   }
 
-  public addNewBatch() {
+  public addNewDepartment() {
     const data = {
       fGroup: this.fGroup,
       configMap: this.configMap,
     };
     document.body.style.overflow = 'hidden';
-    this.ref = this.dialog.open(BatchDialogComponent, {
+    this.ref = this.dialog.open(DepartmentDialogComponent, {
       data: data,
-      header: 'Create Batch',
+      header: 'Create department',
       width: '50vw',
       modal: true,
       focusOnShow: false,
-      styleClass: 'batch-form',
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -144,26 +148,25 @@ export class BatchesComponent implements OnInit, OnDestroy {
     this.ref?.onClose.subscribe((res) => {
       document.body.style.overflow = 'auto';
       if (res) {
-        this.CreateBatch(res, false);
+        this.createDepartment(res);
       }
       this.fGroup.reset();
     });
   }
 
-  public editBatch(batchData: Batch) {
+  public editDepartment(departmentData: Department) {
     const data = {
       fGroup: this.fGroup,
       configMap: this.configMap,
-      formData: batchData,
+      formData: departmentData,
     };
     document.body.style.overflow = 'hidden';
-    this.ref = this.dialog.open(BatchDialogComponent, {
+    this.ref = this.dialog.open(DepartmentDialogComponent, {
       data: data,
-      header: 'Update Batch',
+      header: 'Update department',
       width: '50vw',
       modal: true,
       focusOnShow: false,
-      styleClass: 'batch-form',
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -173,15 +176,15 @@ export class BatchesComponent implements OnInit, OnDestroy {
     this.ref?.onClose.subscribe((res) => {
       document.body.style.overflow = 'auto';
       if (res) {
-        this.updateBatch(res);
+        this.updateDepartment(res);
       }
       this.fGroup.reset();
     });
   }
 
-  public deleteBatch(id: number) {
+  public deleteDepartment(id: number) {
     const modalData: DialogData = {
-      message: 'Are you sure you want to delete the batch?',
+      message: 'Are you sure you want to delete the department?',
       isChoice: true,
       cancelButtonText: 'Cancel',
       acceptButtonText: 'Delete',
@@ -206,13 +209,13 @@ export class BatchesComponent implements OnInit, OnDestroy {
     this.ref.onClose.subscribe((result) => {
       document.body.style.overflow = 'auto';
       if (result) {
-        this.deleteBatchItem(id);
+        this.deletedepartmentItem(id);
       }
       this.fGroup.reset();
     });
   }
 
-  public getAllPaginatedBatches(payload: PaginatedPayload) {
+  public getAllPaginateddepartmentes(payload: PaginatedPayload) {
     this.isLoading = true;
     const next = (res: any) => {
       if (res) {
@@ -222,17 +225,16 @@ export class BatchesComponent implements OnInit, OnDestroy {
     };
 
     const error = (error: CustomErrorResponse) => {
-      console.log('ERROR', error);
+      this.isLoading = false;
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
         detail: `Error : ${error.error.type}`,
       });
-      this.isLoading = false;
     };
 
-    this.batchService
-      .paginationEntity(`/${this.url}`, payload)
+    this.departmentService
+      .paginationEntity(`${this.url}`, payload)
       .subscribe({ next, error });
   }
 
@@ -244,19 +246,19 @@ export class BatchesComponent implements OnInit, OnDestroy {
 
   // Private Methods
   private setPaginationEndpoint() {
-    this.dataSourceService.setEndpoint(`${BATCH_URL}/${this.url}`);
+    this.dataSourceService.setEndpoint(`${ASSESSMENT_URL}/${this.url}`);
   }
 
   private setConfigMaps(): void {
-    const { metadata } = new BatchForm();
+    const { metadata } = new DepartmentForm();
     this.configMap = metadata.configMap || {};
   }
 
-  private CreateBatch(payload: Batch, action: boolean) {
+  private createDepartment(payload: Department) {
     this.isLoading = true;
     if (payload) {
       payload.isActive = true;
-      payload.title = payload.title.trim().replace(/\s+/g, ' ');
+      payload.name = payload.name.trim();
     }
 
     const next = () => {
@@ -266,10 +268,10 @@ export class BatchesComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: `${action ? 'Duplicated' : 'Created'} Batch Successfully`,
+          detail: `Created department Successfully`,
         });
       }, 200);
-      this.getAllPaginatedBatches(this.currentPayload);
+      this.getAllPaginateddepartmentes(this.currentPayload);
     };
 
     const error = (error: HttpErrorResponse) => {
@@ -278,92 +280,96 @@ export class BatchesComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `This name ${error?.error?.errorValue} is already exists.`,
+          detail: `The Department is already exists.`,
         });
       } else {
         this.isLoading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `${action ? 'Duplication' : 'Creation'} is failed`,
+          detail: `Creation is failed`,
         });
       }
     };
 
-    this.batchService.createEntity(payload).subscribe({ next, error });
+    this.departmentService.addDepartment(payload).subscribe({ next, error });
   }
 
-  private updateBatch(payload: Batch) {
+  private updateDepartment(payload: Department) {
     this.isLoading = true;
-    payload.title = payload.title.trim().replace(/\s+/g, ' ');
+    payload.name = payload.name.trim();
 
     const next = () => {
       this.storeService.setIsLoading(false);
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Updated the Batch Successfully',
+        detail: 'Updated the department Successfully',
       });
 
-      this.getAllPaginatedBatches(this.currentPayload);
+      this.getAllPaginateddepartmentes(this.currentPayload);
     };
 
     const error = (error: HttpErrorResponse) => {
+      this.isLoading = false;
       this.storeService.setIsLoading(false);
-      if (error?.status === 422 && error?.error?.businessError === 3107) {
+      if (error?.status === 422 && error?.error?.businessError === 3102) {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'This title already exists.',
+          detail: `The Department is not exists.`,
         });
       } else if (
         error?.status === 422 &&
-        error?.error?.businessError === 3103
+        error?.error?.businessError === 3106
       ) {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `The update is not possible. ${error?.error?.errorValue} already assigned to assessments.`,
+          detail: `The Department is already exists.`,
         });
-        this.isLoading = false;
+      } else if (
+        error?.status === 422 &&
+        error?.error?.businessError === 3112
+      ) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail:
+            'The updation is not possible. The department is already referenced by the user.',
+        });
       } else {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
           detail: 'Updation is failed',
         });
-        this.isLoading = false;
       }
     };
-    this.batchService.updateEntity('', payload).subscribe({ next, error });
+    this.departmentService.updateDepartment(payload).subscribe({ next, error });
   }
 
-  private deleteBatchItem(id: number) {
+  private deletedepartmentItem(id: number) {
     this.isLoading = true;
     const next = () => {
       this.storeService.setIsLoading(false);
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Deleted the Batch Successfully',
+        detail: 'Deleted the department Successfully',
       });
-      this.getAllPaginatedBatches(this.currentPayload);
+      this.getAllPaginateddepartmentes(this.currentPayload);
     };
 
     const error = (error: HttpErrorResponse) => {
       this.storeService.setIsLoading(false);
       this.isLoading = false;
-      if (
-        error?.status === 422 &&
-        (error?.error?.businessError === 5003 ||
-          error?.error?.businessError === 3108 ||
-          error?.error?.businessError === 3103)
-      ) {
+      if (error?.status === 422 && error?.error?.businessError === 3112) {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
           detail:
-            'The deletion is not possible. It already exists in assessments.',
+            'The deletion is not possible. The department is already referenced by the user.',
         });
       } else {
         this.messageService.add({
@@ -373,6 +379,6 @@ export class BatchesComponent implements OnInit, OnDestroy {
         });
       }
     };
-    this.batchService.deleteEntityById(id).subscribe({ next, error });
+    this.departmentService.deleteDepartment(id).subscribe({ next, error });
   }
 }

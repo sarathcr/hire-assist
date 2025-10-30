@@ -12,38 +12,21 @@
     position: relative;
     left: 0;
     font-size: var(--font-size-small);
-    margin-top: 2px;
+    margin-top: 3px;
     color: #c01523;
   }
 }
 
-::ng-deep {
-  .p-dialog-content {
-    overflow-y: visible;
-  }
-}
-.batch-form {
+.department-form {
   padding: var(--spacing-10) 0 0;
   padding-top: var(--spacing-25);
-  padding-bottom: var(--spacing-20);
-  &__field {
-    display: flex;
-    width: 100%;
-    gap: 1rem;
-    align-items: center;
-  }
   &__label {
     margin-bottom: var(--spacing-25);
     display: flex;
     align-items: center;
   }
-  &__button {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-  &_field {
+
+  &__field {
     width: 100%;
     &-row {
       &_one {
@@ -71,7 +54,7 @@
   }
 
   @media screen and (max-width: 768px) {
-    &_field {
+    &__field {
       &-container {
         display: block;
       }
