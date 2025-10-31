@@ -259,6 +259,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
     if (payload) {
       payload.isActive = true;
       payload.name = payload.name.trim();
+      payload.description = payload.description ?? '';
     }
 
     const next = () => {
