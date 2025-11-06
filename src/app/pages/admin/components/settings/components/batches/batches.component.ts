@@ -316,6 +316,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
           summary: 'Error',
           detail: 'This title already exists.',
         });
+        this.isLoading = false;
       } else if (
         error?.status === 422 &&
         error?.error?.businessError === 3103

@@ -85,6 +85,9 @@
                 : ''
             "
             [style.minWidth.px]="150"
+            [ngClass]="
+              headerColumn.field === 'actions' ? 'table__header-no-pointer' : ''
+            "
           >
             {{ headerColumn.displayName }}
             @if (

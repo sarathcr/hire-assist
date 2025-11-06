@@ -252,4 +252,9 @@
       justify-content: center;
     }
   }
+  &__header-no-pointer {
+    pointer-events: none;
+    cursor: default;
+    user-select: none;
+  }
 }
