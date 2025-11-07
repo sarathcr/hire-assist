@@ -2,14 +2,18 @@
   height: 100%;
   background: var(--color-white);
   z-index: 99;
-  box-shadow: -1px -2px 4px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: -1px 2px 4px 2px rgba(0, 0, 0, 0.05);
 }
 
 .sidebar {
-  padding: var(--spacing-20);
+  padding: var(--spacing-15);
   text-align: left;
   height: 100%;
   width: 225px;
+  transition: width 0.25s ease-in-out;
+  position: relative;
+  display: flex;
+  flex-direction: column;
   &__logo {
     width: 100%;
     margin: 0;
@@ -21,20 +25,76 @@
     }
   }
   &__header {
-    ::ng-deep {
-      .pi {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-10);
+    .sidebar__collapse-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      border: none;
+      background-color: var(--background-secondary);
+      color: var(--primary-color);
+      cursor: pointer;
+      transition:
+        background-color 0.25s ease-in-out,
+        transform 0.25s ease-in-out;
+      padding: 0;
+      position: absolute;
+      right: -35px;
+      top: 0px;
+      z-index: 11;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      @media (max-width: 1024px) {
         display: none;
       }
     }
+    .sidebar__collapse-btn:hover {
+      background-color: rgba(0, 0, 0, 0.06);
+    }
+    /* Only hide the mobile close icon by default on desktop, not all .pi icons */
+    .sidebar__close-btn {
+      display: none;
+      @media (max-width: 1024px) {
+        display: block;
+      }
+    }
   }
-
+  ::ng-deep {
+    .p-panelmenu-header-link {
+      white-space: nowrap;
+    }
+    .p-panelmenu-header-link .p-iconwrapper {
+      order: 2;
+    }
+    .p-panelmenu-submenu {
+      padding: 0;
+    }
+  }
   &__nav {
-    margin-top: var(--spacing-60);
+    // margin-top: var(--spacing-60);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    flex: 1 1 auto;
+    min-height: 0;
 
     ::ng-deep {
       .p-panelmenu {
         border: none;
         min-width: 100%;
+        font-size: var(--font-size-base);
+        // Prevent label text from wrapping in normal state
+        .p-menuitem-text,
+        .p-panelmenu-item-label {
+          white-space: nowrap;
+        }
         .p-panelmenu-item-link {
           padding: var(--spacing-1-rem);
           &-active {
@@ -67,18 +127,32 @@
       }
     }
   }
-  @media (max-width: 768px) {
+  .sidebar__nav-main {
+    flex: 1 1 auto;
+  }
+  .sidebar__nav-footer {
+    flex: 0 0 auto;
+    margin-top: auto;
+    padding-top: var(--spacing-10);
+    border-top: 1px solid var(--color-seperator);
+  }
+  @media (max-width: 1024px) {
     display: none;
     width: 100%;
     &_mobile {
-      display: block;
-      position: absolute;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
       left: 0;
       right: 0;
       top: 0;
       bottom: 0;
       background-color: var(--color-white);
       z-index: 10;
+      width: 100%;
+      height: 100vh;
+      padding: 0;
+      overflow: hidden;
     }
     &__logo {
       text-align: left;
@@ -88,14 +162,72 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: var(--spacing-15) var(--spacing-20);
+      border-bottom: 1px solid var(--color-seperator);
+      flex: 0 0 auto;
+      .sidebar__collapse-btn {
+        display: none; /* Hide collapse button on mobile/tablet */
+      }
+      .sidebar__close-btn {
+        display: block !important;
+        font-size: 30px;
+        color: #1565c0;
+        border: none;
+        background: none;
+        cursor: pointer;
+        padding: 0;
+        width: auto;
+        height: auto;
+      }
+    }
+    &__nav {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      padding: var(--spacing-15);
+    }
+    // Prevent collapsed state on mobile/tablet
+    &.sidebar_collapsed {
+      width: 100% !important;
       ::ng-deep {
-        .pi {
-          display: block;
-          font-size: 30px;
-          color: #1565c0;
-          border: none;
-          background: none;
+        .p-panelmenu-item-label,
+        .p-menuitem-text,
+        .p-panelmenu-icon-text {
+          display: block !important;
         }
+      }
+    }
+  }
+}
+
+/* Collapsed state: width reduced, labels hidden */
+.sidebar_collapsed {
+  width: 80px;
+  transition: width 0.25s ease-in-out;
+  ::ng-deep {
+    .p-panelmenu-header-label,
+    .p-iconwrapper {
+      display: none;
+    }
+  }
+}
+
+/* Hide labels in panel menu when collapsed */
+.sidebar_collapsed {
+  ::ng-deep {
+    .p-panelmenu {
+      .p-panelmenu-item-link {
+        justify-content: center;
+      }
+      // Ensure all text labels are hidden in collapsed state
+      .p-panelmenu-item-label,
+      .p-menuitem-text,
+      .p-panelmenu-icon-text {
+        display: none !important;
+      }
+      // Also hide any trailing span inside link that could contain text
+      .p-panelmenu-item-link span:last-child {
+        display: none !important;
       }
     }
   }

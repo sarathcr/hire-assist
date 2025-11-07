@@ -20,6 +20,7 @@ import {
 } from '../../../../shared/utilities/token.utility';
 import { LoginData } from '../../models/login-data.models';
 import { AuthService } from '../../services/auth.service';
+import { CollectionService } from '../../../../shared/services/collection.service';
 
 @Component({
   selector: 'app-login',
@@ -39,9 +40,10 @@ export class LoginComponent implements OnInit {
   public configMap!: ConfigMap;
 
   constructor(
-    private router: Router,
-    private authService: AuthService,
-    private messageService: MessageService,
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly collectionService: CollectionService,
+    private readonly messageService: MessageService,
   ) {
     this.fGroup = buildFormGroup(new LoginData());
   }
@@ -53,8 +55,8 @@ export class LoginComponent implements OnInit {
   public async onSave(): Promise<void> {
     this.fGroup.markAllAsTouched();
     if (!this.fGroup.valid) return;
-
     this.isLoading = true;
+    this.collectionService.getCollection();
     this.authService.login(this.fGroup.value).subscribe({
       next: (res: TokenData) => this.handleLoginSuccess(res),
       error: (e: HttpErrorResponse) => this.handleLoginError(e),
@@ -71,7 +73,6 @@ export class LoginComponent implements OnInit {
 
       this.navigateToUserDashboard(userRole);
     }
-    // this.isLoading = false;
   }
 
   private handleLoginError(error: HttpErrorResponse): void {

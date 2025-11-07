@@ -31,3 +31,16 @@
     box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1) !important;
   }
 }
+.sidebar-tooltip {
+  font-size: var(--font-size-small) !important;
+  .p-tooltip-text {
+    font-size: var(--font-size-small) !important;
+    padding: 6px 10px !important;
+    line-height: 1.3 !important;
+  }
+}
+
+.sidebar-tooltip-hide {
+  display: none !important;
+  visibility: hidden !important;
+}

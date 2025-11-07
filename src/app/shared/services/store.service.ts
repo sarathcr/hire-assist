@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
-import { TokenData } from '../models/token-data.models';
+import * as _ from 'lodash';
+import { BehaviorSubject, distinctUntilChanged, map, Observable } from 'rxjs';
+import { RolesEnum } from '../enums/enum';
 import {
   AppState,
   initialState,
-  Option,
+  OptionsMap,
   UserState,
 } from '../models/app-state.models';
-import { BehaviorSubject, distinctUntilChanged, map, Observable } from 'rxjs';
-import * as _ from 'lodash';
-import { RolesEnum } from '../enums/enum';
+import { TokenData } from '../models/token-data.models';
 
 @Injectable({
   providedIn: 'root',
@@ -122,12 +122,12 @@ export class StoreService {
     return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
   }
 
-  public setCollection(collection: Option[]) {
+  public setCollection(collection: OptionsMap) {
     this.state = { ...this.state, collection }; // Update state
     this.updateStore(); // Save to local storage
   }
 
-  public getCollection(): Option[] {
+  public getCollection(): OptionsMap {
     return this.state.collection;
   }
 }

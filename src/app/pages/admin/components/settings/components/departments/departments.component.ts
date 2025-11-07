@@ -28,6 +28,7 @@ import { Department } from '../../../../models/department.model';
 import { DepartmentService } from '../../../../services/department.service';
 
 import { DepartmentDialogComponent } from './components/department-dialog/department-dialog.component';
+import { CollectionService } from '../../../../../../shared/services/collection.service';
 import { ASSESSMENT_URL } from '../../../../../../shared/constants/api';
 import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
@@ -100,6 +101,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
     public messageService: MessageService,
     private storeService: StoreService,
     private dataSourceService: TableDataSourceService<any>,
+    private readonly collectionService: CollectionService,
   ) {
     this.fGroup = buildFormGroup(this.departmentFormData);
   }
@@ -262,8 +264,15 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       payload.description = payload.description ?? '';
     }
 
-    const next = () => {
+    const next = (res: any) => {
       this.storeService.setIsLoading(false);
+      const departmentData = (res as Department) || payload;
+      if (departmentData && departmentData.id) {
+        this.collectionService.updateCollection('departments', {
+          id: Number(departmentData.id),
+          title: departmentData.name,
+        });
+      }
       this.isLoading = false;
       setTimeout(() => {
         this.messageService.add({
@@ -283,6 +292,13 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
           summary: 'Error',
           detail: `The Department is already exists.`,
         });
+      } else if (error?.error?.businessError === 3105) {
+        this.isLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: `${error.error.errorValue}`,
+        });
       } else {
         this.isLoading = false;
         this.messageService.add({
@@ -300,8 +316,15 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     payload.name = payload.name.trim();
 
-    const next = () => {
+    const next = (res: any) => {
       this.storeService.setIsLoading(false);
+      const departmentData = (res as Department) || payload;
+      if (departmentData && departmentData.id) {
+        this.collectionService.updateCollection('departments', {
+          id: Number(departmentData.id),
+          title: departmentData.name,
+        });
+      }
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
@@ -319,6 +342,13 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
           severity: 'error',
           summary: 'Error',
           detail: `The Department is not exists.`,
+        });
+      } else if (error?.error?.businessError === 3105) {
+        this.isLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: `${error.error.errorValue}`,
         });
       } else if (
         error?.status === 422 &&
@@ -354,6 +384,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const next = () => {
       this.storeService.setIsLoading(false);
+      this.collectionService.deleteItemFromCollection('departments', id);
       this.messageService.add({
         severity: 'success',
         summary: 'Success',

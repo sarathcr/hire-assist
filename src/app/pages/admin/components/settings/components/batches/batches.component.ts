@@ -29,6 +29,7 @@ import { BatchForm } from '../../../../models/batch-form.model';
 import { Batch } from '../../../../models/batch.model';
 import { BatchService } from '../../../../services/batch.service';
 import { BatchDialogComponent } from './components/batch-dialog/batch-dialog.component';
+import { CollectionService } from '../../../../../../shared/services/collection.service';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -91,10 +92,11 @@ export class BatchesComponent implements OnInit, OnDestroy {
 
   constructor(
     public dialog: DialogService,
-    private batchService: BatchService,
+    private readonly batchService: BatchService,
     public messageService: MessageService,
-    private storeService: StoreService,
-    private dataSourceService: TableDataSourceService<any>,
+    private readonly storeService: StoreService,
+    private readonly dataSourceService: TableDataSourceService<any>,
+    private readonly collectionService: CollectionService,
   ) {
     this.fGroup = buildFormGroup(this.batchFormData);
   }
@@ -259,7 +261,13 @@ export class BatchesComponent implements OnInit, OnDestroy {
       payload.title = payload.title.trim().replace(/\s+/g, ' ');
     }
 
-    const next = () => {
+    const next = (res: Batch[]) => {
+      const actualRes = [res].flat();
+      if (actualRes)
+        this.collectionService.updateCollection('batches', {
+          id: actualRes[0].id,
+          title: actualRes[0].title,
+        });
       this.storeService.setIsLoading(false);
       this.isLoading = false;
       setTimeout(() => {
@@ -297,8 +305,14 @@ export class BatchesComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     payload.title = payload.title.trim().replace(/\s+/g, ' ');
 
-    const next = () => {
+    const next = (res: Batch[]) => {
       this.storeService.setIsLoading(false);
+      const actualRes = [res].flat();
+      if (actualRes)
+        this.collectionService.updateCollection('batches', {
+          id: actualRes[0].id,
+          title: actualRes[0].title,
+        });
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
@@ -343,6 +357,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const next = () => {
       this.storeService.setIsLoading(false);
+      this.collectionService.deleteItemFromCollection('batches', id);
       this.messageService.add({
         severity: 'success',
         summary: 'Success',

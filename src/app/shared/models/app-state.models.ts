@@ -6,19 +6,21 @@ export interface AppState {
   isLoading: boolean;
   tokenData: TokenData;
   userState: UserState;
-  collection: Option[];
+  collection: OptionsMap;
 }
 
 export const initialState: AppState = {
   isLoading: false,
   tokenData: initialTokenData,
   userState: initialUserState,
-  collection: [],
+  collection: {},
 };
 
 export interface Option {
-  id: number;
-  name: string;
+  id?: number;
+  name?: string;
+  value?: string;
+  label?: string;
   code?: string;
   children?: Option[];
 }

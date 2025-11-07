@@ -14,6 +14,7 @@ import { InterviewDetailComponent } from './pages/admin/components/interviews/co
 import { InterviewsComponent } from './pages/admin/components/interviews/interviews.component';
 import { RolesAccessComponent } from './pages/admin/components/roles-access/roles-access.component';
 import { BatchesComponent } from './pages/admin/components/settings/components/batches/batches.component';
+import { DepartmentsComponent } from './pages/admin/components/settings/components/departments/departments.component';
 import { InterviewerPanelAssignmentComponent } from './pages/admin/components/settings/components/interviewer-panel-assignment/interviewer-panel-assignment.component';
 import { PanelsComponent } from './pages/admin/components/settings/components/panels/panels.component';
 import { QuestionsComponent } from './pages/admin/components/settings/components/questions/questions.component';
@@ -31,14 +32,12 @@ import { CoordinatorDashboardComponent } from './pages/coordinator/component/coo
 import { FrontdeskBatchAssignmentComponent } from './pages/frontdesk/components/frontdesk-assessment-rounds/components/frontdesk-batch-assignment/frontdesk-batch-assignment.component';
 import { FrontdeskAssessmentRoundsComponent } from './pages/frontdesk/components/frontdesk-assessment-rounds/frontdesk-assessment-rounds.component';
 import { FrontdeskDashboardComponent } from './pages/frontdesk/components/frontdesk-dashboard/frontdesk-dashboard.component';
-import { InterviewerDashboardComponent } from './pages/interviewer/components/interviewer-dashboard/interviewer-dashboard.component';
 import { InterviewerCandidateListComponent } from './pages/interviewer/components/Interviewer-list/components/interviewer-candidate-list/interviewer-candidate-list.component';
 import { InterviewerFeedbackComponent } from './pages/interviewer/components/Interviewer-list/components/interviewer-feedback/interviewer-feedback.component';
+import { InterviewerDashboardComponent } from './pages/interviewer/components/interviewer-dashboard/interviewer-dashboard.component';
 import { ProfileComponent } from './shared/components/pages/profile/profile.component';
-import { DeviceWidthGuard } from './shared/guards/device-width.guard';
-import { collectionResolver } from './shared/resolvers/collection.resolver';
 import { backButtonGuard } from './shared/guards/back-button.guard';
-import { DepartmentsComponent } from './pages/admin/components/settings/components/departments/departments.component';
+import { DeviceWidthGuard } from './shared/guards/device-width.guard';
 
 export const routes: Routes = [
   {
@@ -61,9 +60,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: DashboardComponent,
-    resolve: {
-      collection: collectionResolver,
-    },
+
     children: [
       { path: 'dashboard', component: AdminDashboardComponent },
       {
@@ -131,9 +128,6 @@ export const routes: Routes = [
           { path: 'departments', component: DepartmentsComponent },
           { path: 'panels', component: PanelsComponent },
           {
-            resolve: {
-              collection: collectionResolver,
-            },
             path: 'interviewerPanel',
             component: InterviewerPanelAssignmentComponent,
           },
@@ -158,9 +152,7 @@ export const routes: Routes = [
   {
     path: 'interviewer',
     component: DashboardComponent,
-    resolve: {
-      collection: collectionResolver,
-    },
+
     children: [
       { path: '', component: InterviewerDashboardComponent },
       {
@@ -196,9 +188,7 @@ export const routes: Routes = [
   {
     path: 'coordinator',
     component: DashboardComponent,
-    resolve: {
-      collection: collectionResolver,
-    },
+
     children: [
       { path: '', component: CoordinatorDashboardComponent },
 
@@ -218,9 +208,7 @@ export const routes: Routes = [
   {
     path: 'frontdesk',
     component: DashboardComponent,
-    resolve: {
-      collection: collectionResolver,
-    },
+
     children: [
       { path: '', component: FrontdeskDashboardComponent },
       {

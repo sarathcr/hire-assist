@@ -20,7 +20,6 @@ import {
   interviewer,
   interviewerModal,
 } from '../../../../../../models/interviewers-model';
-import { CollectionService } from '../../../../../../services/collection.service';
 import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
 @Component({
   selector: 'app-assign-interviewers-dialogue',
@@ -49,14 +48,14 @@ export class AssignInterviewersDialogueComponent implements OnInit {
     public config: DynamicDialogConfig,
     private readonly storeService: StoreService,
     public dialog: DialogService,
-    private readonly collectionService: CollectionService,
   ) {
     this.fGroup = buildFormGroup(this.interviewerSchedule);
   }
+
   // LifeCycle Hooks
   ngOnInit(): void {
     this.data = this.config.data;
-    this.isEdit = this.data.formData?.id ? true : false;
+    this.isEdit = !!this.data.formData?.id;
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
     const users = this.optionsMap['interviewers'] as unknown as Option[];

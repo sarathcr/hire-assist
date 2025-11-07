@@ -38,6 +38,7 @@ import {
 import { QuestionService } from '../../../../services/question.service';
 import { InterviewService } from '../../../assessment/services/interview.service';
 import { QuestionFormModalComponent } from './components/question-form-modal/question-form-modal.component';
+import { CollectionService } from '../../../../../../shared/services/collection.service';
 const tableColumns: TableColumnsData = {
   columns: [
     {
@@ -93,8 +94,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     public dialog: DialogService,
     public interviewService: InterviewService,
-
     private dataSourceService: TableDataSourceService<any>,
+    private readonly collectionService: CollectionService,
   ) {
     this.fGroup = buildFormGroup(this.questionFormData);
   }
@@ -248,16 +249,20 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       document.body.style.overflow = 'auto';
       if (result) {
         this.isLoading = true;
-        // api call to delete the user
+        // api call to delete the question
         const next = () => {
+          this.storeService.setIsLoading(false);
+          this.collectionService.deleteItemFromCollection('questions', id);
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: 'Deleted the User Successfully',
+            detail: 'Deleted the Question Successfully',
           });
           this.getAllPaginatedQuestion(this.currentPayload);
         };
         const error = (error: CustomErrorResponse) => {
+          this.storeService.setIsLoading(false);
+          this.isLoading = false;
           const businerssErrorCode = error.error.businessError;
           if (businerssErrorCode == 3108) {
             this.messageService.add({
@@ -441,7 +446,15 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
   private Createquestion(payload: Questionsinterface) {
     this.isLoading = true;
-    const next = () => {
+    const next = (res: any) => {
+      const questionData = (res as Questionsinterface) || payload;
+      if (questionData && questionData.id) {
+        this.collectionService.updateCollection('questions', {
+          id: questionData.id,
+          title: questionData.questionText,
+        });
+      }
+      this.storeService.setIsLoading(false);
       setTimeout(() => {
         this.messageService.add({
           severity: 'success',
@@ -475,7 +488,15 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
   private Updatequestion(payload: Questionsinterface) {
     this.isLoading = true;
-    const next = () => {
+    const next = (res: any) => {
+      const questionData = (res as Questionsinterface) || payload;
+      if (questionData && questionData.id) {
+        this.collectionService.updateCollection('questions', {
+          id: questionData.id,
+          title: questionData.questionText,
+        });
+      }
+      this.storeService.setIsLoading(false);
       setTimeout(() => {
         this.messageService.add({
           severity: 'success',

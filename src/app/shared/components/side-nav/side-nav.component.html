@@ -1,8 +1,24 @@
-<aside class="sidebar" [ngClass]="{ sidebar_mobile: this.showMenu() }">
+<aside
+  class="sidebar"
+  [ngClass]="{ 
+    sidebar_mobile: this.showMenu(), 
+    sidebar_collapsed: collapsed() && !isMobileView() 
+  }"
+>
   <div class="sidebar__header">
-    <figure class="sidebar__logo"><img src="logo.png" alt="logo" /></figure>
     <button
-      class="pi pi-times-circle"
+      type="button"
+      class="sidebar__collapse-btn"
+      (click)="toggleCollapse()"
+      aria-label="Toggle sidebar"
+    >
+      <span
+        class="sidebar__collapseIcon"
+        [ngClass]="collapsed() ? 'pi pi-angle-double-right' : 'pi pi-angle-double-left'"
+      ></span>
+    </button>
+    <button
+      class="sidebar__close-btn pi pi-times-circle"
       type="button"
       tabindex="0"
       (click)="closeToggleMenu()"
@@ -11,6 +27,11 @@
   </div>
 
   <nav class="sidebar__nav">
-    <p-panelmenu [model]="navLinkInterceptor"></p-panelmenu>
+    <div class="sidebar__nav-main">
+      <p-panelmenu [model]="mainNavLinks"></p-panelmenu>
+    </div>
+    <div class="sidebar__nav-footer" *ngIf="bottomNavLinks?.length">
+      <p-panelmenu [model]="bottomNavLinks"></p-panelmenu>
+    </div>
   </nav>
 </aside>

@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, computed, effect, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { SideNavComponent } from '../../shared/components/side-nav/side-nav.component';
 import { StoreService } from '../../shared/services/store.service';
+import { SidebarCollapseService } from '../../shared/services/sidebar-collapse.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,8 +14,13 @@ import { StoreService } from '../../shared/services/store.service';
 })
 export class DashboardComponent implements OnInit {
   public links: MenuItem[] = [];
-
-  constructor(private readonly storeService: StoreService) {}
+  private collapseService = inject(SidebarCollapseService);
+  public collapsed = computed(() => this.collapseService.isCollapsed());
+  constructor(private readonly storeService: StoreService) {
+    effect(() => {
+      console.log(this.collapsed());
+    });
+  }
 
   ngOnInit(): void {
     const userRole = this.storeService?.getUserRole();
@@ -44,54 +50,21 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-home',
         routerLink: ['/admin/dashboard'],
         routerLinkActiveOptions: { exact: true },
+        tooltip: 'Dashboard',
       },
       {
         label: 'Recruitments',
         icon: 'pi pi-file-edit',
         routerLink: ['/admin/recruitments'],
         routerLinkActiveOptions: { exact: false },
+        tooltip: 'Recruitments',
       },
       {
         label: 'Roles & Access',
         icon: 'pi pi-users',
         routerLink: ['/admin/roles-access'],
         routerLinkActiveOptions: { exact: true },
-      },
-      {
-        label: 'Settings',
-        icon: 'pi pi-cog',
-        items: [
-          {
-            label: 'Questions',
-            icon: 'pi pi-file-check',
-            routerLink: ['/admin/settings/questions'],
-            routerLinkActiveOptions: { exact: true },
-          },
-          {
-            label: 'Batches',
-            icon: 'pi pi-list',
-            routerLink: ['/admin/settings/batches'],
-            routerLinkActiveOptions: { exact: true },
-          },
-          {
-            label: 'Departments',
-            icon: 'pi pi-database',
-            routerLink: ['/admin/settings/departments'],
-            routerLinkActiveOptions: { exact: true },
-          },
-          {
-            label: 'Panels',
-            icon: 'pi pi-clone',
-            routerLink: ['/admin/settings/panels'],
-            routerLinkActiveOptions: { exact: true },
-          },
-          {
-            label: 'Panel Assignment',
-            icon: 'pi pi-user-plus',
-            routerLink: ['/admin/settings/interviewerPanel'],
-            routerLinkActiveOptions: { exact: true },
-          },
-        ],
+        tooltip: 'Roles & Access',
       },
     ];
     if (userRole.includes('interviewer')) {
@@ -100,6 +73,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-calendar',
         routerLink: ['/admin/interviews'],
         routerLinkActiveOptions: { exact: false },
+        tooltip: 'Interviews',
       });
     }
     if (userRole.includes('coordinator')) {
@@ -108,6 +82,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-sitemap',
         routerLink: ['/admin/coordinator'],
         routerLinkActiveOptions: { exact: false },
+        tooltip: 'Coordinator',
       });
     }
     if (userRole.includes('frontdesk')) {
@@ -116,8 +91,46 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-home',
         routerLink: ['/frontdesk'],
         routerLinkActiveOptions: { exact: true },
+        tooltip: 'Frontdesk',
       });
     }
+    // Append Settings as the last menu item
+    links.push({
+      label: 'Settings',
+      icon: 'pi pi-cog',
+      items: [
+        {
+          label: 'Questions',
+          icon: 'pi pi-file-check',
+          routerLink: ['/admin/settings/questions'],
+          routerLinkActiveOptions: { exact: true },
+        },
+        {
+          label: 'Batches',
+          icon: 'pi pi-list',
+          routerLink: ['/admin/settings/batches'],
+          routerLinkActiveOptions: { exact: true },
+        },
+        {
+          label: 'Departments',
+          icon: 'pi pi-database',
+          routerLink: ['/admin/settings/departments'],
+          routerLinkActiveOptions: { exact: true },
+        },
+        {
+          label: 'Panels',
+          icon: 'pi pi-clone',
+          routerLink: ['/admin/settings/panels'],
+          routerLinkActiveOptions: { exact: true },
+        },
+        {
+          label: 'Panel Assignment',
+          icon: 'pi pi-user-plus',
+          routerLink: ['/admin/settings/interviewerPanel'],
+          routerLinkActiveOptions: { exact: true },
+        },
+      ],
+    });
     return links;
   }
 
@@ -128,6 +141,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-home',
         routerLink: ['/candidate'],
         routerLinkActiveOptions: { exact: true },
+        tooltip: 'Dashboard',
       },
     ];
   }
@@ -139,6 +153,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-home',
         routerLink: ['/interviewer'],
         routerLinkActiveOptions: { exact: true },
+        tooltip: 'Dashboard',
       },
     ];
     if (userRole.includes('coordinator')) {
@@ -147,6 +162,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-sitemap',
         routerLink: ['/admin/coordinator'],
         routerLinkActiveOptions: { exact: false },
+        tooltip: 'Coordinator',
       });
     }
     if (userRole.includes('frontdesk')) {
@@ -155,6 +171,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-home',
         routerLink: ['/frontdesk'],
         routerLinkActiveOptions: { exact: true },
+        tooltip: 'Frontdesk',
       });
     }
     return links;
@@ -167,12 +184,14 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-home',
         routerLink: ['/coordinator'],
         routerLinkActiveOptions: { exact: true },
+        tooltip: 'Dashboard',
       },
       {
         label: 'Recruitments',
         icon: 'pi pi-file-edit',
         routerLink: ['/coordinator/recruitments'],
         routerLinkActiveOptions: { exact: false },
+        tooltip: 'Recruitments',
       },
     ];
     if (userRole.includes('interviewer')) {
@@ -181,6 +200,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-calendar',
         routerLink: ['/admin/interviews'],
         routerLinkActiveOptions: { exact: false },
+        tooltip: 'Interviewer',
       });
     }
     if (userRole.includes('frontdesk')) {
@@ -189,6 +209,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-home',
         routerLink: ['/frontdesk'],
         routerLinkActiveOptions: { exact: true },
+        tooltip: 'Frontdesk',
       });
     }
     return links;
@@ -201,6 +222,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-home',
         routerLink: ['/frontdesk'],
         routerLinkActiveOptions: { exact: true },
+        tooltip: 'Recruitments',
       },
     ];
     if (userRole.includes('coordinator')) {
@@ -209,6 +231,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-sitemap',
         routerLink: ['/admin/coordinator'],
         routerLinkActiveOptions: { exact: false },
+        tooltip: 'Coordinator',
       });
     }
     if (userRole.includes('interviewer')) {
@@ -217,6 +240,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-calendar',
         routerLink: ['/admin/interviews'],
         routerLinkActiveOptions: { exact: false },
+        tooltip: 'Interviewer',
       });
     }
     return links;
@@ -229,6 +253,7 @@ export class DashboardComponent implements OnInit {
         icon: 'pi pi-home',
         routerLink: ['/candidate'],
         routerLinkActiveOptions: { exact: true },
+        tooltip: 'Dashboard',
       },
     ];
   }

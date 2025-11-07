@@ -9,12 +9,6 @@
       type="text"
     ></app-input-text>
 
-    <!-- <app-input-text
-      [formGroup]="fGroup"
-      [type]="'password'"
-      [config]="configMap['password']"
-    > -->
-    <!-- </app-input-text> -->
     <app-input-password
       [formGroup]="fGroup"
       [config]="configMap['password']"
@@ -25,6 +19,7 @@
       [buttonWidth]="'full'"
       [isLoading]="isLoading"
       (click)="onSave()"
+      (keydown)="onSave()"
     ></app-button>
   </form>
 

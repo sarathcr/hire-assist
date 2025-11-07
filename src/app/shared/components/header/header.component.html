@@ -1,16 +1,31 @@
 <header class="header">
-  <div
-    class="header__nav"
-    tabindex="0"
-    (click)="onMenuClick()"
-    (keydown.enter)="onMenuClick()"
-    (keydown.space)="onMenuClick()"
-  >
-    <span class="pi pi-bars"></span>
+  <div class="header__left">
+    <div
+      class="header__nav header__nav--mobile"
+      tabindex="0"
+      (click)="onMenuClick()"
+      (keydown.enter)="onMenuClick()"
+      (keydown.space)="onMenuClick()"
+    >
+      <span class="pi pi-bars"></span>
+    </div>
+    <figure class="header__logo"><img src="logo.png" alt="logo" /></figure>
   </div>
-  <div class="header__avatar">
-    <app-drop-down class="dropdown"
-      ><img src="avatar.png" alt="avatar"
-    /></app-drop-down>
+  <div class="header__right">
+    <button
+      *ngIf="isMobile && isMenuOpen()"
+      class="header__close-btn pi pi-times-circle"
+      type="button"
+      tabindex="0"
+      (click)="closeMenu()"
+      (keydown.enter)="closeMenu()"
+      (keydown.space)="closeMenu()"
+      aria-label="Close menu"
+    ></button>
+    <div class="header__avatar">
+      <app-drop-down class="dropdown"
+        ><img src="avatar.png" alt="avatar"
+      /></app-drop-down>
+    </div>
   </div>
 </header>

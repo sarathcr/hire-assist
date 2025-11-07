@@ -28,6 +28,8 @@ import { PanelForm } from '../../../../models/panel-form.model';
 import { Panel } from '../../../../models/panel.model';
 import { PanelService } from '../../../../services/panel.service';
 import { PanelDialogComponent } from './components/panel-dialog/panel-dialog.component';
+import { CollectionService } from '../../../../../../shared/services/collection.service';
+import { StoreService } from '../../../../../../shared/services/store.service';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -98,6 +100,8 @@ export class PanelsComponent implements OnInit, OnDestroy {
     private panelService: PanelService,
     public messageService: MessageService,
     private dataSourceService: TableDataSourceService<any>,
+    private readonly collectionService: CollectionService,
+    private readonly storeService: StoreService,
   ) {
     this.fGroup = buildFormGroup(this.PanelFormData);
   }
@@ -261,13 +265,23 @@ export class PanelsComponent implements OnInit, OnDestroy {
       payload.name = payload.name.trim().toUpperCase().replace(/\s+/g, ' ');
     }
 
-    const next = () => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: `${action ? 'Duplicated' : 'Created'} Panel Successfully`,
-      });
+    const next = (res: Panel[]) => {
+      const actualRes = [res].flat();
+      if (actualRes && actualRes[0]) {
+        this.collectionService.updateCollection('panels', {
+          id: Number(actualRes[0].id),
+          title: actualRes[0].name,
+        });
+      }
+      this.storeService.setIsLoading(false);
       this.isLoading = false;
+      setTimeout(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: `${action ? 'Duplicated' : 'Created'} Panel Successfully`,
+        });
+      }, 200);
       this.getAllPaginatedPanels(this.currentPayload);
     };
 
@@ -296,13 +310,21 @@ export class PanelsComponent implements OnInit, OnDestroy {
     payload.name = payload.name.trim().toUpperCase().replace(/\s+/g, ' ');
     payload.id = payload.id.toString();
 
-    const next = () => {
+    const next = (res: Panel[]) => {
+      this.storeService.setIsLoading(false);
+      const actualRes = [res].flat();
+      if (actualRes && actualRes[0]) {
+        this.collectionService.updateCollection('panels', {
+          id: Number(actualRes[0].id),
+          title: actualRes[0].name,
+        });
+      }
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
         detail: 'Updated the Panel Successfully',
       });
-      this.isLoading = false;
+
       this.getAllPaginatedPanels(this.currentPayload);
     };
 
@@ -331,17 +353,20 @@ export class PanelsComponent implements OnInit, OnDestroy {
   private deletePanelItem(id: number) {
     this.isLoading = true;
     const next = () => {
+      this.storeService.setIsLoading(false);
+      this.collectionService.deleteItemFromCollection('panels', id);
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
         detail: 'Deleted the Panel Successfully',
       });
-      this.isLoading = false;
       this.getAllPaginatedPanels(this.currentPayload);
     };
 
     const error = (error: HttpErrorResponse) => {
       console.log('ERROR', error);
+      this.storeService.setIsLoading(false);
+      this.isLoading = false;
       if (error?.status === 422 && error?.error?.businessError === 3105) {
         this.messageService.add({
           severity: 'error',
@@ -356,7 +381,6 @@ export class PanelsComponent implements OnInit, OnDestroy {
           detail: 'Deletion is failed',
         });
       }
-      this.isLoading = false;
     };
     this.panelService.deleteEntityById(id).subscribe({ next, error });
   }
