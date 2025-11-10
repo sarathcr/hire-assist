@@ -316,7 +316,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Updated the Batch Successfully',
+        detail: 'Updated Batch Successfully',
       });
 
       this.getAllPaginatedBatches(this.currentPayload);
@@ -361,7 +361,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Deleted the Batch Successfully',
+        detail: 'Deleted Batch Successfully',
       });
       this.getAllPaginatedBatches(this.currentPayload);
     };

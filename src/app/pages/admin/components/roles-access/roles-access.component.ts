@@ -169,7 +169,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: 'Updated the User Successfully',
+            detail: 'Updated User Successfully',
           });
 
           this.getAllUsers(new PaginatedPayload());
@@ -228,7 +228,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: 'Deleted the User Successfully',
+            detail: 'Deleted User Successfully',
           });
           this.selectedUsers = this.selectedUsers.filter((id) => id !== userId);
           this.getAllUsers(new PaginatedPayload());
@@ -282,7 +282,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: 'Deleted the Selected Users Successfully',
+            detail: 'Deleted Selected Users Successfully',
           });
           this.selectedUsers = [];
           // Clear all selections in the table component

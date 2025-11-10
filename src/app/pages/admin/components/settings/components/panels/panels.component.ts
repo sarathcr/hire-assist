@@ -322,7 +322,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Updated the Panel Successfully',
+        detail: 'Updated Panel Successfully',
       });
 
       this.getAllPaginatedPanels(this.currentPayload);
@@ -358,7 +358,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Deleted the Panel Successfully',
+        detail: 'Deleted Panel Successfully',
       });
       this.getAllPaginatedPanels(this.currentPayload);
     };
@@ -372,7 +372,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
           severity: 'error',
           summary: 'Error',
           detail:
-            'The deletion is not possible.This panel already exists in interviews',
+            'The deletion is not possible. This Panel already exists in interviews',
         });
       } else {
         this.messageService.add({

@@ -284,7 +284,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Deleted the Panel Assignment Successfully',
+        detail: 'Deleted Panel Assignment Successfully',
       });
       this.isLoading = false;
       this.getPaginatedPanelData(this.currentPayload);
@@ -298,7 +298,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
           severity: 'error',
           summary: 'Error',
           detail:
-            'Cannot delete the panel interviewers as it is used in interview Or the panel interviewers is not exists',
+            'Cannot delete the Panel interviewers as it is used in interview Or the Panel interviewers is not exists',
         });
       } else {
         this.messageService.add({
@@ -374,7 +374,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: 'Updated interviewers successfully',
+            detail: 'Updated Interviewers Successfully',
           });
         },
         error: (error: CustomErrorResponse) => {
@@ -397,13 +397,13 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
               severity: 'error',
               summary: 'Error',
               detail:
-                'Cannot update the panel interviewers, because the panel is currently assigned to an interview.',
+                'Cannot update the Panel interviewers, because the Panel is currently assigned to an interview.',
             });
           } else {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Failed to update panel interviewers',
+              detail: 'Failed to update Panel interviewers',
             });
           }
         },

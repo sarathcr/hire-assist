@@ -278,7 +278,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: `Created department Successfully`,
+          detail: `Created Department Successfully`,
         });
       }, 200);
       this.getAllPaginateddepartmentes(this.currentPayload);
@@ -290,7 +290,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `The Department is already exists.`,
+          detail: `The Department already exists.`,
         });
       } else if (error?.error?.businessError === 3105) {
         this.isLoading = false;
@@ -328,7 +328,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Updated the department Successfully',
+        detail: 'Department Updated Successfully',
       });
 
       this.getAllPaginateddepartmentes(this.currentPayload);
@@ -341,7 +341,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `The Department is not exists.`,
+          detail: `The Department does not exist.`,
         });
       } else if (error?.error?.businessError === 3105) {
         this.isLoading = false;
@@ -367,7 +367,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
           severity: 'error',
           summary: 'Error',
           detail:
-            'The updation is not possible. The department is already referenced by the user.',
+            'The updation is not possible. The Department is already referenced by the User.',
         });
       } else {
         this.messageService.add({
@@ -388,7 +388,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Deleted the department Successfully',
+        detail: 'Deleted Department Successfully',
       });
       this.getAllPaginateddepartmentes(this.currentPayload);
     };
@@ -401,7 +401,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
           severity: 'error',
           summary: 'Error',
           detail:
-            'The deletion is not possible. The department is already referenced by the user.',
+            'The deletion is not possible. The Department is already referenced by the User.',
         });
       } else {
         this.messageService.add({

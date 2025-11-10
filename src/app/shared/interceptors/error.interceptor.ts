@@ -12,6 +12,7 @@ import { StoreService } from '../services/store.service';
 import { REFRESH_TOKEN_URL } from '../constants/api';
 import { AuthService } from '../services/auth.service';
 import { CustomErrorResponse } from '../models/custom-error.models';
+import { CollectionService } from '../services/collection.service';
 interface RefreshTokenResponse {
   accessToken: string;
 }
@@ -69,9 +70,9 @@ const handleError = (
 ): Observable<HttpEvent<unknown>> => {
   switch (error.error.businessError) {
     case 5000: {
+      const collectionService = inject(CollectionService);
       const { accessToken, refreshToken } = storeService.getTokenData();
       const options = { headers: { Authorization: `Bearer ${accessToken}` } };
-
       return httpClient
         .post<RefreshTokenResponse>(
           REFRESH_TOKEN_URL,
@@ -83,7 +84,7 @@ const handleError = (
             if (response && response?.accessToken) {
               const newToken = response.accessToken;
               storeService.setAccessTokenData(response.accessToken);
-
+              collectionService.getCollection();
               const newReq = req.clone({
                 setHeaders: { Authorization: `Bearer ${newToken}` },
               });

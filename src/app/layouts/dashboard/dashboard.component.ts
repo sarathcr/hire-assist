@@ -1,10 +1,10 @@
-import { Component, OnInit, computed, effect, inject } from '@angular/core';
+import { Component, OnInit, computed, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { SideNavComponent } from '../../shared/components/side-nav/side-nav.component';
-import { StoreService } from '../../shared/services/store.service';
 import { SidebarCollapseService } from '../../shared/services/sidebar-collapse.service';
+import { StoreService } from '../../shared/services/store.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,11 +16,7 @@ export class DashboardComponent implements OnInit {
   public links: MenuItem[] = [];
   private collapseService = inject(SidebarCollapseService);
   public collapsed = computed(() => this.collapseService.isCollapsed());
-  constructor(private readonly storeService: StoreService) {
-    effect(() => {
-      console.log(this.collapsed());
-    });
-  }
+  constructor(private readonly storeService: StoreService) {}
 
   ngOnInit(): void {
     const userRole = this.storeService?.getUserRole();
