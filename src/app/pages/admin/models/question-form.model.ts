@@ -1,4 +1,4 @@
-import { Validators } from '@angular/forms';
+import { AbstractControl, ValidationErrors, Validators } from '@angular/forms';
 import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
 
 export class QuestionForm extends FormEntity {
@@ -16,11 +16,25 @@ export class QuestionForm extends FormEntity {
   file?: File;
   metadata: Metadata = {
     validatorsMap: {
-      questionText: [Validators.required, Validators.minLength(10)],
+      questionText: [
+        Validators.required,
+        Validators.minLength(10),
+        Validators.pattern('^[A-Za-z0-9].*'),
+        QuestionForm.noExtraSpacesValidator,
+      ],
       questionType: [Validators.required],
-      options: [Validators.required],
+      options: [
+        Validators.required,
+        Validators.pattern('^[A-Za-z0-9].*'),
+        QuestionForm.noExtraSpacesValidator,
+      ],
       answer: [Validators.required],
-      maxmark: [Validators.required, Validators.min(1), Validators.max(10)],
+      maxmark: [
+        Validators.required,
+        Validators.min(1),
+        Validators.max(9),
+        QuestionForm.onlyNumbersValidator,
+      ],
     },
     configMap: {
       questionText: { id: 'questionText', labelKey: 'Question Text' },
@@ -52,4 +66,24 @@ export class QuestionForm extends FormEntity {
       },
     },
   };
+  private static noExtraSpacesValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
+    const value = control.value?.trim();
+    if (!value) return null;
+
+    if (/\s{2,}/.test(value)) {
+      return { extraSpaces: true };
+    }
+    return null;
+  }
+  private static onlyNumbersValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
+    const value = control.value;
+    if (value === null || value === undefined || value === '') return null;
+
+    const regex = /^[0-9]+$/;
+    return regex.test(value) ? null : { onlyNumbers: true };
+  }
 }

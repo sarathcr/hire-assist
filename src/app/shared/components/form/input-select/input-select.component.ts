@@ -51,6 +51,7 @@ export class InputSelectComponent
   @Input() dynamicSuffix!: string;
   @Input() selectOptions: Options[] | undefined;
   @Input() selectedData: string | undefined;
+  @Input() showClear = true;
 
   public formControl!: FormControl<string>;
   public selectConfig!: CustomSelectConfig;

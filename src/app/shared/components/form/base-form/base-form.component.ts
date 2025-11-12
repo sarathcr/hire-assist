@@ -34,6 +34,11 @@ export abstract class BaseFormComponent {
     if (errors['pattern']) {
       if (this.config.labelKey === 'Title' || this.config.labelKey === 'Name') {
         return `Must begin with an alphabetics`;
+      } else if (
+        this.config.labelKey === 'Question Text' ||
+        this.config.labelKey === 'Options'
+      ) {
+        return `Must begin with an alphabetics or numbers`;
       } else if (this.config.labelKey === 'User Name') {
         return `Please enter a valid user name`;
       } else if (this.config.labelKey === 'Contact Number') {
@@ -55,6 +60,9 @@ export abstract class BaseFormComponent {
     }
     if (errors['extraSpaces']) {
       return 'No consecutive spaces allowed.';
+    }
+    if (errors['onlyNumbers']) {
+      return 'Only numeric values are allowed.';
     }
     return 'This field has an invalid value.';
   }

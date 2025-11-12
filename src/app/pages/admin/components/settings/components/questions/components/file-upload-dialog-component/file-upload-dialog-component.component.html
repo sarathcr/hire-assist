@@ -16,10 +16,20 @@
       url="https://www.primefaces.org/cdn/api/upload.php"
       accept="image/*"
       (onSelect)="onFileChange($event)"
-      maxFileSize="1000000"
+      maxFileSize="5242880"
     />
   </div>
   <div class="file-upload__button">
+    @if (isUploading) {
+      <div class="file-upload__loader">
+        <p-progressSpinner
+          strokeWidth="4"
+          animationDuration=".5s"
+          styleClass="upload-spinner"
+        ></p-progressSpinner>
+        <span class="ml-2">Uploading...</span>
+      </div>
+    }
     <app-button
       [buttonLabel]="'Cancel'"
       [buttonVariant]="'outlined'"
@@ -27,7 +37,7 @@
     ></app-button>
     <app-button
       [buttonLabel]="'Save'"
-      [disabled]="!data.fGroup.valid"
+      [disabled]="!data.fGroup.valid || isUploading"
       (btnClick)="onSubmit()"
     ></app-button>
   </div>

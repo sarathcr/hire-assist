@@ -6,6 +6,7 @@ import {
   DynamicDialogRef,
 } from 'primeng/dynamicdialog';
 import { FileSelectEvent, FileUploadModule } from 'primeng/fileupload';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
 import {
@@ -21,7 +22,12 @@ import { QuestionService } from '../../../../../../services/question.service';
 
 @Component({
   selector: 'app-file-upload-dialog-component',
-  imports: [FileUploadModule, ButtonComponent, InputSelectComponent],
+  imports: [
+    FileUploadModule,
+    ButtonComponent,
+    InputSelectComponent,
+    ProgressSpinnerModule,
+  ],
   templateUrl: './file-upload-dialog-component.component.html',
   styleUrl: './file-upload-dialog-component.component.scss',
 })
@@ -33,6 +39,7 @@ export class FileUploadDialogComponentComponent implements OnInit {
   public metadata!: Metadata[];
   public isEdit = false;
   public attachmentTypeFieldKey!: 'attachmentType' | 'optionAttachmentType';
+  public isUploading = false;
   constructor(
     private ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
@@ -88,6 +95,7 @@ export class FileUploadDialogComponentComponent implements OnInit {
     if (this.fGroup.invalid) {
       return;
     }
+    this.isUploading = true;
     const attachmentType = Number(
       this.fGroup.value[this.attachmentTypeFieldKey],
     );
@@ -100,9 +108,11 @@ export class FileUploadDialogComponentComponent implements OnInit {
 
     this.questionService.uploadFiles(payload).subscribe({
       next: (uploadedFile: FileDto) => {
+        this.isUploading = false;
         this.ref.close(uploadedFile);
       },
       error: (err) => {
+        this.isUploading = false;
         console.error('File upload failed', err);
       },
     });

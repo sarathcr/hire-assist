@@ -105,14 +105,36 @@ export class QuestionFormModalComponent
     if (this.data) {
       this.questionForm = this.data.fGroup;
       const options = this.optionsArray;
+      console.log('length====>', options.length);
+
       if (options.length === 0) {
         options.push(this.fb.group({ options: [] }));
         options.push(this.fb.group({ options: [] }));
       }
       if (!this.isEdit) {
         options.clear();
-        options.push(this.fb.group({ options: [] }));
-        options.push(this.fb.group({ options: [] }));
+        options.push(
+          this.fb.group({
+            options: [
+              '',
+              [
+                Validators.required,
+                Validators.pattern(/^[A-Za-z0-9][A-Za-z0-9\s]*$/),
+              ],
+            ],
+          }),
+        );
+        options.push(
+          this.fb.group({
+            options: [
+              '',
+              [
+                Validators.required,
+                Validators.pattern(/^[A-Za-z0-9][A-Za-z0-9\s]*$/),
+              ],
+            ],
+          }),
+        );
       }
     }
     this.subscribeToOptionArray();
@@ -183,7 +205,13 @@ export class QuestionFormModalComponent
 
   public addOption(): void {
     const optionGroup = this.fb.group({
-      options: ['', Validators.required],
+      options: [
+        '',
+        [
+          Validators.required,
+          Validators.pattern(/^[A-Za-z0-9][A-Za-z0-9\s]*$/),
+        ],
+      ],
       isCorrect: [false],
       optionHasAttachments: [false],
       fileDto: this.fb.group({
@@ -314,6 +342,13 @@ export class QuestionFormModalComponent
     this.data.fGroup.updateValueAndValidity();
     if (this.data.fGroup.invalid) {
       return;
+    }
+    const questionTextControl = this.data.fGroup.get('questionText');
+    if (questionTextControl?.value) {
+      const cleanedValue = questionTextControl.value
+        .trim()
+        .replace(/\s{2,}/g, ' ');
+      questionTextControl.setValue(cleanedValue);
     }
     if (this.isEdit && this.ref) {
       this.ref.close({ ...this.data.fGroup.value, id: this.data.formData.id });

@@ -258,6 +258,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Deleted the Question Successfully',
           });
+          this.isLoading = false;
           this.getAllPaginatedQuestion(this.currentPayload);
         };
         const error = (error: CustomErrorResponse) => {

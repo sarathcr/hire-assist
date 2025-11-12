@@ -130,6 +130,7 @@
         <app-input-select
           [formGroup]="data.fGroup"
           [config]="data.configMap['answer']"
+          [showClear]="!!data.fGroup.get('answer')?.value"
         >
         </app-input-select>
       }
