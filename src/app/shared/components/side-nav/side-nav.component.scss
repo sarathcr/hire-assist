@@ -219,35 +219,18 @@
 .sidebar_collapsed {
   ::ng-deep {
     .p-panelmenu {
-      /* Ensure both top-level and nested links have a hoverable area and are centered */
-      .p-panelmenu-item-link,
-      .p-menuitem-link {
-        display: flex;
-        align-items: center;
+      .p-panelmenu-item-link {
         justify-content: center;
-        width: 100%;
-        min-height: 36px;
-        padding: 10px;
       }
-      /* Hide text portions, keep icons visible for hover target */
+      // Ensure all text labels are hidden in collapsed state
       .p-panelmenu-item-label,
       .p-menuitem-text,
       .p-panelmenu-icon-text {
         display: none !important;
       }
-      /* Also hide any trailing span inside link that could contain text */
+      // Also hide any trailing span inside link that could contain text
       .p-panelmenu-item-link span:last-child {
         display: none !important;
-      }
-      /* Provide a small visual dot so users see a hover target even without text */
-      .p-panelmenu-item-link::before,
-      .p-menuitem-link::before {
-        content: "";
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background-color: var(--primary-color);
-        display: inline-block;
       }
     }
   }

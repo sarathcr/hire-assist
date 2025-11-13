@@ -56,7 +56,7 @@ export class LoginComponent implements OnInit {
     this.fGroup.markAllAsTouched();
     if (!this.fGroup.valid) return;
     this.isLoading = true;
-    this.collectionService.getCollection();
+
     this.authService.login(this.fGroup.value).subscribe({
       next: (res: TokenData) => this.handleLoginSuccess(res),
       error: (e: HttpErrorResponse) => this.handleLoginError(e),
@@ -72,6 +72,7 @@ export class LoginComponent implements OnInit {
       const userRole = getTokenPayloadData(res.accessToken, TokenField.Role);
 
       this.navigateToUserDashboard(userRole);
+      this.collectionService.getCollection();
     }
   }
 

@@ -157,14 +157,15 @@ export class SideNavComponent implements OnChanges, OnInit {
       if (isCollapsed && link['_originalTooltip']) {
         // Show tooltip when collapsed
         link.tooltip = link['_originalTooltip'];
-        link.tooltipOptions = {
-          tooltipPosition: 'right',
-          tooltipEvent: 'hover',
-          tooltipStyleClass: tooltipClass,
-        };
+        if (!link.tooltipOptions) {
+          link.tooltipOptions = {};
+        }
+        link.tooltipOptions.tooltipStyleClass = tooltipClass;
+        link.tooltipOptions.tooltipPosition = 'right';
+        link.tooltipOptions.tooltipEvent = 'hover';
       } else {
         // Hide tooltip when expanded - remove tooltip property
-        delete link.tooltip;
+        link.tooltip = undefined;
         if (link.tooltipOptions) {
           link.tooltipOptions.tooltipStyleClass = tooltipClass;
         }
