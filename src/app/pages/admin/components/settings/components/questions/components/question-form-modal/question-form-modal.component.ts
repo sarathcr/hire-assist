@@ -105,7 +105,6 @@ export class QuestionFormModalComponent
     if (this.data) {
       this.questionForm = this.data.fGroup;
       const options = this.optionsArray;
-      console.log('length====>', options.length);
 
       if (options.length === 0) {
         options.push(this.fb.group({ options: [] }));
@@ -117,10 +116,7 @@ export class QuestionFormModalComponent
           this.fb.group({
             options: [
               '',
-              [
-                Validators.required,
-                Validators.pattern(/^[A-Za-z0-9][A-Za-z0-9\s]*$/),
-              ],
+              [Validators.required, Validators.pattern(/^(?!\s)(?=.*\S).+$/)],
             ],
           }),
         );
@@ -128,10 +124,7 @@ export class QuestionFormModalComponent
           this.fb.group({
             options: [
               '',
-              [
-                Validators.required,
-                Validators.pattern(/^[A-Za-z0-9][A-Za-z0-9\s]*$/),
-              ],
+              [Validators.required, Validators.pattern(/^(?!\s)(?=.*\S).+$/)],
             ],
           }),
         );
@@ -146,6 +139,7 @@ export class QuestionFormModalComponent
       this.questionType = this.optionsMap[
         'questionType'
       ] as unknown as Option[];
+
       this.setConfigMaps();
       this.setOptions();
       this.getFormData();
@@ -207,10 +201,7 @@ export class QuestionFormModalComponent
     const optionGroup = this.fb.group({
       options: [
         '',
-        [
-          Validators.required,
-          Validators.pattern(/^[A-Za-z0-9][A-Za-z0-9\s]*$/),
-        ],
+        [Validators.required, Validators.pattern(/^(?!\s)(?=.*\S).+$/)],
       ],
       isCorrect: [false],
       optionHasAttachments: [false],
@@ -441,7 +432,10 @@ export class QuestionFormModalComponent
     formData.options.forEach((option: any) => {
       optionsArray.push(
         this.fb.group({
-          options: [option.optionText],
+          options: [
+            option.optionText,
+            [Validators.required, Validators.pattern(/^(?!\s)(?=.*\S).+$/)],
+          ],
           optionHasAttachments: [option.hasAttachment],
 
           isCorrect: [option.optionText === formData.answer],

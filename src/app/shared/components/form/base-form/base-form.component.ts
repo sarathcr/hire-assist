@@ -38,7 +38,7 @@ export abstract class BaseFormComponent {
         this.config.labelKey === 'Question Text' ||
         this.config.labelKey === 'Options'
       ) {
-        return `Must begin with an alphabetics or numbers`;
+        return `Whitespace is not allowed at the beginning`;
       } else if (this.config.labelKey === 'User Name') {
         return `Please enter a valid user name`;
       } else if (this.config.labelKey === 'Contact Number') {

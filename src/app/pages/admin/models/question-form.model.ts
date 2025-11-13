@@ -18,14 +18,15 @@ export class QuestionForm extends FormEntity {
     validatorsMap: {
       questionText: [
         Validators.required,
+        Validators.pattern(/^(?!\s)(?=.*\S).+$/),
         Validators.minLength(10),
-        Validators.pattern('^[A-Za-z0-9].*'),
+
         QuestionForm.noExtraSpacesValidator,
       ],
       questionType: [Validators.required],
       options: [
         Validators.required,
-        Validators.pattern('^[A-Za-z0-9].*'),
+        Validators.pattern(/^(?!\s)(?=.*\S).+$/),
         QuestionForm.noExtraSpacesValidator,
       ],
       answer: [Validators.required],
@@ -69,10 +70,11 @@ export class QuestionForm extends FormEntity {
   private static noExtraSpacesValidator(
     control: AbstractControl,
   ): ValidationErrors | null {
-    const value = control.value?.trim();
+    const value = control.value;
+    // const value = control.value?.trim();
     if (!value) return null;
 
-    if (/\s{2,}/.test(value)) {
+    if (/\s{2,}/.test(value.trim())) {
       return { extraSpaces: true };
     }
     return null;
