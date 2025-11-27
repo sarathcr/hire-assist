@@ -106,7 +106,6 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     });
     this.ref.onClose.subscribe((result) => {
       if (result) {
-        console.log('Creating user with data:', result);
         this.collectionService.updateCollection('interviewers', {
           id: result.email,
           title: result.name,
@@ -171,6 +170,10 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         // api call to edit the user
         const next = () => {
+          this.collectionService.updateCollection('interviewers', {
+            id: result.email,
+            title: result.name,
+          });
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
