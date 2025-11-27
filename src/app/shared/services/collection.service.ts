@@ -40,7 +40,7 @@ export class CollectionService {
     this.storeService.setCollection(updatedCollection);
   }
 
-  public deleteItemFromCollection(key: string, id: number) {
+  public deleteItemFromCollection(key: string, id: number | string) {
     const currentCollection: OptionsMap =
       this.storeService.getCollection() || {};
     const updatedItems = currentCollection[key].filter(

@@ -21,6 +21,7 @@ import { StoreService } from '../../../../shared/services/store.service';
 import { RolesAccess } from '../../models/roles-access.model';
 import { UserService } from '../../services/user.service';
 import { UserDialogComponent } from './components/user-dialog/user-dialog.component';
+import { CollectionService } from '../../../../shared/services/collection.service';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -72,10 +73,11 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
 
   constructor(
     public dialog: DialogService,
-    private userService: UserService,
-    private dataSourceService: TableDataSourceService<any>,
-    private messageService: MessageService,
+    private readonly userService: UserService,
+    private readonly dataSourceService: TableDataSourceService<any>,
+    private readonly messageService: MessageService,
     public storeService: StoreService,
+    private readonly collectionService: CollectionService,
   ) {}
 
   // LifeCycle Hooks
@@ -105,8 +107,11 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     this.ref.onClose.subscribe((result) => {
       if (result) {
         console.log('Creating user with data:', result);
+        this.collectionService.updateCollection('interviewers', {
+          id: result.email,
+          title: result.name,
+        });
         this.isLoading = true;
-        // api call to create the user
         const next = () => {
           this.messageService.add({
             severity: 'success',
@@ -223,8 +228,12 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     this.ref.onClose.subscribe((result) => {
       if (result) {
         this.isLoading = true;
-        // api call to delete the user
+
         const next = () => {
+          this.collectionService.deleteItemFromCollection(
+            'interviewers',
+            userId,
+          );
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -277,8 +286,15 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     this.ref.onClose.subscribe((result) => {
       if (result) {
         this.isLoading = true;
-        // api call to delete the users
         const next = () => {
+          if (this.selectedUsers.length > 0) {
+            this.selectedUsers.forEach((userId) => {
+              this.collectionService.deleteItemFromCollection(
+                'interviewers',
+                userId,
+              );
+            });
+          }
           this.messageService.add({
             severity: 'success',
             summary: 'Success',

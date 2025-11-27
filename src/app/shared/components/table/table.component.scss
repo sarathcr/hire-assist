@@ -256,5 +256,12 @@
     pointer-events: none;
     cursor: default;
     user-select: none;
+    right: 0 !important;
   }
+}
+
+:host ::ng-deep th.table__header-no-pointer {
+  position: sticky !important;
+  z-index: 5 !important;
+  pointer-events: auto !important;
 }
