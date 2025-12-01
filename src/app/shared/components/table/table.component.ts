@@ -61,7 +61,7 @@ export const uniqueStatusesForIsSchedule = [
 ];
 export const uniquesActives = [
   { label: 'Active', value: 'Active' },
-  { label: 'InActive', value: 'InActive' },
+  { label: 'Inactive', value: 'Inactive' },
 ];
 
 @Component({

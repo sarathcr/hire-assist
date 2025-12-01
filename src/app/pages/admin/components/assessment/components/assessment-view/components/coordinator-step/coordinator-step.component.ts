@@ -44,24 +44,23 @@ interface RoundFormGroup {
 export const coordinatorRequiredWhenRoundSelectedValidator: ValidatorFn = (
   control: AbstractControl,
 ): ValidationErrors | null => {
-  const assessmentRound = control.get('assessmentRound');
+  const round = control.get('assessmentRound');
   const coordinator = control.get('coordinator');
 
-  if (!assessmentRound || !coordinator) {
-    return null;
+  if (!round || !coordinator) return null;
+
+  const roundEmpty = !round.value || round.value.length === 0;
+  const coordEmpty = !coordinator.value || coordinator.value.length === 0;
+
+  if (roundEmpty) {
+    round.setErrors({ ...(round.errors || {}), required: true });
   }
 
-  const roundHasValue =
-    assessmentRound.value && assessmentRound.value.length > 0;
-  const coordinatorHasValue = coordinator.value && coordinator.value.length > 0;
-
-  if (roundHasValue && !coordinatorHasValue) {
-    coordinator.setErrors({ required: true });
-    return { coordinatorIsMissing: true };
-  } else if (coordinator.hasError('required')) {
-    coordinator.setErrors(null);
+  if (!roundEmpty && coordEmpty) {
+    coordinator.setErrors({ ...(coordinator.errors || {}), required: true });
   }
-  return null;
+
+  return roundEmpty || coordEmpty ? { required: true } : null;
 };
 
 export const uniqueRoundValidator: ValidatorFn = (
@@ -161,12 +160,6 @@ export class CoordinatorStepComponent implements OnInit {
           severity: 'error',
           summary: 'Error',
           detail: 'Each assessment round can only be selected once.',
-        });
-      } else {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Warning',
-          detail: 'Form is invalid. Please check all fields.',
         });
       }
       return;

@@ -80,7 +80,8 @@
           <th
             [pSortableColumn]="
               headerColumn.field !== 'actions' &&
-              headerColumn.field !== 'button'
+              headerColumn.field !== 'button' &&
+              headerColumn.field !== 'active'
                 ? headerColumn.field
                 : ''
             "
@@ -92,7 +93,8 @@
             {{ headerColumn.displayName }}
             @if (
               headerColumn.field !== "actions" &&
-              headerColumn.field !== "button"
+              headerColumn.field !== "button" &&
+              headerColumn.field !== "active"
             ) {
               <p-sortIcon [field]="headerColumn.field" />
             }
