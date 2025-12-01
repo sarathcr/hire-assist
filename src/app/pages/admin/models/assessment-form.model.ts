@@ -23,8 +23,8 @@ export class AssessmentForm extends FormEntity {
       description: { id: 'description', labelKey: 'Description' },
       statusId: { id: 'statusId', labelKey: 'Status' },
       panel: { id: 'panel', labelKey: 'Panel' },
-      startDateTime: { id: 'startDateTime', labelKey: 'StartDate' },
-      endDateTime: { id: 'endDateTime', labelKey: 'EndDate' },
+      startDateTime: { id: 'startDateTime', labelKey: 'Start Date' },
+      endDateTime: { id: 'endDateTime', labelKey: 'End Date' },
       isActive: { id: 'isActive', labelKey: 'Active' },
     },
   };

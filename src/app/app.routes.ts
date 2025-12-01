@@ -128,7 +128,7 @@ export const routes: Routes = [
           { path: 'departments', component: DepartmentsComponent },
           { path: 'panels', component: PanelsComponent },
           {
-            path: 'interviewerPanel',
+            path: 'panel-assignment',
             component: InterviewerPanelAssignmentComponent,
           },
         ],

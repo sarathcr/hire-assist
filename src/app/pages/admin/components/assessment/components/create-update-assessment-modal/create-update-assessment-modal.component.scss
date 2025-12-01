@@ -34,16 +34,17 @@
     box-shadow: 0px -15px 20px -26px #000;
   }
   &_field {
-    &-row {
-      &_one {
-        flex-basis: 50%;
+    &-container {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      width: 100%;
+
+      > * {
+        flex: 1;
       }
     }
 
-    &-container {
-      display: flex;
-      gap: 1rem;
-    }
     &_hidden {
       display: none;
     }

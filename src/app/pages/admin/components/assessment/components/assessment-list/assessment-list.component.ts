@@ -130,7 +130,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
 
     this.ref = this.dialog.open(CreateUpdateAssessmentModalComponent, {
       data,
-      header: 'Create Assessment',
+      header: 'Create new recruitment',
       width: '50vw',
       modal: true,
       focusOnShow: false,

@@ -122,7 +122,7 @@ export class DashboardComponent implements OnInit {
         {
           label: 'Panel Assignment',
           icon: 'pi pi-user-plus',
-          routerLink: ['/admin/settings/interviewerPanel'],
+          routerLink: ['/admin/settings/panel-assignment'],
           routerLinkActiveOptions: { exact: true },
         },
       ],
