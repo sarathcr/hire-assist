@@ -1,8 +1,8 @@
 <div class="coordinator__section">
   <div class="coordinator__section-header">
-    <h2 class="coordinator__section__title app-title">Select Coordinator</h2>
+    <h2 class="coordinator__section__title app-title">Assign Coordinator</h2>
     <p class="coordinator__section__description">
-      Select the round and coordinators to handle the round
+      Select the round and assign coordinators to handle the round
     </p>
   </div>
   @if (coordinatorData) {
@@ -37,7 +37,7 @@
             ></app-button>
           </div>
         } @empty {
-          <p>No assessment rounds configured. Click "Add Round" to begin.</p>
+          <p>No recruitment rounds configured. Click "Add Assignment" to begin.</p>
         }
       </div>
     </form>
@@ -54,7 +54,7 @@
     <footer class="dialog-footer">
       <app-button
         [icon]="'pi pi-plus'"
-        buttonLabel="Add Round"
+        buttonLabel="Add Assignment"
         [buttonVariant]="'outlined'"
         (btnClick)="addRound()"
         type="button"

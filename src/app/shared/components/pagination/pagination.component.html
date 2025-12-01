@@ -1,9 +1,31 @@
 <div class="pagination">
-  <p-paginator
-    (onPageChange)="onPageChange($event)"
-    [first]="first"
-    [rows]="rows"
-    [totalRecords]="totalRecords"
-    [rowsPerPageOptions]="[10, 20, 30]"
-  />
+  @if (isLoading) {
+    <div class="pagination__custom">
+      <!-- Loader -->
+      <div class="flex justify-center items-center gap-1 p-2">
+        <p-skeleton
+          class="hideOnMobile"
+          width="2rem"
+          height="2rem"
+        ></p-skeleton>
+        <p-skeleton width="2rem" height="2rem"></p-skeleton>
+        <p-skeleton width="2rem" height="2rem" shape="circle"></p-skeleton>
+        <p-skeleton width="2rem" height="2rem" shape="circle"></p-skeleton>
+        <p-skeleton width="2rem" height="2rem"></p-skeleton>
+        <p-skeleton
+          class="hideOnMobile"
+          width="2rem"
+          height="2rem"
+        ></p-skeleton>
+      </div>
+    </div>
+  } @else {
+    <p-paginator
+      (onPageChange)="onPageChange($event)"
+      [first]="first"
+      [rows]="rows"
+      [totalRecords]="totalRecords"
+      [rowsPerPageOptions]="[10, 20, 30]"
+    />
+  }
 </div>

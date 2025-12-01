@@ -15,11 +15,12 @@ import { GenericDataSource } from './generic-data-source';
 import { KeyValueMap } from '../../models/common.models';
 import { BaseComponent } from '../base/base.component';
 import { debounceTime, Subject } from 'rxjs';
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-pagination',
   standalone: true,
-  imports: [PaginatorModule],
+  imports: [PaginatorModule,SkeletonModule],
   templateUrl: './pagination.component.html',
   styleUrl: './pagination.component.scss',
 })
@@ -33,9 +34,9 @@ export class PaginationComponent
   @Input() filterMap: KeyValueMap<string> = {};
   @Input() public sortRef: { active: string; direction: 'asc' | 'desc' | '' } =
     { active: '', direction: '' };
-
+  @Input() isLoading = false;
   @Input() dataSource!: GenericDataSource<any>;
-
+ 
   @Output() filterChange = new EventEmitter<PaginatedDataPayload>();
 
   public filterState: KeyValueMap<string> = {};

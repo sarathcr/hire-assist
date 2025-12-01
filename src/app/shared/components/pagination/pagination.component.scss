@@ -1,5 +1,16 @@
 .pagination {
   margin: 0 -30px;
+  &__custom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    background: var(--color-white);
+    color: var(--p-paginator-color);
+    padding: 1rem;
+    border-radius: var(--p-paginator-border-radius);
+    gap: var(--p-paginator-gap);
+  }
   @media screen and (max-width: 768px) {
     margin: 0 -20px;
   }

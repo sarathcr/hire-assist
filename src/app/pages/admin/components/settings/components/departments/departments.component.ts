@@ -23,7 +23,7 @@ import {
   buildFormGroup,
 } from '../../../../../../shared/utilities/form.utility';
 
-import { DepartmentForm } from '../../../../models/department-from.model';
+import { DepartmentForm } from '../../../../models/department-form.model';
 import { Department } from '../../../../models/department.model';
 import { DepartmentService } from '../../../../services/department.service';
 

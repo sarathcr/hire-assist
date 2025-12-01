@@ -257,7 +257,7 @@ export class CoordinatorStepComponent implements OnInit {
         severity: 'warn',
         summary: 'Cannot Open',
         detail:
-          'There are no assessment rounds available to assign coordinators.',
+          'There are no recruitment rounds available to assign coordinators.',
       });
 
       return;
@@ -330,7 +330,7 @@ export class CoordinatorStepComponent implements OnInit {
       } as CustomSelectConfig,
       assessmentRound: {
         id: 'assessmentRound',
-        labelKey: 'Assessment Rounds',
+        labelKey: 'Recruitment Rounds',
         options: this.cordinatorData.assessmentRounds,
       } as CustomSelectConfig,
     };

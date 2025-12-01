@@ -22,6 +22,7 @@ import { RolesAccess } from '../../models/roles-access.model';
 import { UserService } from '../../services/user.service';
 import { UserDialogComponent } from './components/user-dialog/user-dialog.component';
 import { CollectionService } from '../../../../shared/services/collection.service';
+import { isArray } from 'lodash';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -106,10 +107,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     });
     this.ref.onClose.subscribe((result) => {
       if (result) {
-        this.collectionService.updateCollection('interviewers', {
-          id: result.email,
-          title: result.name,
-        });
+        this.setDataToCollection(result);
         this.isLoading = true;
         const next = () => {
           this.messageService.add({
@@ -170,10 +168,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         // api call to edit the user
         const next = () => {
-          this.collectionService.updateCollection('interviewers', {
-            id: result.email,
-            title: result.name,
-          });
+          this.setDataToCollection(result);
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -233,10 +228,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         this.isLoading = true;
 
         const next = () => {
-          this.collectionService.deleteItemFromCollection(
-            'interviewers',
-            userId,
-          );
+          this.deleteUserFromAllCollections(userId);
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -292,10 +284,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         const next = () => {
           if (this.selectedUsers.length > 0) {
             this.selectedUsers.forEach((userId) => {
-              this.collectionService.deleteItemFromCollection(
-                'interviewers',
-                userId,
-              );
+              this.deleteUserFromAllCollections(userId);
             });
           }
           this.messageService.add({
@@ -305,6 +294,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
           });
           this.selectedUsers = [];
           // Clear all selections in the table component
+
           this.tableComponent?.clearAllSelections();
           this.getAllUsers(new PaginatedPayload());
           this.isLoading = false;
@@ -429,5 +419,32 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         this.userService.ActivateUser(payload).subscribe({ next, error });
       }
     });
+  }
+
+  private setDataToCollection(result: any) {
+    if (isArray(result.roles) && result.roles.includes('4')) {
+      this.collectionService.updateCollection('interviewers', {
+        id: result.email,
+        title: result.name,
+      });
+    }
+  }
+
+  private deleteUserFromAllCollections(userId: string) {
+    const collections = ['interviewers', 'coordinators', 'frontdesk'];
+
+    const currentCollection = this.storeService.getCollection() || {};
+
+    for (const key of collections) {
+      const items = currentCollection[key] || [];
+
+      const exists = items.some(
+        (item: any) => item.value === userId.toString(),
+      );
+
+      if (exists) {
+        this.collectionService.deleteItemFromCollection(key, userId);
+      }
+    }
   }
 }
