@@ -22,7 +22,6 @@ import { RolesAccess } from '../../models/roles-access.model';
 import { UserService } from '../../services/user.service';
 import { UserDialogComponent } from './components/user-dialog/user-dialog.component';
 import { CollectionService } from '../../../../shared/services/collection.service';
-import { isArray } from 'lodash';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -162,13 +161,12 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         '640px': '90vw',
       },
     });
-
     this.ref.onClose.subscribe((result) => {
       if (result) {
         this.isLoading = true;
         // api call to edit the user
         const next = () => {
-          this.setDataToCollection(result);
+          this.updateRoleCollections(result);
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -331,10 +329,12 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       ...payload,
       filterMap: { excludedRoles: ['5'], ...payload.filterMap },
     };
+    const currentUser = this.storeService.getUserData();
     const next = (res: any) => {
       const formattedData = res.data.map((item: any) => ({
         ...item,
         roles: item.roles ? item.roles.split(',') : [],
+        isSelf: item.email === currentUser.id || item.id === currentUser.id,
       }));
       this.data = { ...res, data: formattedData };
       this.isLoading = false;
@@ -360,10 +360,12 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   private loadData(payload: PaginatedPayload): void {
+    const currentUser = this.storeService.getUserData();
     this.dataSourceService.getData(payload).subscribe((response: any) => {
       const formattedData = response.data.map((item: any) => ({
         ...item,
         roles: item.roles ? item.roles.split(',') : [],
+        isSelf: item.email === currentUser.id || item.id === currentUser.id,
       }));
       this.data = { ...response, data: formattedData };
     });
@@ -422,11 +424,22 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   private setDataToCollection(result: any) {
-    if (isArray(result.roles) && result.roles.includes('4')) {
-      this.collectionService.updateCollection('interviewers', {
-        id: result.email,
-        title: result.name,
-      });
+    if (!Array.isArray(result.roles)) return;
+
+    const roleCollectionMap: Record<string, string> = {
+      '4': 'interviewers',
+      '1': 'coordinators',
+      '5': 'frontdesks',
+    };
+
+    for (const role of result.roles) {
+      const collectionName = roleCollectionMap[role];
+      if (collectionName) {
+        this.collectionService.updateCollection(collectionName, {
+          id: result.email,
+          title: result.name,
+        });
+      }
     }
   }
 
@@ -446,5 +459,27 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         this.collectionService.deleteItemFromCollection(key, userId);
       }
     }
+  }
+
+  private updateRoleCollections(user: any) {
+    const map: Record<string, string> = {
+      '4': 'interviewers',
+      '1': 'coordinators',
+      '5': 'frontdesks',
+    };
+
+    Object.values(map).forEach((col) => {
+      this.collectionService.deleteItemFromCollection(col, user.email);
+    });
+
+    user.roles.forEach((role: string) => {
+      const col = map[role];
+      if (col) {
+        this.collectionService.updateCollection(col, {
+          id: user.email,
+          title: user.name,
+        });
+      }
+    });
   }
 }

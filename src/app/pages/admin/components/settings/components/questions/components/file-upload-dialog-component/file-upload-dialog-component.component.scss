@@ -1,6 +1,11 @@
 :host {
   padding: var(--spacing-10);
 }
+::ng-deep {
+  .fileUpload__dialog {
+    max-width: 48vw;
+  }
+}
 .file-upload {
   // padding: var(--spacing-10) 0 0;
   &__item {
@@ -65,4 +70,31 @@
       }
     }
   }
+}
+.file-upload__preview {
+  margin-bottom: 10px;
+  position: relative;
+}
+::ng-deep {
+  .file-upload__preview-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+.preview-img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  object-fit: cover;
 }

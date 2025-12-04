@@ -92,6 +92,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
   public configMap!: ConfigMap;
   public isLoading = true;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
+  private previousFilterMap: any = {};
 
   private ref: DynamicDialogRef | undefined;
 
@@ -119,14 +120,18 @@ export class PanelsComponent implements OnInit, OnDestroy {
   }
   // Public Methods
   public onTablePayloadChange(payload: PaginatedPayload): void {
+
+    const isSearch =
+      JSON.stringify(payload.filterMap) !==
+      JSON.stringify(this.previousFilterMap);
+
+    if (isSearch) {
+      payload.pagination.pageNumber = 1;
+    }
+
+    this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
+    this.currentPayload = payload;
     this.loadData(payload);
-    this.currentPayload = {
-      ...payload,
-      pagination: {
-        ...payload.pagination,
-        pageNumber: 1,
-      },
-    };
   }
 
   public addNewPanel() {
@@ -292,11 +297,20 @@ export class PanelsComponent implements OnInit, OnDestroy {
           summary: 'Error',
           detail: 'This name already exists.',
         });
+      } else if (
+        error?.status === 422 &&
+        error?.error?.businessError === 4003
+      ) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: `${error?.error?.errorValue}`,
+        });
       } else {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `${action ? 'Duplication' : 'Creation'} is failed'`,
+          detail: `${action ? 'Duplication' : 'Creation'} is failed`,
         });
       }
       this.isLoading = false;
@@ -335,6 +349,15 @@ export class PanelsComponent implements OnInit, OnDestroy {
           summary: 'Error',
           detail:
             'This name already exists or This panel already exists in interviews',
+        });
+      } else if (
+        error?.status === 422 &&
+        error?.error?.businessError === 4003
+      ) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: `${error?.error?.errorValue}`,
         });
       } else {
         this.messageService.add({

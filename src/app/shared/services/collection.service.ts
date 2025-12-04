@@ -34,8 +34,17 @@ export class CollectionService {
     const newItem: Option = { value: data.id.toString(), label: data.title };
 
     const existingItems = currentCollection[key] || [];
-    const newItems = [...existingItems, newItem];
-    const updatedCollection = { ...currentCollection, [key]: newItems };
+
+    const existingItem = existingItems.find(
+      (item) => item.value === newItem.value,
+    );
+
+    const updatedItems = existingItem
+      ? existingItems.map((item) =>
+          item.value === newItem.value ? newItem : item,
+        )
+      : [...existingItems, newItem];
+    const updatedCollection = { ...currentCollection, [key]: updatedItems };
 
     this.storeService.setCollection(updatedCollection);
   }

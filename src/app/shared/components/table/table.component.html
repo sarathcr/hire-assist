@@ -5,7 +5,7 @@
     [columns]="columnsData()?.columns"
     [rows]="tableData()?.pageSize"
     [totalRecords]="tableData()?.totalRecords || 0"
-    [paginator]="true"
+    [paginator]="(tableData()?.totalRecords || 0) > 0"
     [lazy]="true"
     (onLazyLoad)="onLazyLoad($event)"
     [rowsPerPageOptions]="[5, 10, 15]"
@@ -227,13 +227,11 @@
 
     <ng-template pTemplate="body" let-product let-columns="columns">
       <tr
-        [ngClass]="
-          product.isAlreadyExist
-            ? 'table_isAlready'
-            : product.isDuplicate
-              ? 'table_isDuplicate'
-              : ''
-        "
+        [ngClass]="{
+          table_isAlready: product.isAlreadyExist,
+          table_isDuplicate: product.isDuplicate,
+          'table__row--disabled': product.isSelf,
+        }"
         [pTooltip]="
           product.isAlreadyExist
             ? 'We already have this record in our records.'
@@ -244,7 +242,10 @@
       >
         @if (hasCheckbox) {
           <td>
-            <p-tableCheckbox [value]="product"></p-tableCheckbox>
+            <p-tableCheckbox
+              [value]="product"
+              [disabled]="product.isSelf"
+            ></p-tableCheckbox>
           </td>
         }
         @if (columnsData()?.hasExpanded) {
@@ -305,6 +306,7 @@
                     class="mr-2"
                     [rounded]="true"
                     [outlined]="true"
+                    [disabled]="product.isSelf"
                     (click)="onEdit(product)"
                   />
                 }
@@ -316,6 +318,7 @@
                     severity="danger"
                     [rounded]="true"
                     [outlined]="true"
+                    [disabled]="product.isSelf"
                     (click)="onDelete(product.id)"
                   />
                 }
@@ -563,7 +566,7 @@
         }
       </div>
     </ng-template>
-    <ng-template pTemplate="pagina3torright"></ng-template>
+    <ng-template pTemplate="paginatorright"></ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
         <td [attr.colspan]="(columnsData()?.columns?.length || 0) + 2">

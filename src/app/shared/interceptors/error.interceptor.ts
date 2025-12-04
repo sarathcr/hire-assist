@@ -68,6 +68,16 @@ const handleError = (
   storeService: StoreService,
   httpClient: HttpClient,
 ): Observable<HttpEvent<unknown>> => {
+  if (error.error.status === 401) {
+  storeService.setIsLoading(false);
+  authService.logout();
+  return throwError(() => error);
+}
+if (error.error.status === 403) {
+      storeService.setIsLoading(false);
+      authService.logout();
+      return throwError(() => error);  
+}
   switch (error.error.businessError) {
     case 5000: {
       const collectionService = inject(CollectionService);
@@ -94,11 +104,6 @@ const handleError = (
             return throwError(() => error);
           }),
         );
-    }
-    case 403: {
-      console.log('Forbidden error 403, logging out . . .');
-      authService.logout();
-      return throwError(() => error);
     }
     case 5003: {
       console.log('Refresh Token is Invalid or Expired');

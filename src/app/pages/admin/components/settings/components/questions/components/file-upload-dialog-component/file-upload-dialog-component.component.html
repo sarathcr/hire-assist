@@ -7,17 +7,32 @@
     >
     </app-input-select>
 
-    <p-fileupload
-      class="file-upload__item_field-col_two"
-      mode="basic"
-      chooseLabel="Upload File"
-      chooseIcon="pi pi-upload"
-      name="demo[]"
-      url="https://www.primefaces.org/cdn/api/upload.php"
-      accept="image/*"
-      (onSelect)="onFileChange($event)"
-      maxFileSize="5242880"
-    />
+    <div class="file-upload__item_field-col_two">
+      @if (!previewUrl) {
+        <p-fileupload
+          mode="basic"
+          chooseLabel="Upload File"
+          chooseIcon="pi pi-upload"
+          name="demo[]"
+          url="https://www.primefaces.org/cdn/api/upload.php"
+          accept="image/*"
+          (onSelect)="onFileChange($event)"
+          maxFileSize="5242880"
+        ></p-fileupload>
+      } @else {
+        <div class="file-upload__preview">
+          <img [src]="previewUrl" alt="Preview" class="preview-img" />
+
+          <p-button
+            icon="pi pi-times"
+            styleClass="file-upload__preview-btn"
+            (onClick)="clearFileAndPreview()"
+            type="button"
+            ariaLabel="Clear file and preview"
+          />
+        </div>
+      }
+    </div>
   </div>
   <div class="file-upload__button">
     @if (isUploading) {

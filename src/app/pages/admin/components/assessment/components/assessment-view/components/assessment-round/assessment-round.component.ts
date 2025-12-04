@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   CdkDragDrop,
   DragDropModule,
@@ -28,6 +29,7 @@ import { AssessmentScheduleService } from '../../../../services/assessment-sched
 import { RoundModel } from '../../assessment-view.component';
 import { AssessmentRoundSkeletonComponent } from './assessment-round-skeleton';
 import { InputTextareaComponent } from '../../../../../../../../shared/components/form/input-textarea/input-textarea.component';
+import { CollectionService } from '../../../../../../../../shared/services/collection.service';
 @Component({
   selector: 'app-assessment-round',
   imports: [
@@ -58,6 +60,7 @@ export class AssessmentRoundComponent implements OnInit {
     private storeService: StoreService,
     private messageService: MessageService,
     private assessmentScheduleService: AssessmentScheduleService,
+    private readonly collectionService: CollectionService,
   ) {
     this.fGroup = buildFormGroup(this.assessmentSchedule);
   }
@@ -193,7 +196,24 @@ export class AssessmentRoundComponent implements OnInit {
     this.rounds = this.optionsMap['rounds'] as unknown as Option[];
   }
   private CreateRound(payload: RoundsInterface) {
-    const next = () => {
+    const next = (res: any) => {
+      const roundData = (res as RoundsInterface) || payload;
+      if (roundData?.id) {
+        this.collectionService.updateCollection('rounds', {
+          id: Number(roundData.id),
+          title: roundData.name,
+        });
+
+        this.optionsMap = this.storeService.getCollection() as OptionsMap;
+        this.rounds = [...(this.optionsMap['rounds'] as Option[])];
+        this.configMap['round'] = {
+          ...this.configMap['round'],
+          options: [...this.rounds],
+        };
+      }
+
+      this.fGroup.reset();
+
       setTimeout(() => {
         this.messageService.add({
           severity: 'success',

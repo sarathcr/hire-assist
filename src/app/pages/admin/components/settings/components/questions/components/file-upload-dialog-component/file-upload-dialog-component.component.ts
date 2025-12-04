@@ -1,5 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import {
   DialogService,
   DynamicDialogConfig,
@@ -19,14 +24,18 @@ import {
   FileRequest,
 } from '../../../../../../models/question.model';
 import { QuestionService } from '../../../../../../services/question.service';
+import { CommonModule } from '@angular/common';
+import { Button } from 'primeng/button';
 
 @Component({
   selector: 'app-file-upload-dialog-component',
   imports: [
+    CommonModule,
     FileUploadModule,
     ButtonComponent,
     InputSelectComponent,
     ProgressSpinnerModule,
+    Button,
   ],
   templateUrl: './file-upload-dialog-component.component.html',
   styleUrl: './file-upload-dialog-component.component.scss',
@@ -40,6 +49,8 @@ export class FileUploadDialogComponentComponent implements OnInit {
   public isEdit = false;
   public attachmentTypeFieldKey!: 'attachmentType' | 'optionAttachmentType';
   public isUploading = false;
+  public previewUrl: string | null = null;
+  public fileControl: AbstractControl | null = null;
   constructor(
     private ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
@@ -72,7 +83,7 @@ export class FileUploadDialogComponentComponent implements OnInit {
           this.fb.control(null, Validators.required),
         );
       }
-
+      this.fileControl = this.fGroup.get('file');
       this.configMap = this.data.configMap;
     }
   }
@@ -80,13 +91,25 @@ export class FileUploadDialogComponentComponent implements OnInit {
     const file = event.currentFiles;
 
     if (file.length) {
-      this.fGroup.patchValue({
-        optionAttachmentType: this.fGroup.value[this.attachmentTypeFieldKey],
-        file: file[0],
-      });
-      this.fGroup.updateValueAndValidity();
-      this.uploadedFileName = file[0].name;
+      this.handleFileUpload(file[0]);
+    } else {
+      this.clearFileAndPreview();
     }
+  }
+
+  private handleFileUpload(file: File): void {
+    this.fGroup.patchValue({
+      optionAttachmentType: this.fGroup.value[this.attachmentTypeFieldKey],
+      file: file,
+    });
+    this.fGroup.updateValueAndValidity();
+    this.uploadedFileName = file.name;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.previewUrl = reader.result as string;
+    };
+    reader.readAsDataURL(file);
   }
 
   public onSubmit() {
@@ -118,7 +141,19 @@ export class FileUploadDialogComponentComponent implements OnInit {
     });
   }
 
+  public clearFileAndPreview(): void {
+    if (this.fileControl) {
+      this.fileControl.setValue(null);
+      this.fileControl.markAsUntouched();
+      this.fileControl.updateValueAndValidity();
+    }
+
+    this.previewUrl = null;
+    this.uploadedFileName = undefined;
+  }
+
   public onClose() {
+    this.clearFileAndPreview();
     this.ref.close();
   }
 }

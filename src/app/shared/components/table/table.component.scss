@@ -35,7 +35,11 @@
       }
     }
   }
-
+  &__row--disabled {
+    opacity: 0.6;
+    background-color: #f1f5f9 !important;
+    pointer-events: none;
+  }
   @media (max-width: 440px) {
     ::ng-deep {
       .p-paginator p-component {

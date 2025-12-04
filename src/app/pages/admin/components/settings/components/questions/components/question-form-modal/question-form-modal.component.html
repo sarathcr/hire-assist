@@ -1,6 +1,8 @@
 <div class="question-form">
   <form [formGroup]="data.fGroup">
     <div class="question-form_field-container">
+      <h4 class="question-form__title">Question Details</h4>
+
       <app-input-textarea
         class="question-form_field"
         [formGroup]="data.fGroup"
@@ -55,6 +57,9 @@
         >
         </app-input-select>
       </div>
+
+      <h4 class="question-form__title">Options</h4>
+
       <div class="question-form__switch">
         <app-toggle-switch
           [formGroup]="data.fGroup"
@@ -75,6 +80,7 @@
               [formGroup]="optionCtrl"
               type="text"
               [config]="data.configMap['options']"
+              class="question-form__options-input"
             ></app-input-text>
             <p-button
               class="question-form__options__btn"
@@ -103,13 +109,17 @@
           </div>
         }
       </div>
-      <div class="question-form__switch">
+
+      <div class="question-form__switch question-form__switch_options">
         <app-button
-          buttonLabel="Add New Option"
+          icon="pi pi-plus"
+          buttonLabel="Options"
           [buttonVariant]="'outlined'"
           (btnClick)="addOption()"
         ></app-button>
       </div>
+
+      <h4 class="question-form__title">Answer Selection</h4>
 
       <div class="question-form__switch">
         <app-toggle-switch
