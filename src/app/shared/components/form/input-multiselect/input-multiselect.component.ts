@@ -43,7 +43,9 @@ export class InputMultiselectComponent
   private readonly subs!: Subscription;
 
   get multiSelectDisplay() {
-    return this.selectedItems?.length > this.maxSelectedLabels ? 'comma' : 'chip';
+    const value = this.formControl?.value;
+    const count = Array.isArray(value) ? value.length : 0;
+    return count > this.maxSelectedLabels ? 'comma' : 'chip';
   }
 
   ngOnInit() {

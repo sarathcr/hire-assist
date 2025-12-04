@@ -59,7 +59,7 @@ export class AssignInterviewersDialogueComponent implements OnInit {
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
     const users = this.optionsMap['interviewers'] as unknown as Option[];
-    this.interviewers = users.filter((user) =>
+    this.interviewers = users?.filter((user) =>
       user.roles?.includes('Interviewer'),
     );
     this.panels = this.optionsMap['panels'] as unknown as Option[];
