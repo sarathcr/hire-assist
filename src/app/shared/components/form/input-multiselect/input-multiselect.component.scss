@@ -3,7 +3,21 @@
   position: relative;
   .p-multiselect {
     width: 100%;
-      }
+  }
+  
+  ::ng-deep .p-multiselect-label {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    white-space: normal;
+    overflow: visible;
+    max-height: none;
+  }
+  
+  ::ng-deep .p-multiselect-token {
+    display: inline-flex;
+    margin: 0;
+  }
   .p-floatlabel-on:not(input.p-filled) label {
     font-weight: 300;
     font-size: var(--font-size-base);
