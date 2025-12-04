@@ -359,11 +359,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.openScheduleCandidateModal(emails);
   }
   public OnPanelClick(): void {
-    if (this.selectedCandidates.length > 1) {
+    if (this.selectedCandidates.length !== 1) {
       this.messagesService.add({
         severity: 'warn',
         summary: 'Warning',
-        detail: 'Cannot assign multiple candidates to a panel',
+        detail:
+          this.selectedCandidates.length === 0
+            ? 'Please select a candidate to assign to a panel'
+            : 'Cannot assign multiple candidates to a panel',
       });
       return;
     }
@@ -371,7 +374,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.ref = this.dialog.open(SelectPanelDailogComponent, {
       data: {
         assessmentid: this.assessmentId,
-        interviewId: this.selectedCandidates[0]?.id,
+        interviewId: this.selectedCandidates[0].id,
       },
       header: 'Assign Candidate to panel',
       maximizable: false,

@@ -101,8 +101,9 @@ export const routes: Routes = [
         ],
       },
       {
+        // Route for admin users accessing coordinator features
+        // Full path: /admin/coordinator
         path: 'coordinator',
-
         component: CoordinatorDashboardComponent,
         children: [
           { path: ':id', component: CoordinatorAssessmentComponent },
@@ -186,12 +187,13 @@ export const routes: Routes = [
     runGuardsAndResolvers: 'always',
   },
   {
+    // Route for coordinator role users (top-level)
+    // Full path: /coordinator
+    // Note: This is different from /admin/coordinator above - both routes are needed
     path: 'coordinator',
     component: DashboardComponent,
-
     children: [
       { path: '', component: CoordinatorDashboardComponent },
-
       {
         path: 'recruitments',
         component: CoordinatorDetailsComponent,

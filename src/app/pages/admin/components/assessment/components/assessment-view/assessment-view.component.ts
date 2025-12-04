@@ -158,7 +158,8 @@ export class AssessmentViewComponent extends BaseComponent implements OnInit {
 
   private getCurrentRouteId() {
     this.route.paramMap.subscribe((params) => {
-      this.assessmentId = params.get('id')! as unknown as number;
+      const idParam = params.get('id');
+      this.assessmentId = idParam ? Number(idParam) : 0;
     });
   }
 

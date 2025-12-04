@@ -124,6 +124,7 @@ export class TableComponent<
   public statusOptions: SelectItem[] = uniqueStatuses;
   public statusOptionsForSchedule: SelectItem[] = uniqueStatusesForIsSchedule;
   public hasSearch = input<boolean>(false);
+  public searchDebounceTime = input<number>(400);
   public activeFilters = new Set<string>();
   public isAnyFilterActive = false;
   public globalPayload = new PaginatedPayload();
@@ -179,7 +180,7 @@ export class TableComponent<
     });
 
     const sub = this.searchSubject
-      .pipe(debounceTime(400))
+      .pipe(debounceTime(this.searchDebounceTime()))
       .subscribe((payload: PaginatedPayload) => {
         this.pageChangeAndSort.emit(payload);
       });
