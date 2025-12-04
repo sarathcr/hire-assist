@@ -6,8 +6,8 @@
       [formControlName]="inputTextConfig.id"
       optionLabel="label"
       optionValue="value"
-      display="chip"
-      [maxSelectedLabels]="3"
+      [display]="multiSelectDisplay"
+      [maxSelectedLabels]="maxSelectedLabels"
       selectedItemsLabel="{0} items selected"
       placeholder="{{ placeholder() }}"
     /><label for="over_label">{{

@@ -39,7 +39,12 @@ export class InputMultiselectComponent
   public selectedItems = input<Option[]>();
   public placeholder = input();
   public options: Option[] = [];
+  public maxSelectedLabels = 3;
   private readonly subs!: Subscription;
+
+  get multiSelectDisplay() {
+    return this.selectedItems?.length > this.maxSelectedLabels ? 'comma' : 'chip';
+  }
 
   ngOnInit() {
     this.inputTextConfig = this.config as CustomSelectConfig;
