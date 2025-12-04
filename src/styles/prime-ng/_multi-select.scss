@@ -7,17 +7,69 @@
   max-width: 100%;
 }
 
-.p-multiselect-label {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  white-space: normal;
-  overflow: visible;
-  max-height: none;
+// Ensure all chips are displayed in multiselect when ≤3 items selected
+// Target the label container that holds all chips
+.p-multiselect .p-multiselect-label-container,
+.p-multiselect-label-container {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.25rem !important;
+  overflow: visible !important;
+  max-height: none !important;
+  min-height: auto !important;
+  height: auto !important;
 }
 
+// Target the label element itself - supports both chips and count text
+.p-multiselect .p-multiselect-label,
+.p-multiselect-label {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.25rem !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  max-height: none !important;
+  min-height: auto !important;
+  height: auto !important;
+  line-height: normal !important;
+  align-items: center !important;
+  color: inherit !important; // Ensure text content is visible
+}
+
+// Ensure all tokens/chips are visible when displayed (≤3 items)
+.p-multiselect .p-multiselect-token,
 .p-multiselect-token {
-  display: inline-flex;
-  margin: 0;
-  flex-shrink: 0;
+  display: inline-flex !important;
+  margin: 0 !important;
+  flex-shrink: 0 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+}
+
+// Ensure chips are visible in the label container
+.p-multiselect .p-multiselect-label-container .p-multiselect-token,
+.p-multiselect-label-container .p-multiselect-token,
+.p-multiselect .p-multiselect-label .p-multiselect-token,
+.p-multiselect-label .p-multiselect-token {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+// Production fix: Ensure the "X items selected" text is visible when >3 items selected
+// PrimeNG displays the count text directly in the label when maxSelectedLabels is exceeded
+.p-multiselect .p-multiselect-label span,
+.p-multiselect-label span {
+  display: inline !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  white-space: normal !important;
+  color: inherit !important;
+}
+
+// Production-safe: Ensure label container shows content properly
+.p-multiselect .p-multiselect-label-container,
+.p-multiselect-label-container {
+  color: inherit !important; // Allow both chips and text to be visible
 }
