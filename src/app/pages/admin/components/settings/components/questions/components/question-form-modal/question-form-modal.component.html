@@ -1,166 +1,378 @@
 <div class="question-form">
-  <form [formGroup]="data.fGroup">
-    <div class="question-form_field-container">
-      <h4 class="question-form__title">Question Details</h4>
+  @if (isLoadingData) {
+    <div class="question-form__skeleton">
+      <div class="question-form__container">
+        <!-- Question Details Section -->
+        <div class="question-form__section">
+          <div class="question-form__section-header">
+            <p-skeleton width="12rem" height="1.5rem"></p-skeleton>
+          </div>
+          <div class="question-form__section-content">
+            <p-skeleton
+              height="6rem"
+              styleClass="question-form__skeleton-item"
+            ></p-skeleton>
+            <div class="question-form__field-row">
+              <p-skeleton
+                height="3rem"
+                styleClass="question-form__skeleton-item"
+              ></p-skeleton>
+              <p-skeleton
+                height="3rem"
+                styleClass="question-form__skeleton-item"
+              ></p-skeleton>
+            </div>
+            <div class="question-form__toggle-group">
+              <p-skeleton
+                width="15rem"
+                height="2.5rem"
+                styleClass="question-form__skeleton-item"
+              ></p-skeleton>
+            </div>
+          </div>
+        </div>
 
-      <app-input-textarea
-        class="question-form_field"
-        [formGroup]="data.fGroup"
-        type="text"
-        [config]="data.configMap['questionText']"
-      ></app-input-textarea>
-      <div class="question-form__switch">
-        <app-toggle-switch
-          [formGroup]="data.fGroup"
-          [config]="data.configMap['hasAttachments']"
-        >
-        </app-toggle-switch>
-        <app-toggle-switch
-          [ngClass]="
-            isEdit ? 'question-form_field_show' : 'question-form_field_hidden'
-          "
-          [formGroup]="data.fGroup"
-          [config]="data.configMap['active']"
-        >
-        </app-toggle-switch>
-        @if (questionForm.get("hasAttachments")?.value) {
-          <p-button
-            icon="pi pi-paperclip"
-            class="small-icon-mr-2"
-            [rounded]="true"
-            [outlined]="true"
-            (click)="openAttachmentModal('question')"
-          />
+        <!-- Options Section -->
+        <div class="question-form__section">
+          <div class="question-form__section-header">
+            <p-skeleton width="8rem" height="1.5rem"></p-skeleton>
+          </div>
+          <div class="question-form__section-content">
+            <p-skeleton
+              width="15rem"
+              height="2.5rem"
+              styleClass="question-form__skeleton-item"
+            ></p-skeleton>
+            @for (option of [1, 2]; track option) {
+              <div class="question-form__option-item">
+                <p-skeleton shape="circle" size="2rem"></p-skeleton>
+                <p-skeleton height="3rem" styleClass="flex-1"></p-skeleton>
+              </div>
+            }
+            <div class="question-form__add-option">
+              <p-skeleton width="10rem" height="2.5rem"></p-skeleton>
+            </div>
+          </div>
+        </div>
 
-          @if (data.fGroup.get("fileDto")?.value) {
-            <p-button
-              icon="pi pi-eye"
-              class="mr-2"
-              [rounded]="true"
-              [outlined]="true"
-              (click)="previewAttachment(null)"
-            />
-          }
-        }
+        <!-- Answer Selection Section -->
+        <div class="question-form__section">
+          <div class="question-form__section-header">
+            <p-skeleton width="14rem" height="1.5rem"></p-skeleton>
+          </div>
+          <div class="question-form__section-content">
+            <p-skeleton
+              width="15rem"
+              height="2.5rem"
+              styleClass="question-form__skeleton-item"
+            ></p-skeleton>
+            <p-skeleton
+              height="3rem"
+              styleClass="question-form__skeleton-item"
+            ></p-skeleton>
+          </div>
+        </div>
       </div>
-      <div class="question-form__mark">
-        <app-input-text
-          class="question-form_field-col_one"
-          [formGroup]="data.fGroup"
-          type="text"
-          [config]="data.configMap['maxmark']"
-        ></app-input-text>
-        <app-input-select
-          [formGroup]="data.fGroup"
-          class="question-form_field-col_one"
-          [config]="data.configMap['questionType']"
-        >
-        </app-input-select>
-      </div>
-
-      <h4 class="question-form__title">Options</h4>
-
-      <div class="question-form__switch">
-        <app-toggle-switch
-          [formGroup]="data.fGroup"
-          [config]="data.configMap['optionHasAttachments']"
-        >
-        </app-toggle-switch>
-      </div>
-      <div formArrayName="options" class="question-form__options">
-        @for (
-          optionCtrl of optionsArray.controls;
-          let i = $index;
-          track optionCtrl;
-          let last = $last
-        ) {
-          <div class="question-form__options__item">
-            <app-input-text
-              placeholder="Enter Option"
-              [formGroup]="optionCtrl"
+      <footer class="question-form__footer">
+        <p-skeleton width="6rem" height="2.5rem"></p-skeleton>
+        <p-skeleton width="6rem" height="2.5rem"></p-skeleton>
+      </footer>
+    </div>
+  } @else if (data && data.fGroup) {
+    <form [formGroup]="data.fGroup" class="question-form__form">
+      <div class="question-form__container">
+        <div class="question-form__section">
+          <div class="question-form__section-header">
+            <h4 class="question-form__section-title">
+              <i class="pi pi-file-edit"></i>
+              Question Details
+            </h4>
+          </div>
+          <div class="question-form__section-content">
+            <app-input-textarea
+              class="question-form__field"
+              [formGroup]="data.fGroup"
               type="text"
-              [config]="data.configMap['options']"
-              class="question-form__options-input"
-            ></app-input-text>
-            <p-button
-              class="question-form__options__btn"
-              icon="pi pi-minus"
-              (click)="removeOption(i)"
-            />
+              [config]="data.configMap['questionText']"
+            ></app-input-textarea>
 
-            @if (data.fGroup.get("optionHasAttachments")?.value) {
-              <p-button
-                icon="pi pi-paperclip"
-                class="mr-2"
-                [rounded]="true"
-                [outlined]="true"
-                (click)="openAttachmentModal(i)"
-              />
-              @if (optionCtrl.get("fileDto")?.value?.length > 0) {
-                <p-button
-                  icon="pi pi-eye"
-                  class="mr-2"
-                  [rounded]="true"
-                  [outlined]="true"
-                  (click)="previewAttachment(optionCtrl)"
-                />
+            <div class="question-form__field-row">
+              <app-input-text
+                class="question-form__field-col"
+                [formGroup]="data.fGroup"
+                type="text"
+                [config]="data.configMap['maxmark']"
+              ></app-input-text>
+              <app-input-select
+                [formGroup]="data.fGroup"
+                class="question-form__field-col"
+                [config]="data.configMap['questionType']"
+              >
+              </app-input-select>
+            </div>
+
+            <div class="question-form__toggle-group">
+              <div class="question-form__toggle-item">
+                <app-toggle-switch
+                  [formGroup]="data.fGroup"
+                  [config]="data.configMap['hasAttachments']"
+                >
+                </app-toggle-switch>
+                @if (
+                  questionForm && questionForm.get("hasAttachments")?.value
+                ) {
+                  <div class="question-form__attachment-actions">
+                    <p-button
+                      icon="pi pi-paperclip"
+                      [label]="
+                        data.fGroup.get('fileDto')?.value
+                          ? 'Change Attachment'
+                          : 'Add Attachment'
+                      "
+                      [rounded]="true"
+                      [outlined]="true"
+                      size="small"
+                      (click)="openAttachmentModal('question')"
+                      (onKeyDown)="handleQuestionAttachmentKeyDown($event)"
+                      (keydown)="handleQuestionAttachmentKeyDown($event)"
+                    />
+                    @if (data.fGroup.get("fileDto")?.value) {
+                      <p-button
+                        icon="pi pi-eye"
+                        label="Preview"
+                        [rounded]="true"
+                        [outlined]="true"
+                        size="small"
+                        (click)="previewAttachment(null)"
+                        (onKeyDown)="handleQuestionPreviewKeyDown($event)"
+                        (keydown)="handleQuestionPreviewKeyDown($event)"
+                      />
+                      <p-button
+                        [icon]="isDeletingAttachment ? '' : 'pi pi-trash'"
+                        [label]="
+                          isDeletingAttachment ? 'Deleting...' : 'Delete'
+                        "
+                        [rounded]="true"
+                        [outlined]="true"
+                        size="small"
+                        [severity]="'danger'"
+                        [disabled]="isDeletingAttachment"
+                        (click)="deleteQuestionAttachment()"
+                        (onKeyDown)="handleQuestionDeleteKeyDown($event)"
+                        (keydown)="handleQuestionDeleteKeyDown($event)"
+                      >
+                        @if (isDeletingAttachment) {
+                          <p-progressSpinner
+                            [style]="{ width: '16px', height: '16px' }"
+                            strokeWidth="4"
+                            animationDuration=".5s"
+                          ></p-progressSpinner>
+                        }
+                      </p-button>
+                    }
+                  </div>
+                }
+              </div>
+              @if (isEdit) {
+                <div class="question-form__toggle-item">
+                  <app-toggle-switch
+                    [formGroup]="data.fGroup"
+                    [config]="data.configMap['active']"
+                  >
+                  </app-toggle-switch>
+                </div>
               }
+            </div>
+          </div>
+        </div>
+
+        <div class="question-form__section">
+          <div class="question-form__section-header">
+            <h4 class="question-form__section-title">
+              <i class="pi pi-list"></i>
+              Options
+            </h4>
+          </div>
+          <div class="question-form__section-content">
+            <div class="question-form__toggle-item">
+              <app-toggle-switch
+                [formGroup]="data.fGroup"
+                [config]="data.configMap['optionHasAttachments']"
+              >
+              </app-toggle-switch>
+            </div>
+            <div formArrayName="options" class="question-form__options">
+              @for (
+                optionCtrl of optionsArray.controls;
+                let i = $index;
+                track optionCtrl;
+                let last = $last
+              ) {
+                <div class="question-form__option-item">
+                  <div class="question-form__option-number">{{ i + 1 }}</div>
+                  <div class="question-form__option-content">
+                    <app-input-text
+                      placeholder="Enter option text"
+                      [formGroup]="optionCtrl"
+                      type="text"
+                      [config]="data.configMap['options']"
+                      class="question-form__option-input"
+                    ></app-input-text>
+                    @if (data.fGroup.get("optionHasAttachments")?.value) {
+                      <div class="question-form__option-actions">
+                        <p-button
+                          icon="pi pi-paperclip"
+                          [label]="
+                            optionCtrl.get('fileDto')?.value?.length > 0
+                              ? 'Change Attachment'
+                              : 'Add Attachment'
+                          "
+                          [rounded]="true"
+                          [outlined]="true"
+                          size="small"
+                          (click)="openAttachmentModal(i)"
+                          (onKeyDown)="handleOptionAttachmentKeyDown($event, i)"
+                          (keydown)="handleOptionAttachmentKeyDown($event, i)"
+                        />
+                        @if (optionCtrl.get("fileDto")?.value?.length > 0) {
+                          <p-button
+                            icon="pi pi-eye"
+                            label="Preview"
+                            [rounded]="true"
+                            [outlined]="true"
+                            size="small"
+                            (click)="previewAttachment(optionCtrl)"
+                            (onKeyDown)="
+                              handleOptionPreviewKeyDown($event, optionCtrl)
+                            "
+                            (keydown)="
+                              handleOptionPreviewKeyDown($event, optionCtrl)
+                            "
+                          />
+                          <p-button
+                            [icon]="
+                              deletingOptionAttachments.get(i)
+                                ? ''
+                                : 'pi pi-trash'
+                            "
+                            [label]="
+                              deletingOptionAttachments.get(i)
+                                ? 'Deleting...'
+                                : 'Delete'
+                            "
+                            [rounded]="true"
+                            [outlined]="true"
+                            size="small"
+                            [severity]="'danger'"
+                            [disabled]="deletingOptionAttachments.get(i)"
+                            (click)="deleteOptionAttachment(i)"
+                            (onKeyDown)="handleOptionDeleteKeyDown($event, i)"
+                            (keydown)="handleOptionDeleteKeyDown($event, i)"
+                          >
+                            @if (deletingOptionAttachments.get(i)) {
+                              <p-progressSpinner
+                                [style]="{ width: '16px', height: '16px' }"
+                                strokeWidth="4"
+                                animationDuration=".5s"
+                              ></p-progressSpinner>
+                            }
+                          </p-button>
+                        }
+                      </div>
+                    }
+                  </div>
+                  <p-button
+                    class="question-form__option-remove"
+                    icon="pi pi-trash"
+                    [rounded]="true"
+                    [outlined]="true"
+                    severity="danger"
+                    size="small"
+                    [pTooltip]="
+                      optionsArray.length > 2
+                        ? 'Remove Option'
+                        : 'At least 2 options required'
+                    "
+                    [disabled]="optionsArray.length <= 2"
+                    (click)="removeOption(i)"
+                    (onKeyDown)="handleRemoveOptionKeyDown($event, i)"
+                    (keydown)="handleRemoveOptionKeyDown($event, i)"
+                  />
+                </div>
+              }
+            </div>
+
+            <div class="question-form__add-option">
+              <app-button
+                icon="pi pi-plus"
+                buttonLabel="Add Option"
+                [buttonVariant]="'outlined'"
+                [disabled]="optionsArray.length >= 7"
+                (btnClick)="addOption()"
+              ></app-button>
+              @if (optionsArray.length >= 7) {
+                <span class="question-form__helper-text"
+                  >Maximum 7 options allowed</span
+                >
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="question-form__section">
+          <div class="question-form__section-header">
+            <h4 class="question-form__section-title">
+              <i class="pi pi-check-circle"></i>
+              Answer Selection
+            </h4>
+          </div>
+          <div class="question-form__section-content">
+            <div class="question-form__toggle-item">
+              <app-toggle-switch
+                [formGroup]="data.fGroup"
+                [config]="data.configMap['isMultipleChoice']"
+              >
+              </app-toggle-switch>
+            </div>
+            @if (data.fGroup.get("isMultipleChoice")?.value) {
+              <app-input-multiselect
+                class="question-form__field"
+                [formGroup]="data.fGroup"
+                [config]="data.configMap['answer']"
+                [selectedItems]=""
+              />
+              <p class="question-form__helper-text">
+                Select one or more correct answers
+              </p>
+            } @else {
+              <app-input-select
+                class="question-form__field"
+                [formGroup]="data.fGroup"
+                [config]="data.configMap['answer']"
+                [showClear]="!!data.fGroup.get('answer')?.value"
+              >
+              </app-input-select>
+              <p class="question-form__helper-text">
+                Select the correct answer
+              </p>
             }
           </div>
-        }
+        </div>
       </div>
 
-      <div class="question-form__switch question-form__switch_options">
-        <app-button
-          icon="pi pi-plus"
-          buttonLabel="Options"
-          [buttonVariant]="'outlined'"
-          (btnClick)="addOption()"
-        ></app-button>
-      </div>
-
-      <h4 class="question-form__title">Answer Selection</h4>
-
-      <div class="question-form__switch">
-        <app-toggle-switch
-          [formGroup]="data.fGroup"
-          [config]="data.configMap['isMultipleChoice']"
-        >
-        </app-toggle-switch>
-      </div>
-      @if (data.fGroup.get("isMultipleChoice")?.value) {
-        <app-input-multiselect
-          class="interviewer_field"
-          k
-          [formGroup]="data.fGroup"
-          [config]="data.configMap['answer']"
-          [selectedItems]=""
-        />
-      } @else {
-        <app-input-select
-          [formGroup]="data.fGroup"
-          [config]="data.configMap['answer']"
-          [showClear]="!!data.fGroup.get('answer')?.value"
-        >
-        </app-input-select>
-      }
-    </div>
-    <footer class="dialog-footer">
-      <div class="dialog-footer__btn-wrapper">
+      <footer class="question-form__footer">
         <app-button
           buttonLabel="Cancel"
           [buttonVariant]="'outlined'"
           (btnClick)="onClose()"
         ></app-button>
-      </div>
-
-      <div class="dialog-footer__btn-wrapper">
         <app-button
           buttonLabel="Submit"
           [disabled]="!data.fGroup.valid"
           (btnClick)="onSubmit()"
-        ></app-button>
-      </div>
-    </footer>
-  </form>
+        >
+        </app-button>
+      </footer>
+    </form>
+  }
 </div>

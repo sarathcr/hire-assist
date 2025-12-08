@@ -86,15 +86,19 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   public isImageLoadings: Record<number, boolean> = {};
   public questionId!: number;
   public isLoading = true;
+  public questionFileData: Record<number, FileDto> = {};
+  public optionFileData: Record<number, FileDto> = {};
 
   private currentPayload: PaginatedPayload = new PaginatedPayload();
+  // Flag to prevent recursive calls when updating data programmatically
+  private isUpdatingData = false;
   constructor(
-    private questionService: QuestionService,
-    private storeService: StoreService,
-    private messageService: MessageService,
+    private readonly questionService: QuestionService,
+    private readonly storeService: StoreService,
+    private readonly messageService: MessageService,
     public dialog: DialogService,
     public interviewService: InterviewService,
-    private dataSourceService: TableDataSourceService<any>,
+    private readonly dataSourceService: TableDataSourceService<any>,
     private readonly collectionService: CollectionService,
   ) {
     this.fGroup = buildFormGroup(this.questionFormData);
@@ -103,7 +107,11 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
-    this.getAllPaginatedQuestion(new PaginatedPayload());
+    // Initialize with pageSize 10 to match table's default and prevent duplicate calls
+    const initialPayload = new PaginatedPayload();
+    initialPayload.pagination.pageSize = 10;
+    this.currentPayload = initialPayload;
+    this.getAllPaginatedQuestion(initialPayload);
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
     this.questionType = this.optionsMap['questionType'] as unknown as Option[];
@@ -122,6 +130,10 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   }
   // Public Methods
   public onTablePayloadChange(payload: PaginatedPayload): void {
+    // Prevent recursive calls when updating data programmatically
+    if (this.isUpdatingData) {
+      return;
+    }
     this.currentPayload = {
       ...payload,
       pagination: {
@@ -146,6 +158,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       width: '50vw',
       modal: true,
       focusOnShow: false,
+      focusTrap: false,
+
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -171,18 +185,22 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             return {
               optionText: o.options,
               hasAttachment: formValue.optionHasAttachments || false,
-              isCorrect: o.options === formValue.answer ? true : false,
+              isCorrect: o.options === formValue.answer,
               fileDto:
                 Array.isArray(fileDtoArray) && fileDtoArray.length > 0
                   ? fileDtoArray[0]
                   : null,
             };
           }),
-          answer: Array.isArray(formValue.answer)
-            ? formValue.answer
-            : formValue.answer
-              ? [formValue.answer]
-              : [],
+          answer: (() => {
+            if (Array.isArray(formValue.answer)) {
+              return formValue.answer;
+            }
+            if (formValue.answer) {
+              return [formValue.answer];
+            }
+            return [];
+          })(),
           active: formValue.active,
           hasAttachment: formValue.hasAttachments,
           questionType: selectedQuestionTypeLabel,
@@ -221,6 +239,22 @@ export class QuestionsComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  public loadQuestionImage(id: number): void {
+    if (this.questionFileData[id] && !this.previewImageUrls[id]) {
+      // Set loading state immediately to show loader
+      this.isImageLoadings[id] = true;
+      this.previewImage(this.questionFileData[id], id);
+    }
+  }
+
+  public loadOptionImage(id: number): void {
+    if (this.optionFileData[id] && !this.previewImageUrls[id]) {
+      // Set loading state immediately to show loader
+      this.isImageLoadings[id] = true;
+      this.previewImage(this.optionFileData[id], id);
+    }
   }
   public deleteQuestion(id: any) {
     const modalData: DialogData = {
@@ -287,26 +321,22 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
   public getByIdQuestion(data: number | any) {
     this.questionId = data.id;
-    this.questionService.getQuestion(data.id).subscribe({
-      next: (res: Questionsinterface) => {
-        if (res) {
-          console.log('res', res.answer ?? []);
-          this.openEditQuestionModal(res);
-        }
-      },
-      error: () => {
-        this.storeService.setIsLoading(false);
-      },
-    });
+    // Open modal immediately with loading state
+    this.openEditQuestionModal(null, data.id);
   }
-  public openEditQuestionModal(question: Questionsinterface): void {
+  public openEditQuestionModal(
+    question: Questionsinterface | null,
+    questionId?: number,
+  ): void {
     const data = {
       fGroup: this.fGroup,
-      formData: question,
+      formData: question || undefined,
       configMap: this.configMap,
       isChoice: true,
       questionType: this.questionType,
       previewCallback: this.previewFile.bind(this),
+      isLoading: !question && !!questionId,
+      questionId: questionId,
     };
     document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(QuestionFormModalComponent, {
@@ -330,8 +360,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             (type: Option) => type.value === raw.questionType,
           )?.label || 'default';
         const isMultipleChoice = raw.isMultipleChoice ?? false;
+        const questionId = question?.id || this.questionId;
         const transformed = {
-          id: question.id,
+          id: questionId,
           questionText: raw.questionText,
           maxMark: raw.maxmark,
           options: raw.options.map((o: any) => ({
@@ -343,11 +374,15 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 ? o.fileDto[0]
                 : null,
           })),
-          answer: Array.isArray(raw.answer)
-            ? raw.answer
-            : raw.answer
-              ? [raw.answer]
-              : [],
+          answer: (() => {
+            if (Array.isArray(raw.answer)) {
+              return raw.answer;
+            }
+            if (raw.answer) {
+              return [raw.answer];
+            }
+            return [];
+          })(),
           active: raw.active,
           isMultipleChoice: isMultipleChoice,
           hasAttachment: raw.hasAttachments,
@@ -363,18 +398,27 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
   public previewFile(blobId: string, attachmentType: number) {
     this.dialog.open(FileComponent, {
-      header: 'Preview file',
-      width: '50vw',
+      header: 'Image Preview',
+      width: '80vw',
       modal: true,
       focusOnShow: false,
-      closable: false,
+      closable: true,
+      styleClass: 'image-preview-dialog',
       data: { blobId, attachmentType },
+      breakpoints: {
+        '960px': '90vw',
+        '640px': '95vw',
+      },
     });
   }
   public getAllPaginatedQuestion(payload: PaginatedPayload) {
     this.isLoading = true;
     this.previewImageUrls = {};
     this.isImageLoadings = {};
+    this.questionFileData = {};
+    this.optionFileData = {};
+    // Set flag before making the call to prevent recursive updates
+    this.isUpdatingData = true;
     const next = (res: any) => {
       if (res) {
         const transformedData = res.data.map((item: Questionsinterface) => ({
@@ -385,18 +429,22 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         }));
         res.data.forEach((response: any) => {
           if (response.hasAttachment && response.files) {
-            this.isImageLoadings[response.id] = true;
-            this.previewImage(response.files, response.id);
+            // Store file data for lazy loading, don't load image yet
+            this.questionFileData[response.id] = response.files;
           }
         });
         this.data = { ...res, data: transformedData };
-        console.log('data', this.data);
       }
       this.isLoading = false;
+      // Reset flag after data update to allow future user interactions
+      setTimeout(() => {
+        this.isUpdatingData = false;
+      }, 150);
     };
 
     const error = () => {
       this.isLoading = false;
+      this.isUpdatingData = false; // Reset flag on error
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -430,8 +478,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       attachmentType: option.optionsAttachmentTypeId,
     }));
     this.opt.forEach((opt: any) => {
-      this.isImageLoadings[opt.id] = true;
       if (opt.hasAttachments && opt.blobId) {
+        // Store file data for lazy loading, don't load image yet
         const file: FileDto = {
           blobId: opt.blobId,
           attachmentType: opt.attachmentType,
@@ -439,7 +487,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
           path: opt.path,
           url: opt.url,
         };
-        this.previewImage(file, opt.id);
+        this.optionFileData[opt.id] = file;
       }
     });
     return this.opt;
@@ -449,7 +497,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const next = (res: any) => {
       const questionData = (res as Questionsinterface) || payload;
-      if (questionData && questionData.id) {
+      if (questionData?.id) {
         this.collectionService.updateCollection('questions', {
           id: questionData.id,
           title: questionData.questionText,
@@ -491,7 +539,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const next = (res: any) => {
       const questionData = (res as Questionsinterface) || payload;
-      if (questionData && questionData.id) {
+      if (questionData?.id) {
         this.collectionService.updateCollection('questions', {
           id: questionData.id,
           title: questionData.questionText,
@@ -529,8 +577,15 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   }
 
   private loadData(payload: PaginatedPayload): void {
+    // Prevent recursive calls when updating data programmatically
+    if (this.isUpdatingData) {
+      return;
+    }
     this.previewImageUrls = {};
     this.isImageLoadings = {};
+    this.questionFileData = {};
+    this.optionFileData = {};
+    this.isUpdatingData = true;
     this.dataSourceService.getData(payload).subscribe((response: any) => {
       const transformedData = response.data.map((item: Questionsinterface) => ({
         ...item,
@@ -540,12 +595,16 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       }));
 
       response.data.forEach((response: any) => {
-        this.isImageLoadings[response.id] = true;
         if (response.hasAttachment && response.files) {
-          this.previewImage(response.files, response.id);
+          // Store file data for lazy loading, don't load image yet
+          this.questionFileData[response.id] = response.files;
         }
       });
       this.data = { ...response, data: transformedData };
+      // Reset flag after data update
+      setTimeout(() => {
+        this.isUpdatingData = false;
+      }, 100);
     });
   }
 

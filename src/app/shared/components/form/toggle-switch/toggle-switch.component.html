@@ -1,8 +1,8 @@
 <div class="toggle-switch" [formGroup]="formGroup">
-  <label for="over_label">{{ customToggleSwitchConfig.labelKey }}</label>
+  <label [for]="toggleId">{{ customToggleSwitchConfig.labelKey }}</label>
   <p-floatlabel variant="on">
     <p-toggleswitch
-      id="over_label"
+      [id]="toggleId"
       pToggleswitch
       [formControlName]="customToggleSwitchConfig.id"
       [trueValue]="true"

@@ -101,10 +101,20 @@ export class TableComponent<
   private readonly searchSubject = new Subject<PaginatedPayload>();
   @Input() previewImageUrls: Record<number, string[]> = {};
   @Input() isImageLoadings: Record<number, boolean> = {};
+  @Input() onLoadQuestionImage?: (id: number) => void;
+  @Input() onLoadOptionImage?: (id: number) => void;
   @ViewChild('dt') table!: Table;
   @Input() hasCheckbox = true;
   // Track first lazy load event
   public isFirstLazyLoad = true;
+  // Flag to prevent recursive onLazyLoad calls when programmatically updating table.first
+  private isUpdatingTableFirst = false;
+  // Track last pagination call to prevent duplicates
+  private lastPaginationCall: {
+    payload: PaginatedPayload;
+    timestamp: number;
+  } | null = null;
+  private readonly PAGINATION_DEBOUNCE_MS = 100;
 
   // Input Properties
   public tableData = input<PaginatedData<T>>();
@@ -153,16 +163,21 @@ export class TableComponent<
     effect(() => {
       const currentTableData = this.tableData();
 
-      if (currentTableData) {
+      if (currentTableData && this.table) {
         this.internalIsLoading.set(false);
 
-        if (this.table) {
-          const newFirstIndex =
-            (currentTableData.pageNumber - 1) * currentTableData.pageSize;
+        const newFirstIndex =
+          (currentTableData.pageNumber - 1) * currentTableData.pageSize;
 
-          if (this.table.first !== newFirstIndex) {
-            this.table.first = newFirstIndex;
-          }
+        // Only update if different and not already updating to prevent loops
+        if (this.table.first !== newFirstIndex && !this.isUpdatingTableFirst) {
+          this.isUpdatingTableFirst = true;
+          this.table.first = newFirstIndex;
+          // Reset flag after change detection cycle to prevent recursive onLazyLoad calls
+          // Use a longer timeout to ensure PrimeNG processes the change
+          setTimeout(() => {
+            this.isUpdatingTableFirst = false;
+          }, 100);
         }
 
         // Resync current page visual selection from persisted ids
@@ -364,16 +379,49 @@ export class TableComponent<
     return this.isLoading(); // Assuming isLoading() returns a boolean or signal value
   }
   public onLazyLoad(event: any): void {
+    // Prevent recursive calls when programmatically updating table.first
+    if (this.isUpdatingTableFirst) {
+      return;
+    }
+
+    // Skip first lazy load to prevent duplicate with initial ngOnInit call
     if (this.isFirstLazyLoad) {
       this.isFirstLazyLoad = false;
       return;
     }
+
+    // Prevent calls if already loading (from parent or internal)
+    if (this.isLoading()) {
+      return;
+    }
+
     this.internalIsLoading.set(true);
     this.activeFilters.clear();
     const payload: PaginatedPayload = new PaginatedPayload();
     payload.pagination.pageNumber = (event.first ?? 0) / (event.rows ?? 1) + 1;
     payload.pagination.pageSize =
       event.rows ?? this.tableData()?.pageSize ?? 10;
+
+    // Prevent duplicate calls within debounce window
+    const now = Date.now();
+    if (this.lastPaginationCall) {
+      const timeSinceLastCall = now - this.lastPaginationCall.timestamp;
+      const isSamePayload = this.isSamePayload(
+        payload,
+        this.lastPaginationCall.payload,
+      );
+
+      if (timeSinceLastCall < this.PAGINATION_DEBOUNCE_MS && isSamePayload) {
+        this.internalIsLoading.set(false);
+        return;
+      }
+    }
+
+    // Update last call tracking
+    this.lastPaginationCall = {
+      payload: { ...payload },
+      timestamp: now,
+    };
 
     // Sorting
     if (event.multiSortMeta) {
@@ -461,6 +509,20 @@ export class TableComponent<
     } else {
       return this.matchModeOptions;
     }
+  }
+
+  private isSamePayload(
+    payload1: PaginatedPayload,
+    payload2: PaginatedPayload,
+  ): boolean {
+    return (
+      payload1.pagination.pageNumber === payload2.pagination.pageNumber &&
+      payload1.pagination.pageSize === payload2.pagination.pageSize &&
+      JSON.stringify(payload1.filterMap) ===
+        JSON.stringify(payload2.filterMap) &&
+      JSON.stringify(payload1.multiSortedColumns) ===
+        JSON.stringify(payload2.multiSortedColumns)
+    );
   }
 
   private mapMatchModeToOperator(matchMode: string, value: any): string {

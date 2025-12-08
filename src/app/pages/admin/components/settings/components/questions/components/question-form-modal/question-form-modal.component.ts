@@ -11,12 +11,13 @@ import {
 } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { Tooltip } from 'primeng/tooltip';
 import {
   DialogService,
   DynamicDialogConfig,
   DynamicDialogRef,
 } from 'primeng/dynamicdialog';
-import { FileSelectEvent, FileUploadModule } from 'primeng/fileupload';
+import { FileUploadModule } from 'primeng/fileupload';
 import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
@@ -30,18 +31,41 @@ import { StoreService } from '../../../../../../../../shared/services/store.serv
 import {
   ConfigMap,
   CustomSelectConfig,
-  Metadata,
 } from '../../../../../../../../shared/utilities/form.utility';
 import { QuestionForm } from '../../../../../../models/question-form.model';
 import {
   FileDto,
   FileFormGroup,
   FileInterface,
-  FileRequest,
   QuestionFormGroup,
+  Questionsinterface,
 } from '../../../../../../models/question.model';
 import { QuestionService } from '../../../../../../services/question.service';
 import { FileUploadDialogComponentComponent } from '../file-upload-dialog-component/file-upload-dialog-component.component';
+import { DialogComponent } from '../../../../../../../../shared/components/dialog/dialog.component';
+import { DialogFooterComponent } from '../../../../../../../../shared/components/dialog-footer/dialog-footer.component';
+import { DialogData } from '../../../../../../../../shared/models/dialog.models';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SkeletonModule } from 'primeng/skeleton';
+
+// Constants
+const OPTION_VALIDATORS = [
+  Validators.required,
+  Validators.pattern(/^(?!\s)(?=.*\S).+$/),
+];
+
+const MIN_OPTIONS_COUNT = 2;
+const MAX_OPTIONS_COUNT = 7;
+
+const DIALOG_BREAKPOINTS = {
+  '960px': '75vw',
+  '640px': '90vw',
+};
+
+const KEYBOARD_KEYS = {
+  ENTER: 'Enter',
+  SPACE: ' ',
+} as const;
 
 @Component({
   selector: 'app-question-form-modal',
@@ -57,6 +81,9 @@ import { FileUploadDialogComponentComponent } from '../file-upload-dialog-compon
     FormsModule,
     InputMultiselectComponent,
     ButtonComponent,
+    Tooltip,
+    ProgressSpinnerModule,
+    SkeletonModule,
   ],
   templateUrl: './question-form-modal.component.html',
   styleUrl: './question-form-modal.component.scss',
@@ -65,23 +92,28 @@ export class QuestionFormModalComponent
   extends BaseComponent
   implements OnInit, OnDestroy
 {
-  public configMap!: ConfigMap;
-  public fGroup!: FormGroup;
-  public uploadedFileName: string | undefined;
+  // Public Properties
   public data!: QuestionFormGroup;
-  public fileData!: FileFormGroup;
-  public metadata!: Metadata[];
-  public showTime = true;
-  public isEdit = false;
-  public questionForm!: FormGroup;
-  public answer!: Option[];
-  public selectedOptionIndex!: number | string | null;
-  public attachmentValue!: string;
-  private questionType!: Option[];
+  public questionForm?: FormGroup;
   public optionsMap!: OptionsMap;
+  public isEdit = false;
+  public isDeletingAttachment = false;
+  public deletingOptionAttachments = new Map<number, boolean>();
+  public isLoadingData = false;
+
+  // Private Properties
+  private configMap!: ConfigMap;
+  private questionType!: Option[];
   private previousMultipleChoiceAnswers: string[] = [];
   private previewCallback?: (blodId: string, attachmentType: number) => void;
+  private selectedOptionIndex: number | 'question' | null = null;
+  private questionId?: number;
+
+  // Getters
   public get optionsArray(): FormArray<FormGroup> {
+    if (!this.questionForm) {
+      return this.fb.array<FormGroup>([]);
+    }
     return this.questionForm.get('options') as FormArray<FormGroup>;
   }
 
@@ -89,85 +121,24 @@ export class QuestionFormModalComponent
     public config: DynamicDialogConfig,
     public dialog: DialogService,
     public questionService: QuestionService,
-    private fb: FormBuilder,
-    private cdr: ChangeDetectorRef,
-    private ref: DynamicDialogRef,
-    private messageService: MessageService,
-    private storeService: StoreService,
+    private readonly fb: FormBuilder,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly ref: DynamicDialogRef,
+    private readonly messageService: MessageService,
+    private readonly storeService: StoreService,
   ) {
     super();
   }
-  // LifeCycle Hooks
+
+  // ==================== Lifecycle Hooks ====================
 
   ngOnInit(): void {
-    this.data = this.config.data;
-    this.previewCallback = (this.config.data as any).previewCallback;
-    if (this.data) {
-      this.questionForm = this.data.fGroup;
-      const options = this.optionsArray;
-
-      if (options.length === 0) {
-        options.push(this.fb.group({ options: [] }));
-        options.push(this.fb.group({ options: [] }));
-      }
-      if (!this.isEdit) {
-        options.clear();
-        options.push(
-          this.fb.group({
-            options: [
-              '',
-              [Validators.required, Validators.pattern(/^(?!\s)(?=.*\S).+$/)],
-            ],
-          }),
-        );
-        options.push(
-          this.fb.group({
-            options: [
-              '',
-              [Validators.required, Validators.pattern(/^(?!\s)(?=.*\S).+$/)],
-            ],
-          }),
-        );
-      }
+    this.initializeComponent();
+    // Only setup form if data is available
+    if (this.data && this.data.fGroup) {
+      this.setupForm();
+      this.setupMultipleChoiceToggle();
     }
-    this.subscribeToOptionArray();
-
-    this.isEdit = this.data.formData?.id ? true : false;
-    if (this.isEdit) {
-      this.optionsMap =
-        this.storeService.getCollection() as unknown as OptionsMap;
-      this.questionType = this.optionsMap[
-        'questionType'
-      ] as unknown as Option[];
-
-      this.setConfigMaps();
-      this.setOptions();
-      this.getFormData();
-    }
-
-    this.data.fGroup
-      .get('isMultipleChoice')
-      ?.valueChanges.subscribe((isMultiple) => {
-        const answerControl = this.data.fGroup.get('answer');
-        if (!answerControl) return;
-
-        const currentValue = answerControl.value;
-
-        if (isMultiple) {
-          if (this.previousMultipleChoiceAnswers.length > 0) {
-            answerControl.setValue(this.previousMultipleChoiceAnswers);
-          } else {
-            if (currentValue && !Array.isArray(currentValue)) {
-              answerControl.setValue([currentValue]);
-            }
-          }
-        } else {
-          if (Array.isArray(currentValue)) {
-            this.previousMultipleChoiceAnswers = [...currentValue];
-            answerControl.setValue(currentValue[0] || '');
-          }
-        }
-      });
   }
 
   override ngOnDestroy(): void {
@@ -175,34 +146,184 @@ export class QuestionFormModalComponent
       this.ref.close();
     }
     this.data.fGroup.reset();
+    super.ngOnDestroy();
   }
 
-  // Public Methods
-  public onFileChange(event: FileSelectEvent): void {
-    const file = event.currentFiles[0];
-    if (!file) return;
+  // ==================== Initialization Methods ====================
 
-    this.uploadedFileName = file.name;
+  private initializeComponent(): void {
+    this.data = this.config.data;
 
-    const payload: FileRequest = {
-      attachmentType: Number(this.fGroup.get('attachmentType')?.value),
-      file: file,
-    };
+    // Ensure data and fGroup exist
+    if (!this.data || !this.data.fGroup) {
+      console.error('QuestionFormModalComponent: data or fGroup is missing');
+      return;
+    }
 
-    this.questionService.uploadFiles(payload).subscribe({
-      next: (uploadedFile: FileDto) => {
-        this.fGroup.patchValue({ fileDto: uploadedFile });
-        this.fGroup.updateValueAndValidity();
+    this.previewCallback = (this.config.data as any).previewCallback;
+    this.isLoadingData = (this.config.data as any).isLoading || false;
+    this.questionId = (this.config.data as any).questionId;
+    this.isEdit = !!this.data.formData?.id || !!this.questionId;
+
+    // If we have a questionId but no formData, we need to fetch it
+    if (this.questionId && !this.data.formData) {
+      // Ensure loading state is set
+      this.isLoadingData = true;
+      // Fetch question data if not provided
+      this.fetchQuestionData();
+    } else if (this.isEdit && this.data.formData) {
+      // If we already have formData, initialize edit mode
+      this.initializeEditMode();
+    }
+  }
+
+  private fetchQuestionData(): void {
+    // Ensure loading state is set and trigger change detection
+    this.isLoadingData = true;
+    this.cdr.detectChanges();
+
+    this.questionService.getQuestion(this.questionId!).subscribe({
+      next: (res: Questionsinterface) => {
+        if (res) {
+          // Update formData with fetched data
+          this.data.formData = res;
+          this.isLoadingData = false;
+          // Initialize edit mode with the fetched data
+          const collection = this.storeService.getCollection();
+          this.optionsMap = collection as OptionsMap;
+          this.questionType = this.optionsMap['questionType'] as Option[];
+          this.setConfigMaps();
+          this.setOptions();
+          this.setFormData();
+          this.cdr.detectChanges();
+        }
+      },
+      error: () => {
+        this.isLoadingData = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load question data',
+        });
+        this.cdr.detectChanges();
       },
     });
   }
 
+  private initializeEditMode(): void {
+    const collection = this.storeService.getCollection();
+    this.optionsMap = collection as OptionsMap;
+    this.questionType = this.optionsMap['questionType'] as Option[];
+    this.setConfigMaps();
+    this.setOptions();
+    this.loadFormData();
+  }
+
+  private setupForm(): void {
+    if (!this.data) {
+      console.error('QuestionFormModalComponent: data is missing');
+      return;
+    }
+
+    if (!this.data.fGroup) {
+      console.error('QuestionFormModalComponent: data.fGroup is missing');
+      return;
+    }
+
+    this.questionForm = this.data.fGroup;
+    this.initializeOptionsArray();
+    this.subscribeToOptionArray();
+  }
+
+  private initializeOptionsArray(): void {
+    const options = this.optionsArray;
+
+    if (this.isEdit) {
+      if (options.length === 0) {
+        this.addDefaultOptions(options);
+      }
+    } else {
+      options.clear();
+      this.addDefaultOptions(options);
+    }
+  }
+
+  private addDefaultOptions(options: FormArray<FormGroup>): void {
+    const createOptionGroup = () =>
+      this.fb.group({
+        options: ['', OPTION_VALIDATORS],
+      });
+
+    const defaultOptions = [createOptionGroup(), createOptionGroup()];
+    // Use setControl to add multiple options at once
+    defaultOptions.forEach((option, index) => {
+      options.insert(index, option);
+    });
+  }
+
+  private setupMultipleChoiceToggle(): void {
+    this.data.fGroup
+      .get('isMultipleChoice')
+      ?.valueChanges.subscribe((isMultiple) => {
+        this.handleMultipleChoiceChange(isMultiple);
+      });
+  }
+
+  private handleMultipleChoiceChange(isMultiple: boolean): void {
+    const answerControl = this.data.fGroup.get('answer');
+    if (!answerControl) return;
+
+    const currentValue = answerControl.value;
+
+    if (isMultiple) {
+      this.switchToMultipleChoice(answerControl, currentValue);
+    } else {
+      this.switchToSingleChoice(answerControl, currentValue);
+    }
+  }
+
+  private switchToMultipleChoice(answerControl: any, currentValue: any): void {
+    if (this.previousMultipleChoiceAnswers.length > 0) {
+      answerControl.setValue(this.previousMultipleChoiceAnswers);
+    } else if (currentValue && !Array.isArray(currentValue)) {
+      answerControl.setValue([currentValue]);
+    }
+  }
+
+  private switchToSingleChoice(answerControl: any, currentValue: any): void {
+    if (Array.isArray(currentValue)) {
+      this.previousMultipleChoiceAnswers = [...currentValue];
+      answerControl.setValue(currentValue[0] || '');
+    }
+  }
+
+  // ==================== Option Management ====================
+
   public addOption(): void {
-    const optionGroup = this.fb.group({
-      options: [
-        '',
-        [Validators.required, Validators.pattern(/^(?!\s)(?=.*\S).+$/)],
-      ],
+    if (this.optionsArray.length >= MAX_OPTIONS_COUNT) {
+      this.showWarningMessage(
+        'Validation',
+        'Allowed option count was exceeded.',
+      );
+      return;
+    }
+
+    const optionGroup = this.createOptionFormGroup();
+    this.optionsArray.push(optionGroup);
+    this.cdr.detectChanges();
+  }
+
+  public removeOption(index: number): void {
+    if (this.optionsArray.length <= MIN_OPTIONS_COUNT) {
+      this.showWarningMessage('Validation', 'At least 2 options are required.');
+      return;
+    }
+    this.optionsArray.removeAt(index);
+  }
+
+  private createOptionFormGroup(): FormGroup {
+    return this.fb.group({
+      options: ['', OPTION_VALIDATORS],
       isCorrect: [false],
       optionHasAttachments: [false],
       fileDto: this.fb.group({
@@ -210,204 +331,490 @@ export class QuestionFormModalComponent
         attachmentType: [''],
       }),
     });
-    if (this.optionsArray.length >= 7) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Validation',
-        detail: 'Allowed option count was exceeded.',
-      });
-      return;
-    }
-    this.optionsArray.push(optionGroup);
-    this.cdr.detectChanges();
   }
 
-  public removeOption(index: number): void {
-    const optionsArray = this.questionForm.get('options') as FormArray;
-    if (this.optionsArray.length <= 2) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Validation',
-        detail: 'At least 2 options are required.',
-      });
+  // ==================== Keyboard Event Handlers ====================
+
+  public handleQuestionAttachmentKeyDown(event: Event): void {
+    this.handleKeyboardAction(event, () =>
+      this.openAttachmentModal('question'),
+    );
+  }
+
+  public handleQuestionPreviewKeyDown(event: Event): void {
+    this.handleKeyboardAction(event, () => this.previewAttachment(null));
+  }
+
+  public handleQuestionDeleteKeyDown(event: Event): void {
+    this.handleKeyboardAction(event, () => this.deleteQuestionAttachment());
+  }
+
+  public handleOptionAttachmentKeyDown(event: Event, index: number): void {
+    this.handleKeyboardAction(event, () => this.openAttachmentModal(index));
+  }
+
+  public handleOptionPreviewKeyDown(event: Event, optionCtrl: FormGroup): void {
+    this.handleKeyboardAction(event, () => this.previewAttachment(optionCtrl));
+  }
+
+  public handleRemoveOptionKeyDown(event: Event, index: number): void {
+    this.handleKeyboardAction(event, () => this.removeOption(index));
+  }
+
+  public handleOptionDeleteKeyDown(event: Event, index: number): void {
+    this.handleKeyboardAction(event, () => this.deleteOptionAttachment(index));
+  }
+
+  private handleKeyboardAction(event: Event, action: () => void): void {
+    const keyboardEvent = event as KeyboardEvent;
+    if (
+      keyboardEvent.key === KEYBOARD_KEYS.ENTER ||
+      keyboardEvent.key === KEYBOARD_KEYS.SPACE
+    ) {
+      keyboardEvent.preventDefault();
+      action();
+    }
+  }
+
+  // ==================== Attachment Management ====================
+
+  public deleteOptionAttachment(optionIndex: number): void {
+    const optionCtrl = this.optionsArray.at(optionIndex);
+    if (!optionCtrl) {
+      this.showWarningMessage('Warning', 'Option not found');
       return;
     }
-    optionsArray.removeAt(index);
+
+    const fileDto = this.getFileDtoFromOption(optionCtrl);
+    if (!this.isValidFileDto(fileDto)) {
+      this.showWarningMessage('Warning', 'No attachment found to delete');
+      return;
+    }
+
+    // Type guard ensures fileDto is FileDto, not null
+    this.confirmAndDeleteOptionAttachment(fileDto, optionIndex);
+  }
+
+  private getFileDtoFromOption(optionCtrl: FormGroup): FileDto | null {
+    const fileArray = optionCtrl.get('fileDto') as FormArray;
+    if (!fileArray || fileArray.length === 0) {
+      return null;
+    }
+    return fileArray.at(0).value as FileDto | null;
+  }
+
+  private isValidFileDto(fileDto: FileDto | null): fileDto is FileDto {
+    return (
+      !!fileDto && !!(fileDto.id || fileDto.blobId) && !!fileDto.attachmentType
+    );
+  }
+
+  private confirmAndDeleteOptionAttachment(
+    fileDto: FileDto,
+    optionIndex: number,
+  ): void {
+    const formTouchedState = this.storeFormTouchedState();
+
+    const modalData: DialogData = {
+      message:
+        'Are you sure you want to delete this option attachment? This action cannot be undone.',
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Delete',
+    };
+
+    const confirmRef = this.openDeleteConfirmationDialog(modalData);
+
+    confirmRef?.onClose.subscribe((confirmed: boolean) => {
+      this.restoreFormValidationState(formTouchedState);
+
+      if (confirmed) {
+        this.performOptionDelete(fileDto, optionIndex);
+      }
+    });
+  }
+
+  private performOptionDelete(fileDto: FileDto, optionIndex: number): void {
+    this.deletingOptionAttachments.set(optionIndex, true);
+
+    const deletePayload: FileDto = {
+      ...fileDto,
+      blobId: fileDto.blobId || fileDto.id,
+    };
+
+    this.questionService.deleteFiles(deletePayload).subscribe({
+      next: () => {
+        this.clearOptionAttachment(optionIndex);
+        this.showSuccessMessage(
+          'Success',
+          'Option attachment deleted successfully',
+        );
+        this.deletingOptionAttachments.set(optionIndex, false);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.showErrorMessage('Error', 'Failed to delete option attachment');
+        this.deletingOptionAttachments.set(optionIndex, false);
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private clearOptionAttachment(optionIndex: number): void {
+    const optionCtrl = this.optionsArray.at(optionIndex);
+    if (optionCtrl) {
+      const fileArray = optionCtrl.get('fileDto') as FormArray;
+      fileArray.clear();
+    }
   }
 
   public openAttachmentModal(index: number | 'question'): void {
+    const formTouchedState = this.storeFormTouchedState();
     this.selectedOptionIndex = index;
-    const isQuestion = index === 'question';
-    const attachmentForm = this.fb.group({
-      optionAttachmentType: [null, Validators.required],
-      file: [null, Validators.required],
-    });
 
-    const data: FileFormGroup = {
-      formData: {} as FileInterface,
-      fGroup: attachmentForm,
-      configMap: {
-        optionAttachmentType: this.data.configMap['optionAttachmentType'],
-        file: this.data.configMap['file'],
-        ...(isQuestion
-          ? { attachmentType: this.data.configMap['attachmentType'] }
-          : {
-              optionAttachmentType: this.data.configMap['optionAttachmentType'],
-            }),
-      },
-    };
+    const attachmentForm = this.createAttachmentForm();
+    const modalData = this.createFileFormGroupData(index, attachmentForm);
+
     document.body.style.overflow = 'hidden';
-    this.ref = this.dialog.open(FileUploadDialogComponentComponent, {
-      data: data,
+
+    const uploadRef = this.dialog.open(FileUploadDialogComponentComponent, {
+      data: modalData,
       header: 'Upload file',
       width: '50vw',
       modal: true,
       focusOnShow: false,
+      closable: false,
+      dismissableMask: false,
       styleClass: 'fileUpload__dialog',
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
+      breakpoints: DIALOG_BREAKPOINTS,
     });
 
-    this.ref?.onClose.subscribe((result: FileDto) => {
+    uploadRef.onClose.subscribe((result: FileDto) => {
       document.body.style.overflow = 'auto';
-      if (!result) return;
-      if (typeof this.selectedOptionIndex === 'number') {
-        const optionCtrl = this.optionsArray.at(this.selectedOptionIndex);
-        if (optionCtrl) {
-          if (
-            !optionCtrl.get('fileDto') ||
-            !(optionCtrl.get('fileDto') instanceof FormArray)
-          ) {
-            optionCtrl.removeControl('fileDto');
-            optionCtrl.addControl('fileDto', this.fb.array([]));
-          }
-          const fileDtosArray = optionCtrl.get('fileDto') as FormArray;
-          fileDtosArray.clear();
-          fileDtosArray.push(
-            this.fb.group({
-              id: [result.id],
-              path: [result.path],
-              name: [result.name],
-              attachmentType: [result.attachmentType],
-            }),
-          );
-        }
-      }
-      if (this.selectedOptionIndex === 'question') {
-        if (this.data.fGroup) {
-          if (!this.data.fGroup.contains('fileDto')) {
-            this.data.fGroup.addControl('fileDto', this.fb.control(null));
-          }
-          this.data.fGroup.patchValue({ fileDto: result });
-        }
-      }
+      this.restoreFormValidationStateWithoutBlur(formTouchedState);
 
+      if (result) {
+        this.handleAttachmentUploadResult(result, index);
+      }
       this.selectedOptionIndex = null;
     });
   }
 
-  public previewAttachment(optionCtrl: FormGroup | null) {
-    let fileDto = null;
-    if (optionCtrl) {
-      const fileArray = optionCtrl.get('fileDto') as FormArray;
-      if (fileArray && fileArray.length > 0) {
-        fileDto = fileArray.at(0).value;
-      }
-    } else {
-      fileDto = this.data.fGroup.get('fileDto')?.value;
+  private createAttachmentForm(): FormGroup {
+    return this.fb.group({
+      optionAttachmentType: [null, Validators.required],
+      file: [null, Validators.required],
+    });
+  }
+
+  private createFileFormGroupData(
+    index: number | 'question',
+    attachmentForm: FormGroup,
+  ): FileFormGroup {
+    const isQuestion = index === 'question';
+    return {
+      formData: {} as FileInterface,
+      fGroup: attachmentForm,
+      configMap: {
+        file: this.data.configMap['file'],
+        ...(isQuestion
+          ? { attachmentType: this.data.configMap['attachmentType'] }
+          : {}),
+      },
+    };
+  }
+
+  private handleAttachmentUploadResult(
+    result: FileDto,
+    index: number | 'question',
+  ): void {
+    if (typeof index === 'number') {
+      this.setOptionAttachment(result, index);
+    } else if (index === 'question') {
+      this.setQuestionAttachment(result);
     }
+  }
+
+  private setOptionAttachment(result: FileDto, optionIndex: number): void {
+    const optionCtrl = this.optionsArray.at(optionIndex);
+    if (!optionCtrl) return;
+
+    this.ensureFileDtoFormArray(optionCtrl);
+    const fileDtosArray = optionCtrl.get('fileDto') as FormArray;
+    fileDtosArray.clear();
+    fileDtosArray.push(this.createFileDtoFormGroup(result));
+  }
+
+  private setQuestionAttachment(result: FileDto): void {
+    if (!this.data.fGroup.contains('fileDto')) {
+      this.data.fGroup.addControl('fileDto', this.fb.control(null));
+    }
+    this.data.fGroup.patchValue({ fileDto: result });
+  }
+
+  private ensureFileDtoFormArray(optionCtrl: FormGroup): void {
+    const fileDtoControl = optionCtrl.get('fileDto');
+    if (!fileDtoControl || !(fileDtoControl instanceof FormArray)) {
+      optionCtrl.removeControl('fileDto');
+      optionCtrl.addControl('fileDto', this.fb.array([]));
+    }
+  }
+
+  private createFileDtoFormGroup(fileDto: FileDto): FormGroup {
+    return this.fb.group({
+      id: [fileDto.id],
+      path: [fileDto.path],
+      name: [fileDto.name],
+      attachmentType: [fileDto.attachmentType],
+    });
+  }
+
+  public previewAttachment(optionCtrl: FormGroup | null): void {
+    const fileDto = this.getFileDtoForPreview(optionCtrl);
+
     if (fileDto?.id && fileDto?.attachmentType) {
       this.previewCallback?.(fileDto.id, fileDto.attachmentType);
     } else {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Info',
-        detail: 'No image is uploaded for preview',
-      });
+      this.showInfoMessage('Info', 'No image is uploaded for preview');
     }
   }
-  public onSubmit() {
-    this.data.fGroup.markAllAsTouched();
-    this.data.fGroup.updateValueAndValidity();
+
+  private getFileDtoForPreview(optionCtrl: FormGroup | null): FileDto | null {
+    if (optionCtrl) {
+      const fileArray = optionCtrl.get('fileDto') as FormArray;
+      return fileArray && fileArray.length > 0 ? fileArray.at(0).value : null;
+    }
+    return this.data.fGroup.get('fileDto')?.value || null;
+  }
+
+  public deleteQuestionAttachment(): void {
+    const fileDto = this.data.fGroup.get('fileDto')?.value;
+
+    if (!this.isValidFileDto(fileDto)) {
+      this.showWarningMessage('Warning', 'No attachment found to delete');
+      return;
+    }
+
+    this.confirmAndDeleteQuestionAttachment(fileDto);
+  }
+
+  private confirmAndDeleteQuestionAttachment(fileDto: FileDto): void {
+    const formTouchedState = this.storeFormTouchedState();
+
+    const modalData: DialogData = {
+      message:
+        'Are you sure you want to delete this question image? This action cannot be undone.',
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Delete',
+    };
+
+    const confirmRef = this.openDeleteConfirmationDialog(modalData);
+
+    confirmRef?.onClose.subscribe((confirmed: boolean) => {
+      this.restoreFormValidationState(formTouchedState);
+
+      if (confirmed) {
+        this.performQuestionDelete(fileDto);
+      }
+    });
+  }
+
+  private openDeleteConfirmationDialog(modalData: DialogData) {
+    return this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Confirm Delete',
+      width: '35vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: DIALOG_BREAKPOINTS,
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+  }
+
+  // ==================== Form State Management ====================
+
+  private storeFormTouchedState(): Map<string, boolean> {
+    const formTouchedState = new Map<string, boolean>();
+    Object.keys(this.data.fGroup.controls).forEach((key) => {
+      const control = this.data.fGroup.get(key);
+      if (control) {
+        formTouchedState.set(key, control.touched);
+      }
+    });
+    return formTouchedState;
+  }
+
+  private restoreFormValidationState(
+    formTouchedState: Map<string, boolean>,
+  ): void {
+    this.restoreTouchedStates(formTouchedState);
+    this.data.fGroup.updateValueAndValidity({
+      onlySelf: true,
+      emitEvent: false,
+    });
+    this.blurActiveFormField();
+  }
+
+  private restoreFormValidationStateWithoutBlur(
+    formTouchedState: Map<string, boolean>,
+  ): void {
+    this.restoreTouchedStates(formTouchedState);
+  }
+
+  private restoreTouchedStates(formTouchedState: Map<string, boolean>): void {
+    formTouchedState.forEach((wasTouched, key) => {
+      const control = this.data.fGroup.get(key);
+      if (control) {
+        if (!wasTouched && control.touched) {
+          control.markAsUntouched({ onlySelf: true });
+        } else if (wasTouched && !control.touched) {
+          control.markAsTouched({ onlySelf: true });
+        }
+      }
+    });
+  }
+
+  private blurActiveFormField(): void {
+    setTimeout(() => {
+      const activeElement = document.activeElement as HTMLElement;
+      if (
+        activeElement &&
+        (activeElement.tagName === 'TEXTAREA' ||
+          activeElement.tagName === 'INPUT')
+      ) {
+        activeElement.blur();
+      }
+    }, 100);
+  }
+
+  private performQuestionDelete(fileDto: FileDto): void {
+    this.isDeletingAttachment = true;
+
+    const deletePayload: FileDto = {
+      ...fileDto,
+      blobId: fileDto.blobId || fileDto.id,
+    };
+
+    this.questionService.deleteFiles(deletePayload).subscribe({
+      next: () => {
+        this.data.fGroup.patchValue({ fileDto: null });
+        this.showSuccessMessage(
+          'Success',
+          'Question image deleted successfully',
+        );
+        this.isDeletingAttachment = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.showErrorMessage('Error', 'Failed to delete question image');
+        this.isDeletingAttachment = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+  // ==================== Form Submission ====================
+
+  public onSubmit(): void {
+    this.validateAndCleanForm();
     if (this.data.fGroup.invalid) {
       return;
     }
+
+    const formValue = this.prepareFormValue();
+    this.ref.close(formValue);
+  }
+
+  public onClose(): void {
+    this.ref.close(false);
+  }
+
+  private validateAndCleanForm(): void {
+    this.data.fGroup.markAllAsTouched();
+    this.data.fGroup.updateValueAndValidity();
+    this.cleanQuestionText();
+  }
+
+  private cleanQuestionText(): void {
     const questionTextControl = this.data.fGroup.get('questionText');
     if (questionTextControl?.value) {
       const cleanedValue = questionTextControl.value
         .trim()
-        .replace(/\s{2,}/g, ' ');
+        .replaceAll(/\s{2,}/g, ' ');
       questionTextControl.setValue(cleanedValue);
     }
-    if (this.isEdit && this.ref) {
-      this.ref.close({ ...this.data.fGroup.value, id: this.data.formData.id });
-    } else {
-      this.ref.close(this.data.fGroup.value);
-    }
-  }
-  public onClose() {
-    this.ref.close(false);
   }
 
-  // private Methods
-  private subscribeToOptionArray() {
+  private prepareFormValue(): any {
+    if (this.isEdit && this.ref) {
+      return {
+        ...this.data.fGroup.value,
+        id: this.data.formData.id,
+      };
+    }
+    return this.data.fGroup.value;
+  }
+
+  // ==================== Form Data Management ====================
+
+  private subscribeToOptionArray(): void {
     const sub = this.data.fGroup.controls['options'].valueChanges.subscribe(
       (value) => {
-        this.setAnswerFieldValue(value);
+        this.updateAnswerFieldOptions(value);
       },
     );
     this.subscriptionList.push(sub);
   }
 
-  private setAnswerFieldValue(value: any) {
-    const fieldValue = value
-      ?.map((item: any) => ({
-        label: item.options,
-        value: item.options,
-      }))
-      .filter((item: any) => item?.label && item?.value);
-
+  private updateAnswerFieldOptions(value: any): void {
+    const fieldValue = this.extractOptionsFromValue(value);
     const oldConfig = this.data.configMap['answer'] as CustomSelectConfig;
     this.data.configMap['answer'] = {
       ...oldConfig,
       options: fieldValue,
     };
-
     this.data.fGroup.updateValueAndValidity();
   }
 
-  private getFormData(): void {
+  private extractOptionsFromValue(value: any): Option[] {
+    return (
+      value
+        ?.map((item: any) => ({
+          label: item.options,
+          value: item.options,
+        }))
+        .filter((item: any) => item?.label && item?.value) || []
+    );
+  }
+
+  private loadFormData(): void {
     this.data = this.config.data;
     const id = this.data.formData?.id;
     if (id !== undefined) {
-      this.validateCreateOrUpdateAssessment(id);
+      this.setFormData();
     }
-  }
-
-  private validateCreateOrUpdateAssessment(id: number): void {
-    this.isEdit = id ? true : false;
-    if (this.isEdit) this.setFormData();
   }
 
   private setFormData(): void {
     const formData = this.data.formData;
-    const selectedQuestionTypeLabel =
-      this.questionType.find(
-        (type: Option) => type.label === formData.questionType,
-      )?.value || 'default';
+    this.patchFormValues(formData);
+    this.ensureFileDtoControl(formData);
+    this.loadOptions(formData);
+    this.cdr.detectChanges();
+  }
+
+  private patchFormValues(formData: any): void {
+    const selectedQuestionTypeLabel = this.getQuestionTypeValue(
+      formData.questionType,
+    );
     const isMultipleChoice = formData.isMultipleChoice ?? false;
+
     this.data.fGroup.patchValue({
       questionText: formData.questionText,
       maxmark: formData.maxMark,
-      answer: isMultipleChoice
-        ? Array.isArray(formData.answer)
-          ? formData.answer
-          : [formData.answer]
-        : Array.isArray(formData.answer)
-          ? formData.answer[0]
-          : formData.answer,
+      answer: this.normalizeAnswerValue(formData.answer, isMultipleChoice),
       questionType: selectedQuestionTypeLabel,
       active: formData.active,
       hasAttachments: formData.hasAttachment,
@@ -416,52 +823,96 @@ export class QuestionFormModalComponent
       optionHasAttachments:
         formData.options?.some((opt: any) => opt.hasAttachment) ?? false,
     });
-    this.cdr.detectChanges();
+    this.data.fGroup.updateValueAndValidity();
+  }
+
+  private getQuestionTypeValue(questionType: string): string {
+    return (
+      this.questionType.find((type: Option) => type.label === questionType)
+        ?.value || 'default'
+    );
+  }
+
+  private normalizeAnswerValue(
+    answer: string | string[],
+    isMultipleChoice: boolean,
+  ): string | string[] {
+    if (isMultipleChoice) {
+      return Array.isArray(answer) ? answer : [answer];
+    }
+    return Array.isArray(answer) ? answer[0] : answer;
+  }
+
+  private ensureFileDtoControl(formData: any): void {
     if (!this.data.fGroup.contains('fileDto')) {
       this.data.fGroup.addControl(
         'fileDto',
         this.fb.control(formData.file ?? null),
       );
     }
+  }
 
-    this.data.fGroup.updateValueAndValidity();
-
+  private loadOptions(formData: any): void {
     const optionsArray = this.optionsArray;
     optionsArray.clear();
 
     formData.options.forEach((option: any) => {
-      optionsArray.push(
-        this.fb.group({
-          options: [
-            option.optionText,
-            [Validators.required, Validators.pattern(/^(?!\s)(?=.*\S).+$/)],
-          ],
-          optionHasAttachments: [option.hasAttachment],
-
-          isCorrect: [option.optionText === formData.answer],
-          fileDto: this.fb.array(
-            option.fileDto
-              ? [
-                  this.fb.group({
-                    id: [option.fileDto.id],
-                    path: [option.fileDto.path],
-                    name: [option.fileDto.name],
-                    attachmentType: [option.fileDto.attachmentType],
-                  }),
-                ]
-              : [],
-          ),
-        }),
-      );
+      optionsArray.push(this.createOptionFormGroupFromData(option, formData));
     });
-    this.cdr.detectChanges();
   }
+
+  private createOptionFormGroupFromData(option: any, formData: any): FormGroup {
+    return this.fb.group({
+      options: [option.optionText, OPTION_VALIDATORS],
+      optionHasAttachments: [option.hasAttachment],
+      isCorrect: [option.optionText === formData.answer],
+      fileDto: this.fb.array(
+        option.fileDto ? [this.createFileDtoFormGroup(option.fileDto)] : [],
+      ),
+    });
+  }
+
   private setConfigMaps(): void {
     const { metadata } = new QuestionForm();
     this.configMap = metadata.configMap || {};
   }
-  private setOptions() {
+
+  private setOptions(): void {
     (this.configMap['questionType'] as CustomSelectConfig).options = this
       .optionsMap['questionType'] as unknown as Option[];
+  }
+
+  // ==================== Utility Methods ====================
+
+  private showWarningMessage(summary: string, detail: string): void {
+    this.messageService.add({
+      severity: 'warn',
+      summary,
+      detail,
+    });
+  }
+
+  private showSuccessMessage(summary: string, detail: string): void {
+    this.messageService.add({
+      severity: 'success',
+      summary,
+      detail,
+    });
+  }
+
+  private showErrorMessage(summary: string, detail: string): void {
+    this.messageService.add({
+      severity: 'error',
+      summary,
+      detail,
+    });
+  }
+
+  private showInfoMessage(summary: string, detail: string): void {
+    this.messageService.add({
+      severity: 'info',
+      summary,
+      detail,
+    });
   }
 }

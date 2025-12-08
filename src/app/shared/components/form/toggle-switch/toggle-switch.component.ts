@@ -26,9 +26,11 @@ export class ToggleSwitchComponent extends BaseFormComponent implements OnInit {
 
   public formControl!: FormControl<string | boolean>;
   public customToggleSwitchConfig!: CustomToggleSwitchConfig;
+  public toggleId!: string;
 
   ngOnInit(): void {
     this.customToggleSwitchConfig = this.config as CustomToggleSwitchConfig;
+    this.toggleId = `toggle_${this.config.id}`;
     this.formControl = this.formGroup.get(this.config.id) as FormControl;
     if (this.formControl.value == null) this.formControl.setValue(false);
   }

@@ -52,3 +52,16 @@
     overflow-y: unset;
   }
 }
+.image-preview-dialog {
+  .p-dialog-content {
+    padding: 0 !important;
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+  }
+  .p-dialog-header {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-bottom: 1px solid var(--color-seperator);
+    padding: var(--spacing-20);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+}

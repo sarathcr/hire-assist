@@ -1,100 +1,321 @@
 :host {
-  padding: var(--spacing-10);
+  padding: 0;
+  display: block;
 }
+
 ::ng-deep {
   .fileUpload__dialog {
-    max-width: 48vw;
-  }
-}
-.file-upload {
-  // padding: var(--spacing-10) 0 0;
-  &__item {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: 1rem;
-    &_field {
-      &-col {
-        &_one {
-          flex-basis: 50%;
-        }
-        &_two {
-          width: 80%;
-          flex-basis: 50%;
-        }
+    .p-dialog-content {
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 85vh;
+    }
+
+    .p-dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--spacing-20);
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      border-bottom: 1px solid var(--color-seperator);
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      // Hide the default close button since we're using custom one on image
+      .p-dialog-header-icon {
+        display: none;
+      }
+
+      .p-dialog-title {
+        font-size: var(--font-size-20);
+        font-weight: 600;
+        color: var(--color-dune);
       }
     }
-  }
-
-  &__button {
-    display: flex;
-    flex-direction: row;
-    gap: 1rem;
-    justify-content: flex-end;
-  }
-  .file-upload__loader {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    justify-content: center;
   }
 
   .upload-spinner {
-    width: 1rem;
-    height: 1rem;
+    width: 24px;
+    height: 24px;
   }
-  @media (max-width: 480px) {
-    &__item {
-      flex-direction: column;
-      align-items: stretch;
 
-      &_field {
-        &-col {
-          &_one,
-          &_two {
-            width: 100%;
-            flex-basis: 100%;
-          }
-        }
-      }
+  .file-upload__delete-btn {
+    float: right;
+    .p-button {
+      width: 100%;
+      height: 100%;
+      padding: 0;
     }
 
-    &__button {
-      margin-top: var(--spacing-20);
-      flex-direction: row;
-      justify-content: space-between;
-      button,
+    // Fix tooltip positioning to show near the button
+    .p-tooltip {
+      .p-tooltip-arrow {
+        display: block;
+      }
+    }
+  }
+}
+
+.file-upload {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-20);
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--spacing-20);
+    min-height: 0;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-10);
+  }
+
+  &__label {
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--color-dune);
+    margin-bottom: var(--spacing-5);
+  }
+
+  &__upload-section {
+    width: 100%;
+  }
+
+  &__dropzone {
+    border: 2px dashed var(--color-seperator);
+    border-radius: var(--spacing-10);
+    padding: var(--spacing-40) var(--spacing-20);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      border-color: var(--primary-color);
+      background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    &.drag-over {
+      border-color: var(--primary-color);
+      background: linear-gradient(135deg, #e8f0fe 0%, #ffffff 100%);
+      border-style: solid;
+      transform: scale(1.02);
+    }
+  }
+
+  &__dropzone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-15);
+  }
+
+  &__icon {
+    font-size: 3.5rem;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-10);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  &__title {
+    font-size: var(--font-size-20);
+    font-weight: 600;
+    color: var(--color-dune);
+    margin: 0;
+  }
+
+  &__subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-davy-grey);
+    margin: 0;
+  }
+
+  &__hint {
+    font-size: var(--font-size-small);
+    color: var(--color-grey);
+    margin: 0;
+    font-style: italic;
+  }
+
+  &__preview-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-15);
+    position: relative;
+  }
+
+  &__preview {
+    position: relative;
+    border-radius: var(--spacing-10);
+    overflow: hidden;
+    border: 2px solid var(--color-seperator);
+    background: var(--color-white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &__loader-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    border-radius: var(--spacing-10);
+    backdrop-filter: blur(2px);
+  }
+
+  &__loader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-15);
+    padding: var(--spacing-20);
+  }
+
+  &__delete-btn {
+    position: absolute;
+    top: var(--spacing-10);
+    right: var(--spacing-10);
+    z-index: 30;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(4px);
+    border-radius: 50%;
+    margin: 0;
+    padding: 0;
+    float: right;
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 1);
+    }
+
+    // Ensure tooltip appears near the button
+    ::ng-deep .p-tooltip {
+      z-index: 1000;
+    }
+  }
+
+  &__file-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    padding: var(--spacing-15);
+    background: #f8f9fa;
+    border-radius: var(--spacing-10);
+    border: 1px solid var(--color-seperator);
+  }
+
+  &__file-icon {
+    font-size: var(--font-size-20);
+    color: var(--primary-color);
+  }
+
+  &__file-name {
+    font-size: var(--font-size-base);
+    color: var(--color-dune);
+    font-weight: 500;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-15);
+    padding: var(--spacing-20);
+    border-top: 1px solid var(--color-seperator);
+    background: var(--color-white);
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+  }
+
+  &__loader-text {
+    font-size: var(--font-size-base);
+    color: var(--color-davy-grey);
+    font-weight: 500;
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--spacing-15);
+    justify-content: flex-end;
+  }
+}
+
+.preview-img {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  display: block;
+}
+
+// Responsive Design
+@media screen and (max-width: 768px) {
+  .file-upload {
+    &__dropzone {
+      padding: var(--spacing-30) var(--spacing-15);
+    }
+
+    &__icon {
+      font-size: 2.5rem;
+    }
+
+    &__title {
+      font-size: var(--font-size-18);
+    }
+
+    &__actions {
+      flex-direction: column-reverse;
+      width: 100%;
+
       app-button {
         width: 100%;
       }
     }
   }
-}
-.file-upload__preview {
-  margin-bottom: 10px;
-  position: relative;
-}
-::ng-deep {
-  .file-upload__preview-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-}
-.preview-img {
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  object-fit: cover;
 }

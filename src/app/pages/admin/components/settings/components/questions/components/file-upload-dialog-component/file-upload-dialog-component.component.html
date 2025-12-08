@@ -1,59 +1,92 @@
 <div class="file-upload">
-  <div class="file-upload__item">
-    <app-input-select
-      [formGroup]="data.fGroup"
-      class="file-upload__item_field-col_one"
-      [config]="data.configMap[attachmentTypeFieldKey]"
-    >
-    </app-input-select>
-
-    <div class="file-upload__item_field-col_two">
-      @if (!previewUrl) {
-        <p-fileupload
-          mode="basic"
-          chooseLabel="Upload File"
-          chooseIcon="pi pi-upload"
-          name="demo[]"
-          url="https://www.primefaces.org/cdn/api/upload.php"
-          accept="image/*"
-          (onSelect)="onFileChange($event)"
-          maxFileSize="5242880"
-        ></p-fileupload>
-      } @else {
-        <div class="file-upload__preview">
-          <img [src]="previewUrl" alt="Preview" class="preview-img" />
-
-          <p-button
-            icon="pi pi-times"
-            styleClass="file-upload__preview-btn"
-            (onClick)="clearFileAndPreview()"
-            type="button"
-            ariaLabel="Clear file and preview"
+  <div class="file-upload__container">
+    <!-- File Upload Section -->
+    <div class="file-upload__upload-section">
+      @if (!previewUrl && !uploadedFileName) {
+        <div
+          class="file-upload__dropzone"
+          (click)="fileInput.click()"
+          (keydown)="onDropzoneKeyDown($event, fileInput)"
+          (dragover)="onDragOver($event)"
+          (drop)="onDrop($event)"
+          (dragleave)="onDragLeave($event)"
+          tabindex="0"
+          [attr.aria-label]="
+            'Upload image by clicking or dragging and dropping. Press Enter or Space to browse files.'
+          "
+        >
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            (change)="onFileInputChange($event)"
+            style="display: none"
           />
+          <div class="file-upload__dropzone-content">
+            <i class="pi pi-cloud-upload file-upload__icon"></i>
+            <h3 class="file-upload__title">Upload Image</h3>
+            <p class="file-upload__subtitle">
+              Drag and drop your image here, or click to browse
+            </p>
+            <p class="file-upload__hint">
+              Supported formats: JPG, PNG, GIF (Max 5MB)
+            </p>
+          </div>
+        </div>
+      } @else if (previewUrl) {
+        <div class="file-upload__preview-container">
+          <div class="file-upload__preview">
+            <img [src]="previewUrl" alt="Preview" class="preview-img" />
+            <p-button
+              icon="pi pi-trash"
+              styleClass="file-upload__delete-btn"
+              (onClick)="clearFileAndPreview()"
+              type="button"
+              [rounded]="true"
+              [text]="true"
+              [severity]="'danger'"
+              ariaLabel="Delete image"
+              pTooltip="Remove image"
+              tooltipPosition="bottom"
+            />
+            @if (isUploading) {
+              <div class="file-upload__loader-overlay">
+                <div class="file-upload__loader-content">
+                  <p-progressSpinner
+                    strokeWidth="4"
+                    animationDuration=".5s"
+                    styleClass="upload-spinner"
+                  ></p-progressSpinner>
+                  <span class="file-upload__loader-text">Uploading...</span>
+                </div>
+              </div>
+            }
+          </div>
+          @if (uploadedFileName) {
+            <div class="file-upload__file-info">
+              <i class="pi pi-file file-upload__file-icon"></i>
+              <span class="file-upload__file-name">{{ uploadedFileName }}</span>
+            </div>
+          }
         </div>
       }
     </div>
   </div>
-  <div class="file-upload__button">
-    @if (isUploading) {
-      <div class="file-upload__loader">
-        <p-progressSpinner
-          strokeWidth="4"
-          animationDuration=".5s"
-          styleClass="upload-spinner"
-        ></p-progressSpinner>
-        <span class="ml-2">Uploading...</span>
-      </div>
-    }
-    <app-button
-      [buttonLabel]="'Cancel'"
-      [buttonVariant]="'outlined'"
-      (btnClick)="onClose()"
-    ></app-button>
-    <app-button
-      [buttonLabel]="'Save'"
-      [disabled]="!data.fGroup.valid || isUploading"
-      (btnClick)="onSubmit()"
-    ></app-button>
+
+  <!-- Footer Actions -->
+  <div class="file-upload__footer">
+    <div class="file-upload__actions">
+      <app-button
+        [buttonLabel]="'Cancel'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"
+        [disabled]="isUploading"
+      ></app-button>
+      <app-button
+        [buttonLabel]="'Upload'"
+        [disabled]="!data.fGroup.valid || isUploading"
+        (btnClick)="onSubmit()"
+      ></app-button>
+    </div>
   </div>
 </div>

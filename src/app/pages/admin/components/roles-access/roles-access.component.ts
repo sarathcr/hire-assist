@@ -429,7 +429,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     const roleCollectionMap: Record<string, string> = {
       '4': 'interviewers',
       '1': 'coordinators',
-      '5': 'frontdesks',
+      '6': 'frontdesks',
     };
 
     for (const role of result.roles) {
@@ -444,7 +444,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   private deleteUserFromAllCollections(userId: string) {
-    const collections = ['interviewers', 'coordinators', 'frontdesk'];
+    const collections = ['interviewers', 'coordinators', 'frontdesks'];
 
     const currentCollection = this.storeService.getCollection() || {};
 
@@ -465,7 +465,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     const map: Record<string, string> = {
       '4': 'interviewers',
       '1': 'coordinators',
-      '5': 'frontdesks',
+      '6': 'frontdesks',
     };
 
     Object.values(map).forEach((col) => {

@@ -4,39 +4,48 @@
   height: 100%;
 }
 
+::ng-deep {
+  .p-dialog-content {
+    padding: 0 !important;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 90vh;
+  }
+}
+
 .file-dialog {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-10) var(--spacing-15);
-    &__title {
-      font-size: var(--font-size-18);
-      font-weight: bold;
-      margin: 0;
-    }
-  }
+  min-height: 0;
 
   &__body {
     flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: var(--spacing-15);
+    padding: var(--spacing-20);
+    overflow: auto;
+    min-height: 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+    position: relative;
   }
 
   &__image-container {
     width: 100%;
-    max-width: 60%;
-    max-height: 10%;
+    max-width: 100%;
+    max-height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+    border-radius: var(--spacing-10);
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    background: var(--color-white);
+    padding: var(--spacing-20);
 
     app-image {
       width: 100%;
@@ -44,6 +53,97 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      max-width: 100%;
+      max-height: 85vh;
+    }
+  }
+}
+
+// Loading skeleton styling
+::ng-deep {
+  app-file-skeleton {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+// Image component styling
+::ng-deep {
+  .image-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: transparent;
+
+    &__header {
+      position: absolute;
+      top: var(--spacing-15);
+      right: var(--spacing-15);
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+      i {
+        font-size: var(--font-size-20);
+        color: var(--color-dune);
+        transition: all 0.2s ease;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 1);
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+
+        i {
+          color: var(--primary-color);
+        }
+      }
+    }
+
+    p-image {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      max-height: 85vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      img {
+        max-width: 100%;
+        max-height: 85vh;
+        object-fit: contain;
+        border-radius: var(--spacing-10);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media screen and (max-width: 768px) {
+  .file-dialog {
+    &__body {
+      padding: var(--spacing-15);
+    }
+
+    &__image-container {
+      padding: var(--spacing-15);
     }
   }
 }

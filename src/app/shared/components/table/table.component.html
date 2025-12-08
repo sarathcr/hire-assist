@@ -427,14 +427,13 @@
               track headerColumn.field
             ) {
               @if (headerColumn.field === "questionText") {
-                @if (
-                  previewImageUrls[product.id] &&
-                  previewImageUrls[product.id].length &&
-                  product.hasAttachment
-                ) {
+                @if (product.hasAttachment) {
                   @if (isImageLoadings[product.id]) {
                     <app-image-skeleton></app-image-skeleton>
-                  } @else {
+                  } @else if (
+                    previewImageUrls[product.id] &&
+                    previewImageUrls[product.id].length
+                  ) {
                     @for (
                       imgUrl of previewImageUrls[product.id];
                       track imgUrl;
@@ -453,6 +452,30 @@
                         </app-image>
                       </div>
                     }
+                  } @else {
+                    <div
+                      class="table__previewImage table__previewImage--placeholder"
+                      (click)="
+                        onLoadQuestionImage && onLoadQuestionImage(product.id)
+                      "
+                      (keydown.enter)="
+                        onLoadQuestionImage && onLoadQuestionImage(product.id)
+                      "
+                      (keydown.space)="
+                        onLoadQuestionImage && onLoadQuestionImage(product.id)
+                      "
+                      tabindex="0"
+                      role="button"
+                      title="Click to load image"
+                    >
+                      <i
+                        class="pi pi-image"
+                        style="font-size: 2rem; color: #ccc"
+                      ></i>
+                      <span style="font-size: 0.75rem; color: #999"
+                        >Click to view</span
+                      >
+                    </div>
                   }
                 }
               }
@@ -477,14 +500,13 @@
                     {{ option.optionText }}
                   </li>
                 }
-                @if (
-                  previewImageUrls[option.id] &&
-                  previewImageUrls[option.id].length &&
-                  option.hasAttachments
-                ) {
+                @if (option.hasAttachments && option.blobId) {
                   @if (isImageLoadings[option.id]) {
                     <app-image-skeleton></app-image-skeleton>
-                  } @else {
+                  } @else if (
+                    previewImageUrls[option.id] &&
+                    previewImageUrls[option.id].length
+                  ) {
                     @for (
                       imgUrl of previewImageUrls[option.id];
                       track imgUrl;
@@ -503,6 +525,30 @@
                         </app-image>
                       </div>
                     }
+                  } @else {
+                    <div
+                      class="table__previewImage table__previewImage--placeholder"
+                      (click)="
+                        onLoadOptionImage && onLoadOptionImage(option.id)
+                      "
+                      (keydown.enter)="
+                        onLoadOptionImage && onLoadOptionImage(option.id)
+                      "
+                      (keydown.space)="
+                        onLoadOptionImage && onLoadOptionImage(option.id)
+                      "
+                      tabindex="0"
+                      role="button"
+                      title="Click to load image"
+                    >
+                      <i
+                        class="pi pi-image"
+                        style="font-size: 2rem; color: #ccc"
+                      ></i>
+                      <span style="font-size: 0.75rem; color: #999"
+                        >Click to view</span
+                      >
+                    </div>
                   }
                 }
               }

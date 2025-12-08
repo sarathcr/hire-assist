@@ -1,0 +1,25 @@
+.dialog {
+  padding: var(--spacing-20);
+
+  &__header {
+    margin-bottom: var(--spacing-15);
+    
+    h2 {
+      margin: 0;
+      font-size: var(--font-size-18);
+      font-weight: 600;
+      color: var(--color-dune);
+    }
+  }
+
+  &__description {
+    margin: 0;
+    font-size: var(--font-size-base);
+    color: var(--color-davy-grey);
+    line-height: 1.5;
+    white-space: pre-line;
+  }
+}
+
+
+

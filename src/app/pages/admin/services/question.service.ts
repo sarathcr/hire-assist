@@ -67,8 +67,14 @@ export class QuestionService extends ApiService<any> {
   }
 
   public deleteFiles(payload: FileDto) {
+    const blobId = payload.blobId || payload.id;
+    // attachmentId: Use id if it's a numeric string, otherwise use attachmentType
+    // Based on GetFiles implementation, attachmentId can be attachmentType
+    const attachmentId = payload.id && !isNaN(Number(payload.id))
+      ? Number(payload.id)
+      : payload.attachmentType;
     return this.httpClient.delete(
-      `${this.getResourceUrl()}/files?blobId=${payload.blobId}&attachmentTypeId=${payload.attachmentType}`,
+      `${this.getResourceUrl()}/files?blobId=${blobId}&attachmentId=${attachmentId}`,
     );
   }
 
