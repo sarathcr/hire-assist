@@ -92,6 +92,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
   public configMap!: ConfigMap;
   public isLoading = true;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
+  private previousFilterMap: any = {};
 
   private ref: DynamicDialogRef | undefined;
 
@@ -119,13 +120,16 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
   }
   // Public Methods
   public onTablePayloadChange(payload: PaginatedPayload): void {
-    this.currentPayload = {
-      ...payload,
-      pagination: {
-        ...payload.pagination,
-        pageNumber: 1,
-      },
-    };
+    const isSearch =
+      JSON.stringify(payload.filterMap) !==
+      JSON.stringify(this.previousFilterMap);
+
+    if (isSearch) {
+      payload.pagination.pageNumber = 1;
+    }
+
+    this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
+    this.currentPayload = payload;
     this.loadData(payload);
   }
 
