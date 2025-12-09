@@ -82,7 +82,7 @@ export class LoginComponent implements OnInit {
     this.messageService.add({
       severity: 'error',
       summary: 'Error',
-      detail: 'Invalid username or password',
+      detail: `${error.error.type}`,
     });
   }
 
