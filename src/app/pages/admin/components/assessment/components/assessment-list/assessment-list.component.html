@@ -11,7 +11,7 @@
     </div>
 
     <div class="assessment-list__wrapper">
-      @if (((isLoading$ | async) && isInitialLoad) || isLoading) {
+      @if ((isLoading$ | async) || isLoading) {
         <app-assessment-card-skeleton
           class="assessment-list__card"
         ></app-assessment-card-skeleton>

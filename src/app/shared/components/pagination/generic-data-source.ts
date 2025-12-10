@@ -20,6 +20,7 @@ export class GenericDataSource<T>
   public totalRecords$ = this.totalRecords.asObservable();
   public baseUrl = '';
   public optionInitialPayload!: PaginatedDataPayload | object;
+  public lastPayload!: PaginatedDataPayload;
 
   constructor(private service: PaginatedService<T>) {}
 
@@ -44,8 +45,10 @@ export class GenericDataSource<T>
   }
 
   public loadPaginatedData(payload: PaginatedDataPayload) {
+    this.lastPayload = payload;
     this.loadingSubject.next(true);
     payload = { ...payload, ...this.optionInitialPayload };
+
     this.service
       .getPaginatedData(this.baseUrl, payload)
       .pipe(
@@ -58,13 +61,13 @@ export class GenericDataSource<T>
   }
 
   public getPayloadData(): PaginatedDataPayload {
-    const payload: PaginatedDataPayload = {
-      sortedColumn: { active: '', direction: '' },
-      filterMap: {},
-      pagination: { pageNumber: 0, pageSize: 10 },
-    };
-
-    return payload;
+    return (
+      this.lastPayload ?? {
+        sortedColumn: { active: '', direction: '' },
+        filterMap: {},
+        pagination: { pageNumber: 0, pageSize: 10 },
+      }
+    );
   }
 
   private updatePaginatedData(paginatedData: PaginatedData<T> | null) {

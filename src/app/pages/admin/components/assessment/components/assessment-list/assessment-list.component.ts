@@ -254,7 +254,6 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
         state: { assessment: res },
       });
       this.isLoading = false;
-      this.reloadPaginatedData();
     };
     const error = (error: CustomErrorResponse) => {
       console.log('ERROR', error);
