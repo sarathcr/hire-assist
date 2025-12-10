@@ -188,7 +188,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Updation is failed',
+              detail: error.error.type
             });
           }
 
