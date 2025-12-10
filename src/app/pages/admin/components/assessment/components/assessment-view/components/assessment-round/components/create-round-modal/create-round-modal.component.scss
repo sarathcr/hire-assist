@@ -1,0 +1,49 @@
+.create-round-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-20);
+  padding: var(--spacing-10);
+
+  &__header {
+    margin-bottom: var(--spacing-10);
+  }
+
+  &__title {
+    margin: 0 0 var(--spacing-8) 0;
+    font-size: var(--font-size-18);
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  &__description {
+    margin: 0;
+    font-size: var(--font-size-base);
+    color: var(--text-color-secondary);
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-16);
+    margin-top: 20px;
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-16);
+  }
+
+  &__field {
+    width: 100%;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: var(--spacing-20);
+    box-shadow: 0px -15px 20px -26px #000;
+  }
+}

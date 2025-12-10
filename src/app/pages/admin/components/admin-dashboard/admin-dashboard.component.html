@@ -1,42 +1,249 @@
-<div class="dashboard">
-  <div id="assessment" routerLink="/admin/recruitments">
-    @if (assessmentData !== undefined) {
-      <app-dashboard-card
-        class="dashboard-card"
-        [title]="'Recruitments'"
-        [icon]="'pi pi-user-plus'"
-        [count]="assessmentData && assessmentData.total"
-        [activeCount]="assessmentData && assessmentData.active"
-        [inactiveCount]="assessmentData && assessmentData.inactive"
-      ></app-dashboard-card>
+<div class="dashboard-container">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Dashboard</h1>
+    <div class="header-actions">
+      <div class="date-badge">
+        <i class="pi pi-calendar"></i>
+        <span>{{ todayDate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Stat Cards Section -->
+  <div class="stats-grid">
+    @if (isLoadingDashboard) {
+      <!-- Skeleton Loaders -->
+      <div class="stat-card-modern stat-card-primary stat-card-skeleton">
+        <div class="stat-card-content-modern">
+          <div class="stat-card-header">
+            <div
+              class="stat-icon-wrapper stat-icon-primary skeleton-icon"
+            ></div>
+            <div class="skeleton-badge"></div>
+          </div>
+          <div class="stat-card-body">
+            <div class="skeleton-label"></div>
+            <div class="skeleton-number"></div>
+            <div class="stat-card-footer">
+              <div class="skeleton-detail"></div>
+              <div class="skeleton-detail"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card-modern stat-card-success stat-card-skeleton">
+        <div class="stat-card-content-modern">
+          <div class="stat-card-header">
+            <div
+              class="stat-icon-wrapper stat-icon-success skeleton-icon"
+            ></div>
+          </div>
+          <div class="stat-card-body">
+            <div class="skeleton-label"></div>
+            <div class="skeleton-number"></div>
+            <div class="stat-card-footer">
+              <div class="skeleton-detail"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card-modern stat-card-info stat-card-skeleton">
+        <div class="stat-card-content-modern">
+          <div class="stat-card-header">
+            <div class="stat-icon-wrapper stat-icon-info skeleton-icon"></div>
+          </div>
+          <div class="stat-card-body">
+            <div class="skeleton-label"></div>
+            <div class="skeleton-number"></div>
+            <div class="stat-card-footer">
+              <div class="skeleton-detail"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     } @else {
-      <app-dashboard-card-skeleton></app-dashboard-card-skeleton>
+      <!-- Real Content -->
+      <div
+        class="stat-card-modern stat-card-primary"
+        routerLink="/admin/recruitments"
+      >
+        <div class="stat-card-background">
+          <div class="stat-card-pattern"></div>
+        </div>
+        <div class="stat-card-content-modern">
+          <div class="stat-card-header">
+            <div class="stat-icon-wrapper stat-icon-primary">
+              <i class="pi pi-briefcase"></i>
+            </div>
+            @if (assessmentData.active) {
+              <span class="stat-badge stat-badge-success">
+                {{ assessmentData.active }} Active
+              </span>
+            }
+          </div>
+          <div class="stat-card-body">
+            <h3 class="stat-card-label">Total Recruitments</h3>
+            <p class="stat-card-number">{{ assessmentData.total }}</p>
+            <div class="stat-card-footer">
+              <span class="stat-detail">
+                <i class="pi pi-check-circle"></i>
+                Active: {{ assessmentData.active }}
+              </span>
+              <span class="stat-detail">
+                <i class="pi pi-pause-circle"></i>
+                Inactive: {{ assessmentData.inactive }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="stat-card-modern stat-card-success"
+        routerLink="/admin/roles-access"
+      >
+        <div class="stat-card-background">
+          <div class="stat-card-pattern"></div>
+        </div>
+        <div class="stat-card-content-modern">
+          <div class="stat-card-header">
+            <div class="stat-icon-wrapper stat-icon-success">
+              <i class="pi pi-users"></i>
+            </div>
+          </div>
+          <div class="stat-card-body">
+            <h3 class="stat-card-label">Total Users</h3>
+            <p class="stat-card-number">{{ usersData.total }}</p>
+            <div class="stat-card-footer">
+              <span class="stat-detail">
+                <i class="pi pi-info-circle"></i>
+                System users
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="stat-card-modern stat-card-info"
+        routerLink="/admin/settings/questions"
+      >
+        <div class="stat-card-background">
+          <div class="stat-card-pattern"></div>
+        </div>
+        <div class="stat-card-content-modern">
+          <div class="stat-card-header">
+            <div class="stat-icon-wrapper stat-icon-info">
+              <i class="pi pi-file-edit"></i>
+            </div>
+          </div>
+          <div class="stat-card-body">
+            <h3 class="stat-card-label">Question Sets</h3>
+            <p class="stat-card-number">{{ questionSetData.total }}</p>
+            <div class="stat-card-footer">
+              <span class="stat-detail">
+                <i class="pi pi-info-circle"></i>
+                Available sets
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     }
   </div>
-  <div id="users" routerLink="/admin/roles-access">
-    @if (usersData !== undefined) {
-      <app-dashboard-card
-        class="dashboard-card"
-        id="users"
-        [icon]="'pi pi-users'"
-        [title]="'Users'"
-        [count]="usersData && usersData.total"
-      ></app-dashboard-card>
-    } @else {
-      <app-dashboard-card-skeleton></app-dashboard-card-skeleton>
-    }
-  </div>
-  <div id="question-set" routerLink="/admin/settings/questions">
-    @if (usersData !== undefined) {
-      <app-dashboard-card
-        class="dashboard-card"
-        id="question-set"
-        [icon]="'pi pi-question-circle'"
-        [title]="'Question Sets'"
-        [count]="usersData && questionSetData.total"
-      ></app-dashboard-card>
-    } @else {
-      <app-dashboard-card-skeleton></app-dashboard-card-skeleton>
-    }
+
+  <!-- Middle Section - Charts -->
+  <div class="dashboard-charts-section">
+    <!-- Left Panel - Dashboard Overview -->
+    <div class="chart-panel chart-panel-left">
+      <p-card class="chart-card">
+        <ng-template pTemplate="header">
+          <div class="panel-header">
+            <div class="panel-title-section">
+              <h3 class="panel-title">Dashboard Overview</h3>
+            </div>
+          </div>
+        </ng-template>
+        <div class="panel-content">
+          @if (
+            assessmentData !== undefined &&
+            usersData !== undefined &&
+            questionSetData !== undefined &&
+            overviewChartData
+          ) {
+            <div class="chart-wrapper chart-wrapper-bar">
+              <p-chart
+                type="bar"
+                [data]="overviewChartData"
+                [options]="overviewChartOptions"
+              ></p-chart>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="legend-dot legend-dot-primary"></span>
+                <span>Recruitments</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot legend-dot-success"></span>
+                <span>Users</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot legend-dot-info"></span>
+                <span>Question Sets</span>
+              </div>
+            </div>
+          } @else {
+            <div class="chart-skeleton">
+              <div class="skeleton-bar"></div>
+              <div class="skeleton-bar"></div>
+              <div class="skeleton-bar"></div>
+            </div>
+          }
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Right Panel - Analytics -->
+    <div class="chart-panel chart-panel-right">
+      <p-card class="chart-card">
+        <ng-template pTemplate="header">
+          <div class="panel-header">
+            <h3 class="panel-title">Analytics</h3>
+          </div>
+        </ng-template>
+        <div class="panel-content">
+          @if (assessmentData !== undefined && assessmentStatusChartData) {
+            <div class="chart-wrapper chart-wrapper-doughnut">
+              <p-chart
+                type="doughnut"
+                [data]="assessmentStatusChartData"
+                [options]="assessmentStatusChartOptions"
+              ></p-chart>
+              <div class="doughnut-center-text">
+                <span class="center-percentage">{{ activePercentage }}%</span>
+                <span class="center-label">Active</span>
+              </div>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="legend-dot legend-dot-success"></span>
+                <span>Active</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot legend-dot-danger"></span>
+                <span>Inactive</span>
+              </div>
+            </div>
+          } @else {
+            <div class="chart-skeleton">
+              <div class="skeleton-circle"></div>
+            </div>
+          }
+        </div>
+      </p-card>
+    </div>
   </div>
 </div>

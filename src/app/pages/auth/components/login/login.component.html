@@ -1,30 +1,98 @@
 <div class="login">
-  <h1 class="login__title">Login</h1>
-  <p class="login__sub-title">Please enter your credentials to continue</p>
-  <form [formGroup]="fGroup">
-    <app-input-text
-      [formGroup]="fGroup"
-      [type]="'text'"
-      [config]="configMap['email']"
-      type="text"
-    ></app-input-text>
+  <div class="login__header">
+    <h1 class="login__title">Welcome Back</h1>
+    <p class="login__sub-title">Sign in to continue to your account</p>
+  </div>
 
-    <app-input-password
-      [formGroup]="fGroup"
-      [config]="configMap['password']"
-    ></app-input-password>
+  <form [formGroup]="fGroup" class="login__form">
+    <div class="login__form-group">
+      <app-input-text
+        [formGroup]="fGroup"
+        [type]="'text'"
+        [config]="configMap['email']"
+        type="text"
+      ></app-input-text>
+    </div>
+
+    <div class="login__form-group">
+      <app-input-password
+        [formGroup]="fGroup"
+        [config]="configMap['password']"
+      ></app-input-password>
+    </div>
+
+    <div class="login__form-actions">
+      <button
+        type="button"
+        class="login__forgot-password"
+        (click)="forgotPassword()"
+      >
+        Forgot Password?
+      </button>
+    </div>
+
     <app-button
-      [buttonLabel]="'Login'"
+      [buttonLabel]="'Sign In'"
       [buttonSize]="'large'"
       [buttonWidth]="'full'"
       [isLoading]="isLoading"
       (click)="onSave()"
       (keydown)="onSave()"
+      class="login__submit-button"
     ></app-button>
   </form>
 
-  <button class="login__back" (click)="forgotPassword()">
-    Forgot Password?
-  </button>
+  <div class="login__footer">
+    <p class="login__footer-text">
+      Don't have an account?
+      <a href="#" class="login__footer-link">Contact Administrator</a>
+    </p>
+  </div>
+
+  <!-- Mobile Feature Highlights Carousel -->
+  <div class="login__mobile-features">
+    <p-carousel
+      [value]="slides"
+      [numVisible]="1"
+      [numScroll]="1"
+      [circular]="true"
+      [autoplayInterval]="4000"
+      [showIndicators]="true"
+      [showNavigators]="false"
+      [responsiveOptions]="responsiveOptions"
+    >
+      <ng-template let-slide pTemplate="item">
+        <div class="login__mobile-feature">
+          <span class="login__mobile-feature-icon">{{ slide.icon }}</span>
+          <div class="login__mobile-feature-content">
+            <h3 class="login__mobile-feature-title">{{ slide.title }}</h3>
+            <p class="login__mobile-feature-description">{{ slide.description }}</p>
+          </div>
+        </div>
+      </ng-template>
+    </p-carousel>
+  </div>
 </div>
+
+<div class="login-carousel">
+  <p-carousel
+    [value]="slides"
+    [numVisible]="1"
+    [numScroll]="1"
+    [circular]="true"
+    [autoplayInterval]="5000"
+    [responsiveOptions]="responsiveOptions"
+    [showIndicators]="true"
+    [showNavigators]="false"
+  >
+    <ng-template let-slide pTemplate="item">
+      <div class="login-carousel__slide">
+        <div class="login-carousel__icon">{{ slide.icon }}</div>
+        <h2 class="login-carousel__title">{{ slide.title }}</h2>
+        <p class="login-carousel__description">{{ slide.description }}</p>
+      </div>
+    </ng-template>
+  </p-carousel>
+</div>
+
 <p-toast position="top-right" class="Toast"></p-toast>

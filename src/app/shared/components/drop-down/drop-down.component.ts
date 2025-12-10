@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { Menu } from 'primeng/menu';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-drop-down',
@@ -13,7 +14,10 @@ import { Menu } from 'primeng/menu';
 export class DropDownComponent implements OnInit {
   items: MenuItem[] | undefined;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService,
+  ) {}
   ngOnInit() {
     this.items = [
       {
@@ -26,11 +30,17 @@ export class DropDownComponent implements OnInit {
           {
             label: 'Logout',
             icon: 'pi pi-sign-out',
-            routerLink: '/login',
+            command: () => {
+              this.handleLogout();
+            },
           },
         ],
       },
     ];
+  }
+
+  private handleLogout(): void {
+    this.authService.logout();
   }
 
   navigateToProfile() {

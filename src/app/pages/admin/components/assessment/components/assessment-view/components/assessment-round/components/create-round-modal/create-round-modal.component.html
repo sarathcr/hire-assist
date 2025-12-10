@@ -1,0 +1,31 @@
+<div class="create-round-modal">
+  <form [formGroup]="fGroup" class="create-round-modal__form">
+    <div class="create-round-modal__fields">
+      <app-input-text
+        type="text"
+        class="create-round-modal__field"
+        [formGroup]="fGroup"
+        [config]="configMap['name']"
+      ></app-input-text>
+      <app-input-textarea
+        [formGroup]="fGroup"
+        type="text"
+        [config]="configMap['description']"
+      ></app-input-textarea>
+    </div>
+  </form>
+
+  <div class="create-round-modal__footer">
+    <app-button
+      [buttonLabel]="'Cancel'"
+      [buttonVariant]="'outlined'"
+      [buttonSize]="'small'"
+      (btnClick)="onClose()"
+    ></app-button>
+    <app-button
+      [buttonLabel]="'Create Round'"
+      [buttonSize]="'small'"
+      (btnClick)="onSubmit()"
+    ></app-button>
+  </div>
+</div>

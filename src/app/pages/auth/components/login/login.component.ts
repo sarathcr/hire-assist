@@ -1,8 +1,10 @@
+import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
+import { CarouselModule } from 'primeng/carousel';
 import { Toast } from 'primeng/toast';
 
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
@@ -22,14 +24,22 @@ import { LoginData } from '../../models/login-data.models';
 import { AuthService } from '../../services/auth.service';
 import { CollectionService } from '../../../../shared/services/collection.service';
 
+interface Slide {
+  title: string;
+  description: string;
+  icon: string;
+}
+
 @Component({
   selector: 'app-login',
   imports: [
+    CommonModule,
     InputTextComponent,
     ButtonComponent,
     ReactiveFormsModule,
     Toast,
     InputPasswordComponent,
+    CarouselModule,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
@@ -38,6 +48,45 @@ export class LoginComponent implements OnInit {
   public fGroup!: FormGroup;
   public isLoading = false;
   public configMap!: ConfigMap;
+  public slides: Slide[] = [
+    {
+      title: 'Streamline Your Hiring Process',
+      description: 'Efficiently manage candidates, interviews, and assessments all in one place.',
+      icon: '👥',
+    },
+    {
+      title: 'Smart Candidate Assessment',
+      description: 'Evaluate candidates with comprehensive tools and real-time analytics.',
+      icon: '📊',
+    },
+    {
+      title: 'Collaborative Interview Management',
+      description: 'Coordinate with your team and schedule interviews seamlessly.',
+      icon: '🤝',
+    },
+    {
+      title: 'Data-Driven Decisions',
+      description: 'Make informed hiring decisions with detailed insights and reports.',
+      icon: '📈',
+    },
+  ];
+  public responsiveOptions = [
+    {
+      breakpoint: '1024px',
+      numVisible: 1,
+      numScroll: 1,
+    },
+    {
+      breakpoint: '768px',
+      numVisible: 1,
+      numScroll: 1,
+    },
+    {
+      breakpoint: '560px',
+      numVisible: 1,
+      numScroll: 1,
+    },
+  ];
 
   constructor(
     private readonly router: Router,

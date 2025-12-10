@@ -416,6 +416,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.getInterviewPanels(selectedCandidate.id, payload, isAdd);
   }
 
+  /**
+   * Sets the active round menu item and loads the corresponding candidate data
+   * @param index - The index of the selected round
+   * @param stepId - The ID of the assessment round
+   * @param stepStatus - The status of the round (e.g., 'Completed')
+   */
   public setActiveMenuItem(
     index: number,
     stepId: number,

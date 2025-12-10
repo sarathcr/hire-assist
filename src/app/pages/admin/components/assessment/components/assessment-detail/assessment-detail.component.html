@@ -1,41 +1,50 @@
-<div class="heading assessment-detail__main">
-  <h1 class="assessment-detail__title-wrapper">
+<div class="assessment-detail">
+  <!-- Header Section -->
+  <div class="assessment-detail__header">
     @if (data) {
-      <p class="assessment-detail__title">{{ data.name }}</p>
+      <h1 class="assessment-detail__title">{{ data.name }}</h1>
     } @else {
       <p-skeleton width="18rem" height="2rem" />
     }
-  </h1>
-  <div class="assessment-detail__wrapper">
-    <ul class="assessment-detail__rounds">
-      @for (stepHeader of step; track stepHeader.id; let i = $index) {
-        <li
-          class="assessment-detail__rounds-item"
-          [ngClass]="{ active: i === activeMenuItemIndex }"
-        >
-          <button
-            type="button"
-            tabindex="0"
-            class="assessment-detail__rounds-btn"
-            (click)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
-            (keydown)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
-          >
-            {{ stepHeader.round }}
-          </button>
-        </li>
-      } @empty {
-        <li class="assessment-detail__rounds-item">
-          <p-skeleton width="100%" height="2rem" />
-        </li>
-        <li class="assessment-detail__rounds-item">
-          <p-skeleton width="100%" height="2rem" />
-        </li>
-        <li class="assessment-detail__rounds-item">
-          <p-skeleton width="100%" height="2rem" />
-        </li>
+  </div>
+
+  <!-- Unified Content Section -->
+  <div class="assessment-detail__section">
+    <!-- Rounds Selector -->
+    <div class="assessment-detail__rounds-selector">
+      @if (step && step.length > 0) {
+        <div class="rounds-tabs">
+          @for (stepHeader of step; track stepHeader.id; let i = $index) {
+            <button
+              type="button"
+              class="rounds-tab"
+              [ngClass]="{ 
+                'rounds-tab--active': i === activeMenuItemIndex,
+                'rounds-tab--completed': stepHeader.status === 'Completed'
+              }"
+              (click)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
+              (keydown.enter)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
+              (keydown.space)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
+              tabindex="0"
+            >
+              <span class="rounds-tab__label">{{ stepHeader.round }}</span>
+              @if (stepHeader.status === 'Completed') {
+                <i class="pi pi-check-circle rounds-tab__icon"></i>
+              }
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="rounds-tabs">
+          @for (item of [1, 2, 3]; track item) {
+            <p-skeleton width="120px" height="2.5rem" styleClass="rounds-tab-skeleton" />
+          }
+        </div>
       }
-    </ul>
-    <div class="assessment-detail__content">
+    </div>
+
+    <!-- Candidates Table -->
+    <div class="assessment-detail__table-container">
       <app-table
         [tableData]="tableData"
         [columnsData]="columns"
@@ -48,7 +57,7 @@
         (view)="onView($event)"
         (pageChangeAndSort)="onTablePayloadChange($event)"
       >
-        <div class="assessment-detail__custom-button">
+        <div class="assessment-detail__actions">
           <p-button
             icon="pi pi-calendar-plus"
             pTooltip="Schedule Interview"
@@ -83,17 +92,19 @@
         </div>
       </app-table>
     </div>
+
+    <!-- Complete Button -->
+    <div class="assessment-detail__footer">
+      <app-button
+        [disabled]="roundStatus"
+        [buttonSize]="'small'"
+        [buttonLabel]="'Complete Round'"
+        [buttonVariant]="'outlined'"
+        [isLoading]="!tableData"
+        (btnClick)="CompleteAssessmentRound()"
+      ></app-button>
+    </div>
   </div>
 
-  <div class="assessment-detail__complete-btn">
-    <app-button
-      [disabled]="roundStatus"
-      [buttonSize]="'small'"
-      [buttonLabel]="'Complete'"
-      [buttonVariant]="'outlined'"
-      [isLoading]="!tableData"
-      (btnClick)="CompleteAssessmentRound()"
-    ></app-button>
-  </div>
   <p-toast position="top-right" class="Toast"></p-toast>
 </div>

@@ -1,34 +1,788 @@
 :host {
-  width: 70%;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 0;
+  position: relative;
+  
+  @media (max-width: 1024px) {
+    flex-direction: column;
+  }
+  
   @media (max-width: 768px) {
-    width: unset;
+    flex-direction: column;
+    height: auto;
+    min-height: auto;
+    overflow: visible;
   }
 }
+
 .login {
-  text-align: center;
-  &__title {
-    color: var(--color-grey);
+  flex: 0 0 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--spacing-40, 40px);
+  background: var(--color-white);
+  // Animation only runs once on initial load
+  animation: fadeInUp 0.6s ease-out;
+  animation-fill-mode: forwards;
+  // Isolate from carousel to prevent re-animation
+  isolation: isolate;
+  will-change: auto;
+
+  &__header {
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: var(--spacing-40, 40px);
+    text-align: left;
   }
-  &__sub-title,
+
   &__title {
-    margin-top: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-black, #1a1a1a);
+    margin: 0 0 var(--spacing-10, 10px) 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
   }
-  &__back {
+
+  &__sub-title {
+    color: var(--color-grey, #6b7280);
+    font-size: 0.95rem;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__form {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-12, 12px);
+  }
+
+  &__form-group {
+    width: 100%;
+    // Animation only runs once on initial load
+    animation: fadeIn 0.8s ease-out;
+    animation-fill-mode: forwards;
+
+    &:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    &:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+  }
+
+  &__form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: calc(var(--spacing-6, 6px) * -1);
+    margin-bottom: var(--spacing-6, 6px);
+  }
+
+  &__forgot-password {
     background: none;
     border: none;
-    color: var(--color-grey);
-    text-decoration: underline;
+    color: #667eea;
+    font-size: 0.875rem;
     cursor: pointer;
-    font-size: var(--font-size-0_9rem);
-    padding: 0;
-  }
-  @media (max-width: 768px) {
-    width: var(--width-vw-80);
-    background: var(--color-white);
-    border-radius: var(--spacing-20);
-    padding: var(--spacing-30);
-    &__title {
-      color: var(--color-black);
+    padding: var(--spacing-4, 4px);
+    margin: calc(var(--spacing-4, 4px) * -1);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    &:hover {
+      color: #764ba2;
+      text-decoration: underline;
     }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    &:focus {
+      outline: 2px solid #667eea;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    @media (max-width: 768px) {
+      min-height: 36px;
+      height: auto;
+      font-size: 0.8rem;
+    }
+  }
+
+  &__submit-button {
+    margin-top: var(--spacing-10, 10px);
+    // Animation only runs once on initial load
+    animation: fadeIn 0.8s ease-out 0.3s forwards;
+  }
+
+  &__footer {
+    width: 100%;
+    max-width: 420px;
+    margin-top: var(--spacing-30, 30px);
+    text-align: center;
+  }
+
+  &__footer-text {
+    color: var(--color-grey, #6b7280);
+    font-size: 0.875rem;
+    margin: 0;
+  }
+
+  &__footer-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    padding: var(--spacing-2, 2px);
+    margin: calc(var(--spacing-2, 2px) * -1);
+    display: inline-block;
+
+    &:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // Tablet styles
+  @media (max-width: 1024px) and (min-width: 769px) {
+    flex: 1;
+    padding: var(--spacing-30, 30px);
+    
+    &__header {
+      margin-bottom: var(--spacing-30, 30px);
+    }
+    
+    &__title {
+      font-size: 1.85rem;
+    }
+  }
+
+  // Mobile styles
+  @media (max-width: 768px) {
+    flex: none;
+    width: calc(100% - 32px);
+    max-width: 500px;
+    padding: var(--spacing-20, 20px) var(--spacing-16, 16px);
+    padding-bottom: var(--spacing-20, 20px);
+    background: var(--color-white);
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    margin: auto;
+    min-height: auto;
+    height: auto;
+    justify-content: center;
+    align-items: center;
+    padding-top: var(--spacing-24, 24px);
+    overflow: visible;
+    position: relative;
+
+    &__header {
+      text-align: center;
+      margin-bottom: var(--spacing-20, 20px);
+      width: 100%;
+      max-width: 100%;
+    }
+
+    &__title {
+      font-size: 1.5rem;
+      text-align: center;
+      margin-bottom: var(--spacing-6, 6px);
+      line-height: 1.2;
+    }
+
+    &__sub-title {
+      text-align: center;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    &__form {
+      max-width: 100%;
+      gap: var(--spacing-10, 10px);
+
+      // Compact inputs and buttons for mobile
+      ::ng-deep {
+        input,
+        button {
+          min-height: 40px;
+          height: 40px;
+          font-size: 16px; // Prevents zoom on iOS
+          padding: var(--spacing-8, 8px) var(--spacing-12, 12px);
+        }
+      }
+    }
+
+    &__form-group {
+      width: 100%;
+    }
+
+    &__form-actions {
+      margin-top: calc(var(--spacing-6, 6px) * -1);
+      margin-bottom: var(--spacing-6, 6px);
+    }
+
+    &__forgot-password {
+      font-size: 0.8rem;
+      padding: var(--spacing-2, 2px);
+      margin: calc(var(--spacing-2, 2px) * -1);
+      min-height: 36px;
+      height: auto;
+    }
+
+    &__submit-button {
+      margin-top: var(--spacing-6, 6px);
+    }
+
+    &__footer {
+      max-width: 100%;
+      margin-top: var(--spacing-16, 16px);
+      margin-bottom: var(--spacing-8, 8px);
+    }
+
+    &__footer-text {
+      font-size: 0.75rem;
+      line-height: 1.5;
+    }
+  }
+
+  // Small mobile styles
+  @media (max-width: 480px) {
+    width: calc(100% - 24px);
+    padding: var(--spacing-16, 16px) var(--spacing-12, 12px);
+    padding-bottom: var(--spacing-16, 16px);
+    margin: auto;
+    border-radius: 16px;
+    padding-top: var(--spacing-20, 20px);
+
+    &__header {
+      margin-bottom: var(--spacing-16, 16px);
+    }
+
+    &__title {
+      font-size: 1.35rem;
+      margin-bottom: var(--spacing-4, 4px);
+      line-height: 1.2;
+    }
+
+    &__sub-title {
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
+    &__form {
+      gap: var(--spacing-8, 8px);
+
+      ::ng-deep {
+        input,
+        button {
+          min-height: 38px;
+          height: 38px;
+          font-size: 16px;
+          padding: var(--spacing-6, 6px) var(--spacing-10, 10px);
+        }
+      }
+    }
+
+    &__form-actions {
+      margin-top: calc(var(--spacing-4, 4px) * -1);
+      margin-bottom: var(--spacing-4, 4px);
+    }
+
+    &__forgot-password {
+      font-size: 0.75rem;
+      min-height: 32px;
+      height: auto;
+    }
+
+    &__footer {
+      margin-top: var(--spacing-12, 12px);
+      margin-bottom: var(--spacing-6, 6px);
+    }
+
+    &__footer-text {
+      font-size: 0.7rem;
+      line-height: 1.4;
+    }
+  }
+
+  // Extra small mobile styles
+  @media (max-width: 360px) {
+    width: calc(100% - 20px);
+    padding: var(--spacing-14, 14px) var(--spacing-10, 10px);
+    padding-bottom: var(--spacing-14, 14px);
+    margin: auto;
+    border-radius: 14px;
+    padding-top: var(--spacing-16, 16px);
+
+    &__header {
+      margin-bottom: var(--spacing-12, 12px);
+    }
+
+    &__title {
+      font-size: 1.2rem;
+      margin-bottom: var(--spacing-4, 4px);
+    }
+
+    &__sub-title {
+      font-size: 0.75rem;
+    }
+
+    &__form {
+      gap: var(--spacing-8, 8px);
+
+      ::ng-deep {
+        input,
+        button {
+          min-height: 36px;
+          height: 36px;
+          font-size: 16px;
+          padding: var(--spacing-6, 6px) var(--spacing-10, 10px);
+        }
+      }
+    }
+
+    &__forgot-password {
+      min-height: 30px;
+      height: auto;
+    }
+
+    &__footer {
+      margin-top: var(--spacing-10, 10px);
+      margin-bottom: var(--spacing-4, 4px);
+    }
+  }
+
+  // Landscape orientation on mobile
+  @media (max-width: 768px) and (orientation: landscape) {
+    padding: var(--spacing-12, 12px) var(--spacing-12, 12px);
+    padding-bottom: var(--spacing-12, 12px);
+    margin: var(--spacing-8, 8px) auto;
+    max-height: none;
+    height: auto;
+    overflow: visible;
+    -webkit-overflow-scrolling: touch;
+    padding-top: var(--spacing-16, 16px);
+
+    &__header {
+      margin-bottom: var(--spacing-12, 12px);
+    }
+
+    &__title {
+      font-size: 1.3rem;
+      margin-bottom: var(--spacing-4, 4px);
+    }
+
+    &__sub-title {
+      font-size: 0.8rem;
+    }
+
+    &__form {
+      gap: var(--spacing-8, 8px);
+
+      ::ng-deep {
+        input,
+        button {
+          min-height: 38px;
+          height: 38px;
+          font-size: 16px;
+          padding: var(--spacing-6, 6px) var(--spacing-10, 10px);
+        }
+      }
+    }
+
+    &__forgot-password {
+      min-height: 34px;
+      height: auto;
+    }
+
+    &__form-actions {
+      margin-top: calc(var(--spacing-4, 4px) * -1);
+      margin-bottom: var(--spacing-4, 4px);
+    }
+
+    &__footer {
+      margin-top: var(--spacing-10, 10px);
+      margin-bottom: var(--spacing-4, 4px);
+    }
+
+    &__mobile-features {
+      margin-top: var(--spacing-10, 10px);
+      margin-bottom: var(--spacing-8, 8px);
+    }
+
+    &__mobile-feature {
+      padding: var(--spacing-8, 8px);
+      min-height: 60px;
+    }
+
+    &__mobile-feature-icon {
+      font-size: 1.3rem;
+    }
+
+    &__mobile-feature-title {
+      font-size: 0.75rem;
+    }
+
+    &__mobile-feature-description {
+      font-size: 0.65rem;
+    }
+  }
+
+  // Mobile Feature Highlights Carousel
+  &__mobile-features {
+    display: none;
+    width: 100%;
+    max-width: 420px;
+    margin-top: var(--spacing-16, 16px);
+    margin-bottom: var(--spacing-12, 12px);
+
+    @media (max-width: 768px) {
+      display: block;
+      margin-top: var(--spacing-12, 12px);
+      margin-bottom: var(--spacing-12, 12px);
+    }
+
+    // PrimeNG Carousel customizations for mobile
+    ::ng-deep {
+      .p-carousel {
+        width: 100%;
+        background: transparent;
+      }
+
+      .p-carousel-content {
+        background: transparent;
+      }
+
+      .p-carousel-indicators {
+        padding: var(--spacing-10, 10px) 0 0 0;
+        gap: var(--spacing-6, 6px);
+      }
+
+      .p-carousel-indicator {
+        button {
+          background-color: rgba(102, 126, 234, 0.3);
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          transition: all 0.3s ease;
+          border: none;
+          padding: 0;
+
+          &:hover {
+            background-color: rgba(102, 126, 234, 0.5);
+          }
+        }
+
+        &.p-highlight button {
+          background-color: #667eea;
+          width: 20px;
+          border-radius: 4px;
+        }
+      }
+
+      .p-carousel-prev,
+      .p-carousel-next {
+        display: none;
+      }
+
+      .p-carousel-item {
+        padding: 0;
+      }
+    }
+  }
+
+  &__mobile-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-10, 10px);
+    padding: var(--spacing-12, 12px);
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(102, 126, 234, 0.15);
+    transition: background 0.3s ease;
+    min-height: 80px;
+    width: 100%;
+
+    &:active {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.12) 100%);
+    }
+
+    @media (max-width: 480px) {
+      padding: var(--spacing-10, 10px);
+      min-height: 70px;
+      gap: var(--spacing-8, 8px);
+    }
+
+    @media (max-width: 360px) {
+      padding: var(--spacing-8, 8px);
+      min-height: 65px;
+      gap: var(--spacing-6, 6px);
+    }
+  }
+
+  &__mobile-feature-icon {
+    font-size: 1.75rem;
+    flex-shrink: 0;
+    line-height: 1;
+
+    @media (max-width: 480px) {
+      font-size: 1.5rem;
+    }
+
+    @media (max-width: 360px) {
+      font-size: 1.35rem;
+    }
+  }
+
+  &__mobile-feature-content {
+    flex: 1;
+  }
+
+  &__mobile-feature-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-black, #1a1a1a);
+    margin: 0 0 var(--spacing-2, 2px) 0;
+    line-height: 1.3;
+
+    @media (max-width: 480px) {
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 360px) {
+      font-size: 0.75rem;
+    }
+  }
+
+  &__mobile-feature-description {
+    font-size: 0.75rem;
+    color: var(--color-grey, #6b7280);
+    margin: 0;
+    line-height: 1.4;
+
+    @media (max-width: 480px) {
+      font-size: 0.7rem;
+      line-height: 1.3;
+    }
+
+    @media (max-width: 360px) {
+      font-size: 0.65rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    &__mobile-features {
+      margin-top: var(--spacing-10, 10px);
+      margin-bottom: var(--spacing-10, 10px);
+    }
+  }
+
+  @media (max-width: 360px) {
+    &__mobile-feature-icon {
+      font-size: 1.5rem;
+    }
+
+    &__mobile-feature-title {
+      font-size: 0.8rem;
+    }
+
+    &__mobile-feature-description {
+      font-size: 0.7rem;
+    }
+  }
+}
+
+.login-carousel {
+  flex: 0 0 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: var(--spacing-40, 40px);
+  position: relative;
+  overflow: hidden;
+  // Isolate carousel to prevent affecting form animations
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.3;
+    z-index: 0;
+  }
+
+  &__slide {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--color-white);
+    padding: var(--spacing-40, 40px);
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.8s ease-out;
+  }
+
+  &__icon {
+    font-size: 4rem;
+    margin-bottom: var(--spacing-30, 30px);
+    animation: bounceIn 0.8s ease-out;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  }
+
+  &__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 var(--spacing-20, 20px) 0;
+    line-height: 1.3;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
+
+  &__description {
+    font-size: 1rem;
+    line-height: 1.6;
+    opacity: 0.95;
+    max-width: 400px;
+    margin: 0;
+  }
+
+  // PrimeNG Carousel customizations
+  ::ng-deep {
+    .p-carousel {
+      width: 100%;
+      background: transparent;
+    }
+
+    .p-carousel-content {
+      background: transparent;
+    }
+
+    .p-carousel-indicators {
+      padding: var(--spacing-20, 20px) 0 0 0;
+    }
+
+    .p-carousel-indicator {
+      button {
+        background-color: rgba(255, 255, 255, 0.4);
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.6);
+        }
+      }
+
+      &.p-highlight button {
+        background-color: var(--color-white);
+        width: 24px;
+        border-radius: 5px;
+      }
+    }
+
+    .p-carousel-prev,
+    .p-carousel-next {
+      display: none;
+    }
+  }
+
+  // Tablet - show compact version
+  @media (max-width: 1024px) and (min-width: 769px) {
+    flex: 0 0 40%;
+    padding: var(--spacing-30, 30px);
+    
+    &__slide {
+      padding: var(--spacing-30, 30px);
+    }
+    
+    &__icon {
+      font-size: 3rem;
+      margin-bottom: var(--spacing-20, 20px);
+    }
+    
+    &__title {
+      font-size: 1.5rem;
+      margin-bottom: var(--spacing-16, 16px);
+    }
+    
+    &__description {
+      font-size: 0.9rem;
+    }
+  }
+
+  // Mobile - hide carousel
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+// Animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
   }
 }

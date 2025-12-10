@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   CdkDragDrop,
   DragDropModule,
@@ -7,10 +6,12 @@ import {
 import { Component, input, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
+import { forkJoin, of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
-import { InputTextComponent } from '../../../../../../../../shared/components/form/input-text/input-text.component';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import { Option } from '../../../../../../../../shared/models/option';
@@ -22,25 +23,24 @@ import {
 } from '../../../../../../../../shared/utilities/form.utility';
 import {
   AssessmentScheduleModal,
+  AssessmentRoundsInterface,
   RoundsInterface,
 } from '../../../../../../models/assessment-schedule.model';
 import { AssessmentRoundFormGroup } from '../../../../../../models/assessment.model';
 import { AssessmentScheduleService } from '../../../../services/assessment-schedule.service';
 import { RoundModel } from '../../assessment-view.component';
 import { AssessmentRoundSkeletonComponent } from './assessment-round-skeleton';
-import { InputTextareaComponent } from '../../../../../../../../shared/components/form/input-textarea/input-textarea.component';
 import { CollectionService } from '../../../../../../../../shared/services/collection.service';
+import { CreateRoundModalComponent } from './components/create-round-modal/create-round-modal.component';
 @Component({
   selector: 'app-assessment-round',
   imports: [
     InputMultiselectComponent,
     ButtonComponent,
     DragDropModule,
-    InputTextComponent,
     ReactiveFormsModule,
     AssessmentRoundSkeletonComponent,
     ToastModule,
-    InputTextareaComponent,
   ],
   templateUrl: './assessment-round.component.html',
   styleUrl: './assessment-round.component.scss',
@@ -52,15 +52,19 @@ export class AssessmentRoundComponent implements OnInit {
   public optionsMap!: OptionsMap;
   public rounds!: Option[];
   public assessmentRounds!: RoundModel[];
-  public submittedData!: AssessmentRoundFormGroup[];
+  public submittedData: AssessmentRoundFormGroup[] = [];
+  public newRoundsToCreate: RoundsInterface[] = [];
   public isLoading = false;
 
   public assessmentId = input<number>();
+  private dialogRef: DynamicDialogRef | undefined;
+
   constructor(
-    private storeService: StoreService,
-    private messageService: MessageService,
-    private assessmentScheduleService: AssessmentScheduleService,
+    private readonly storeService: StoreService,
+    private readonly messageService: MessageService,
+    private readonly assessmentScheduleService: AssessmentScheduleService,
     private readonly collectionService: CollectionService,
+    private readonly dialogService: DialogService,
   ) {
     this.fGroup = buildFormGroup(this.assessmentSchedule);
   }
@@ -69,6 +73,48 @@ export class AssessmentRoundComponent implements OnInit {
     this.setConfigMaps();
     this.setOptions();
     this.GetAssessmentRoundbyAssessment();
+    this.setupRoundSelectionListener();
+  }
+
+  private setupRoundSelectionListener(): void {
+    // Listen to form changes and automatically sync selected rounds
+    this.fGroup
+      .get('round')
+      ?.valueChanges.subscribe((selectedRoundIds: string[]) => {
+        if (selectedRoundIds && selectedRoundIds.length > 0) {
+          this.syncSelectedRounds(selectedRoundIds);
+        }
+      });
+  }
+
+  private syncSelectedRounds(selectedRoundIds: string[]): void {
+    if (!this.rounds || this.rounds.length === 0) {
+      return;
+    }
+
+    // Get selected rounds from available options
+    const selectedRounds = this.rounds
+      .filter((item: Option) => selectedRoundIds.includes(item.value))
+      .map((item: Option) => ({
+        id: item.value.toString(),
+        name: item.label,
+      }));
+
+    // Get existing IDs (including new rounds with temp IDs)
+    const existingIds = new Set(this.submittedData.map((item) => item.id));
+
+    // Filter out rounds that are no longer selected
+    this.submittedData = this.submittedData.filter((round) => {
+      // Keep new rounds (with temp IDs) and rounds that are still selected
+      return round.id.startsWith('new-') || selectedRoundIds.includes(round.id);
+    });
+
+    // Add newly selected rounds
+    const newRounds = selectedRounds.filter(
+      (round) => !existingIds.has(round.id),
+    );
+
+    this.submittedData = [...this.submittedData, ...newRounds];
   }
   public onDrop(event: CdkDragDrop<AssessmentRoundFormGroup[]>) {
     moveItemInArray(
@@ -78,29 +124,183 @@ export class AssessmentRoundComponent implements OnInit {
     );
   }
 
-  public onSubmit() {
-    this.fGroup.markAllAsTouched();
+  public onRemoveRound(roundId: string): void {
+    // Remove from submitted data
+    this.submittedData = this.submittedData.filter(
+      (round) => round.id !== roundId,
+    );
 
-    if (this.fGroup.value?.round?.length) {
-      this.submittedData = this.rounds
-        .filter((item: Option) =>
-          this.fGroup.value.round.includes(item.value, item.label),
-        )
-        .map((item: Option) => ({
-          id: item.value,
-          name: item.label,
-        }));
+    // If it's an existing round (not a temp ID), also remove from form selection
+    if (roundId.startsWith('new-')) {
+      // Remove from newRoundsToCreate if it was a new round
+      const removedRound = this.submittedData.find((r) => r.id === roundId);
+      if (removedRound) {
+        this.newRoundsToCreate = this.newRoundsToCreate.filter(
+          (round) => round.name !== removedRound.name,
+        );
+      }
     } else {
+      const currentSelection = this.fGroup.value.round || [];
+      this.fGroup.patchValue(
+        {
+          round: currentSelection.filter((id: string) => id !== roundId),
+        },
+        { emitEvent: false },
+      ); // Prevent triggering valueChanges
+    }
+  }
+
+  public openCreateRoundModal(): void {
+    this.dialogRef = this.dialogService.open(CreateRoundModalComponent, {
+      header: 'Create New Round',
+      width: '500px',
+      modal: true,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+    });
+
+    this.dialogRef.onClose.subscribe((result: RoundsInterface | undefined) => {
+      console.log('Modal closed with result:', result);
+      if (result) {
+        this.isLoading = true;
+        this.assessmentScheduleService.addRound(result).subscribe({
+          next: (createdRound: RoundsInterface) => {
+            // Update collection with new round
+            if (createdRound?.id) {
+              this.collectionService.updateCollection('rounds', {
+                id: Number(createdRound.id),
+                title: createdRound.name,
+              });
+
+              // Add to submitted data with actual ID
+              this.submittedData.push({
+                id: createdRound.id.toString(),
+                name: createdRound.name,
+              });
+
+              // Refresh rounds list
+              this.refreshRoundsList();
+
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Round created successfully!',
+              });
+            }
+            this.isLoading = false;
+          },
+          error: (error: CustomErrorResponse) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: `Failed to create round: ${error.error?.type || 'Unknown error'}`,
+            });
+            this.isLoading = false;
+          },
+        });
+      }
+    });
+  }
+
+  public onSubmitAll(): void {
+    if (this.submittedData.length === 0) {
       this.messageService.add({
-        severity: 'info',
-        summary: 'Info',
-        detail: 'Rounds are not selected',
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Please select or create at least one round.',
+      });
+      return;
+    }
+
+    this.isLoading = true;
+
+    // Step 1: Create all new rounds first
+    const createRoundObservables = this.newRoundsToCreate.map((round) =>
+      this.assessmentScheduleService.addRound(round).pipe(
+        catchError(() => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: `Failed to create round: ${round.name}`,
+          });
+          return of(null);
+        }),
+      ),
+    );
+
+    // If there are new rounds to create, create them first
+    if (createRoundObservables.length > 0) {
+      forkJoin(createRoundObservables)
+        .pipe(
+          switchMap((createdRounds: (RoundsInterface | null)[]) => {
+            // Update submittedData with actual IDs from created rounds
+            let createdIndex = 0;
+            this.submittedData = this.submittedData.map((round) => {
+              if (round.id.startsWith('new-')) {
+                const createdRound = createdRounds[createdIndex++];
+                if (createdRound?.id) {
+                  // Update collection with new round
+                  this.collectionService.updateCollection('rounds', {
+                    id: Number(createdRound.id),
+                    title: createdRound.name,
+                  });
+                  return {
+                    ...round,
+                    id: createdRound.id.toString(),
+                  };
+                }
+              }
+              return round;
+            });
+
+            // Refresh rounds list after creation
+            this.refreshRoundsList();
+
+            // Step 2: Map all rounds to assessment with sequence
+            return this.mapRoundsToAssessment();
+          }),
+        )
+        .subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Rounds saved successfully!',
+            });
+            this.isLoading = false;
+            this.newRoundsToCreate = [];
+            // Reload assessment rounds
+            this.GetAssessmentRoundbyAssessment();
+          },
+          error: (error: CustomErrorResponse) => {
+            this.handleSubmitError(error);
+            this.isLoading = false;
+          },
+        });
+    } else {
+      // No new rounds to create, just map existing rounds
+      this.mapRoundsToAssessment().subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Rounds saved successfully!',
+          });
+          this.isLoading = false;
+          this.GetAssessmentRoundbyAssessment();
+        },
+        error: (error: CustomErrorResponse) => {
+          this.handleSubmitError(error);
+          this.isLoading = false;
+        },
       });
     }
   }
-  public onReorderAssessmentRound(): void {
-    this.isLoading = true;
-    const payload = this.submittedData.map(
+
+  private mapRoundsToAssessment() {
+    const payload: AssessmentRoundsInterface[] = this.submittedData.map(
       (item: AssessmentRoundFormGroup, index: number) => ({
         RoundId: Number(item.id),
         name: item.name,
@@ -108,57 +308,28 @@ export class AssessmentRoundComponent implements OnInit {
       }),
     );
 
-    this.assessmentScheduleService
-      .CreateAssessmentRound(payload, Number(this.assessmentId()))
-      .subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Rounds ordered successfully!',
-          });
-          this.isLoading = false;
-        },
-        error: (error: CustomErrorResponse) => {
-          const businerssErrorCode = error.error.businessError;
-          if (businerssErrorCode == 3108) {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail:
-                'You cannot delete or reorder this AssessmentRound Order because it refers to the other Interview or Assessment',
-            });
-          } else {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to save round order.',
-            });
-          }
-          this.isLoading = false;
-        },
-      });
+    return this.assessmentScheduleService.CreateAssessmentRound(
+      payload,
+      Number(this.assessmentId()),
+    );
   }
 
-  public onroundcreate() {
-    if (this.fGroup.valid) {
-      const formValue = this.fGroup.value;
+  private handleSubmitError(error: CustomErrorResponse): void {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `${error.error.type}`,
+    });
+  }
 
-      const payload: RoundsInterface = {
-        id: formValue.id ?? 0,
-        name: formValue.name,
-        description: formValue.description ?? '',
-      };
-
-      this.CreateRound(payload);
-    } else {
-      this.fGroup.markAllAsTouched();
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Validation Failed',
-        detail: 'Please fill all required fields.',
-      });
-    }
+  private refreshRoundsList(): void {
+    this.optionsMap =
+      this.storeService.getCollection() as unknown as OptionsMap;
+    this.rounds = this.optionsMap['rounds'] as unknown as Option[];
+    this.configMap['round'] = {
+      ...this.configMap['round'],
+      options: [...this.rounds],
+    };
   }
 
   //Private Methods
@@ -194,41 +365,5 @@ export class AssessmentRoundComponent implements OnInit {
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
     this.rounds = this.optionsMap['rounds'] as unknown as Option[];
-  }
-  private CreateRound(payload: RoundsInterface) {
-    const next = (res: any) => {
-      const roundData = (res as RoundsInterface) || payload;
-      if (roundData?.id) {
-        this.collectionService.updateCollection('rounds', {
-          id: Number(roundData.id),
-          title: roundData.name,
-        });
-
-        this.optionsMap = this.storeService.getCollection() as OptionsMap;
-        this.rounds = [...(this.optionsMap['rounds'] as Option[])];
-        this.configMap['round'] = {
-          ...this.configMap['round'],
-          options: [...this.rounds],
-        };
-      }
-
-      this.fGroup.reset();
-
-      setTimeout(() => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Created rounds Successfully',
-        });
-      }, 200);
-    };
-    const error = () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Creation is failed',
-      });
-    };
-    this.assessmentScheduleService.addRound(payload).subscribe({ next, error });
   }
 }

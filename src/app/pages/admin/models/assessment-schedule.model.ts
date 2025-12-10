@@ -70,7 +70,7 @@ export class AssessmentScheduleModal extends FormEntity {
       round: [Validators.required],
     },
     configMap: {
-      round: { id: 'round', labelKey: '' },
+      round: { id: 'round', labelKey: 'Select Rounds' },
       name: { id: 'name', labelKey: 'Round Name' },
       description: { id: 'description', labelKey: 'Description' },
     },
