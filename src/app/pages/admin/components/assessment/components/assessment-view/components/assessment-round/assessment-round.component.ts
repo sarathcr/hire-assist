@@ -3,7 +3,7 @@ import {
   DragDropModule,
   moveItemInArray,
 } from '@angular/cdk/drag-drop';
-import { Component, input, OnInit } from '@angular/core';
+import { Component, EventEmitter, input, OnInit, Output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -58,6 +58,7 @@ export class AssessmentRoundComponent implements OnInit {
 
   public assessmentId = input<number>();
   private dialogRef: DynamicDialogRef | undefined;
+  @Output() roundsUpdated = new EventEmitter<number>();
 
   constructor(
     private readonly storeService: StoreService,
@@ -77,22 +78,23 @@ export class AssessmentRoundComponent implements OnInit {
   }
 
   private setupRoundSelectionListener(): void {
-    // Listen to form changes and automatically sync selected rounds
     this.fGroup
       .get('round')
       ?.valueChanges.subscribe((selectedRoundIds: string[]) => {
-        if (selectedRoundIds && selectedRoundIds.length > 0) {
-          this.syncSelectedRounds(selectedRoundIds);
-        }
+        this.syncSelectedRounds(selectedRoundIds || []);
       });
   }
 
   private syncSelectedRounds(selectedRoundIds: string[]): void {
+    if (!selectedRoundIds || selectedRoundIds.length === 0) {
+      this.submittedData = [];
+      return;
+    }
+
     if (!this.rounds || this.rounds.length === 0) {
       return;
     }
 
-    // Get selected rounds from available options
     const selectedRounds = this.rounds
       .filter((item: Option) => selectedRoundIds.includes(item.value))
       .map((item: Option) => ({
@@ -100,22 +102,20 @@ export class AssessmentRoundComponent implements OnInit {
         name: item.label,
       }));
 
-    // Get existing IDs (including new rounds with temp IDs)
     const existingIds = new Set(this.submittedData.map((item) => item.id));
 
-    // Filter out rounds that are no longer selected
-    this.submittedData = this.submittedData.filter((round) => {
-      // Keep new rounds (with temp IDs) and rounds that are still selected
-      return round.id.startsWith('new-') || selectedRoundIds.includes(round.id);
-    });
+    this.submittedData = this.submittedData.filter(
+      (round) =>
+        round.id.startsWith('new-') || selectedRoundIds.includes(round.id),
+    );
 
-    // Add newly selected rounds
     const newRounds = selectedRounds.filter(
       (round) => !existingIds.has(round.id),
     );
 
     this.submittedData = [...this.submittedData, ...newRounds];
   }
+
   public onDrop(event: CdkDragDrop<AssessmentRoundFormGroup[]>) {
     moveItemInArray(
       this.submittedData,
@@ -148,6 +148,7 @@ export class AssessmentRoundComponent implements OnInit {
         { emitEvent: false },
       ); // Prevent triggering valueChanges
     }
+    this.roundsUpdated.emit(this.submittedData.length);
   }
 
   public openCreateRoundModal(): void {
@@ -349,6 +350,7 @@ export class AssessmentRoundComponent implements OnInit {
           round: this.submittedData.map((item) => item.id),
         });
       });
+    this.roundsUpdated.emit(this.submittedData.length);
   }
   private setConfigMaps(): void {
     const { metadata } = new AssessmentScheduleModal();

@@ -292,6 +292,8 @@
   max-height: 400px;
   object-fit: contain;
   display: block;
+  display: flex;
+  justify-content: center;
 }
 
 // Responsive Design

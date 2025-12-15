@@ -3,7 +3,7 @@ import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
 
 export class QuestionForm extends FormEntity {
   questionText?: string = '';
-  maxmark?: number = 0;
+  maxmark?: number;
   options?: string[] = [];
   answer?: string = '';
   active?: boolean = false;

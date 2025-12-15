@@ -13,7 +13,6 @@ import {
 import { FileSelectEvent, FileUploadModule } from 'primeng/fileupload';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
-import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
 import {
   ConfigMap,
   Metadata,
