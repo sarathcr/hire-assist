@@ -324,10 +324,17 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       this.storeService.setIsLoading(false);
       const departmentData = (res as Department) || payload;
       if (departmentData && departmentData.id) {
-        this.collectionService.updateCollection('departments', {
-          id: Number(departmentData.id),
-          title: departmentData.name,
-        });
+        if (payload.isActive === false) {
+          this.collectionService.deleteItemFromCollection(
+            'departments',
+            departmentData.id,
+          );
+        } else {
+          this.collectionService.updateCollection('departments', {
+            id: Number(departmentData.id),
+            title: departmentData.name,
+          });
+        }
       }
       this.messageService.add({
         severity: 'success',

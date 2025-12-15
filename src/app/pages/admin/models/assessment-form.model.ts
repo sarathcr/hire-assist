@@ -1,4 +1,4 @@
-import { Validators } from '@angular/forms';
+import { AbstractControl, ValidationErrors, Validators } from '@angular/forms';
 import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
 
 export class AssessmentForm extends FormEntity {
@@ -14,7 +14,14 @@ export class AssessmentForm extends FormEntity {
   metadata: Metadata = {
     validatorsMap: {
       statusId: [Validators.required],
-      name: [Validators.required],
+      name: [
+        Validators.required,
+        Validators.pattern('^[A-Za-z].*'),
+        Validators.minLength(3),
+        Validators.maxLength(25),
+        AssessmentForm.noExtraSpacesValidator,
+      ],
+      description: [Validators.maxLength(150)],
       startDateTime: [Validators.required],
       endDateTime: [Validators.required],
     },
@@ -28,4 +35,16 @@ export class AssessmentForm extends FormEntity {
       isActive: { id: 'isActive', labelKey: 'Active' },
     },
   };
+
+  private static noExtraSpacesValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
+    const value = control.value?.trim();
+    if (!value) return null;
+
+    if (/\s{2,}/.test(value)) {
+      return { extraSpaces: true };
+    }
+    return null;
+  }
 }
