@@ -22,6 +22,7 @@ import { RolesAccess } from '../../models/roles-access.model';
 import { UserService } from '../../services/user.service';
 import { UserDialogComponent } from './components/user-dialog/user-dialog.component';
 import { CollectionService } from '../../../../shared/services/collection.service';
+import { UserState } from '../../../../shared/models/user.models';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -68,6 +69,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public selectedUsers: string[] = [];
   public isLoading = false;
   public activateUserPayload!: any;
+  public currentUser!: UserState;
   private ref: DynamicDialogRef | undefined;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
 
@@ -184,11 +186,17 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
               summary: 'Error',
               detail: 'You do not have permission to add this user role.',
             });
+          } else if (businerssErrorCode === 3103) {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: error.error.type,
+            });
           } else {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: error.error.type
+              detail: error.error.type,
             });
           }
 
@@ -236,12 +244,20 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
           this.getAllUsers(new PaginatedPayload());
           this.isLoading = false;
         };
-        const error = () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Deletion is failed',
-          });
+        const error = (error: CustomErrorResponse) => {
+          if (error?.error?.businessError === 3111) {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: error?.error?.type,
+            });
+          } else {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Deletion is failed',
+            });
+          }
           this.isLoading = false;
         };
         this.userService.deleteEntityById(userId).subscribe({ next, error });
@@ -278,6 +294,9 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
 
     this.ref.onClose.subscribe((result) => {
       if (result) {
+        this.selectedUsers = this.selectedUsers.filter(
+          (u) => u !== this.currentUser.id,
+        );
         this.isLoading = true;
         const next = () => {
           if (this.selectedUsers.length > 0) {
@@ -297,12 +316,20 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
           this.getAllUsers(new PaginatedPayload());
           this.isLoading = false;
         };
-        const error = () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Deletion is failed',
-          });
+        const error = (error: CustomErrorResponse) => {
+          if (error?.error?.businessError === 3111) {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: error?.error?.type,
+            });
+          } else {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Deletion is failed',
+            });
+          }
           this.isLoading = false;
         };
         this.userService
@@ -329,12 +356,13 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       ...payload,
       filterMap: { excludedRoles: ['5'], ...payload.filterMap },
     };
-    const currentUser = this.storeService.getUserData();
+    this.currentUser = this.storeService.getUserData();
     const next = (res: any) => {
       const formattedData = res.data.map((item: any) => ({
         ...item,
         roles: item.roles ? item.roles.split(',') : [],
-        isSelf: item.email === currentUser.id || item.id === currentUser.id,
+        isSelf:
+          item.email === this.currentUser.id || item.id === this.currentUser.id,
       }));
       this.data = { ...res, data: formattedData };
       this.isLoading = false;
@@ -360,12 +388,13 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   private loadData(payload: PaginatedPayload): void {
-    const currentUser = this.storeService.getUserData();
+    this.currentUser = this.storeService.getUserData();
     this.dataSourceService.getData(payload).subscribe((response: any) => {
       const formattedData = response.data.map((item: any) => ({
         ...item,
         roles: item.roles ? item.roles.split(',') : [],
-        isSelf: item.email === currentUser.id || item.id === currentUser.id,
+        isSelf:
+          item.email === this.currentUser.id || item.id === this.currentUser.id,
       }));
       this.data = { ...response, data: formattedData };
     });
