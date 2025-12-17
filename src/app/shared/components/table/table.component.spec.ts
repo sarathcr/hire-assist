@@ -19,7 +19,7 @@ interface TestTableRow {
   id: string;
 }
 
-fdescribe('TableComponent', () => {
+describe('TableComponent', () => {
   let component: TableComponent<TestTableRow>;
   let fixture: ComponentFixture<TableComponent<TestTableRow>>;
   let service: TableDataSourceService<TestTableRow>;

@@ -1,131 +1,325 @@
-@if (tabledata && !isLoading) {
-  <!--create round-->
-  <div class="QuestionSet__section">
-    <div class="QuestionSet__section-header">
-      <h2 class="QuestionSet__section__title app-title">Create QuestionSet</h2>
-      <p class="QuestionSet__section__description">
-        Create a new custom QuestionSet and assign to your assessment
-      </p>
-    </div>
-    <div class="QuestionSet-form_field-container">
-      <app-input-text
-        type="text"
-        class="QuestionSet__field-col_one"
-        [formGroup]="fGroup"
-        [config]="configMap['title']"
-      ></app-input-text>
-      <app-input-textarea
-        class="QuestionSet__textarea"
-        [formGroup]="fGroup"
-        type="text"
-        [config]="configMap['description']"
-      ></app-input-textarea>
-    </div>
-    <div class="question-set-form__button">
+@if (questionSets.length >= 0 && !isLoading) {
+  <!-- Hero Section -->
+  <div class="QuestionSet__hero">
+    <div class="QuestionSet__hero-content">
+      <div class="QuestionSet__hero-icon">
+        <i class="pi pi-book"></i>
+      </div>
+      <div class="QuestionSet__hero-text">
+        <h2 class="QuestionSet__hero-title">Question Sets</h2>
+        <p class="QuestionSet__hero-description">
+          Create and manage question sets for your assessment
+        </p>
+      </div>
       <app-button
-        class="QuestionSet__action-button"
-        [buttonLabel]="'Create'"
-        [disabled]="!fGroup.valid"
+        class="QuestionSet__hero-button"
+        [buttonLabel]="'Create Question Set'"
         (btnClick)="onCreateQuestionSet()"
       ></app-button>
     </div>
   </div>
-  <div class="QuestionSet__section">
-    <div class="QuestionSet__section-header">
-      <h2 class="QuestionSet__section__title app-title">Select questionSet</h2>
-      <p class="QuestionSet__section__description">
-        Choose from available questionSet for this assessment
-      </p>
-    </div>
-    <div class="QuestionSet__btn-wrapper">
-      <app-input-select
-        [formGroup]="fGroup"
-        [config]="configMap['questionSet']"
-      />
 
-      <app-button
-        class="QuestionSet__action-button"
-        [buttonLabel]="'Update'"
-        (btnClick)="onUpdateQuestionSet()"
-      ></app-button>
-    </div>
-  </div>
-  <!-- Select Questions -->
-  <div class="QuestionSet__section">
-    <div class="QuestionSet__section-header">
-      <h2 class="QuestionSet__section__title app-title">
-        Select Questions for the set
-      </h2>
-      <p class="QuestionSet__section__description">
-        Select the questions of questionset
-      </p>
-    </div>
-    @if (selectedIds.length > 0) {
-      <div class="QuestionSet__section-header">
-        <h2
-          style="color: var(--secondary-color)"
-          class="QuestionSet__section__title app-title"
-        >
-          Selected Questions
-        </h2>
-        <div class="QuestionSet__table">
-          <div class="QuestionSet__score-table">
-            <p-table
-              [value]="groupedSelectedData"
-              [tableStyle]="{ 'min-width': '10rem' }"
-            >
-              <ng-template #header>
-                <tr>
-                  <th scope="col">QuestionType</th>
-                  <th scope="col">No. questions</th>
-                  <th scope="col">Total mark</th>
-                </tr>
-              </ng-template>
-              <ng-template #body let-group>
-                <tr>
-                  <td>{{ group.type }}</td>
-                  <td>{{ group.count }}</td>
-                  <td>{{ group.totalMarks }}</td>
-                </tr></ng-template
-              >
-            </p-table>
-          </div>
-          <div class="QuestionSet__knob">
-            <p-knob [(ngModel)]="totalScore" [readonly]="true"> </p-knob>
-            <div>Max Score</div>
-          </div>
+  <!-- Question Sets Accordion -->
+  @if (questionSets.length > 0) {
+    <div class="QuestionSet__accordion-section">
+      <div class="QuestionSet__accordion-header">
+        <div class="QuestionSet__accordion-header-icon">
+          <i class="pi pi-list-check"></i>
+        </div>
+        <div class="QuestionSet__accordion-header-text">
+          <h2 class="QuestionSet__accordion-title">
+            Select Questions for Question Sets
+          </h2>
+          <p class="QuestionSet__accordion-description">
+            Expand a question set to select questions
+          </p>
         </div>
       </div>
-    }
-    <app-table
-      [tableData]="tabledata"
-      [columnsData]="columns"
-      [hasSearch]="true"
-      (pageChangeAndSort)="onTablePayloadChange($event)"
-      (selectedIds)="onSelectedIds($event)"
-      [alreadySelected]="selectedIds"
-    ></app-table>
-    <br />
-    <form [formGroup]="fGroup">
-      <div class="questionSets-modal__button">
-        @if (!isUpdate) {
-          <app-button
-            class="QuestionSet__action-button"
-            [buttonLabel]="'Submit'"
-            (btnClick)="onSubmit()"
-            [disabled]="selectedIds.length === 0"
-          ></app-button>
-        } @else {
-          <app-button
-            class="QuestionSet__action-button"
-            [buttonLabel]="'Save'"
-            (btnClick)="onUpdate()"
-            [disabled]="selectedIds.length === 0"
-          ></app-button>
-        }
+      <div class="QuestionSet__accordion-container">
+        <p-accordion [multiple]="true" (onOpen)="onAccordionOpen($event)">
+          @for (questionSet of questionSets; track questionSet.id) {
+            <p-accordion-panel [value]="questionSet.id.toString()">
+              <p-accordion-header>
+                <div class="QuestionSet__accordion-item-header">
+                  <div class="QuestionSet__accordion-item-icon">
+                    <i
+                      class="pi pi-folder QuestionSet__accordion-icon--collapsed"
+                    ></i>
+                    <i
+                      class="pi pi-folder-open QuestionSet__accordion-icon--expanded"
+                    ></i>
+                  </div>
+                  <div class="QuestionSet__accordion-item-content">
+                    <div class="QuestionSet__accordion-item-title-row">
+                      <span class="QuestionSet__accordion-item-title">{{
+                        questionSet.title
+                      }}</span>
+                    </div>
+                    @if (questionSet.description) {
+                      <div class="QuestionSet__accordion-item-description">
+                        <i class="pi pi-info-circle"></i>
+                        <span>{{ questionSet.description }}</span>
+                      </div>
+                    }
+                  </div>
+                  @let accordionData =
+                    questionSetAccordionData.get(questionSet.id.toString());
+                  @if (
+                    accordionData &&
+                    accordionData.selectedIds &&
+                    accordionData.selectedIds.length > 0
+                  ) {
+                    <span class="QuestionSet__badge">
+                      <i class="pi pi-check-circle"></i>
+                      {{ accordionData.selectedIds.length }} selected
+                    </span>
+                  }
+                </div>
+              </p-accordion-header>
+              <p-accordion-content>
+                @let currentAccordionData =
+                  questionSetAccordionData.get(questionSet.id.toString());
+                @let isLoadingContent =
+                  currentAccordionData &&
+                  currentAccordionData.isLoadingQuestions;
+                @let isLoadingSummary =
+                  currentAccordionData &&
+                  currentAccordionData.isLoadingSelectedQuestions;
+
+                @if (isLoadingContent || isLoadingSummary) {
+                  <div class="QuestionSet__loading">
+                    @if (isLoadingSummary) {
+                      <div
+                        class="QuestionSet__summary QuestionSet__summary--loading"
+                      >
+                        <div class="QuestionSet__summary-header">
+                          <p-skeleton
+                            shape="circle"
+                            width="52px"
+                            height="52px"
+                          />
+                          <p-skeleton width="220px" height="22px" />
+                          <p-skeleton width="100px" height="16px" />
+                        </div>
+                        <div class="QuestionSet__summary-content">
+                          <div class="QuestionSet__summary-table">
+                            <p-skeleton
+                              width="100%"
+                              height="180px"
+                              class="skeleton-rounded"
+                            />
+                          </div>
+                          <div class="QuestionSet__summary-knob">
+                            <p-skeleton
+                              shape="circle"
+                              width="120px"
+                              height="120px"
+                            />
+                            <div class="QuestionSet__knob-label">
+                              <p-skeleton
+                                width="80px"
+                                height="13px"
+                                class="skeleton-mb-5"
+                              />
+                              <p-skeleton width="60px" height="32px" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                    @if (isLoadingContent) {
+                      <div class="QuestionSet__table-loading">
+                        <div class="QuestionSet__table-skeleton">
+                          <p-skeleton
+                            width="100%"
+                            height="40px"
+                            class="skeleton-mb-10"
+                          />
+                          @for (item of [1, 2, 3, 4, 5]; track item) {
+                            <p-skeleton
+                              width="100%"
+                              height="50px"
+                              class="skeleton-mb-10"
+                            />
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  @if (
+                    currentAccordionData &&
+                    currentAccordionData.selectedIds &&
+                    currentAccordionData.selectedIds.length > 0
+                  ) {
+                    <div class="QuestionSet__summary">
+                      <div class="QuestionSet__summary-header">
+                        <div class="QuestionSet__summary-icon">
+                          <i class="pi pi-check-circle"></i>
+                        </div>
+                        <h3 class="QuestionSet__summary-title">
+                          Selected Questions Summary
+                        </h3>
+                        <span class="QuestionSet__summary-count"
+                          >({{
+                            currentAccordionData.selectedIds.length
+                          }}
+                          questions)</span
+                        >
+                      </div>
+                      <div class="QuestionSet__summary-content">
+                        <div class="QuestionSet__summary-table">
+                          @if (
+                            currentAccordionData.groupedSelectedData &&
+                            currentAccordionData.groupedSelectedData.length > 0
+                          ) {
+                            <p-table
+                              [value]="currentAccordionData.groupedSelectedData"
+                              [tableStyle]="{ 'min-width': '10rem' }"
+                            >
+                              <ng-template #header>
+                                <tr>
+                                  <th scope="col">Question Type</th>
+                                  <th scope="col">No. Questions</th>
+                                  <th scope="col">Total Marks</th>
+                                </tr>
+                              </ng-template>
+                              <ng-template #body let-group>
+                                <tr>
+                                  <td>
+                                    <span class="QuestionSet__type-badge">{{
+                                      group.type || "Unknown"
+                                    }}</span>
+                                  </td>
+                                  <td>
+                                    <span class="QuestionSet__count">{{
+                                      group.count || 0
+                                    }}</span>
+                                  </td>
+                                  <td>
+                                    <span class="QuestionSet__marks">{{
+                                      group.totalMarks || 0
+                                    }}</span>
+                                  </td>
+                                </tr>
+                              </ng-template>
+                            </p-table>
+                          } @else {
+                            <div class="QuestionSet__summary-empty">
+                              <i class="pi pi-info-circle"></i>
+                              <p>
+                                @if (
+                                  currentAccordionData.allSelectedQuestions &&
+                                  currentAccordionData.allSelectedQuestions
+                                    .length > 0
+                                ) {
+                                  Grouping questions...
+                                } @else {
+                                  No questions selected yet
+                                }
+                              </p>
+                            </div>
+                          }
+                        </div>
+                        <div class="QuestionSet__summary-knob">
+                          <p-knob
+                            [ngModel]="currentAccordionData.totalScore || 0"
+                            [readonly]="true"
+                            [min]="0"
+                            [max]="
+                              (currentAccordionData.totalScore || 0) > 0
+                                ? (currentAccordionData.totalScore || 0) * 1.2 >
+                                  100
+                                  ? (currentAccordionData.totalScore || 0) * 1.2
+                                  : 100
+                                : 100
+                            "
+                          ></p-knob>
+                          <div class="QuestionSet__knob-label">
+                            <span class="QuestionSet__knob-label-text"
+                              >Max Score</span
+                            >
+                            <span class="QuestionSet__knob-label-value">{{
+                              currentAccordionData.totalScore || 0
+                            }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                  <div class="QuestionSet__table-container">
+                    <app-table
+                      [tableData]="currentAccordionData?.tabledata"
+                      [columnsData]="columns"
+                      [hasSearch]="true"
+                      [parentLoader]="
+                        currentAccordionData?.isLoadingQuestions || false
+                      "
+                      (pageChangeAndSort)="
+                        onTablePayloadChangeForAccordion(
+                          $event,
+                          questionSet.id.toString()
+                        )
+                      "
+                      (selectedIds)="
+                        onSelectedIds($event, questionSet.id.toString())
+                      "
+                      [alreadySelected]="
+                        currentAccordionData?.selectedIds || []
+                      "
+                    ></app-table>
+                  </div>
+                }
+                @if (!isLoadingContent && !isLoadingSummary) {
+                  <div class="QuestionSet__actions">
+                    @if (!currentAccordionData?.isUpdate) {
+                      <app-button
+                        class="QuestionSet__action-button"
+                        [buttonLabel]="'Submit Questions'"
+                        (btnClick)="onSubmit(questionSet.id.toString())"
+                        [disabled]="
+                          !currentAccordionData ||
+                          currentAccordionData.selectedIds.length === 0 ||
+                          isLoading
+                        "
+                      ></app-button>
+                    } @else {
+                      <app-button
+                        class="QuestionSet__action-button"
+                        [buttonLabel]="'Save Changes'"
+                        (btnClick)="onUpdate(questionSet.id.toString())"
+                        [disabled]="
+                          !currentAccordionData ||
+                          currentAccordionData.selectedIds.length === 0 ||
+                          isLoading
+                        "
+                      ></app-button>
+                    }
+                  </div>
+                }
+              </p-accordion-content>
+            </p-accordion-panel>
+          }
+        </p-accordion>
       </div>
-    </form>
-  </div>
+    </div>
+  } @else {
+    <div class="QuestionSet__empty">
+      <div class="QuestionSet__empty-icon">
+        <i class="pi pi-inbox"></i>
+      </div>
+      <h3 class="QuestionSet__empty-title">No Question Sets Available</h3>
+      <p class="QuestionSet__empty-description">
+        Create your first question set to get started with organizing your
+        assessment questions.
+      </p>
+      <app-button
+        class="QuestionSet__empty-button"
+        [buttonLabel]="'Create Question Set'"
+        (btnClick)="onCreateQuestionSet()"
+      ></app-button>
+    </div>
+  }
 
   <p-toast position="top-right" class="Toast"></p-toast>
 }

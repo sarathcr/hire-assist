@@ -20,7 +20,7 @@ const mockDialogConfig = {
   data: ['candidate-1', 'candidate-2'],
 };
 
-fdescribe('ScheduleInterviewComponent', () => {
+describe('ScheduleInterviewComponent', () => {
   let component: ScheduleInterviewComponent;
   let fixture: ComponentFixture<ScheduleInterviewComponent>;
 

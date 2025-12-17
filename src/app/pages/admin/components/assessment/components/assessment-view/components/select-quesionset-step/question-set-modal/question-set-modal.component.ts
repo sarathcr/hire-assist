@@ -95,7 +95,7 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
         detail: 'Created Question Set Successfully',
       });
       this.questionSetStateService.setUpdateSuccess(true);
-      this.ref.close();
+      this.ref.close({ isCreateSuccess: true });
     };
     const error = (error: CustomErrorResponse) => {
       this.messageService.add({

@@ -5,7 +5,7 @@ import { ToggleMenuService } from '../../services/toggle-menu.service';
 import { DropDownComponent } from '../drop-down/drop-down.component';
 import { HeaderComponent } from './header.component';
 
-fdescribe('HeaderComponent', () => {
+describe('HeaderComponent', () => {
   let component: HeaderComponent;
   let fixture: ComponentFixture<HeaderComponent>;
   let toggleMenuServiceSpy: jasmine.SpyObj<ToggleMenuService>;

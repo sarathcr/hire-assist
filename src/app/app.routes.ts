@@ -42,13 +42,9 @@ import { DeviceWidthGuard } from './shared/guards/device-width.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
-    pathMatch: 'full',
-  },
-  {
-    path: '',
     component: AuthComponent,
     children: [
+      { path: '', redirectTo: 'login', pathMatch: 'full' },
       { path: 'login', component: LoginComponent },
       { path: 'forgot-password', component: ResetPasswordComponent },
       {

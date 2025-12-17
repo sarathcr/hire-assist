@@ -13,7 +13,7 @@ import { DashboardComponent } from './dashboard.component';
 })
 class DummyComponent {}
 
-fdescribe('DashboardComponent', () => {
+describe('DashboardComponent', () => {
   let component: DashboardComponent;
   let fixture: ComponentFixture<DashboardComponent>;
   let mockStoreService: jasmine.SpyObj<StoreService>;

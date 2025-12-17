@@ -6,7 +6,7 @@ import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
-fdescribe('InnerSidebarComponent', () => {
+describe('InnerSidebarComponent', () => {
   let component: InnerSidebarComponent;
   let fixture: ComponentFixture<InnerSidebarComponent>;
 

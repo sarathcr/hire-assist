@@ -1,12 +1,32 @@
 :host {
-  padding: var(--spacing-30);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--spacing-30) 0 0;
+}
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: var(--spacing-20);
+  box-shadow: 0px -15px 20px -26px #000;
+  flex-shrink: 0;
+  margin-top: auto;
+}
+.dialog-header {
+  box-shadow: 0px 15px 10px -20px #000;
 }
 ::ng-deep {
   .p-dialog-content {
-    overflow-y: visible;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
   }
 }
 .question-set-form {
+  flex: 1;
+  overflow-y: auto;
   padding: var(--spacing-10) 0 0;
   &__field {
     display: flex;
@@ -18,12 +38,6 @@
     margin-bottom: var(--spacing-25);
     display: flex;
     align-items: center;
-  }
-  &__button {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    gap: 1rem;
   }
   &_field {
     &-row {

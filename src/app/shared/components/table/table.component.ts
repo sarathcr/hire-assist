@@ -115,6 +115,10 @@ export class TableComponent<
     timestamp: number;
   } | null = null;
   private readonly PAGINATION_DEBOUNCE_MS = 100;
+  // Flag to prevent emitting selectedIds when initializing from alreadySelected
+  private isInitializingFromAlreadySelected = false;
+  // Track last emitted selection to prevent duplicate emissions
+  private lastEmittedSelection: string[] = [];
 
   // Input Properties
   public tableData = input<PaginatedData<T>>();
@@ -162,6 +166,7 @@ export class TableComponent<
     super();
     effect(() => {
       const currentTableData = this.tableData();
+      const alreadySelectedIds = this.alreadySelected();
 
       if (currentTableData && this.table) {
         this.internalIsLoading.set(false);
@@ -180,17 +185,54 @@ export class TableComponent<
           }, 100);
         }
 
+        // Sync alreadySelected into persistedSelectedIds when table data loads
+        // This handles the case where alreadySelected was set before table data loaded
+        if (alreadySelectedIds && alreadySelectedIds.length > 0) {
+          const needsSync = !alreadySelectedIds.every((id) =>
+            this.persistedSelectedIds.has(id),
+          );
+          if (needsSync) {
+            // Add any missing IDs from alreadySelected
+            for (const id of alreadySelectedIds) {
+              this.persistedSelectedIds.add(id);
+            }
+            // Update lastEmittedSelection to prevent unnecessary emissions
+            this.lastEmittedSelection = [...alreadySelectedIds];
+          }
+        }
+
         // Resync current page visual selection from persisted ids
         const currentPageData = currentTableData.data || [];
-        this.selectedItems = currentPageData.filter((item) =>
-          this.persistedSelectedIds.has(item.id),
+
+        // --- FIX: Convert item.id to string for comparison ---
+        const newSelectedItems = currentPageData.filter((item) =>
+          this.persistedSelectedIds.has(String(item.id)),
         );
 
-        // Emit persisted selection so parent controls reflect cross-page selection
-        const selectedAcrossPagesOnData = Array.from(
-          this.persistedSelectedIds,
-        ).map((id) => ({ id }));
-        this.selectedIds.emit(selectedAcrossPagesOnData);
+        this.selectedItems = newSelectedItems;
+
+        // Only emit if not initializing from alreadySelected and selection has changed
+        if (!this.isInitializingFromAlreadySelected) {
+          const currentSelection = Array.from(this.persistedSelectedIds).sort(
+            (a, b) => a.localeCompare(b),
+          );
+          const lastSelection = [...this.lastEmittedSelection].sort((a, b) =>
+            a.localeCompare(b),
+          );
+
+          // Only emit if selection actually changed
+          if (
+            currentSelection.length !== lastSelection.length ||
+            !currentSelection.every((id, index) => id === lastSelection[index])
+          ) {
+            this.lastEmittedSelection = [...currentSelection];
+            // Emit persisted selection so parent controls reflect cross-page selection
+            const selectedAcrossPagesOnData = currentSelection.map((id) => ({
+              id,
+            }));
+            this.selectedIds.emit(selectedAcrossPagesOnData);
+          }
+        }
       }
     });
 
@@ -201,6 +243,60 @@ export class TableComponent<
       });
     this.subscriptionList.push(sub);
 
+    // Effect to initialize persistedSelectedIds from alreadySelected input
+    effect(() => {
+      const alreadySelectedIds = this.alreadySelected();
+      const currentTableData = this.tableData();
+
+      if (alreadySelectedIds && alreadySelectedIds.length > 0) {
+        // Set flag to prevent emitting during initialization
+        this.isInitializingFromAlreadySelected = true;
+
+        // Check if we need to update (avoid unnecessary updates)
+        const currentIds = Array.from(this.persistedSelectedIds).sort((a, b) =>
+          a.localeCompare(b),
+        );
+        const newIds = [...alreadySelectedIds].sort((a, b) =>
+          a.localeCompare(b),
+        );
+        const needsUpdate =
+          currentIds.length !== newIds.length ||
+          !currentIds.every((id, index) => id === newIds[index]);
+
+        if (needsUpdate) {
+          // Clear existing selection and set new ones
+          this.persistedSelectedIds.clear();
+          for (const id of alreadySelectedIds) {
+            this.persistedSelectedIds.add(id);
+          }
+          // Update lastEmittedSelection to match, so we don't emit unnecessarily
+          this.lastEmittedSelection = [...alreadySelectedIds];
+        }
+
+        // Update current page selection if table data is available
+        if (currentTableData?.data) {
+          // --- FIX: Convert item.id to string for comparison ---
+          this.selectedItems = currentTableData.data.filter((item) =>
+            this.persistedSelectedIds.has(String(item.id)),
+          );
+        }
+
+        // Reset flag after a microtask to allow change detection to complete
+        setTimeout(() => {
+          this.isInitializingFromAlreadySelected = false;
+        }, 0);
+      } else if (alreadySelectedIds && alreadySelectedIds.length === 0) {
+        // If alreadySelected is explicitly empty, clear selection
+        this.isInitializingFromAlreadySelected = true;
+        this.persistedSelectedIds.clear();
+        this.selectedItems = [];
+        this.lastEmittedSelection = [];
+        setTimeout(() => {
+          this.isInitializingFromAlreadySelected = false;
+        }, 0);
+      }
+    });
+
     // Effect to clear selection for provided ids from parent (e.g., after delete)
     effect(() => {
       const idsToClear = this.clearSelectionIds();
@@ -210,13 +306,17 @@ export class TableComponent<
         }
         // Recompute page selection
         const pageData = this.tableData()?.data || [];
+
+        // --- FIX: Convert item.id to string for comparison ---
         this.selectedItems = pageData.filter((item) =>
-          this.persistedSelectedIds.has(item.id),
+          this.persistedSelectedIds.has(String(item.id)),
         );
+
         // Emit updated cross-page selection
         const selectedAcrossPages = Array.from(this.persistedSelectedIds).map(
           (id) => ({ id }),
         );
+        this.lastEmittedSelection = Array.from(this.persistedSelectedIds);
         this.selectedIds.emit(selectedAcrossPages);
       }
     });
@@ -227,6 +327,14 @@ export class TableComponent<
       return [];
     }
     return this.tableData()?.data || [];
+  });
+
+  public firstIndex = computed(() => {
+    const currentTableData = this.tableData();
+    if (!currentTableData) {
+      return 0;
+    }
+    return (currentTableData.pageNumber - 1) * currentTableData.pageSize;
   });
 
   public onEdit(data: any): void {
@@ -253,9 +361,12 @@ export class TableComponent<
   public onDelete(id: string): void {
     // Optimistically prune selection for this id so header buttons update
     this.persistedSelectedIds.delete(id);
+
+    // --- FIX: Convert item.id to string for comparison ---
     this.selectedItems = (this.tableData()?.data || []).filter((item) =>
-      this.persistedSelectedIds.has(item.id),
+      this.persistedSelectedIds.has(String(item.id)),
     );
+
     const selectedAcrossPages = Array.from(this.persistedSelectedIds).map(
       (sid) => ({ id: sid }),
     );
@@ -281,7 +392,10 @@ export class TableComponent<
 
   // Keep persistedSelectedIds in sync with UI selection changes (row or header)
   public onSelectionChange(newSelection: { id: string }[]): void {
-    const currentPageIds = (this.tableData()?.data || []).map((d) => d.id);
+    // --- FIX: Convert item.id to string for logic ---
+    const currentPageIds = (this.tableData()?.data || []).map((d) =>
+      String(d.id),
+    );
 
     // Remove any current page ids first (we will re-add based on newSelection)
     for (const id of currentPageIds) {
@@ -291,19 +405,21 @@ export class TableComponent<
     // Add selected ids from current page
     for (const item of newSelection || []) {
       if (item?.id) {
-        this.persistedSelectedIds.add(item.id);
+        this.persistedSelectedIds.add(String(item.id));
       }
     }
 
     // Update selectedItems to reflect persisted set on current page
+    // --- FIX: Convert item.id to string for comparison ---
     this.selectedItems = (this.tableData()?.data || []).filter((item) =>
-      this.persistedSelectedIds.has(item.id),
+      this.persistedSelectedIds.has(String(item.id)),
     );
 
-    // Emit full selection ids (persisted across pages)
+    // Emit full selection ids (persisted across pages) - user interaction, always emit
     const selectedAcrossPages = Array.from(this.persistedSelectedIds).map(
       (id) => ({ id }),
     );
+    this.lastEmittedSelection = Array.from(this.persistedSelectedIds);
     this.selectedIds.emit(selectedAcrossPages);
   }
 

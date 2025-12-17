@@ -14,18 +14,22 @@
         [config]="configMap['description']"
       ></app-input-textarea>
     </div>
-    <div class="question-set-form__button">
-      <app-button
-        [buttonLabel]="'Cancel'"
-        [buttonVariant]="'outlined'"
-        (btnClick)="onClose()"
-      ></app-button>
-      <app-button
-        [buttonLabel]="'Submit'"
-        [disabled]="!questionSetFGroup.valid"
-        (btnClick)="onSubmit()"
-      ></app-button>
-    </div>
   </form>
 </div>
+<footer class="dialog-footer">
+  <div class="dialog-footer__btn-wrapper">
+    <app-button
+      [buttonLabel]="'Cancel'"
+      [buttonVariant]="'outlined'"
+      (btnClick)="onClose()"
+    ></app-button>
+  </div>
+  <div class="dialog-footer__btn-wrapper">
+    <app-button
+      [buttonLabel]="'Submit'"
+      [disabled]="!questionSetFGroup.valid"
+      (btnClick)="onSubmit()"
+    ></app-button>
+  </div>
+</footer>
 <p-toast position="top-right" class="Toast"></p-toast>

@@ -270,7 +270,7 @@ export class SelectPanelDailogComponent implements OnInit {
     if (this.selectedPanelIds) {
       const response = {
         selectedpanel: this.selectedPanelIds,
-        isAdd: !this.existingPanel,
+        isAdd: this.existingPanel.length === 0,
       };
       this.ref.close(response);
     }

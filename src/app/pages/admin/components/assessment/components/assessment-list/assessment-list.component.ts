@@ -130,7 +130,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
 
     this.ref = this.dialog.open(CreateUpdateAssessmentModalComponent, {
       data,
-      header: 'Create new recruitment',
+      header: 'Create New Recruitment',
       width: '50vw',
       modal: true,
       focusOnShow: false,
@@ -247,13 +247,14 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: `${isDuplicate ? 'Duplicated' : 'Created'} Assessment Successfully`,
+        detail: `${isDuplicate ? 'Duplicated' : 'Created'} Recruitment Successfully`,
       });
-
-      this.router.navigate([`admin/recruitments/schedule/${res.id}`], {
-        state: { assessment: res },
-      });
-      this.isLoading = false;
+      setTimeout(() => {
+        this.router.navigate([`admin/recruitments/schedule/${res.id}`], {
+          state: { assessment: res },
+        });
+        this.isLoading = false;
+      }, 1500);
     };
     const error = (error: CustomErrorResponse) => {
       console.log('ERROR', error);
