@@ -28,79 +28,127 @@
     <ul class="assessment-schedule__steps">
       <li
         class="assessment-schedule__steps-item"
-        [ngClass]="{ active: this.activeStep === 0 }"
+        [ngClass]="{
+          active: activeStep === 0,
+          completed: stepsLoaded && stepsStatus[stepKeys[0]] === 'Completed',
+        }"
       >
         <button
           type="button"
           tabindex="0"
           class="assessment-schedule__steps-btn"
+          [disabled]="!stepsLoaded || !isStepEnabled(0)"
           (click)="setActiveStep(0)"
         >
+          <i
+            *ngIf="stepsStatus[stepKeys[0]] === 'Completed'"
+            class="pi pi-check completed-icon"
+          ></i>
           Rounds
         </button>
       </li>
       <li
         class="assessment-schedule__steps-item"
-        [ngClass]="{ active: this.activeStep === 1 }"
+        [ngClass]="{
+          active: this.activeStep === 1,
+          completed: stepsLoaded && stepsStatus[stepKeys[1]] === 'Completed',
+        }"
       >
         <button
           type="button"
           tabindex="0"
           class="assessment-schedule__steps-btn"
+          [disabled]="!stepsLoaded || !isStepEnabled(1)"
           (click)="setActiveStep(1)"
         >
+          <i
+            *ngIf="stepsStatus[stepKeys[1]] === 'Completed'"
+            class="pi pi-check completed-icon"
+          ></i>
           Question Set
         </button>
       </li>
       <li
         class="assessment-schedule__steps-item"
-        [ngClass]="{ active: this.activeStep === 2 }"
+        [ngClass]="{
+          active: this.activeStep === 2,
+          completed: stepsLoaded && stepsStatus[stepKeys[2]] === 'Completed',
+        }"
       >
         <button
           type="button"
           tabindex="0"
           class="assessment-schedule__steps-btn"
+          [disabled]="!stepsLoaded || !isStepEnabled(2)"
           (click)="setActiveStep(2)"
         >
+          <i
+            *ngIf="stepsStatus[stepKeys[2]] === 'Completed'"
+            class="pi pi-check completed-icon"
+          ></i>
           Coordinators
         </button>
       </li>
       <li
         class="assessment-schedule__steps-item"
-        [ngClass]="{ active: this.activeStep === 3 }"
+        [ngClass]="{
+          active: this.activeStep === 3,
+          completed: stepsLoaded && stepsStatus[stepKeys[3]] === 'Completed',
+        }"
       >
         <button
           type="button"
           tabindex="0"
           class="assessment-schedule__steps-btn"
+          [disabled]="!stepsLoaded || !isStepEnabled(3)"
           (click)="setActiveStep(3)"
         >
+          <i
+            *ngIf="stepsStatus[stepKeys[3]] === 'Completed'"
+            class="pi pi-check"
+          ></i>
           Front Desk
         </button>
       </li>
       <li
         class="assessment-schedule__steps-item"
-        [ngClass]="{ active: this.activeStep === 4 }"
+        [ngClass]="{
+          active: this.activeStep === 4,
+          completed: stepsLoaded && stepsStatus[stepKeys[4]] === 'Completed',
+        }"
       >
         <button
           type="button"
           tabindex="0"
           class="assessment-schedule__steps-btn"
+          [disabled]="!stepsLoaded || !isStepEnabled(4)"
           (click)="setActiveStep(4)"
         >
+          <i
+            *ngIf="stepsStatus[stepKeys[4]] === 'Completed'"
+            class="pi pi-check"
+          ></i>
           Interviewers
         </button>
       </li>
       <li
         class="assessment-schedule__steps-item"
-        [ngClass]="{ active: this.activeStep === 5 }"
+        [ngClass]="{
+          active: this.activeStep === 5,
+          completed: stepsLoaded && stepsStatus[stepKeys[5]] === 'Completed',
+        }"
       >
         <button
           type="button"
           tabindex="0"
           class="assessment-schedule__steps-btn"
+          [disabled]="!stepsLoaded || !isStepEnabled(5)"
           (click)="setActiveStep(5)"
         >
+          <i
+            *ngIf="stepsStatus[stepKeys[5]] === 'Completed'"
+            class="pi pi-check"
+          ></i>
           Schedule
         </button>
       </li>

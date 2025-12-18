@@ -42,6 +42,14 @@ const tableColumns: TableColumnsData = {
       hasTextFilter: true,
       filterAlias: 'textFilter',
     },
+    {
+      field: 'department',
+      displayName: 'Department',
+      sortedColumn: true,
+      hasChip: false,
+      hasTextFilter: true,
+      filterAlias: 'textFilter',
+    },
 
     {
       field: 'actions',

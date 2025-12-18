@@ -16,6 +16,7 @@ import { CoordinatorStepComponent } from './components/coordinator-step/coordina
 import { FrontDeskComponent } from './components/front-desk/front-desk.component';
 import { ImportCandidateListStepComponent } from './components/import-candidate-list-step/import-candidate-list-step.component';
 import { SelectQuesionsetStepComponent } from './components/select-quesionset-step/select-quesionset-step.component';
+import {StepsStatusService,StepStatus} from '../../services/steps-status.service';
 
 export interface AssessmentViewModel {
   id?: string;
@@ -74,10 +75,21 @@ export class AssessmentViewComponent extends BaseComponent implements OnInit {
   public visitedSteps: number[] = [];
   public isdisableCompleted = false;
   public coordinatorData!: CordinatorData;
+  public stepsStatus!: StepStatus;
+  public stepsLoaded = false;
+  public stepKeys: (keyof StepStatus)[] = [
+    'rounds',
+    'questionSets',
+    'coordinators',
+    'frontDesk',
+    'interviewers',
+    'schedule',
+  ];
 
   constructor(
     private route: ActivatedRoute,
     public dialog: DialogService,
+    private stepsStatusService: StepsStatusService,
   ) {
     super();
   }
@@ -97,6 +109,7 @@ export class AssessmentViewComponent extends BaseComponent implements OnInit {
       this.normalizeDates(this.assessment);
     }
     this.getCurrentRouteId();
+    this.loadStepsStatus();
   }
   public onCompleteStep(step: number): void {
     if (!this.completedSteps.includes(step)) {
@@ -161,6 +174,21 @@ export class AssessmentViewComponent extends BaseComponent implements OnInit {
       const idParam = params.get('id');
       this.assessmentId = idParam ? Number(idParam) : 0;
     });
+  }
+
+  private loadStepsStatus(): void {this.stepsStatusService
+      .getAssessmentStepsStatus(this.assessmentId)
+      .subscribe((response) => {
+        this.stepsStatus = response;
+        this.stepsLoaded = true;
+      });
+  }
+
+  public isStepEnabled(stepIndex: number): boolean {
+    if (!this.stepsLoaded || !this.stepsStatus) return false;
+    const key = this.stepKeys[stepIndex];
+    const status = this.stepsStatus[key];
+    return status === 'Active' || status === 'Completed';
   }
 
   private normalizeDates(assessment: Assessment): void {

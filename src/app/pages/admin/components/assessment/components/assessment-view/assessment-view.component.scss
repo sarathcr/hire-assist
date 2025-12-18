@@ -19,6 +19,10 @@
         border: 1px solid var(--primary-color);
         transition: all ease-in-out 0.3s;
       }
+       &.completed{
+        background: var(--color-light-green);
+        border: 1px solid  var(--color-clover-green);
+       }
       &:last-child {
         margin-bottom: 0;
       }
