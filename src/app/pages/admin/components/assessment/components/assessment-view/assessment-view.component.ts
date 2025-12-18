@@ -1,22 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DialogService } from 'primeng/dynamicdialog';
 import { StepperModule } from 'primeng/stepper';
+import { Subscription } from 'rxjs';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { Option } from '../../../../../../shared/models/option';
 import { CordinatorData } from '../../../../models/assessment-schedule.model';
 import { Assessment } from '../../../../models/assessment.model';
+import {
+  StepStatus,
+  StepsStatusService,
+} from '../../services/steps-status.service';
 import { AssessmentRoundComponent } from './components/assessment-round/assessment-round.component';
-import { AssignPanelInterviewerComponent } from './components/assign-panel-interviewer/assign-panel-interviewer.component';
 import { CoordinatorStepComponent } from './components/coordinator-step/coordinator-step.component';
 import { FrontDeskComponent } from './components/front-desk/front-desk.component';
 import { ImportCandidateListStepComponent } from './components/import-candidate-list-step/import-candidate-list-step.component';
 import { SelectQuesionsetStepComponent } from './components/select-quesionset-step/select-quesionset-step.component';
-import {StepsStatusService,StepStatus} from '../../services/steps-status.service';
 
 export interface AssessmentViewModel {
   id?: string;
@@ -59,13 +62,15 @@ export interface RoundModel {
     AssessmentRoundComponent,
     FrontDeskComponent,
     ImportCandidateListStepComponent,
-    AssignPanelInterviewerComponent,
   ],
 
   templateUrl: './assessment-view.component.html',
   styleUrl: './assessment-view.component.scss',
 })
-export class AssessmentViewComponent extends BaseComponent implements OnInit {
+export class AssessmentViewComponent
+  extends BaseComponent
+  implements OnInit, OnDestroy
+{
   public assessment!: Assessment;
 
   public assessmentId!: number;
@@ -75,16 +80,57 @@ export class AssessmentViewComponent extends BaseComponent implements OnInit {
   public visitedSteps: number[] = [];
   public isdisableCompleted = false;
   public coordinatorData!: CordinatorData;
-  public stepsStatus!: StepStatus;
+  public stepsStatus: StepStatus = {
+    rounds: 'Pending',
+    questionSets: 'Pending',
+    coordinators: 'Pending',
+    frontDesk: 'Pending',
+    interviewers: 'Pending',
+    schedule: 'Pending',
+  };
   public stepsLoaded = false;
   public stepKeys: (keyof StepStatus)[] = [
     'rounds',
     'questionSets',
     'coordinators',
     'frontDesk',
-    'interviewers',
     'schedule',
   ];
+
+  public stepConfig = [
+    {
+      index: 0,
+      label: 'Rounds',
+      description: 'Configure assessment rounds and sequence',
+      icon: 'pi pi-list',
+    },
+    {
+      index: 1,
+      label: 'Question Set',
+      description: 'Select and assign question sets',
+      icon: 'pi pi-file-edit',
+    },
+    {
+      index: 2,
+      label: 'Coordinators',
+      description: 'Assign coordinators for the assessment',
+      icon: 'pi pi-users',
+    },
+    {
+      index: 3,
+      label: 'Front Desk',
+      description: 'Configure front desk coordinators',
+      icon: 'pi pi-building',
+    },
+    {
+      index: 4,
+      label: 'Schedule',
+      description: 'Import candidates and schedule interviews',
+      icon: 'pi pi-calendar-check',
+    },
+  ];
+
+  private stepStatusUpdateSubscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -94,7 +140,6 @@ export class AssessmentViewComponent extends BaseComponent implements OnInit {
     super();
   }
 
-  // LifeCycle Hooks
   ngOnInit(): void {
     if (history.state.assessment) {
       this.assessment = history.state.assessment;
@@ -109,7 +154,18 @@ export class AssessmentViewComponent extends BaseComponent implements OnInit {
       this.normalizeDates(this.assessment);
     }
     this.getCurrentRouteId();
-    this.loadStepsStatus();
+    this.stepStatusUpdateSubscription =
+      this.stepsStatusService.stepStatusUpdate$.subscribe((assessmentId) => {
+        if (assessmentId === this.assessmentId) {
+          this.loadStepsStatus();
+        }
+      });
+  }
+
+  override ngOnDestroy(): void {
+    if (this.stepStatusUpdateSubscription) {
+      this.stepStatusUpdateSubscription.unsubscribe();
+    }
   }
   public onCompleteStep(step: number): void {
     if (!this.completedSteps.includes(step)) {
@@ -167,28 +223,43 @@ export class AssessmentViewComponent extends BaseComponent implements OnInit {
     return StatusEnum[statusId] || 'Unknown Status';
   }
 
-  // Private Methods
-
   private getCurrentRouteId() {
     this.route.paramMap.subscribe((params) => {
       const idParam = params.get('id');
       this.assessmentId = idParam ? Number(idParam) : 0;
+      if (this.assessmentId) {
+        this.loadStepsStatus();
+      }
     });
   }
 
-  private loadStepsStatus(): void {this.stepsStatusService
-      .getAssessmentStepsStatus(this.assessmentId)
-      .subscribe((response) => {
-        this.stepsStatus = response;
-        this.stepsLoaded = true;
-      });
+  public loadStepsStatus(): void {
+    if (this.assessmentId) {
+      this.stepsStatusService
+        .getAssessmentStepsStatus(this.assessmentId)
+        .subscribe({
+          next: (response) => {
+            this.stepsStatus = response;
+            this.stepsLoaded = true;
+          },
+          error: () => {
+            // Error handling
+          },
+        });
+    }
   }
 
   public isStepEnabled(stepIndex: number): boolean {
     if (!this.stepsLoaded || !this.stepsStatus) return false;
     const key = this.stepKeys[stepIndex];
+    if (!key) return false;
     const status = this.stepsStatus[key];
     return status === 'Active' || status === 'Completed';
+  }
+
+  private getStepKey(stepIndex: number): keyof StepStatus | null {
+    if (stepIndex < 0 || stepIndex >= this.stepKeys.length) return null;
+    return this.stepKeys[stepIndex];
   }
 
   private normalizeDates(assessment: Assessment): void {
@@ -213,5 +284,14 @@ export class AssessmentViewComponent extends BaseComponent implements OnInit {
       return new Date(year, month, day).toISOString();
     }
     return null;
+  }
+
+  public getProgressPercentage(): number {
+    if (!this.stepsLoaded || !this.stepsStatus) return 0;
+    const totalSteps = this.stepKeys.length;
+    const completedSteps = this.stepKeys.filter(
+      (key) => this.stepsStatus[key] === 'Completed',
+    ).length;
+    return Math.round((completedSteps / totalSteps) * 100);
   }
 }

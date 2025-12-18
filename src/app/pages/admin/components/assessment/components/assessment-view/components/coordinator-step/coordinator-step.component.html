@@ -1,66 +1,112 @@
 <div class="coordinator__section">
   <div class="coordinator__section-header">
-    <h2 class="coordinator__section__title app-title">Assign Coordinator</h2>
-    <p class="coordinator__section__description">
-      Select the round and assign coordinators to handle the round
-    </p>
+    <div class="coordinator__header-content">
+      <div class="coordinator__header-icon">
+        <i class="pi pi-users"></i>
+      </div>
+      <div class="coordinator__header-text">
+        <h2 class="coordinator__section__title app-title">Assign Coordinator</h2>
+        <p class="coordinator__section__description">
+          Select the round and assign coordinators to handle the round
+        </p>
+      </div>
+    </div>
   </div>
   @if (coordinatorData) {
     <form [formGroup]="fGroup" (ngSubmit)="onSubmit()">
-      <div formArrayName="assessmentRoundsDetails">
+      <div formArrayName="assessmentRoundsDetails" class="coordinator__form-container">
         @for (
           roundGroup of assessmentRoundsDetailsFormArray.controls;
           track $index
         ) {
-          <div [formGroupName]="$index" class="coordinator__row">
-            <app-input-multiselect
-              style="width: fit-content"
-              class="coordinator__form-field"
-              [formGroup]="roundGroup"
-              [config]="configMap['assessmentRound']"
-              [selectedItems]="[]"
-            />
-            <app-input-multiselect
-              style="width: 100%"
-              class="coordinator__form-field"
-              [formGroup]="roundGroup"
-              [config]="configMap['coordinator']"
-              [selectedItems]="[]"
-            />
-            <app-button
-              class="button-romove"
-              [icon]="'pi pi-trash'"
-              [buttonVariant]="'outlined'"
-              [buttonLabel]="'Remove'"
-              [buttonSeverity]="'danger'"
-              (btnClick)="removeRound($index)"
-            ></app-button>
+          <div [formGroupName]="$index" class="coordinator__card">
+            <div class="coordinator__card-header">
+              <div class="coordinator__card-number">
+                <span>{{ $index + 1 }}</span>
+              </div>
+              <h3 class="coordinator__card-title">Assignment {{ $index + 1 }}</h3>
+            </div>
+            <div class="coordinator__card-body">
+              <div class="coordinator__form-row">
+                <div class="coordinator__form-field-wrapper coordinator__form-field--round">
+                  <label class="coordinator__field-label">
+                    <i class="pi pi-list"></i>
+                    Recruitment Round
+                  </label>
+                  <app-input-multiselect
+                    class="coordinator__form-field"
+                    [formGroup]="roundGroup"
+                    [config]="configMap['assessmentRound']"
+                    [selectedItems]="[]"
+                  />
+                </div>
+                <div class="coordinator__form-field-wrapper coordinator__form-field--coordinator">
+                  <label class="coordinator__field-label">
+                    <i class="pi pi-user"></i>
+                    Coordinator
+                  </label>
+                  <app-input-multiselect
+                    class="coordinator__form-field"
+                    [formGroup]="roundGroup"
+                    [config]="configMap['coordinator']"
+                    [selectedItems]="[]"
+                  />
+                </div>
+                <div class="coordinator__card-actions">
+                  <app-button
+                    class="coordinator__remove-btn"
+                    [icon]="'pi pi-trash'"
+                    [buttonVariant]="'outlined'"
+                    [buttonLabel]="'Remove'"
+                    [buttonSeverity]="'danger'"
+                    (btnClick)="removeRound($index)"
+                    type="button"
+                  ></app-button>
+                </div>
+              </div>
+            </div>
           </div>
         } @empty {
-          <p>No recruitment rounds configured. Click "Add Assignment" to begin.</p>
+          <div class="coordinator__empty-state">
+            <div class="coordinator__empty-icon">
+              <i class="pi pi-inbox"></i>
+            </div>
+            <h3 class="coordinator__empty-title">No Assignments Yet</h3>
+            <p class="coordinator__empty-description">
+              Click "Add Assignment" below to start assigning coordinators to recruitment rounds.
+            </p>
+          </div>
         }
       </div>
+
+      @if (
+        assessmentRoundsDetailsFormArray.hasError("duplicateRounds") &&
+        assessmentRoundsDetailsFormArray.dirty
+      ) {
+        <div class="coordinator__global-error">
+          <i class="pi pi-exclamation-triangle"></i>
+          <span>Each assessment round can only be assigned once.</span>
+        </div>
+      }
+
+      <footer class="coordinator__footer">
+        <app-button
+          [icon]="'pi pi-plus'"
+          buttonLabel="Add Assignment"
+          [buttonSize]="'small'"
+          (btnClick)="addRound()"
+          type="button"
+          class="coordinator__add-btn"
+        ></app-button>
+        <app-button 
+          buttonLabel="Submit" 
+          (btnClick)="onSubmit()"
+          [icon]="'pi pi-check'"
+          [buttonSize]="'small'"
+          class="coordinator__submit-btn"
+        ></app-button>
+      </footer>
     </form>
-
-    @if (
-      assessmentRoundsDetailsFormArray.hasError("duplicateRounds") &&
-      assessmentRoundsDetailsFormArray.dirty
-    ) {
-      <div class="p-error coordinator__global-error">
-        Each assessment round can only be assigned once.
-      </div>
-    }
-
-    <footer class="dialog-footer">
-      <app-button
-        [icon]="'pi pi-plus'"
-        buttonLabel="Add Assignment"
-        [buttonVariant]="'outlined'"
-        (btnClick)="addRound()"
-        type="button"
-      ></app-button>
-      <app-button buttonLabel="Submit" (btnClick)="onSubmit()"></app-button>
-    </footer>
   } @else {
     <app-coordinator-step-skeleton></app-coordinator-step-skeleton>
   }

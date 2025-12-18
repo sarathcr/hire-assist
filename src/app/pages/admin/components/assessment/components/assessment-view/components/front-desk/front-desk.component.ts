@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input, NgZone, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
@@ -22,10 +23,12 @@ import {
 import { AssessmentService } from '../../../../../../services/assessment.service';
 import { CollectionInterface } from '../../assessment-view.component';
 import { FrontdeskSkeletonComponent } from './front-desk-skeleton.component';
+import { StepsStatusService } from '../../../../services/steps-status.service';
 
 @Component({
   selector: 'app-front-desk',
   imports: [
+    CommonModule,
     InputMultiselectComponent,
     ButtonComponent,
     ReactiveFormsModule,
@@ -46,30 +49,29 @@ export class FrontDeskComponent implements OnInit {
   public frontDesk!: FrontDeskFormGroup[];
 
   public assessmentId = input<number>();
+
   constructor(
     private storeService: StoreService,
-
     private assessmentService: AssessmentService,
     private messageService: MessageService,
+    private ngZone: NgZone,
+    private stepsStatusService: StepsStatusService,
   ) {
     this.fGroup = buildFormGroup(this.assessmentSchedule);
+    this.frontDesk = [];
   }
-  // LifeCycle Hooks
   ngOnInit(): void {
-    this.GetFrontDeskUsers();
     this.loadCollections();
     this.setConfigMaps();
     this.setOptions();
+    this.GetFrontDeskUsers();
   }
 
   public onSubmit() {
     this.fGroup.markAllAsTouched();
     const formData = this.fGroup.value;
     if (formData?.users?.length) {
-      const collections =
-        this.storeService.getCollection() as unknown as CollectionInterface;
-      const users: Option[] = collections.users;
-      this.frontDesk = users
+      this.frontDesk = this.users
         .filter((item) => formData.users.includes(item.value))
         .map((item) => ({
           id: parseInt(item.value, 10),
@@ -89,6 +91,11 @@ export class FrontDeskComponent implements OnInit {
             summary: 'Success',
             detail: 'Assigned Frontdesk Users',
           });
+          this.GetFrontDeskUsers();
+          const assessmentId = Number(this.assessmentId());
+          if (assessmentId && this.stepsStatusService) {
+            this.stepsStatusService.notifyStepStatusUpdate(assessmentId);
+          }
         },
         error: () => {
           this.messageService.add({
@@ -101,14 +108,13 @@ export class FrontDeskComponent implements OnInit {
     }
   }
 
-  //private methods
   private GetFrontDeskUsers(): void {
     this.assessmentService
       .getFrontDeskUserByAssessment(Number(this.assessmentId()))
       .subscribe({
         next: (response: frontDeskResponse[]) => {
-          this.frontDesk = response.map((item: frontDeskResponse) => ({
-            id: item.id ?? 0,
+          this.frontDesk = response.map((item: frontDeskResponse, index: number) => ({
+            id: item.id ?? index + 1,
             name: item.name ?? '',
             userId: item.userId ?? '',
             assessmentId: item.assessmentId ?? 0,
@@ -116,6 +122,7 @@ export class FrontDeskComponent implements OnInit {
           this.setInitialFormValue();
         },
         error: () => {
+          this.frontDesk = [];
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -125,22 +132,43 @@ export class FrontDeskComponent implements OnInit {
       });
   }
 
-  // Private Methods
   private setConfigMaps(): void {
     const { metadata } = new frontDeskModal();
     this.configMap = metadata.configMap || {};
   }
 
   private setOptions() {
-    (this.configMap['users'] as CustomSelectConfig).options = this.optionsMap[
-      'users'
-    ] as unknown as Option[];
+    if (this.configMap['users']) {
+      (this.configMap['users'] as CustomSelectConfig).options =
+        (this.users as unknown as Option[]) || [];
+    }
   }
 
   private loadCollections() {
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
-    this.users = this.optionsMap['users'] as unknown as Option[];
+    
+    const frontDeskCoordinators =
+      (this.optionsMap?.['frontdesks'] as unknown as Option[]) || [];
+
+    if (frontDeskCoordinators.length > 0) {
+      this.users = frontDeskCoordinators.map((item: Option) => ({
+        label: item.label,
+        value: item.value,
+      }));
+    } else {
+      const allUsers = (this.optionsMap['users'] as unknown as Option[]) || [];
+      this.users = allUsers
+        .filter((user) => user.roles?.includes('FrontDesk') || user.roles?.includes('frontDesk'))
+        .map((item: Option) => ({
+          label: item.label,
+          value: item.value,
+        }));
+    }
+    
+    if (!this.users) {
+      this.users = [];
+    }
   }
 
   private setInitialFormValue(): void {

@@ -19,6 +19,8 @@ export interface interviewer extends interviewerInterface {
   fGroup: FormGroup;
   configMap: ConfigMap;
   inputSelect: Options[];
+  assessmentId?: number;
+  interviewId?: number;
 }
 export class interviewerModal extends FormEntity {
   id = '';

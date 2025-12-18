@@ -69,8 +69,7 @@ export class CandidateDetailViewComponent
       this.candidateDetailsDataSource = res;
       this.isLoading = false;
     };
-    const error = (error: ErrorResponse) => {
-      console.log('ERROR', error);
+    const error = () => {
       this.isLoading = false;
     };
     this.assessmentService
@@ -83,8 +82,7 @@ export class CandidateDetailViewComponent
       this.candidateAssessmentDataSource = res;
       this.isLoadingPreviousAssessments = false;
     };
-    const error = (error: ErrorResponse) => {
-      console.log('ERROR', error);
+    const error = () => {
       this.isLoadingPreviousAssessments = false;
     };
     this.interviewService

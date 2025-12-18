@@ -1,33 +1,84 @@
-<div class="frontdesk">
-  <div class="frontdesk__section">
-    <div class="frontdesk__section-header">
-      <h2 class="frontdesk__section__title app-title">
-        Select Front Desk Coordinators
-      </h2>
-      <p class="frontdesk__section__description">
-        Select FrontDesk Coordinators for the assessment
-      </p>
+<div class="frontdesk__section">
+  <div class="frontdesk__section-header">
+    <div class="frontdesk__header-content">
+      <div class="frontdesk__header-icon">
+        <i class="pi pi-desktop"></i>
+      </div>
+      <div class="frontdesk__header-text">
+        <h2 class="frontdesk__section__title app-title">
+          Assign Front Desk Coordinators
+        </h2>
+        <p class="frontdesk__section__description">
+          Select Front Desk Coordinators who will manage the front desk operations for this assessment
+        </p>
+      </div>
     </div>
-    @if (frontDesk) {
-      <form [formGroup]="fGroup">
-        <app-input-multiselect
-          class="frontdesk__field"
-          [formGroup]="fGroup"
-          [config]="configMap['users']"
-          [selectedItems]=""
-        />
-
-        <div class="frontdesk__button">
-          <app-button
-            [buttonLabel]="'Submit'"
-            [disabled]="!fGroup.valid"
-            (btnClick)="onSubmit()"
-          ></app-button>
-        </div>
-      </form>
-      <p-toast position="top-right" class="Toast"></p-toast>
-    } @else {
-      <app-frontdesk-skeleton></app-frontdesk-skeleton>
-    }
   </div>
+  @if (frontDesk) {
+    <form [formGroup]="fGroup" (ngSubmit)="onSubmit()">
+      <div class="frontdesk__form-container">
+        <div class="frontdesk__card">
+          <div class="frontdesk__card-header">
+            <div class="frontdesk__card-icon">
+              <i class="pi pi-user-plus"></i>
+            </div>
+            <div class="frontdesk__card-header-text">
+              <h3 class="frontdesk__card-title">Coordinator Selection</h3>
+              <p class="frontdesk__card-subtitle">
+                Choose one or more coordinators from the list below
+              </p>
+            </div>
+          </div>
+          <div class="frontdesk__card-body">
+            <div class="frontdesk__form-field-wrapper">
+              <app-input-multiselect
+                class="frontdesk__form-field"
+                [formGroup]="fGroup"
+                [config]="configMap['users']"
+                [selectedItems]=""
+              />
+            </div>
+            
+            @if (frontDesk && frontDesk.length > 0) {
+              <div class="frontdesk__selected-section">
+                <div class="frontdesk__selected-header">
+                  <i class="pi pi-check-circle"></i>
+                  <span class="frontdesk__selected-title">
+                    Currently Assigned Coordinators ({{ frontDesk.length }})
+                  </span>
+                </div>
+                <div class="frontdesk__selected-list">
+                  @for (coordinator of frontDesk; track coordinator.userId || $index) {
+                    <div class="frontdesk__selected-item">
+                      <div class="frontdesk__selected-item-avatar">
+                        <i class="pi pi-user"></i>
+                      </div>
+                      <span class="frontdesk__selected-item-name">{{ coordinator.name }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <footer class="frontdesk__footer">
+        <div class="frontdesk__footer-info">
+          <i class="pi pi-info-circle"></i>
+          <span>Selected coordinators will be notified and can manage front desk activities.</span>
+        </div>
+        <app-button
+          [icon]="'pi pi-check'"
+          [buttonLabel]="'Save Assignment'"
+          [disabled]="!fGroup.valid"
+          (btnClick)="onSubmit()"
+          class="frontdesk__submit-btn"
+        ></app-button>
+      </footer>
+    </form>
+    <p-toast position="top-right" class="Toast"></p-toast>
+  } @else {
+    <app-frontdesk-skeleton></app-frontdesk-skeleton>
+  }
 </div>

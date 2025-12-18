@@ -1,14 +1,10 @@
-import {
-  CdkDragDrop,
-  DragDropModule,
-  moveItemInArray,
-} from '@angular/cdk/drag-drop';
-import { Component, EventEmitter, input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, input, OnDestroy, OnInit, Output, ViewChild, ElementRef, AfterViewInit, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
+import Sortable from 'sortablejs';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
@@ -37,7 +33,6 @@ import { CreateRoundModalComponent } from './components/create-round-modal/creat
   imports: [
     InputMultiselectComponent,
     ButtonComponent,
-    DragDropModule,
     ReactiveFormsModule,
     AssessmentRoundSkeletonComponent,
     ToastModule,
@@ -45,7 +40,7 @@ import { CreateRoundModalComponent } from './components/create-round-modal/creat
   templateUrl: './assessment-round.component.html',
   styleUrl: './assessment-round.component.scss',
 })
-export class AssessmentRoundComponent implements OnInit {
+export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   public configMap!: ConfigMap;
   public fGroup!: FormGroup;
   public assessmentSchedule = new AssessmentScheduleModal();
@@ -58,6 +53,10 @@ export class AssessmentRoundComponent implements OnInit {
 
   public assessmentId = input<number>();
   private dialogRef: DynamicDialogRef | undefined;
+  private assessmentRoundSubscription?: Subscription;
+  private isDataLoaded = false;
+  private sortableInstance: Sortable | null = null;
+  @ViewChild('roundsList', { static: false }) roundsListRef!: ElementRef;
   @Output() roundsUpdated = new EventEmitter<number>();
 
   constructor(
@@ -66,6 +65,7 @@ export class AssessmentRoundComponent implements OnInit {
     private readonly assessmentScheduleService: AssessmentScheduleService,
     private readonly collectionService: CollectionService,
     private readonly dialogService: DialogService,
+    private readonly cdr: ChangeDetectorRef,
   ) {
     this.fGroup = buildFormGroup(this.assessmentSchedule);
   }
@@ -75,6 +75,32 @@ export class AssessmentRoundComponent implements OnInit {
     this.setOptions();
     this.GetAssessmentRoundbyAssessment();
     this.setupRoundSelectionListener();
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      if (this.submittedData && this.submittedData.length > 0 && !this.isLoading) {
+        this.initSortable();
+      }
+    }, 500);
+  }
+
+  ngAfterViewChecked(): void {
+    if (!this.isLoading && this.submittedData && this.submittedData.length > 0 && !this.sortableInstance) {
+      const element = this.roundsListRef?.nativeElement || document.querySelector('.assessment-round__rounds-list') as HTMLElement;
+      if (element && element.querySelectorAll('.assessment-round__round-item').length > 0) {
+        setTimeout(() => {
+          this.initSortable();
+        }, 100);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.assessmentRoundSubscription) {
+      this.assessmentRoundSubscription.unsubscribe();
+      this.assessmentRoundSubscription = undefined;
+    }
   }
 
   private setupRoundSelectionListener(): void {
@@ -88,6 +114,7 @@ export class AssessmentRoundComponent implements OnInit {
   private syncSelectedRounds(selectedRoundIds: string[]): void {
     if (!selectedRoundIds || selectedRoundIds.length === 0) {
       this.submittedData = [];
+      this.destroySortable();
       return;
     }
 
@@ -103,8 +130,7 @@ export class AssessmentRoundComponent implements OnInit {
       }));
 
     const existingIds = new Set(this.submittedData.map((item) => item.id));
-
-    this.submittedData = this.submittedData.filter(
+    const existingData = this.submittedData.filter(
       (round) =>
         round.id.startsWith('new-') || selectedRoundIds.includes(round.id),
     );
@@ -113,15 +139,94 @@ export class AssessmentRoundComponent implements OnInit {
       (round) => !existingIds.has(round.id),
     );
 
-    this.submittedData = [...this.submittedData, ...newRounds];
+    this.submittedData = [...existingData, ...newRounds];
+    setTimeout(() => this.reinitSortable(), 300);
   }
 
-  public onDrop(event: CdkDragDrop<AssessmentRoundFormGroup[]>) {
-    moveItemInArray(
-      this.submittedData,
-      event.previousIndex,
-      event.currentIndex,
-    );
+  private initSortable(): void {
+    this.destroySortable();
+    
+    if (this.submittedData.length === 0 || this.isLoading) {
+      return;
+    }
+    
+    if (typeof Sortable === 'undefined') {
+      return;
+    }
+    
+    const getElement = (): HTMLElement | null => {
+      if (this.roundsListRef?.nativeElement) {
+        return this.roundsListRef.nativeElement;
+      }
+      return document.querySelector('.assessment-round__rounds-list') as HTMLElement;
+    };
+    
+    let element = getElement();
+    
+    if (!element) {
+      setTimeout(() => {
+        element = getElement();
+        if (element && this.submittedData && this.submittedData.length > 0 && !this.isLoading) {
+          this.initializeSortableOnElement(element);
+        }
+      }, 300);
+      return;
+    }
+
+    this.initializeSortableOnElement(element);
+  }
+
+  private initializeSortableOnElement(element: HTMLElement): void {
+    const items = element.querySelectorAll('.assessment-round__round-item');
+    
+    if (items.length === 0) {
+      return;
+    }
+
+    try {
+      this.sortableInstance = new Sortable(element, {
+        animation: 200,
+        ghostClass: 'assessment-round__sortable-ghost',
+        chosenClass: 'assessment-round__sortable-chosen',
+        dragClass: 'assessment-round__sortable-drag',
+        forceFallback: true,
+        fallbackOnBody: true,
+        swapThreshold: 0.65,
+        draggable: '.assessment-round__round-item',
+        filter: '.assessment-round__remove-button',
+        preventOnFilter: false,
+        onStart: (evt) => {
+          element.classList.add('sortable-dragging');
+        },
+        onEnd: (evt) => {
+          element.classList.remove('sortable-dragging');
+          if (evt.oldIndex !== undefined && evt.newIndex !== undefined && evt.oldIndex !== evt.newIndex) {
+            const movedItem = this.submittedData[evt.oldIndex];
+            this.submittedData.splice(evt.oldIndex, 1);
+            this.submittedData.splice(evt.newIndex, 0, movedItem);
+            this.submittedData = [...this.submittedData];
+          }
+        },
+      });
+    } catch (error) {
+      // Error handling - SortableJS initialization failed
+    }
+  }
+
+  private destroySortable(): void {
+    if (this.sortableInstance) {
+      this.sortableInstance.destroy();
+      this.sortableInstance = null;
+    }
+  }
+
+  private reinitSortable(): void {
+    this.destroySortable();
+    setTimeout(() => {
+      if (this.submittedData && this.submittedData.length > 0 && !this.isLoading) {
+        this.initSortable();
+      }
+    }, 500);
   }
 
   public onRemoveRound(roundId: string): void {
@@ -149,6 +254,7 @@ export class AssessmentRoundComponent implements OnInit {
       ); // Prevent triggering valueChanges
     }
     this.roundsUpdated.emit(this.submittedData.length);
+    this.reinitSortable();
   }
 
   public openCreateRoundModal(): void {
@@ -163,7 +269,6 @@ export class AssessmentRoundComponent implements OnInit {
     });
 
     this.dialogRef.onClose.subscribe((result: RoundsInterface | undefined) => {
-      console.log('Modal closed with result:', result);
       if (result) {
         this.isLoading = true;
         this.assessmentScheduleService.addRound(result).subscribe({
@@ -183,6 +288,7 @@ export class AssessmentRoundComponent implements OnInit {
 
               // Refresh rounds list
               this.refreshRoundsList();
+              setTimeout(() => this.reinitSortable(), 100);
 
               this.messageService.add({
                 severity: 'success',
@@ -273,11 +379,13 @@ export class AssessmentRoundComponent implements OnInit {
             this.isLoading = false;
             this.newRoundsToCreate = [];
             // Reload assessment rounds
+            this.isDataLoaded = false;
             this.GetAssessmentRoundbyAssessment();
+            setTimeout(() => this.reinitSortable(), 500);
           },
           error: (error: CustomErrorResponse) => {
-            this.handleSubmitError(error);
             this.isLoading = false;
+            this.handleSubmitError(error);
           },
         });
     } else {
@@ -290,7 +398,9 @@ export class AssessmentRoundComponent implements OnInit {
             detail: 'Rounds saved successfully!',
           });
           this.isLoading = false;
+          this.isDataLoaded = false;
           this.GetAssessmentRoundbyAssessment();
+          setTimeout(() => this.reinitSortable(), 600);
         },
         error: (error: CustomErrorResponse) => {
           this.handleSubmitError(error);
@@ -321,6 +431,9 @@ export class AssessmentRoundComponent implements OnInit {
       summary: 'Error',
       detail: `${error.error.type}`,
     });
+    setTimeout(() => {
+      this.reinitSortable();
+    }, 500);
   }
 
   private refreshRoundsList(): void {
@@ -335,22 +448,48 @@ export class AssessmentRoundComponent implements OnInit {
 
   //Private Methods
   private GetAssessmentRoundbyAssessment() {
+    // Prevent duplicate API calls - if already loading or subscription exists, skip
+    if (this.isLoading || this.assessmentRoundSubscription) {
+      return;
+    }
+
+    // Check if assessmentId is valid
+    const assessmentId = Number(this.assessmentId());
+    if (!assessmentId || isNaN(assessmentId)) {
+      return;
+    }
+
     this.isLoading = true;
-    this.assessmentScheduleService
-      .GetAssessmentRound(Number(this.assessmentId()))
-      .subscribe((response: RoundModel[]) => {
-        this.isLoading = false;
-        this.assessmentRounds = response;
-        this.submittedData = response.map((item) => ({
-          name: item.round,
-          id: item.roundId.toString(),
-          sequence: item.sequence,
-        }));
-        this.fGroup.patchValue({
-          round: this.submittedData.map((item) => item.id),
-        });
+    this.assessmentRoundSubscription = this.assessmentScheduleService
+      .GetAssessmentRound(assessmentId)
+      .subscribe({
+        next: (response: RoundModel[]) => {
+          this.isLoading = false;
+          this.isDataLoaded = true;
+          this.assessmentRounds = response;
+          this.submittedData = response.map((item) => ({
+            name: item.round,
+            id: item.roundId.toString(),
+            sequence: item.sequence,
+          }));
+          this.fGroup.patchValue({
+            round: this.submittedData.map((item) => item.id),
+          });
+          this.assessmentRoundSubscription = undefined;
+          this.roundsUpdated.emit(this.submittedData.length);
+          this.cdr.detectChanges();
+          setTimeout(() => {
+            this.reinitSortable();
+          }, 1000);
+        },
+        error: () => {
+          this.isLoading = false;
+          this.assessmentRoundSubscription = undefined;
+          setTimeout(() => {
+            this.reinitSortable();
+          }, 500);
+        },
       });
-    this.roundsUpdated.emit(this.submittedData.length);
   }
   private setConfigMaps(): void {
     const { metadata } = new AssessmentScheduleModal();

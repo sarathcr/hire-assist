@@ -47,6 +47,24 @@ import { DialogFooterComponent } from '../../../../../../../../shared/components
 import { DialogData } from '../../../../../../../../shared/models/dialog.models';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SkeletonModule } from 'primeng/skeleton';
+import { AbstractControl, ValidationErrors } from '@angular/forms';
+
+function attachmentRequiredValidator(
+  control: AbstractControl,
+): ValidationErrors | null {
+  const hasAttachments = control.get('hasAttachments')?.value;
+  const fileDto = control.get('fileDto')?.value;
+
+  if (!hasAttachments) {
+    return null; // toggle OFF
+  }
+
+  if (!fileDto || (!fileDto.id && !fileDto.blobId)) {
+    return { attachmentRequired: true };
+  }
+
+  return null;
+}
 
 // Constants
 const OPTION_VALIDATORS = [
@@ -219,21 +237,22 @@ export class QuestionFormModalComponent
     this.loadFormData();
   }
 
-  private setupForm(): void {
-    if (!this.data) {
-      console.error('QuestionFormModalComponent: data is missing');
-      return;
-    }
+private setupForm(): void {
+  this.questionForm = this.data.fGroup;
 
-    if (!this.data.fGroup) {
-      console.error('QuestionFormModalComponent: data.fGroup is missing');
-      return;
-    }
+  this.questionForm.setValidators(attachmentRequiredValidator);
 
-    this.questionForm = this.data.fGroup;
-    this.initializeOptionsArray();
-    this.subscribeToOptionArray();
-  }
+  this.questionForm.get('hasAttachments')?.valueChanges.subscribe(() => {
+    this.questionForm?.updateValueAndValidity();
+  });
+
+  this.questionForm.get('fileDto')?.valueChanges.subscribe(() => {
+    this.questionForm?.updateValueAndValidity();
+  });
+
+  this.initializeOptionsArray();
+  this.subscribeToOptionArray();
+}
 
   private initializeOptionsArray(): void {
     const options = this.optionsArray;

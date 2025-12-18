@@ -22,6 +22,7 @@ import {
   ConfigMap,
 } from '../../../../../../shared/utilities/form.utility';
 import { InterviewService } from '../../../../../admin/components/assessment/services/interview.service';
+import { StepsStatusService } from '../../../../../admin/components/assessment/services/steps-status.service';
 import { Score } from '../../../../../admin/models/assessment.model';
 import {
   AccordionData,
@@ -86,6 +87,7 @@ export class InterviewerFeedbackComponent
     private route: ActivatedRoute,
     private storeService: StoreService,
     public dialog: DialogService,
+    private stepsStatusService: StepsStatusService,
   ) {
     super();
     this.fGroup = buildFormGroup(this.score);
@@ -358,6 +360,12 @@ export class InterviewerFeedbackComponent
       });
       this.isSubmitted = res.statusId == 7 ? true : false;
       this.getAssessmentDetails(this.requestData);
+      // Notify step status service to trigger reload
+      const assessmentId = Number(this.assessmentId);
+      if (assessmentId && this.stepsStatusService) {
+        console.log('InterviewerFeedback: Notifying step status service to reload for assessmentId:', assessmentId);
+        this.stepsStatusService.notifyStepStatusUpdate(assessmentId);
+      }
     };
     const error = () => {
       this.messageService.add({

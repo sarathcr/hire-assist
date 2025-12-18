@@ -152,7 +152,6 @@ export class CandidateDialogComponent implements OnInit {
     }
 
     const formValue = this.fGroup.value;
-    console.log('vlaue', formValue);
     const candidateFields = [
       'name',
       'email',

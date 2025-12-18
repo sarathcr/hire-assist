@@ -289,17 +289,13 @@ export class CoordinatorStepComponent implements OnInit {
   private getCordinators() {
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
-    const users = this.optionsMap['users'] as unknown as Option[];
+    const coordinators =
+      (this.optionsMap?.['coordinators'] as unknown as Option[]) || [];
 
-    this.cordinators = users
-      .filter(
-        (item: Option) =>
-          Array.isArray(item.roles) && item.roles.includes('Coordinator'),
-      )
-      .map((item: Option) => ({
-        label: item.label,
-        value: item.value,
-      }));
+    this.cordinators = coordinators.map((item: Option) => ({
+      label: item.label,
+      value: item.value,
+    }));
 
     this.GetAssessmentRoundbyAssessment();
   }

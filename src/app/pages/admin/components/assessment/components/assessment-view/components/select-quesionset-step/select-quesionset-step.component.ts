@@ -340,7 +340,7 @@ export class SelectQuesionsetStepComponent
     const childRef = this.dialog.open(QuestionSetModalComponent, {
       data: data,
       header: 'Create Question Set',
-      width: '50vw',
+      width: '30vw',
       modal: true,
       focusOnShow: false,
       breakpoints: {
@@ -698,13 +698,18 @@ export class SelectQuesionsetStepComponent
     accordionData.isLoadingQuestions = true;
 
     const next = (res: PaginatedData<QuestionsModel>) => {
+      console.log('page number', res.pageNumber);
+
       if (res) {
         const transformedData = res.data.map((item: QuestionsModel) => ({
           ...item,
           options: this.transformOptions(item.options),
           isExpanded: false,
         }));
-        accordionData.tabledata = { ...res, data: transformedData };
+        accordionData.tabledata = {
+          ...res,
+          data: transformedData,
+        };
         accordionData.hasLoadedTableData = true;
       }
       accordionData.isLoadingQuestions = false;

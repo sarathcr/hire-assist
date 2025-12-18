@@ -1,18 +1,12 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SkeletonModule } from 'primeng/skeleton';
+import { Component } from '@angular/core';
 import { AccordionModule } from 'primeng/accordion';
-import { TableSkeletonComponent } from '../../../../../../../../shared/components/table/table.skeleton';
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-question-set-step-skeleton',
   standalone: true,
-  imports: [
-    CommonModule,
-    SkeletonModule,
-    TableSkeletonComponent,
-    AccordionModule,
-  ],
+  imports: [CommonModule, SkeletonModule, AccordionModule],
   template: `
     <!-- Hero Section Skeleton -->
     <div class="QuestionSet__hero">
@@ -65,44 +59,6 @@ import { TableSkeletonComponent } from '../../../../../../../../shared/component
                   />
                 </div>
               </p-accordion-header>
-              <p-accordion-content>
-                @if (item === 1) {
-                  <div class="QuestionSet__summary">
-                    <div class="QuestionSet__summary-header">
-                      <p-skeleton shape="circle" width="52px" height="52px" />
-                      <p-skeleton width="220px" height="22px" />
-                      <p-skeleton width="100px" height="16px" />
-                    </div>
-                    <div class="QuestionSet__summary-content">
-                      <div class="QuestionSet__summary-table">
-                        <p-skeleton
-                          width="100%"
-                          height="200px"
-                          class="skeleton-rounded"
-                        />
-                      </div>
-                      <div class="QuestionSet__summary-knob">
-                        <p-skeleton
-                          shape="circle"
-                          width="120px"
-                          height="120px"
-                        />
-                        <p-skeleton
-                          width="80px"
-                          height="16px"
-                          class="skeleton-mt-15"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                }
-                <div class="QuestionSet__table-container">
-                  <app-table-skeleton></app-table-skeleton>
-                </div>
-                <div class="QuestionSet__actions">
-                  <p-skeleton width="160px" height="40px" />
-                </div>
-              </p-accordion-content>
             </p-accordion-panel>
           }
         </p-accordion>

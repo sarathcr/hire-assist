@@ -7,54 +7,73 @@ import { SkeletonModule } from 'primeng/skeleton';
   standalone: true,
   imports: [CommonModule, SkeletonModule],
   template: `
-    <div class="Panel__section">
-      <div class="Panel__section-header">
-        <h2 class="Panel__section__title app-title">
-          Assign interviewers to panels
-        </h2>
-        <p class="Panel__section__description">
-          Select the panel and choose the interviewers to be assigned.
-        </p>
+    <div class="panel__section">
+      <!-- Header Skeleton -->
+      <div class="panel__section-header">
+        <div class="panel__header-content">
+          <div class="panel__header-icon">
+            <p-skeleton shape="circle" width="56px" height="56px" />
+          </div>
+          <div class="panel__header-text">
+            <p-skeleton
+              width="300px"
+              height="28px"
+              class="mb-2 skeleton-mb-10"
+            />
+            <p-skeleton width="500px" height="20px" />
+          </div>
+        </div>
       </div>
 
-      <div class="Panel">
-        <!-- panel rows -->
+      <!-- Form Container Skeleton -->
+      <div class="panel__form-container">
         @for (row of rows; track row) {
-          <div class="Panel__row">
-            <p-skeleton class="Panel__form-field" width="100%" height="3rem" />
-            <p-skeleton class="Panel__form-field" width="100%" height="3rem" />
+          <div class="panel__card">
+            <!-- Card Header Skeleton -->
+            <div class="panel__card-header">
+              <p-skeleton shape="circle" width="32px" height="32px" />
+              <p-skeleton width="140px" height="22px" />
+            </div>
+
+            <!-- Card Body Skeleton -->
+            <div class="panel__card-body">
+              <div class="panel__form-row">
+                <!-- Panel Field Skeleton -->
+                <div class="panel__form-field-wrapper panel__form-field--panel">
+                  <p-skeleton width="80px" height="18px" class="mb-2" />
+                  <p-skeleton width="100%" height="42px" />
+                </div>
+
+                <!-- Interviewers Field Skeleton -->
+                <div
+                  class="panel__form-field-wrapper panel__form-field--interviewers"
+                >
+                  <p-skeleton width="100px" height="18px" class="mb-2" />
+                  <p-skeleton width="100%" height="42px" />
+                </div>
+
+                <!-- Remove Button Skeleton -->
+                <div class="panel__card-actions">
+                  <p-skeleton width="100px" height="42px" />
+                </div>
+              </div>
+            </div>
           </div>
         }
       </div>
 
-      <!-- Add‑panel button -->
-      <div class="Panel__action-button">
-        <p-skeleton width="8rem" height="2.5rem" class="mt-2" />
-      </div>
-
-      <!-- Footer submit -->
-      <div class="dialog-footer">
-        <p-skeleton width="8rem" height="2.5rem" />
-      </div>
-    </div>
-
-    <div class="Panel__section">
-      <div class="Panel__section-header">
-        <h2 class="Panel__section__title app-title">Create Panel</h2>
-        <p class="Panel__section__description">Create a new custom panel</p>
-      </div>
-
-      <div class="Panel__field">
-        <p-skeleton width="100%" height="3rem" />
-      </div>
-      <div class="Panel__description">
-        <p-skeleton width="100%" height="3rem" />
-      </div>
-      <p-skeleton width="8rem" height="2.5rem" />
+      <!-- Footer Skeleton -->
+      <footer class="panel__footer">
+        <div class="panel__footer-actions">
+          <p-skeleton width="140px" height="42px" />
+          <p-skeleton width="140px" height="42px" />
+        </div>
+        <p-skeleton width="120px" height="42px" />
+      </footer>
     </div>
   `,
   styleUrl: './assign-panel-interviewer.component.scss',
 })
 export class AssignPanelInterviewerSkeletonComponent {
-  rows = [1, 2];
+  rows = [1, 2]; // how many placeholder rows to show
 }

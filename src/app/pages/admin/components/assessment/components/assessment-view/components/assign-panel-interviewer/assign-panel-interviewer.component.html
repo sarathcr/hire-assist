@@ -1,96 +1,142 @@
-@if (panelOptions) {
-  <div class="Panel__section">
-    <div class="Panel__section-header">
-      <h2 class="Panel__section__title app-title">
-        Assign interviewers to panels
-      </h2>
-      <p class="Panel__section__description">
-        Select the panel and choose the interviewers to be assigned.
-      </p>
+@if (panelOptions && !isLoading) {
+  <div class="panel__section">
+    <div class="panel__section-header">
+      <div class="panel__header-content">
+        <div class="panel__header-icon">
+          <i class="pi pi-users"></i>
+        </div>
+        <div class="panel__header-text">
+          <h2 class="panel__section__title app-title">
+            Assign Interviewers to Panels
+          </h2>
+          <p class="panel__section__description">
+            Select the panel and choose the interviewers to be assigned. You can
+            create new panels using the "Create Panel" button.
+          </p>
+        </div>
+      </div>
     </div>
 
-    <form [formGroup]="fGroup">
-      <div formArrayName="paneldetails">
+    <form
+      [formGroup]="fGroup"
+      (ngSubmit)="onSubmit($event)"
+      (submit)="$event.preventDefault()"
+    >
+      <div formArrayName="paneldetails" class="panel__form-container">
         @for (roundGroup of panelDetailsFormArray.controls; track $index) {
-          <div [formGroupName]="$index" class="Panel__row">
-            <app-input-multiselect
-              style="width: fit-content"
-              class="Panel__form-field"
-              [formGroup]="roundGroup"
-              [config]="configMap['panel']"
-              [selectedItems]="[]"
-            />
-            <app-input-multiselect
-              style="width: 100%"
-              class="Panel__form-field"
-              [formGroup]="roundGroup"
-              [config]="configMap['interviewers']"
-              [selectedItems]="[]"
-            />
-            <app-button
-              class="button-romove"
-              [icon]="'pi pi-trash'"
-              [buttonVariant]="'outlined'"
-              [buttonSeverity]="'danger'"
-              [buttonLabel]="'Remove'"
-              (btnClick)="removeRound($index)"
-            ></app-button>
+          <div [formGroupName]="$index" class="panel__card">
+            <div class="panel__card-header">
+              <div class="panel__card-number">
+                <span>{{ $index + 1 }}</span>
+              </div>
+              <h3 class="panel__card-title">Assignment {{ $index + 1 }}</h3>
+            </div>
+            <div class="panel__card-body">
+              <div class="panel__form-row">
+                <div class="panel__form-field-wrapper panel__form-field--panel">
+                  <div class="panel__field-label">
+                    <i class="pi pi-list"></i>
+                    Panel
+                  </div>
+                  <app-input-select
+                    class="panel__form-field"
+                    [formGroup]="roundGroup"
+                    [config]="getPanelConfig($index)"
+                  />
+                  @if (
+                    roundGroup.get("panel")?.hasError("duplicatePanel") &&
+                    roundGroup.get("panel")?.touched
+                  ) {
+                    <span class="panel__field-error">
+                      This panel is already selected in another assignment.
+                    </span>
+                  }
+                </div>
+                <div
+                  class="panel__form-field-wrapper panel__form-field--interviewers"
+                >
+                  <div class="panel__field-label">
+                    <i class="pi pi-user"></i>
+                    Interviewers
+                  </div>
+                  <app-input-multiselect
+                    class="panel__form-field"
+                    [formGroup]="roundGroup"
+                    [config]="configMap['interviewers']"
+                    [selectedItems]="[]"
+                  />
+                </div>
+                <div class="panel__card-actions">
+                  <app-button
+                    class="panel__remove-btn"
+                    [icon]="'pi pi-trash'"
+                    [buttonVariant]="'outlined'"
+                    [buttonLabel]="'Remove'"
+                    [buttonSeverity]="'danger'"
+                    (btnClick)="removeRound($index)"
+                    type="button"
+                  ></app-button>
+                </div>
+              </div>
+            </div>
           </div>
         } @empty {
-          <p>No interviewers assigned to panel. Click "Add Round" to begin.</p>
+          <div class="panel__empty-state">
+            <div class="panel__empty-icon">
+              <i class="pi pi-inbox"></i>
+            </div>
+            <h3 class="panel__empty-title">No Assignments Yet</h3>
+            <p class="panel__empty-description">
+              Click "Add Panel" below to start assigning interviewers to panels.
+            </p>
+          </div>
         }
       </div>
+
+      @if (
+        panelDetailsFormArray.hasError("duplicatePanels") &&
+        panelDetailsFormArray.dirty
+      ) {
+        <div class="panel__global-error">
+          <i class="pi pi-exclamation-triangle"></i>
+          <span>Each panel can only be assigned once.</span>
+        </div>
+      }
+
+      <footer class="panel__footer">
+        <div class="panel__footer-actions">
+          <app-button
+            [icon]="'pi pi-plus'"
+            buttonLabel="Add Panel"
+            [buttonSize]="'small'"
+            (btnClick)="addRound()"
+            type="button"
+            class="panel__add-btn"
+          ></app-button>
+          <app-button
+            [icon]="'pi pi-plus-circle'"
+            buttonLabel="Create Panel"
+            [buttonSize]="'small'"
+            [buttonVariant]="'outlined'"
+            (btnClick)="openCreatePanelDialog()"
+            type="button"
+            class="panel__create-btn"
+          ></app-button>
+        </div>
+        <app-button
+          buttonLabel="Submit"
+          (btnClick)="onSubmit($event)"
+          [icon]="'pi pi-check'"
+          [buttonSize]="'small'"
+          class="panel__submit-btn"
+          type="button"
+        ></app-button>
+      </footer>
     </form>
-
-    @if (
-      panelDetailsFormArray.hasError("duplicateRounds") &&
-      panelDetailsFormArray.dirty
-    ) {
-      <div class="p-error Panel__global-error">
-        Each panel can only be assigned once.
-      </div>
-    }
-
-    <footer class="Panel__section__btn-grp dialog-footer">
-      <app-button
-        [icon]="'pi pi-plus'"
-        buttonLabel="Add Panel"
-        [buttonVariant]="'outlined'"
-        (btnClick)="addRound()"
-        type="button"
-      ></app-button>
-      <app-button buttonLabel="Submit" (btnClick)="onSubmit()"></app-button>
-    </footer>
-  </div>
-
-  <div class="Panel__section">
-    <div class="Panel__section-header">
-      <h2 class="Panel__section__title app-title">Create Panel</h2>
-      <p class="Panel__section__description">Create a new custom panel</p>
-    </div>
-
-    <form [formGroup]="createPanelForm">
-      <div formArrayName="paneldetails">
-        <app-input-text
-          class="Panel__form-field"
-          [formGroup]="createPanelForm"
-          [config]="configMap['panelName']"
-        ></app-input-text>
-
-        <app-input-textarea
-          class="Panel__form-field"
-          [formGroup]="createPanelForm"
-          [config]="configMap['description']"
-        ></app-input-textarea>
-      </div>
-    </form>
-
-    <footer class="dialog-footer">
-      <app-button buttonLabel="Save" (btnClick)="onSave()"></app-button>
-    </footer>
   </div>
 
   <p-toast position="top-right" class="Toast"></p-toast>
 } @else {
   <app-assign-panel-interviewer-skeleton></app-assign-panel-interviewer-skeleton>
+  <p-toast position="top-right" class="Toast"></p-toast>
 }

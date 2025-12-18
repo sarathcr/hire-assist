@@ -1,158 +1,141 @@
 <div class="assessment-schedule">
-  <h1 class="app-title">Schedule Recruitment</h1>
+  <!-- Hero Header Section -->
+  <div class="assessment-schedule__hero">
+    <div class="assessment-schedule__hero-content">
+      <div class="assessment-schedule__hero-title-section">
+        <h1 class="assessment-schedule__hero-title">
+          <i class="pi pi-calendar-plus"></i>
+          Schedule Recruitment
+        </h1>
+        @if (assessment) {
+          <p class="assessment-schedule__hero-subtitle">
+            {{ assessment.name }}
+          </p>
+        }
+      </div>
+      @if (assessment) {
+        <div class="assessment-schedule__hero-badge">
+          <i class="pi pi-info-circle"></i>
+          <span>Assessment Details</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Assessment Info Cards -->
   @if (assessment) {
-    <div class="assessment-schedule__header">
-      <div class="assessment-schedule__assessment-item">
-        <h4>Name</h4>
-        <p>{{ assessment.name }}</p>
+    <div class="assessment-schedule__info-grid">
+      <div class="assessment-schedule__info-card">
+        <div class="assessment-schedule__info-icon">
+          <i class="pi pi-calendar"></i>
+        </div>
+        <div class="assessment-schedule__info-content">
+          <span class="assessment-schedule__info-label">Start Date</span>
+          <span class="assessment-schedule__info-value">
+            {{ assessment.startDateTime | date: "dd MMM yyyy" }}
+          </span>
+        </div>
       </div>
-      <!-- <div class="assessment-schedule__assessment-item">
-        <h4>Status</h4>
-        <p>{{ getStatus(assessment.statusId) }}</p>
-      </div> -->
-      <div class="assessment-schedule__assessment-item">
-        <h4>Starts Date</h4>
-        <p>{{ assessment.startDateTime | date: "dd-MM-yyyy" }}</p>
+      <div class="assessment-schedule__info-card">
+        <div class="assessment-schedule__info-icon">
+          <i class="pi pi-calendar-times"></i>
+        </div>
+        <div class="assessment-schedule__info-content">
+          <span class="assessment-schedule__info-label">End Date</span>
+          <span class="assessment-schedule__info-value">
+            {{ assessment.endDateTime | date: "dd MMM yyyy" }}
+          </span>
+        </div>
       </div>
-      <div class="assessment-schedule__assessment-item">
-        <h4>End Date</h4>
-        <p>{{ assessment.endDateTime | date: "dd-MM-yyyy" }}</p>
-      </div>
-      <div class="assessment-schedule__assessment-item">
-        <h4>Description</h4>
-        <p>{{ assessment.description }}</p>
+      <div class="assessment-schedule__info-card assessment-schedule__info-card--full">
+        <div class="assessment-schedule__info-icon">
+          <i class="pi pi-file-edit"></i>
+        </div>
+        <div class="assessment-schedule__info-content">
+          <span class="assessment-schedule__info-label">Description</span>
+          <span class="assessment-schedule__info-value">
+            {{ assessment.description || 'No description provided' }}
+          </span>
+        </div>
       </div>
     </div>
   }
-  <div class="assessment-schedule__wrapper">
-    <ul class="assessment-schedule__steps">
-      <li
-        class="assessment-schedule__steps-item"
-        [ngClass]="{
-          active: activeStep === 0,
-          completed: stepsLoaded && stepsStatus[stepKeys[0]] === 'Completed',
-        }"
-      >
-        <button
-          type="button"
-          tabindex="0"
-          class="assessment-schedule__steps-btn"
-          [disabled]="!stepsLoaded || !isStepEnabled(0)"
-          (click)="setActiveStep(0)"
+
+  <!-- Modern Step Navigation -->
+  <div class="assessment-schedule__stepper-wrapper">
+    <div class="assessment-schedule__stepper">
+      @for (step of stepConfig; track step.index; let i = $index) {
+        <div
+          class="assessment-schedule__stepper-item"
+          [ngClass]="{
+            'active': activeStep === step.index,
+            'completed': stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed',
+            'disabled': !stepsLoaded || !isStepEnabled(step.index),
+            'pending': stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Pending'
+          }"
         >
-          <i
-            *ngIf="stepsStatus[stepKeys[0]] === 'Completed'"
-            class="pi pi-check completed-icon"
-          ></i>
-          Rounds
-        </button>
-      </li>
-      <li
-        class="assessment-schedule__steps-item"
-        [ngClass]="{
-          active: this.activeStep === 1,
-          completed: stepsLoaded && stepsStatus[stepKeys[1]] === 'Completed',
-        }"
-      >
-        <button
-          type="button"
-          tabindex="0"
-          class="assessment-schedule__steps-btn"
-          [disabled]="!stepsLoaded || !isStepEnabled(1)"
-          (click)="setActiveStep(1)"
-        >
-          <i
-            *ngIf="stepsStatus[stepKeys[1]] === 'Completed'"
-            class="pi pi-check completed-icon"
-          ></i>
-          Question Set
-        </button>
-      </li>
-      <li
-        class="assessment-schedule__steps-item"
-        [ngClass]="{
-          active: this.activeStep === 2,
-          completed: stepsLoaded && stepsStatus[stepKeys[2]] === 'Completed',
-        }"
-      >
-        <button
-          type="button"
-          tabindex="0"
-          class="assessment-schedule__steps-btn"
-          [disabled]="!stepsLoaded || !isStepEnabled(2)"
-          (click)="setActiveStep(2)"
-        >
-          <i
-            *ngIf="stepsStatus[stepKeys[2]] === 'Completed'"
-            class="pi pi-check completed-icon"
-          ></i>
-          Coordinators
-        </button>
-      </li>
-      <li
-        class="assessment-schedule__steps-item"
-        [ngClass]="{
-          active: this.activeStep === 3,
-          completed: stepsLoaded && stepsStatus[stepKeys[3]] === 'Completed',
-        }"
-      >
-        <button
-          type="button"
-          tabindex="0"
-          class="assessment-schedule__steps-btn"
-          [disabled]="!stepsLoaded || !isStepEnabled(3)"
-          (click)="setActiveStep(3)"
-        >
-          <i
-            *ngIf="stepsStatus[stepKeys[3]] === 'Completed'"
-            class="pi pi-check"
-          ></i>
-          Front Desk
-        </button>
-      </li>
-      <li
-        class="assessment-schedule__steps-item"
-        [ngClass]="{
-          active: this.activeStep === 4,
-          completed: stepsLoaded && stepsStatus[stepKeys[4]] === 'Completed',
-        }"
-      >
-        <button
-          type="button"
-          tabindex="0"
-          class="assessment-schedule__steps-btn"
-          [disabled]="!stepsLoaded || !isStepEnabled(4)"
-          (click)="setActiveStep(4)"
-        >
-          <i
-            *ngIf="stepsStatus[stepKeys[4]] === 'Completed'"
-            class="pi pi-check"
-          ></i>
-          Interviewers
-        </button>
-      </li>
-      <li
-        class="assessment-schedule__steps-item"
-        [ngClass]="{
-          active: this.activeStep === 5,
-          completed: stepsLoaded && stepsStatus[stepKeys[5]] === 'Completed',
-        }"
-      >
-        <button
-          type="button"
-          tabindex="0"
-          class="assessment-schedule__steps-btn"
-          [disabled]="!stepsLoaded || !isStepEnabled(5)"
-          (click)="setActiveStep(5)"
-        >
-          <i
-            *ngIf="stepsStatus[stepKeys[5]] === 'Completed'"
-            class="pi pi-check"
-          ></i>
-          Schedule
-        </button>
-      </li>
-    </ul>
+          <button
+            type="button"
+            class="assessment-schedule__stepper-button"
+            [disabled]="!stepsLoaded || !isStepEnabled(step.index)"
+            (click)="setActiveStep(step.index)"
+            [attr.aria-label]="step.label"
+          >
+            <div class="assessment-schedule__stepper-indicator">
+              @if (stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed') {
+                <i class="pi pi-check"></i>
+              } @else {
+                <i [class]="step.icon"></i>
+              }
+            </div>
+            <div class="assessment-schedule__stepper-content">
+              <span class="assessment-schedule__stepper-label">{{ step.label }}</span>
+              <span class="assessment-schedule__stepper-description">{{ step.description }}</span>
+            </div>
+            @if (activeStep === step.index) {
+              <div class="assessment-schedule__stepper-arrow">
+                <i class="pi pi-chevron-down"></i>
+              </div>
+            }
+          </button>
+          @if (i < stepConfig.length - 1) {
+            <div class="assessment-schedule__stepper-connector"
+                 [ngClass]="{'completed': stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed'}">
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="assessment-schedule__progress">
+    <div class="assessment-schedule__progress-bar">
+      <div
+        class="assessment-schedule__progress-fill"
+        [style.width.%]="getProgressPercentage()">
+      </div>
+    </div>
+    <span class="assessment-schedule__progress-text">
+      {{ getProgressPercentage() }}% Complete
+    </span>
+  </div>
+
+  <!-- Content Area -->
+  <div class="assessment-schedule__content-wrapper">
+    <div class="assessment-schedule__content-header">
+      <h2 class="assessment-schedule__content-title">
+        @if (stepConfig[activeStep]) {
+          <i [class]="stepConfig[activeStep].icon"></i>
+          {{ stepConfig[activeStep].label }}
+        }
+      </h2>
+      <p class="assessment-schedule__content-description">
+        @if (stepConfig[activeStep]) {
+          {{ stepConfig[activeStep].description }}
+        }
+      </p>
+    </div>
     <div class="assessment-schedule__content">
       @if (this.activeStep === 0) {
         <app-assessment-round
@@ -169,8 +152,6 @@
       } @else if (this.activeStep === 3) {
         <app-front-desk [assessmentId]="assessmentId"></app-front-desk>
       } @else if (this.activeStep === 4) {
-        <app-assign-panel-interviewer></app-assign-panel-interviewer>
-      } @else if (this.activeStep === 5) {
         <app-import-candidate-list-step
           [assessmentId]="assessmentId"
         ></app-import-candidate-list-step>
@@ -320,7 +301,7 @@
       <p-step-panel>
         <ng-template #content let-activateCallback="activateCallback">
           <div class="assessment-schedule__box">
-            <app-assign-panel-interviewer></app-assign-panel-interviewer>
+            <app-assign-panel-interviewer [assessmentId]="assessmentId"></app-assign-panel-interviewer>
           </div>
           <div class="assessment-schedule__footer">
             <app-button

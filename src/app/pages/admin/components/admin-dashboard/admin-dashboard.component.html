@@ -163,7 +163,7 @@
         <ng-template pTemplate="header">
           <div class="panel-header">
             <div class="panel-title-section">
-              <h3 class="panel-title">Dashboard Overview</h3>
+              <p class="panel-title">Dashboard Overview</p>
             </div>
           </div>
         </ng-template>
@@ -196,10 +196,18 @@
               </div>
             </div>
           } @else {
-            <div class="chart-skeleton">
-              <div class="skeleton-bar"></div>
-              <div class="skeleton-bar"></div>
-              <div class="skeleton-bar"></div>
+            <div class="chart-skeleton chart-skeleton-bar">
+              <div class="skeleton-bars">
+                <div class="skeleton-bar"></div>
+                <div class="skeleton-bar"></div>
+                <div class="skeleton-bar"></div>
+              </div>
+
+              <div class="chart-legend">
+                <div class="chart-skeleton-label"></div>
+                <div class="chart-skeleton-label"></div>
+                <div class="chart-skeleton-label"></div>
+              </div>
             </div>
           }
         </div>
@@ -211,7 +219,7 @@
       <p-card class="chart-card">
         <ng-template pTemplate="header">
           <div class="panel-header">
-            <h3 class="panel-title">Analytics</h3>
+            <p class="panel-title">Analytics</p>
           </div>
         </ng-template>
         <div class="panel-content">
@@ -238,8 +246,13 @@
               </div>
             </div>
           } @else {
-            <div class="chart-skeleton">
+            <div class="chart-skeleton chart-skeleton-doughnut">
               <div class="skeleton-circle"></div>
+
+              <div class="chart-legend">
+                <div class="chart-skeleton-label"></div>
+                <div class="chart-skeleton-label"></div>
+              </div>
             </div>
           }
         </div>

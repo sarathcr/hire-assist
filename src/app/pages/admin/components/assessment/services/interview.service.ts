@@ -89,6 +89,22 @@ export class InterviewService extends ApiService<any> {
     );
   }
 
+  public createInterviewPanels(payload: Array<{
+    panelId: number | null;
+    interviewers: string[];
+    interviewId: number | null;
+    assessmentId: number | null;
+  }>) {
+    // Backend expects wrapper object with interviewPanelDto field
+    const wrappedPayload = {
+      interviewPanelDto: payload,
+    };
+    return this.httpClient.post(
+      `${this.getResourceUrl()}/InterviewPanel`,
+      wrappedPayload,
+    );
+  }
+
   public GetFiles(payload: FileDto): Observable<Blob> {
     const url = `${this.getResourceUrl()}/files?blobId=${payload.blobId}&attachmentId=${payload.attachmentType}`;
     return this.httpClient.get(url, { responseType: 'blob' });
@@ -122,6 +138,18 @@ export class InterviewService extends ApiService<any> {
   ) {
     return this.httpClient.get<candidatePreviousAssessments[]>(
       `${this.getResourceUrl()}/Feedback/${candidateId}/${assessmentId}`,
+    );
+  }
+
+  public createInterviewPanel(payload: {
+    panelId: number | null;
+    interviewers: string[];
+    interviewId: number | null;
+    assessmentId: number | null;
+  }) {
+    return this.httpClient.post(
+      `${this.getResourceUrl()}/InterviewPanel`,
+      payload,
     );
   }
 }

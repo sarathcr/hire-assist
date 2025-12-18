@@ -1,84 +1,95 @@
 @if (!isLoading) {
-  <div class="assessment-round">
+  <div class="assessment-round__section">
     <!-- Header -->
-    <div class="assessment-round__header">
-      <h2 class="assessment-round__title">Manage Interview Rounds</h2>
-    </div>
-
-    <!-- Main Content -->
-    <div class="assessment-round__content">
-      <!-- Select & Create Section -->
-      <div class="assessment-round__select-section">
-        <div class="assessment-round__select-wrapper">
-          <app-input-multiselect
-            class="assessment-round__multiselect_skeleton"
-            [formGroup]="fGroup"
-            [config]="configMap['round']"
-            [selectedItems]=""
-          />
-          <app-button
-            class="assessment-round__create-button"
-            [icon]="'pi pi-plus'"
-            [buttonLabel]="'Create New'"
-            [buttonVariant]="'outlined'"
-            [buttonSize]="'small'"
-            (btnClick)="openCreateRoundModal()"
-          ></app-button>
+    <div class="assessment-round__section-header">
+      <div class="assessment-round__header-content">
+        <div class="assessment-round__header-icon">
+          <i class="pi pi-list"></i>
+        </div>
+        <div class="assessment-round__header-text">
+          <h2 class="assessment-round__section__title app-title">
+            Manage Interview Rounds
+          </h2>
+          <p class="assessment-round__section__description">
+            Select and organize rounds for this assessment. Drag and drop to
+            reorder.
+          </p>
         </div>
       </div>
-      <p class="assessment-round__description">
-        You can reorder the rounds by dragging and dropping them.
-      </p>
-      <!-- Selected Rounds Display -->
-      @if (submittedData && submittedData.length > 0) {
-        <div class="assessment-round__rounds-section">
-          <div
-            cdkDropList
-            [cdkDropListData]="submittedData"
-            (cdkDropListDropped)="onDrop($event)"
-            class="assessment-round__rounds-list"
-            cdkDropListOrientation="horizontal"
-          >
-            @for (data of submittedData; let idx = $index; track data.id) {
-              <div class="assessment-round__round-item" cdkDrag>
-                <span class="assessment-round__round-number">{{
-                  idx + 1
-                }}</span>
-                <span class="assessment-round__round-name">{{
-                  data.name
-                }}</span>
-                <button
-                  type="button"
-                  class="assessment-round__remove-button"
-                  (click)="onRemoveRound(data.id); $event.stopPropagation()"
-                  tabindex="0"
-                  aria-label="Remove round"
-                >
-                  <i class="pi pi-times"></i>
-                </button>
-                <i class="pi pi-grip-vertical assessment-round__grip-icon"></i>
-              </div>
-            }
-          </div>
-        </div>
-      } @else {
-        <div class="assessment-round__empty-state">
-          <i class="pi pi-inbox assessment-round__empty-icon"></i>
-          <p class="assessment-round__empty-text">No rounds selected</p>
-        </div>
-      }
     </div>
 
-    <!-- Footer Submit Button -->
-    <div class="assessment-round__footer">
-      <app-button
-        class="assessment-round__submit-button"
-        [buttonLabel]="'Complete Rounds'"
-        [isLoading]="isLoading"
-        [disabled]="!submittedData || submittedData.length === 0"
-        [buttonSize]="'small'"
-        (btnClick)="onSubmitAll()"
-      ></app-button>
+    <div class="assessment-round">
+      <!-- Main Content -->
+      <div class="assessment-round__content">
+        <!-- Select & Create Section -->
+        <div class="assessment-round__select-section">
+          <div class="assessment-round__select-wrapper">
+            <app-input-multiselect
+              class="assessment-round__multiselect_skeleton"
+              [formGroup]="fGroup"
+              [config]="configMap['round']"
+              [selectedItems]=""
+            />
+            <app-button
+              class="assessment-round__create-button"
+              [icon]="'pi pi-plus'"
+              [buttonLabel]="'Create New'"
+              [buttonSize]="'small'"
+              (btnClick)="openCreateRoundModal()"
+            ></app-button>
+          </div>
+        </div>
+        <p class="assessment-round__description">
+          You can reorder the rounds by dragging and dropping them.
+        </p>
+        <!-- Selected Rounds Display -->
+        @if (submittedData && submittedData.length > 0) {
+          <div class="assessment-round__rounds-section">
+            <div #roundsList class="assessment-round__rounds-list">
+              @for (data of submittedData; let idx = $index; track data.id) {
+                <div class="assessment-round__round-item">
+                  <div class="assessment-round__round-item-content">
+                    <span class="assessment-round__round-number">{{
+                      idx + 1
+                    }}</span>
+                    <span class="assessment-round__round-name">{{
+                      data.name
+                    }}</span>
+                  </div>
+                  <div class="assessment-round__drag-handle">
+                    <button
+                      type="button"
+                      class="assessment-round__remove-button"
+                      (click)="onRemoveRound(data.id); $event.stopPropagation()"
+                      tabindex="0"
+                      aria-label="Remove round"
+                    >
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <div class="assessment-round__empty-state">
+            <i class="pi pi-inbox assessment-round__empty-icon"></i>
+            <p class="assessment-round__empty-text">No rounds selected</p>
+          </div>
+        }
+      </div>
+
+      <!-- Footer Submit Button -->
+      <div class="assessment-round__footer">
+        <app-button
+          class="assessment-round__submit-button"
+          [buttonLabel]="'Complete Rounds'"
+          [isLoading]="isLoading"
+          [disabled]="!submittedData || submittedData.length === 0"
+          [buttonSize]="'small'"
+          (btnClick)="onSubmitAll()"
+        ></app-button>
+      </div>
     </div>
   </div>
   <p-toast position="top-right" class="Toast"></p-toast>

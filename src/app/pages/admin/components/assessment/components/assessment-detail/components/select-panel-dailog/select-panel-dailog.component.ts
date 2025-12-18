@@ -175,6 +175,8 @@ export class SelectPanelDailogComponent implements OnInit {
       configMap: this.configMap,
       formData: normalizedFormData,
       isEdit: true,
+      assessmentId: this.assessmentId,
+      interviewId: this.intrviewid,
     };
     const dialogRef = this.dialog.open(AssignInterviewersDialogueComponent, {
       data: data,

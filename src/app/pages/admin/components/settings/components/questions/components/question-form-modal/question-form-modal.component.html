@@ -171,6 +171,14 @@
                       </p-button>
                     }
                   </div>
+                  @if (
+                    questionForm.hasError("attachmentRequired") &&
+                    questionForm.touched
+                  ) {
+                    <div class="question-form__validation-toggle">
+                      Attachment is required when attachment toggle is enabled.
+                    </div>
+                  }
                 }
               </div>
               @if (isEdit) {

@@ -33,4 +33,28 @@ export class InterviewService extends ApiService<any> {
       payload,
     );
   }
+
+  public createInterviewPanel(payload: {
+    panelId: number | null;
+    interviewers: string[];
+    interviewId: number | null;
+    assessmentId: number | null;
+  }) {
+    return this.httpClient.post(
+      `${this.getResourceUrl()}/InterviewPanel`,
+      payload,
+    );
+  }
+
+  public createInterviewPanels(payload: Array<{
+    panelId: number | null;
+    interviewers: string[];
+    interviewId: number | null;
+    assessmentId: number | null;
+  }>) {
+    return this.httpClient.post(
+      `${this.getResourceUrl()}/InterviewPanel`,
+      payload,
+    );
+  }
 }

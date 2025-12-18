@@ -107,8 +107,6 @@ export class TableComponent<
   @Input() hasCheckbox = true;
   // Track first lazy load event
   public isFirstLazyLoad = true;
-  // Flag to prevent recursive onLazyLoad calls when programmatically updating table.first
-  private isUpdatingTableFirst = false;
   // Track last pagination call to prevent duplicates
   private lastPaginationCall: {
     payload: PaginatedPayload;
@@ -170,20 +168,6 @@ export class TableComponent<
 
       if (currentTableData && this.table) {
         this.internalIsLoading.set(false);
-
-        const newFirstIndex =
-          (currentTableData.pageNumber - 1) * currentTableData.pageSize;
-
-        // Only update if different and not already updating to prevent loops
-        if (this.table.first !== newFirstIndex && !this.isUpdatingTableFirst) {
-          this.isUpdatingTableFirst = true;
-          this.table.first = newFirstIndex;
-          // Reset flag after change detection cycle to prevent recursive onLazyLoad calls
-          // Use a longer timeout to ensure PrimeNG processes the change
-          setTimeout(() => {
-            this.isUpdatingTableFirst = false;
-          }, 100);
-        }
 
         // Sync alreadySelected into persistedSelectedIds when table data loads
         // This handles the case where alreadySelected was set before table data loaded
@@ -495,11 +479,6 @@ export class TableComponent<
     return this.isLoading(); // Assuming isLoading() returns a boolean or signal value
   }
   public onLazyLoad(event: any): void {
-    // Prevent recursive calls when programmatically updating table.first
-    if (this.isUpdatingTableFirst) {
-      return;
-    }
-
     // Skip first lazy load to prevent duplicate with initial ngOnInit call
     if (this.isFirstLazyLoad) {
       this.isFirstLazyLoad = false;

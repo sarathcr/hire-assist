@@ -22,24 +22,26 @@
     // gap: var(--spacing-5);
   }
   &__section {
-    background: var(--color-white);
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.08) 0%, rgba(21, 101, 192, 0.08) 100%);
     border-radius: var(--spacing-10);
     margin-top: var(--font-size-20);
     padding: var(--spacing-10);
     border-width: 0.5px;
     border-style: solid;
-    border-color: var(--color-seperator);
+    border-color: rgba(33, 150, 243, 0.2);
     &:first-child {
       margin-top: 0;
     }
     &__title {
       margin: 0;
-      font-size: var(--font-size-16);
+      font-size: clamp(14px, 1.8vw + 0.25rem, 16px);
+      line-height: 1.4;
     }
     &__description {
       margin-top: var(--spacing-10);
       margin-bottom: var(--spacing-10);
-      font-size: var(--font-size-base);
+      font-size: clamp(13px, 1.5vw + 0.25rem, 14px);
+      line-height: 1.5;
     }
   }
 
