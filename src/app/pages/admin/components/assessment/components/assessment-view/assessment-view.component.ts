@@ -131,6 +131,7 @@ export class AssessmentViewComponent
   ];
 
   private stepStatusUpdateSubscription?: Subscription;
+  private stepCompletedSubscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
@@ -160,11 +161,22 @@ export class AssessmentViewComponent
           this.loadStepsStatus();
         }
       });
+
+    // Subscribe to step completion events to move to next step
+    this.stepCompletedSubscription =
+      this.stepsStatusService.stepCompleted$.subscribe((assessmentId) => {
+        if (assessmentId === this.assessmentId) {
+          this.moveToNextStep();
+        }
+      });
   }
 
   override ngOnDestroy(): void {
     if (this.stepStatusUpdateSubscription) {
       this.stepStatusUpdateSubscription.unsubscribe();
+    }
+    if (this.stepCompletedSubscription) {
+      this.stepCompletedSubscription.unsubscribe();
     }
   }
   public onCompleteStep(step: number): void {
@@ -241,9 +253,62 @@ export class AssessmentViewComponent
           next: (response) => {
             this.stepsStatus = response;
             this.stepsLoaded = true;
+            // Set active step based on API response
+            this.setActiveStepFromStatus();
           },
           error: () => {
             // Error handling
+          },
+        });
+    }
+  }
+
+  private setActiveStepFromStatus(): void {
+    if (!this.stepsStatus || !this.stepsLoaded) return;
+
+    // Find the step with 'Active' status
+    for (let i = 0; i < this.stepKeys.length; i++) {
+      const key = this.stepKeys[i];
+      if (this.stepsStatus[key] === 'Active') {
+        this.activeStep = i;
+        return;
+      }
+    }
+
+    // If no active step found, find the first pending step
+    for (let i = 0; i < this.stepKeys.length; i++) {
+      const key = this.stepKeys[i];
+      if (this.stepsStatus[key] === 'Pending') {
+        this.activeStep = i;
+        return;
+      }
+    }
+
+    // If all steps are completed, stay on the last step
+    const allCompleted = this.stepKeys.every(
+      (key) => this.stepsStatus[key] === 'Completed',
+    );
+    if (allCompleted) {
+      this.activeStep = this.stepKeys.length - 1;
+    }
+  }
+
+  public moveToNextStep(): void {
+    if (this.assessmentId) {
+      // Reload step status to get updated status
+      this.stepsStatusService
+        .getAssessmentStepsStatus(this.assessmentId)
+        .subscribe({
+          next: (response) => {
+            this.stepsStatus = response;
+            // Find the next active step
+            this.setActiveStepFromStatus();
+          },
+          error: () => {
+            // Error handling - try to move to next step anyway
+            if (this.activeStep < this.stepConfig.length - 1) {
+              this.activeStep = this.activeStep + 1;
+            }
           },
         });
     }

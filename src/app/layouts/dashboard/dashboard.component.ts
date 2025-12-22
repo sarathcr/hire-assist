@@ -4,6 +4,7 @@ import { MenuItem } from 'primeng/api';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { SideNavComponent } from '../../shared/components/side-nav/side-nav.component';
 import { SidebarCollapseService } from '../../shared/services/sidebar-collapse.service';
+import { CollectionService } from '../../shared/services/collection.service';
 import { StoreService } from '../../shared/services/store.service';
 
 @Component({
@@ -16,9 +17,17 @@ export class DashboardComponent implements OnInit {
   public links: MenuItem[] = [];
   private collapseService = inject(SidebarCollapseService);
   public collapsed = computed(() => this.collapseService.isCollapsed());
-  constructor(private readonly storeService: StoreService) {}
+  
+  constructor(
+    private readonly storeService: StoreService,
+    private readonly collectionService: CollectionService,
+  ) {}
 
   ngOnInit(): void {
+    // Refresh collections when dashboard loads if they are stale
+    if (this.collectionService.shouldRefreshCollections()) {
+      this.collectionService.getCollection(true);
+    }
     const userRole = this.storeService?.getUserRole();
     if (userRole) {
       if (userRole.includes('admin') || userRole.includes('superadmin')) {

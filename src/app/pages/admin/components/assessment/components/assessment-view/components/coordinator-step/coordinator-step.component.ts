@@ -33,6 +33,7 @@ import { AssessmentService } from '../../../../../../services/assessment.service
 import { AssessmentScheduleService } from '../../../../services/assessment-schedule.service';
 import { CoordinatorSkeletonComponent } from './coordinator-step-skeleton.component';
 import { RoundModel } from '../../assessment-view.component';
+import { StepsStatusService } from '../../../../services/steps-status.service';
 
 // --- Interface Definition ---
 interface RoundFormGroup {
@@ -143,6 +144,7 @@ export class CoordinatorStepComponent implements OnInit {
     private assessmentService: AssessmentService,
     private assessmentScheduleService: AssessmentScheduleService,
     private storeService: StoreService,
+    private stepsStatusService: StepsStatusService,
   ) {}
 
   ngOnInit(): void {
@@ -187,6 +189,8 @@ export class CoordinatorStepComponent implements OnInit {
           summary: 'Success',
           detail: 'Removed Successfully',
         });
+        // Call step status API and move to next step
+        this.checkStepStatusAndMoveNext();
       };
 
       const error = (error: CustomErrorResponse) => {
@@ -210,6 +214,8 @@ export class CoordinatorStepComponent implements OnInit {
           summary: 'Success',
           detail: 'Round and coordinator assigned successfully',
         });
+        // Call step status API and move to next step
+        this.checkStepStatusAndMoveNext();
       };
 
       const error = (err: string) => {
@@ -358,7 +364,23 @@ export class CoordinatorStepComponent implements OnInit {
 
         assessmentRound: new FormControl<string[] | null>(roundIds),
       },
-      { validators: [coordinatorRequiredWhenRoundSelectedValidator] },
+      { validators: [coordinatorRequiredWhenRoundSelectedValidator]       },
     );
+  }
+
+  private checkStepStatusAndMoveNext(): void {
+    const assessmentId = Number(this.assessmentId());
+    if (assessmentId) {
+      this.stepsStatusService.getAssessmentStepsStatus(assessmentId).subscribe({
+        next: () => {
+          // Notify parent to move to next step
+          this.stepsStatusService.notifyStepCompleted(assessmentId);
+        },
+        error: () => {
+          // Even if step status API fails, try to move to next step
+          this.stepsStatusService.notifyStepCompleted(assessmentId);
+        },
+      });
+    }
   }
 }

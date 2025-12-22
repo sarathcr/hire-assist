@@ -124,6 +124,12 @@
       background-color: rgb(255, 182, 182) !important;
     }
   }
+  &__row--batch-assigned {
+    background-color: #e8f5e9 !important;
+    &:hover {
+      background-color: #c8e6c9 !important;
+    }
+  }
   &__custom-paginator {
     display: flex;
     align-items: center;

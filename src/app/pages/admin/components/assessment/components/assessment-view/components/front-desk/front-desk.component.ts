@@ -92,10 +92,8 @@ export class FrontDeskComponent implements OnInit {
             detail: 'Assigned Frontdesk Users',
           });
           this.GetFrontDeskUsers();
-          const assessmentId = Number(this.assessmentId());
-          if (assessmentId && this.stepsStatusService) {
-            this.stepsStatusService.notifyStepStatusUpdate(assessmentId);
-          }
+          // Call step status API and move to next step
+          this.checkStepStatusAndMoveNext();
         },
         error: () => {
           this.messageService.add({
@@ -174,5 +172,21 @@ export class FrontDeskComponent implements OnInit {
   private setInitialFormValue(): void {
     const selectedUserIds = this.frontDesk.map((u) => u.userId);
     this.fGroup.patchValue({ users: selectedUserIds });
+  }
+
+  private checkStepStatusAndMoveNext(): void {
+    const assessmentId = Number(this.assessmentId());
+    if (assessmentId) {
+      this.stepsStatusService.getAssessmentStepsStatus(assessmentId).subscribe({
+        next: () => {
+          // Notify parent to move to next step
+          this.stepsStatusService.notifyStepCompleted(assessmentId);
+        },
+        error: () => {
+          // Even if step status API fails, try to move to next step
+          this.stepsStatusService.notifyStepCompleted(assessmentId);
+        },
+      });
+    }
   }
 }

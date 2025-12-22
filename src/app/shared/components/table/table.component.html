@@ -232,13 +232,16 @@
           table_isAlready: product.isAlreadyExist,
           table_isDuplicate: product.isDuplicate,
           'table__row--disabled': product.isSelf,
+          'table__row--batch-assigned': product.batchId && product.batchId > 0,
         }"
         [pTooltip]="
           product.isAlreadyExist
             ? 'We already have this record in our records.'
             : product.isDuplicate
               ? 'Duplicate records were discovered in the sheet.'
-              : ''
+              : product.batchId && product.batchId > 0
+                ? `Assigned to batch: ${product.batchName || 'Batch ' + product.batchId}`
+                : ''
         "
       >
         @if (hasCheckbox) {

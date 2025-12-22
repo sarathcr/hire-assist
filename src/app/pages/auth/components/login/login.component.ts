@@ -121,6 +121,7 @@ export class LoginComponent implements OnInit {
       const userRole = getTokenPayloadData(res.accessToken, TokenField.Role);
 
       this.navigateToUserDashboard(userRole);
+      // Reset collection timestamp and fetch fresh collections on login
       this.collectionService.getCollection();
     }
   }

@@ -146,9 +146,29 @@ export class CreateBatchDialogComponent implements OnInit {
     return result;
   }
   private setOptions() {
-    const batches = this.candidateData?.batches || [];
-    const questionSets = this.candidateData?.questionSets || [];
-    (this.configMap['batch'] as CustomSelectConfig).options = batches?.map(
+    // Handle batches - could be PaginatedData object or array
+    let batches: any[] = [];
+    if (this.candidateData?.batches) {
+      if (Array.isArray(this.candidateData.batches)) {
+        batches = this.candidateData.batches;
+      } else if (this.candidateData.batches.data && Array.isArray(this.candidateData.batches.data)) {
+        // Handle PaginatedData object
+        batches = this.candidateData.batches.data;
+      }
+    }
+
+    // Handle questionSets - could be array or PaginatedData object
+    let questionSets: any[] = [];
+    if (this.candidateData?.questionSets) {
+      if (Array.isArray(this.candidateData.questionSets)) {
+        questionSets = this.candidateData.questionSets;
+      } else if (this.candidateData.questionSets.data && Array.isArray(this.candidateData.questionSets.data)) {
+        // Handle PaginatedData object
+        questionSets = this.candidateData.questionSets.data;
+      }
+    }
+
+    (this.configMap['batch'] as CustomSelectConfig).options = batches.map(
       (batch: BatchFormGroup) => ({
         label: batch.title,
         value: batch.id.toString(),

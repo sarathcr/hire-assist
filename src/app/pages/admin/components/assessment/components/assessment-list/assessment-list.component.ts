@@ -257,7 +257,6 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       }, 1500);
     };
     const error = (error: CustomErrorResponse) => {
-      console.log('ERROR', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -286,7 +285,6 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     };
 
     const error = (error: CustomErrorResponse) => {
-      console.log('ERROR', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -311,12 +309,11 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       this.isLoading = false;
     };
     const error = (error: string) => {
-      console.log('ERROR', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
         detail:
-          'Cannot delete this assessment because it is referenced in other records.',
+          'Cannot delete this recruitment because it is referenced in the recruitment steps.',
       });
       this.isLoading = false;
     };

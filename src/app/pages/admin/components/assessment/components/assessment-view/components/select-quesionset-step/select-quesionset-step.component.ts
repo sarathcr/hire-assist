@@ -42,6 +42,7 @@ import { QuestionService } from '../../../../../../services/question.service';
 import { QuestionSetStateService } from '../../../../services/question-set-state.service';
 import { QuestionSetModalComponent } from './question-set-modal/question-set-modal.component';
 import { QuestionSetStepSkeletonComponent } from './questionSet-skeleton';
+import { StepsStatusService } from '../../../../services/steps-status.service';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -149,6 +150,7 @@ export class SelectQuesionsetStepComponent
     public dialog: DialogService,
     private readonly dataSourceService: TableDataSourceService<QuestionsModel>,
     private readonly questionService: QuestionService,
+    private readonly stepsStatusService: StepsStatusService,
   ) {
     super();
     this.fGroup = buildFormGroup(this.questionSetModal);
@@ -285,6 +287,8 @@ export class SelectQuesionsetStepComponent
       });
       accordionData.isUpdate = true;
       this.loadQuestionsForAccordion(questionSetId);
+      // Call step status API and move to next step
+      this.checkStepStatusAndMoveNext();
     };
 
     const error = () => {
@@ -698,8 +702,6 @@ export class SelectQuesionsetStepComponent
     accordionData.isLoadingQuestions = true;
 
     const next = (res: PaginatedData<QuestionsModel>) => {
-      console.log('page number', res.pageNumber);
-
       if (res) {
         const transformedData = res.data.map((item: QuestionsModel) => ({
           ...item,
@@ -742,6 +744,22 @@ export class SelectQuesionsetStepComponent
     } else if (accordionData && accordionData.hasLoadedTableData) {
       // Data already loaded, just refresh/update
       this.getAllPaginatedQuestionForAccordion(payload, questionSetId);
+    }
+  }
+
+  private checkStepStatusAndMoveNext(): void {
+    const assessmentId = Number(this.assessmentId());
+    if (assessmentId) {
+      this.stepsStatusService.getAssessmentStepsStatus(assessmentId).subscribe({
+        next: () => {
+          // Notify parent to move to next step
+          this.stepsStatusService.notifyStepCompleted(assessmentId);
+        },
+        error: () => {
+          // Even if step status API fails, try to move to next step
+          this.stepsStatusService.notifyStepCompleted(assessmentId);
+        },
+      });
     }
   }
 }

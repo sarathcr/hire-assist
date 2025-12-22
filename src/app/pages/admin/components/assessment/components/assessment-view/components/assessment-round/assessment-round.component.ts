@@ -28,6 +28,7 @@ import { RoundModel } from '../../assessment-view.component';
 import { AssessmentRoundSkeletonComponent } from './assessment-round-skeleton';
 import { CollectionService } from '../../../../../../../../shared/services/collection.service';
 import { CreateRoundModalComponent } from './components/create-round-modal/create-round-modal.component';
+import { StepsStatusService } from '../../../../services/steps-status.service';
 @Component({
   selector: 'app-assessment-round',
   imports: [
@@ -66,6 +67,7 @@ export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewIni
     private readonly collectionService: CollectionService,
     private readonly dialogService: DialogService,
     private readonly cdr: ChangeDetectorRef,
+    private readonly stepsStatusService: StepsStatusService,
   ) {
     this.fGroup = buildFormGroup(this.assessmentSchedule);
   }
@@ -382,6 +384,8 @@ export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewIni
             this.isDataLoaded = false;
             this.GetAssessmentRoundbyAssessment();
             setTimeout(() => this.reinitSortable(), 500);
+            // Call step status API and move to next step
+            this.checkStepStatusAndMoveNext();
           },
           error: (error: CustomErrorResponse) => {
             this.isLoading = false;
@@ -401,6 +405,8 @@ export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewIni
           this.isDataLoaded = false;
           this.GetAssessmentRoundbyAssessment();
           setTimeout(() => this.reinitSortable(), 600);
+          // Call step status API and move to next step
+          this.checkStepStatusAndMoveNext();
         },
         error: (error: CustomErrorResponse) => {
           this.handleSubmitError(error);
@@ -506,5 +512,21 @@ export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewIni
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
     this.rounds = this.optionsMap['rounds'] as unknown as Option[];
+  }
+
+  private checkStepStatusAndMoveNext(): void {
+    const assessmentId = Number(this.assessmentId());
+    if (assessmentId) {
+      this.stepsStatusService.getAssessmentStepsStatus(assessmentId).subscribe({
+        next: () => {
+          // Notify parent to move to next step
+          this.stepsStatusService.notifyStepCompleted(assessmentId);
+        },
+        error: () => {
+          // Even if step status API fails, try to move to next step
+          this.stepsStatusService.notifyStepCompleted(assessmentId);
+        },
+      });
+    }
   }
 }

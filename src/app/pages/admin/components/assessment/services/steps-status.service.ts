@@ -23,6 +23,9 @@ export class StepsStatusService {
   private stepStatusUpdateSubject = new Subject<number>();
   public stepStatusUpdate$ = this.stepStatusUpdateSubject.asObservable();
 
+  private stepCompletedSubject = new Subject<number>();
+  public stepCompleted$ = this.stepCompletedSubject.asObservable();
+
   constructor(private readonly httpClient: HttpClient) {}
 
   public getAssessmentStepsStatus(assessmentId: number) {
@@ -41,6 +44,10 @@ export class StepsStatusService {
 
   public notifyStepStatusUpdate(assessmentId: number): void {
     this.stepStatusUpdateSubject.next(assessmentId);
+  }
+
+  public notifyStepCompleted(assessmentId: number): void {
+    this.stepCompletedSubject.next(assessmentId);
   }
 
 }

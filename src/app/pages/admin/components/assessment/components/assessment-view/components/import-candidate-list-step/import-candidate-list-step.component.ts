@@ -43,6 +43,7 @@ import { CandidateDialogComponent } from '../candidate-dialog/candidate-dialog.c
 import { CreateBatchDialogComponent } from '../create-batch-dialog/create-batch-dialog.component';
 import { ManageDuplicateRecordsComponent } from '../manage-duplicate-records/manage-duplicate-records.component';
 import { StoreService } from '../../../../../../../../shared/services/store.service';
+import { StepsStatusService } from '../../../../services/steps-status.service';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -109,6 +110,9 @@ export class ImportCandidateListStepComponent implements OnInit {
   public isAllCandidatesAssigned = false;
   public unassignedCandidatesCount = 0;
   public UnassignedCandidate = '';
+  public isLoading = false;
+  public alreadySelectedCandidates: string[] = [];
+  private skipAutoSelection = false;
 
   private batches!: PaginatedData<BatchSummaryModel>;
   private questionSets!: QuestionSetModel[];
@@ -124,8 +128,8 @@ export class ImportCandidateListStepComponent implements OnInit {
     private readonly router: Router,
     private readonly questionSetStateService: QuestionSetStateService,
     private readonly storeService: StoreService,
+    private readonly stepsStatusService: StepsStatusService,
   ) {}
-  // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
     this.getAllCandidates(new PaginatedPayload());
@@ -158,16 +162,17 @@ export class ImportCandidateListStepComponent implements OnInit {
     });
     this.ref.onClose.subscribe((result) => {
       if (result) {
-        // api call to delete the user
+        this.isLoading = true;
         const next = () => {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
             detail: 'Deleted the Candidate Successfully',
           });
-          this.getAllCandidates(new PaginatedPayload());
+          this.getAllCandidates(new PaginatedPayload(), true);
         };
         const error = () => {
+          this.isLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -180,7 +185,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       }
     });
   }
-  public getAllCandidates(payload: PaginatedPayload) {
+  public getAllCandidates(payload: PaginatedPayload, clearLoading = false) {
     payload.filterMap = {
       assessmentId: Number(this.assessmentId()),
     };
@@ -193,9 +198,19 @@ export class ImportCandidateListStepComponent implements OnInit {
         this.importStatus = true;
         this.newStatus = false;
       }
+      if (!this.skipAutoSelection) {
+        this.updateAlreadySelectedCandidates();
+      }
+      this.skipAutoSelection = false;
+      if (clearLoading) {
+        this.isLoading = false;
+      }
     };
 
     const error = (error: CustomErrorResponse) => {
+      if (clearLoading) {
+        this.isLoading = false;
+      }
       this.errorMessage(error);
     };
     this.candidateService
@@ -219,8 +234,8 @@ export class ImportCandidateListStepComponent implements OnInit {
   }
   public onImport(event: FileUploadHandlerEvent): void {
     const file = event.files[0];
+    this.isLoading = true;
     this.importCandidates(file);
-    this.getAllCandidates(new PaginatedPayload());
   }
   public importCandidates(file: File) {
     this.assessmentService
@@ -234,6 +249,8 @@ export class ImportCandidateListStepComponent implements OnInit {
           this.duplicateRecords = groupCandidatesByContact(parsedData);
           if (this.duplicateRecords.length > 0) {
             this.manageDuplicateRecords(this.duplicateRecords);
+          } else {
+            this.getAllCandidates(new PaginatedPayload(), true);
           }
 
           this.messageService.add({
@@ -243,6 +260,7 @@ export class ImportCandidateListStepComponent implements OnInit {
           });
         },
         error: () => {
+          this.isLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -331,19 +349,19 @@ export class ImportCandidateListStepComponent implements OnInit {
 
     this.ref.onClose.subscribe((result) => {
       if (result) {
-        // api call to delete the users
+        this.isLoading = true;
         const next = () => {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
             detail: 'Deleted the Selected Candidates Successfully',
           });
-          // Clear all selections in the table component
           this.tableComponent?.clearAllSelections();
-          this.getAllCandidates(new PaginatedPayload());
+          this.getAllCandidates(new PaginatedPayload(), true);
           this.checkIsAllCandidatesAssigned();
         };
         const error = () => {
+          this.isLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -386,6 +404,7 @@ export class ImportCandidateListStepComponent implements OnInit {
 
       this.ref.onClose.subscribe((result) => {
         if (result) {
+          this.isLoading = true;
           this.assessmentService.createEntity(payload, 'schedule').subscribe({
             next: () => {
               this.messageService.add({
@@ -393,8 +412,16 @@ export class ImportCandidateListStepComponent implements OnInit {
                 summary: 'Success',
                 detail: 'Scheduled the Assessment Successfully',
               });
+              const scheduledCandidateIds = [...this.selectedUsers] as string[];
+              this.skipAutoSelection = true;
+              this.alreadySelectedCandidates = scheduledCandidateIds.filter(
+                (id): id is string => id !== undefined,
+              );
+              this.getAllCandidates(new PaginatedPayload(), true);
+              this.checkStepStatusAndMoveNext();
             },
             error: (error: CustomErrorResponse) => {
+              this.isLoading = false;
               const businessErrorCode = error.error?.businessError;
               if (businessErrorCode === 3111) {
                 this.messageService.add({
@@ -483,7 +510,9 @@ export class ImportCandidateListStepComponent implements OnInit {
     this.dialog.getInstance(this.ref)?.maximize();
     this.ref.onClose.subscribe((result) => {
       if (result?.refresh) {
-        this.getAllCandidates(new PaginatedPayload());
+        this.getAllCandidates(new PaginatedPayload(), true);
+      } else {
+        this.isLoading = false;
       }
     });
   }
@@ -496,6 +525,9 @@ export class ImportCandidateListStepComponent implements OnInit {
       .getData(payload)
       .subscribe((response: PaginatedData<CandidateModel>) => {
         this.data = response;
+        if (!this.skipAutoSelection) {
+          this.updateAlreadySelectedCandidates();
+        }
       });
   }
   private getAllCandidatesApplicationQuestions() {
@@ -515,8 +547,6 @@ export class ImportCandidateListStepComponent implements OnInit {
     const collection = this.storeService.getCollection();
     const batchesFromStore = collection?.['batches'] || [];
 
-    // Convert Option[] format to BatchSummaryModel[] format
-    // The dialogs expect objects with 'title' and 'id' properties
     const batchData = batchesFromStore
       .filter((batch: Option) => batch.value && batch.label)
       .map((batch: Option) => ({
@@ -532,7 +562,6 @@ export class ImportCandidateListStepComponent implements OnInit {
         descriptionNew: '',
       }));
 
-    // Wrap in PaginatedData structure to match expected type
     this.batches = {
       pageNumber: 1,
       pageSize: batchData.length,
@@ -592,5 +621,35 @@ export class ImportCandidateListStepComponent implements OnInit {
       summary: 'Error',
       detail: error?.error?.type || 'Contact Technical Support',
     });
+  }
+
+  private updateAlreadySelectedCandidates(): void {
+    if (!this.data || !this.data.data) {
+      this.alreadySelectedCandidates = [];
+      return;
+    }
+
+    this.alreadySelectedCandidates = this.data.data
+      .filter(
+        (candidate: CandidateModel) =>
+          candidate.batchId !== null &&
+          candidate.batchId !== undefined &&
+          candidate.batchId > 0,
+      )
+      .map((candidate: CandidateModel) => candidate.id);
+  }
+
+  private checkStepStatusAndMoveNext(): void {
+    const assessmentId = Number(this.assessmentId());
+    if (assessmentId) {
+      this.stepsStatusService.getAssessmentStepsStatus(assessmentId).subscribe({
+        next: () => {
+          this.stepsStatusService.notifyStepCompleted(assessmentId);
+        },
+        error: () => {
+          this.stepsStatusService.notifyStepCompleted(assessmentId);
+        },
+      });
+    }
   }
 }

@@ -23,6 +23,7 @@ import { UserService } from '../../services/user.service';
 import { UserDialogComponent } from './components/user-dialog/user-dialog.component';
 import { CollectionService } from '../../../../shared/services/collection.service';
 import { UserState } from '../../../../shared/models/user.models';
+import { finalize } from 'rxjs/operators';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -80,6 +81,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public currentUser!: UserState;
   private ref: DynamicDialogRef | undefined;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
+  private isManualRefresh = false;
 
   constructor(
     public dialog: DialogService,
@@ -124,8 +126,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Created the User Successfully',
           });
-          this.isLoading = false;
-          this.getAllUsers(new PaginatedPayload());
+          this.getAllUsers(this.currentPayload);
         };
         const error = (error: CustomErrorResponse) => {
           this.isLoading = false;
@@ -182,11 +183,10 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             summary: 'Success',
             detail: 'Updated User Successfully',
           });
-
-          this.getAllUsers(new PaginatedPayload());
-          this.isLoading = false;
+          this.getAllUsers(this.currentPayload);
         };
         const error = (error: CustomErrorResponse) => {
+          this.isLoading = false;
           const businerssErrorCode = error.error.businessError;
           if (businerssErrorCode === 5002) {
             this.messageService.add({
@@ -207,8 +207,6 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
               detail: error.error.type,
             });
           }
-
-          this.isLoading = false;
         };
         this.userService.updateEntity('', result).subscribe({ next, error });
       }
@@ -249,10 +247,10 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             detail: 'Deleted User Successfully',
           });
           this.selectedUsers = this.selectedUsers.filter((id) => id !== userId);
-          this.getAllUsers(new PaginatedPayload());
-          this.isLoading = false;
+          this.getAllUsers(this.currentPayload);
         };
         const error = (error: CustomErrorResponse) => {
+          this.isLoading = false;
           if (error?.error?.businessError === 3111) {
             this.messageService.add({
               severity: 'error',
@@ -266,7 +264,6 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
               detail: 'Deletion is failed',
             });
           }
-          this.isLoading = false;
         };
         this.userService.deleteEntityById(userId).subscribe({ next, error });
       }
@@ -318,13 +315,13 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             detail: 'Deleted Selected Users Successfully',
           });
           this.selectedUsers = [];
-          // Clear all selections in the table component
 
+          this.isManualRefresh = true;
           this.tableComponent?.clearAllSelections();
-          this.getAllUsers(new PaginatedPayload());
-          this.isLoading = false;
+          this.getAllUsers(this.currentPayload);
         };
         const error = (error: CustomErrorResponse) => {
+          this.isLoading = false;
           if (error?.error?.businessError === 3111) {
             this.messageService.add({
               severity: 'error',
@@ -338,7 +335,6 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
               detail: 'Deletion is failed',
             });
           }
-          this.isLoading = false;
         };
         this.userService
           .updateEntity('', this.selectedUsers, 'deactivate')
@@ -355,40 +351,46 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         ...payload.pagination,
       },
     };
-    this.loadData(this.currentPayload);
+    if (!this.isManualRefresh) {
+      this.loadData(this.currentPayload);
+    }
   }
 
   public getAllUsers(payload: PaginatedPayload) {
+    this.isManualRefresh = true;
     this.isLoading = true;
     const payloadData = {
       ...payload,
       filterMap: { excludedRoles: ['5'], ...payload.filterMap },
     };
     this.currentUser = this.storeService.getUserData();
-    const next = (res: any) => {
-      const formattedData = res.data.map((item: any) => ({
-        ...item,
-        roles: item.roles ? item.roles.split(',') : [],
-        isSelf:
-          item.email === this.currentUser.id || item.id === this.currentUser.id,
-      }));
-      this.data = { ...res, data: formattedData };
-      this.isLoading = false;
-    };
-
-    const error = () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Failed to load User list',
+    this.userService
+      .paginationEntity('all', payloadData)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.isManualRefresh = false;
+        }),
+      )
+      .subscribe({
+        next: (res: any) => {
+          const formattedData = res.data.map((item: any) => ({
+            ...item,
+            roles: item.roles ? item.roles.split(',') : [],
+            isSelf:
+              item.email === this.currentUser.id ||
+              item.id === this.currentUser.id,
+          }));
+          this.data = { ...res, data: formattedData };
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load User list',
+          });
+        },
       });
-      this.isLoading = false;
-    };
-
-    this.userService.paginationEntity('all', payloadData).subscribe({
-      next,
-      error,
-    });
   }
   // Private Methods
   private setPaginationEndpoint() {
@@ -397,15 +399,21 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
 
   private loadData(payload: PaginatedPayload): void {
     this.currentUser = this.storeService.getUserData();
-    this.dataSourceService.getData(payload).subscribe((response: any) => {
-      const formattedData = response.data.map((item: any) => ({
-        ...item,
-        roles: item.roles ? item.roles.split(',') : [],
-        isSelf:
-          item.email === this.currentUser.id || item.id === this.currentUser.id,
-      }));
-      this.data = { ...response, data: formattedData };
-    });
+    this.isLoading = true;
+
+    this.dataSourceService
+      .getData(payload)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe((response: any) => {
+        const formattedData = response.data.map((item: any) => ({
+          ...item,
+          roles: item.roles ? item.roles.split(',') : [],
+          isSelf:
+            item.email === this.currentUser.id ||
+            item.id === this.currentUser.id,
+        }));
+        this.data = { ...response, data: formattedData };
+      });
   }
 
   private openActivateUserModal(userId: string, result: any) {
@@ -417,7 +425,6 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       acceptButtonText: 'Activate',
     };
     const payload = { ...result, id: userId };
-    console.log('Activate payload:', payload);
     this.ref = this.dialog.open(DialogComponent, {
       data: modalData,
       header: 'Warning',
@@ -435,17 +442,14 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     });
     this.ref.onClose.subscribe((res: boolean) => {
       if (res) {
-        console.log('Activating user with ID:', res);
         this.isLoading = true;
-        // api call to activate the user
         const next = () => {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
             detail: 'Activated the User Successfully',
           });
-          this.getAllUsers(new PaginatedPayload());
-          this.isLoading = false;
+          this.getAllUsers(this.currentPayload);
         };
         const error = () => {
           this.messageService.add({

@@ -74,6 +74,8 @@
       [tableData]="data"
       [columnsData]="columns"
       [hasSearch]="true"
+      [parentLoader]="isLoading"
+      [alreadySelected]="alreadySelectedCandidates"
       (delete)="deleteCandidate($event)"
       (selectedIds)="getSelectedItems($event)"
       (pageChangeAndSort)="onTablePayloadChange($event)"

@@ -9,6 +9,8 @@ import { MessageService } from 'primeng/api';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SplitterModule } from 'primeng/splitter';
 import { TagModule } from 'primeng/tag';
+import { SkeletonModule } from 'primeng/skeleton';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import {
@@ -31,6 +33,8 @@ import { CandidateDetailsComponent } from '../candidate-details/candidate-detail
     AvatarModule,
     DividerModule,
     TagModule,
+    SkeletonModule,
+    ProgressSpinnerModule,
   ],
   templateUrl: './manage-duplicate-records.component.html',
   styleUrl: './manage-duplicate-records.component.scss',
@@ -42,6 +46,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   public splitPanelRendered = signal(true);
   public selectedPanelId = signal<number | null>(null);
   public assessmentId!: string;
+  public isLoading = signal(false);
 
   // Helper method to get initials for avatar
   public getInitials(name: string): string {
@@ -89,6 +94,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     );
     if (!selectedCandidate) return;
 
+    this.isLoading.set(true);
     this.updateCandidateData(selectedCandidate);
   }
 
@@ -130,6 +136,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     formData.append('file', blob, 'candidate.csv');
 
     const next = () => {
+      this.isLoading.set(false);
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
@@ -138,6 +145,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
       this.getSelectedCandidateEmail(selectedCandidate);
     };
     const error = (error: CustomErrorResponse) => {
+      this.isLoading.set(false);
       const businerssErrorCode = error.error.businessError;
       if (businerssErrorCode === 4001) {
         this.messageService.add({
