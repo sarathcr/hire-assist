@@ -1,9 +1,14 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
 import { AccordionModule } from 'primeng/accordion';
+import { AvatarModule } from 'primeng/avatar';
+import { BadgeModule } from 'primeng/badge';
+import { CardModule } from 'primeng/card';
+import { DividerModule } from 'primeng/divider';
 import { MessageService } from 'primeng/api';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SplitterModule } from 'primeng/splitter';
+import { TagModule } from 'primeng/tag';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import {
@@ -21,6 +26,11 @@ import { CandidateDetailsComponent } from '../candidate-details/candidate-detail
     ButtonComponent,
     NgClass,
     CandidateDetailsComponent,
+    CardModule,
+    BadgeModule,
+    AvatarModule,
+    DividerModule,
+    TagModule,
   ],
   templateUrl: './manage-duplicate-records.component.html',
   styleUrl: './manage-duplicate-records.component.scss',
@@ -32,6 +42,16 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   public splitPanelRendered = signal(true);
   public selectedPanelId = signal<number | null>(null);
   public assessmentId!: string;
+
+  // Helper method to get initials for avatar
+  public getInitials(name: string): string {
+    if (!name || name === 'N/A') return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  }
 
   constructor(
     public config: DynamicDialogConfig,

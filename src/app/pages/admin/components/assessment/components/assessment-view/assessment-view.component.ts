@@ -126,7 +126,7 @@ export class AssessmentViewComponent
       index: 4,
       label: 'Schedule',
       description: 'Import candidates and schedule interviews',
-      icon: 'pi pi-calendar-check',
+      icon: 'pi pi-calendar-clock',
     },
   ];
 

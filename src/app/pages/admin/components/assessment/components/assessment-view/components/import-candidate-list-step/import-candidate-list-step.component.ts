@@ -15,6 +15,7 @@ import { TableComponent } from '../../../../../../../../shared/components/table/
 import { ASSESSMENT_URL } from '../../../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../../../../../shared/models/dialog.models';
+import { Option } from '../../../../../../../../shared/models/app-state.models';
 import { PaginatedPayload } from '../../../../../../../../shared/models/pagination.models';
 import {
   FieldType,
@@ -41,6 +42,7 @@ import { AssessmentViewModel } from '../../assessment-view.component';
 import { CandidateDialogComponent } from '../candidate-dialog/candidate-dialog.component';
 import { CreateBatchDialogComponent } from '../create-batch-dialog/create-batch-dialog.component';
 import { ManageDuplicateRecordsComponent } from '../manage-duplicate-records/manage-duplicate-records.component';
+import { StoreService } from '../../../../../../../../shared/services/store.service';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -121,12 +123,13 @@ export class ImportCandidateListStepComponent implements OnInit {
     public dialog: DialogService,
     private readonly router: Router,
     private readonly questionSetStateService: QuestionSetStateService,
+    private readonly storeService: StoreService,
   ) {}
   // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
     this.getAllCandidates(new PaginatedPayload());
-    this.getAllBatches(new PaginatedPayload());
+    this.getBatchesFromStore();
     this.getAllQuestionSets(new PaginatedPayload());
     this.getAllCandidatesApplicationQuestions();
   }
@@ -508,26 +511,39 @@ export class ImportCandidateListStepComponent implements OnInit {
       .getEntityById(Number(this.assessmentId()))
       .subscribe({ next, error });
   }
-  private getAllBatches(payload: PaginatedPayload): void {
-    payload.filterMap = {
-      assessmentId: Number(this.assessmentId()),
-    };
+  private getBatchesFromStore(): void {
+    const collection = this.storeService.getCollection();
+    const batchesFromStore = collection?.['batches'] || [];
 
-    const next = (res: any) => {
-      this.batches = res.data;
-    };
+    // Convert Option[] format to BatchSummaryModel[] format
+    // The dialogs expect objects with 'title' and 'id' properties
+    const batchData = batchesFromStore
+      .filter((batch: Option) => batch.value && batch.label)
+      .map((batch: Option) => ({
+        id: Number(batch.value),
+        title: batch.label || '',
+        description: '',
+        assessmentId: Number(this.assessmentId()),
+        assessmentName: null,
+        isActive: true,
+        startDate: '',
+        endDate: '',
+        active: '',
+        descriptionNew: '',
+      }));
 
-    const error = () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'error in getting batch details',
-      });
+    // Wrap in PaginatedData structure to match expected type
+    this.batches = {
+      pageNumber: 1,
+      pageSize: batchData.length,
+      totalPages: 1,
+      totalRecords: batchData.length,
+      data: batchData,
+      sum: '',
+      succeeded: true,
+      errors: [],
+      message: '',
     };
-
-    this.assessmentService
-      .paginationEntity('Batch/Batchsummary', payload)
-      .subscribe({ next, error });
   }
   private getAllQuestionSets(payload: PaginatedPayload): void {
     payload.filterMap = {

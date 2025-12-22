@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NgClass } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -127,6 +127,7 @@ export interface AssesmentRoundResponse {
 @Component({
   selector: 'app-assessment-detail',
   imports: [
+    CommonModule,
     SkeletonModule,
     StepperModule,
     ButtonModule,
@@ -612,6 +613,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private getAssessmentDetails(id: number): void {
     const next = (res: Assessment) => {
       this.data = res;
+      // Normalize dates for proper display
+      if (this.data.startDateTime) {
+        this.data.startDateTime = this.parseDate(this.data.startDateTime) || this.data.startDateTime;
+      }
+      if (this.data.endDateTime) {
+        this.data.endDateTime = this.parseDate(this.data.endDateTime) || this.data.endDateTime;
+      }
     };
     const error = (error: string) => {
       this.messageService.add({
@@ -621,6 +629,23 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       });
     };
     this.assessmentService.getEntityById(id).subscribe({ next, error });
+  }
+
+  private parseDate(date: string): string | null {
+    if (!date) return null;
+    const isoDate = new Date(date);
+    if (!isNaN(isoDate.getTime())) {
+      return isoDate.toISOString();
+    }
+
+    const parts = date.split('-');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+      return new Date(year, month, day).toISOString();
+    }
+    return null;
   }
 
   private getAssessmentRoundDetails(id: number): void {

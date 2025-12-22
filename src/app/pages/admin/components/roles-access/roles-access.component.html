@@ -6,6 +6,7 @@
     [columnsData]="columns"
     [hasSearch]="true"
     [parentLoader]="isLoading"
+    [alreadySelected]="selectedUsers"
     (edit)="editUser($event)"
     (delete)="deleteUser($event)"
     (selectedIds)="getSelectedItems($event)"

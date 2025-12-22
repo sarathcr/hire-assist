@@ -1,65 +1,151 @@
 <div class="duplicates">
-  <div class="duplicates__accordion">
-    <p-accordion [value]="['0']" [multiple]="true">
-      @for (data of data; let idx = $index; track data) {
-        <p-accordion-panel [value]="idx + ''">
-          <p-accordion-header>{{ data.key }}</p-accordion-header>
-          <p-accordion-content>
-            @for (
-              candidates of data.candidates;
-              let idx = $index;
-              track candidates
-            ) {
-              <div
-                class="duplicates__accordion__content"
-                tabindex="0"
-                (click)="onDuplicateRecordClick(data.candidates)"
-                (keyup.enter)="onDuplicateRecordClick(data.candidates)"
-                role="button"
-                aria-pressed="false"
-              >
-                <p>
-                  <strong>Name :</strong> {{ candidates["Candidate Name"] }}
-                </p>
-                <p>
-                  <strong>Mob No :</strong> {{ candidates["Mobile number"] }}
-                </p>
+  <!-- Left Sidebar: Duplicate Groups -->
+  <div class="duplicates__sidebar">
+    <div class="duplicates__sidebar__header">
+      <h3 class="duplicates__sidebar__title">
+        <i class="pi pi-exclamation-triangle"></i>
+        Duplicate Groups
+      </h3>
+      <p-tag
+        [value]="(data.length || 0).toString()"
+        severity="warn"
+        [rounded]="true"
+      ></p-tag>
+    </div>
+    <p-card class="duplicates__sidebar__card">
+      <p-accordion
+        [value]="['0']"
+        [multiple]="true"
+        class="duplicates__accordion"
+      >
+        @for (group of data; let idx = $index; track group) {
+          <p-accordion-panel [value]="idx + ''">
+            <p-accordion-header>
+              <div class="duplicates__accordion__header">
+                <div class="duplicates__accordion__header__info">
+                  <i class="pi pi-users"></i>
+                  <span>{{ group.key }}</span>
+                </div>
+                <p-badge
+                  [value]="(group.candidates.length || 0).toString()"
+                  severity="warn"
+                ></p-badge>
               </div>
-            }
-          </p-accordion-content>
-        </p-accordion-panel>
-      }
-    </p-accordion>
+            </p-accordion-header>
+            <p-accordion-content>
+              <div class="duplicates__accordion__content-wrapper">
+                @for (
+                  candidate of group.candidates;
+                  let candidateIdx = $index;
+                  track candidate
+                ) {
+                  <p-card
+                    class="duplicates__candidate-card"
+                    [class.duplicates__candidate-card--clickable]="true"
+                    tabindex="0"
+                    (click)="onDuplicateRecordClick(group.candidates)"
+                    (keyup.enter)="onDuplicateRecordClick(group.candidates)"
+                    role="button"
+                    aria-pressed="false"
+                  >
+                    <div class="duplicates__candidate-card__content">
+                      <div class="duplicates__candidate-card__avatar">
+                        <p-avatar
+                          [label]="
+                            getInitials(candidate['Candidate Name'] || 'N/A')
+                          "
+                          shape="circle"
+                          size="large"
+                          styleClass="duplicates__avatar"
+                        ></p-avatar>
+                      </div>
+                      <div class="duplicates__candidate-card__info">
+                        <div class="duplicates__candidate-card__name">
+                          <i class="pi pi-user"></i>
+                          <span>{{
+                            candidate["Candidate Name"] || "N/A"
+                          }}</span>
+                        </div>
+                        <div class="duplicates__candidate-card__phone">
+                          <i class="pi pi-phone"></i>
+                          <span>{{ candidate["Mobile number"] || "N/A" }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </p-card>
+                }
+              </div>
+            </p-accordion-content>
+          </p-accordion-panel>
+        }
+      </p-accordion>
+    </p-card>
   </div>
+
+  <!-- Right Content: Candidate Details -->
   <div class="duplicates__content">
+    <div class="duplicates__content__header">
+      <h3 class="duplicates__content__title">
+        <i class="pi pi-list"></i>
+        Select Candidate to Keep
+      </h3>
+      <p class="duplicates__content__subtitle">
+        Click on a candidate card below to select which record to keep
+      </p>
+    </div>
+
     <div class="duplicates__split-panel">
       @if (splitPanelRendered()) {
         <p-splitter class="duplicates__splitter" [panelSizes]="[50, 50, 50]">
-          @for (candidates of splitPanelList(); track candidates.panelId) {
+          @for (candidate of splitPanelList(); track candidate.panelId) {
             <ng-template #panel>
-              <a
+              <div
                 class="duplicates__panel"
                 [ngClass]="{
-                  duplicates__panel_selected:
-                    selectedPanelId() === candidates.panelId,
+                  'duplicates__panel--selected':
+                    selectedPanelId() === candidate.panelId,
                 }"
                 tabindex="0"
-                (click)="onDetailsClick(candidates)"
-                (keydown)="onDetailsClick(candidates)"
+                (click)="onDetailsClick(candidate)"
+                (keydown.enter)="onDetailsClick(candidate)"
+                role="button"
               >
-                <app-candidate-details
-                  [data]="candidates"
-                ></app-candidate-details
-              ></a>
+                <p-card class="duplicates__panel__card">
+                  <ng-template pTemplate="header">
+                    <div class="duplicates__panel__header">
+                      <div class="duplicates__panel__header__badge">
+                        @if (selectedPanelId() === candidate.panelId) {
+                          <p-tag
+                            value="Selected"
+                            severity="success"
+                            [rounded]="true"
+                          ></p-tag>
+                        } @else {
+                          <p-tag
+                            value="Click to Select"
+                            severity="info"
+                            [rounded]="true"
+                          ></p-tag>
+                        }
+                      </div>
+                    </div>
+                  </ng-template>
+                  <app-candidate-details
+                    [data]="candidate"
+                  ></app-candidate-details>
+                </p-card>
+              </div>
             </ng-template>
           }
         </p-splitter>
       }
     </div>
+
     <div class="duplicates__btn">
       <app-button
         buttonLabel="Update Candidate"
         (btnClick)="onSubmit()"
+        [disabled]="!selectedPanelId()"
       ></app-button>
     </div>
   </div>

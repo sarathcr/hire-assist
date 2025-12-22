@@ -1,42 +1,300 @@
+// ============================================
+// Modern Candidate Import & Schedule UI
+// ============================================
+
 .candidate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-20);
+  width: 100%;
+
+  // ============================================
+  // Header Section
+  // ============================================
+  &__header-section {
+    background: linear-gradient(
+      135deg,
+      rgba(33, 150, 243, 0.08) 0%,
+      rgba(21, 101, 192, 0.08) 100%
+    );
+    border: 1px solid rgba(33, 150, 243, 0.2);
+    border-radius: 16px;
+    padding: var(--spacing-25) var(--spacing-30);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  &__header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-25);
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+
+  &__header-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0 0 var(--spacing-8) 0;
+    font-size: clamp(20px, 3vw + 0.5rem, 24px);
+    font-weight: 700;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+    line-height: 1.3;
+
+    i {
+      color: #2196f3;
+      font-size: clamp(22px, 3.2vw + 0.5rem, 26px);
+    }
+  }
+
+  &__description {
+    margin: 0;
+    font-size: clamp(14px, 1.8vw + 0.25rem, 15px);
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  &__header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+    flex-shrink: 0;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: stretch;
+    }
+  }
+
+  &__schedule-btn {
+    white-space: nowrap;
+    min-width: 180px;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      min-width: auto;
+    }
+
+    ::ng-deep {
+      .p-button {
+        padding: var(--spacing-12) var(--spacing-20);
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        transition: all 0.3s ease;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(33, 150, 243, 0.4);
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // Toolbar Section
+  // ============================================
+  &__toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-15);
+    padding: var(--spacing-20);
+    background: white;
+    border: 1px solid rgba(33, 150, 243, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--spacing-12);
+    }
+  }
+
+  &__toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      justify-content: stretch;
+
+      > * {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+  }
+
+  &__import-btn {
+    ::ng-deep {
+      .p-button {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-8);
+        padding: var(--spacing-10) var(--spacing-18);
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        i {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+
+  &__action-btn {
+    white-space: nowrap;
+    min-width: 140px;
+
+    @media (max-width: 768px) {
+      flex: 1;
+      min-width: 0;
+    }
+
+    ::ng-deep {
+      .p-button {
+        padding: var(--spacing-10) var(--spacing-18);
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+
+        &:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+      }
+    }
+
+    &--danger {
+      ::ng-deep {
+        .p-button {
+          &:hover:not(:disabled) {
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+          }
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // Table Section
+  // ============================================
+  &__table-section {
+    background: white;
+    border: 1px solid rgba(33, 150, 243, 0.1);
+    border-radius: 12px;
+    padding: var(--spacing-20);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+
+    ::ng-deep {
+      .p-datatable {
+        .p-datatable-header {
+          background: transparent;
+          border: none;
+          padding: 0 0 var(--spacing-15) 0;
+        }
+
+        .p-datatable-thead > tr > th {
+          background: linear-gradient(
+            135deg,
+            rgba(33, 150, 243, 0.05) 0%,
+            rgba(21, 101, 192, 0.05) 100%
+          );
+          border-color: rgba(33, 150, 243, 0.1);
+          font-weight: 600;
+          color: #1f2937;
+          padding: var(--spacing-15) var(--spacing-20);
+        }
+
+        .p-datatable-tbody > tr {
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: rgba(33, 150, 243, 0.03);
+          }
+
+          > td {
+            padding: var(--spacing-15) var(--spacing-20);
+            border-color: rgba(33, 150, 243, 0.1);
+          }
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // Legacy Support (for backward compatibility)
+  // ============================================
   &__row {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
   }
+
   &__form-field {
     flex-basis: 50%;
   }
+
   &__Cuatom-button {
     display: flex;
     flex-direction: row;
     gap: var(--spacing-10);
   }
+
   &__section-header {
     margin-bottom: var(--spacing-10);
     padding: var(--spacing-10);
   }
+
   &__section-header-content {
     display: flex;
     flex-direction: column;
-    // gap: var(--spacing-5);
   }
+
   &__section {
-    background: linear-gradient(135deg, rgba(33, 150, 243, 0.08) 0%, rgba(21, 101, 192, 0.08) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(33, 150, 243, 0.08) 0%,
+      rgba(21, 101, 192, 0.08) 100%
+    );
     border-radius: var(--spacing-10);
     margin-top: var(--font-size-20);
     padding: var(--spacing-10);
     border-width: 0.5px;
     border-style: solid;
     border-color: rgba(33, 150, 243, 0.2);
+
     &:first-child {
       margin-top: 0;
     }
+
     &__title {
       margin: 0;
       font-size: clamp(14px, 1.8vw + 0.25rem, 16px);
       line-height: 1.4;
     }
+
     &__description {
       margin-top: var(--spacing-10);
       margin-bottom: var(--spacing-10);
@@ -50,8 +308,65 @@
     justify-content: space-between;
     align-items: center;
   }
+}
 
-  &__schedule-btn {
-    margin-left: auto;
+// ============================================
+// Responsive Design
+// ============================================
+@media screen and (max-width: 768px) {
+  .candidate {
+    gap: var(--spacing-15);
+
+    &__header-section {
+      padding: var(--spacing-20);
+      border-radius: 12px;
+    }
+
+    &__title {
+      font-size: clamp(18px, 4vw, 22px);
+      flex-wrap: wrap;
+      gap: var(--spacing-8);
+    }
+
+    &__description {
+      font-size: clamp(13px, 3vw, 14px);
+    }
+
+    &__toolbar {
+      padding: var(--spacing-15);
+      border-radius: 10px;
+    }
+
+    &__table-section {
+      padding: var(--spacing-15);
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .candidate {
+    gap: var(--spacing-12);
+
+    &__header-section {
+      padding: var(--spacing-15);
+    }
+
+    &__title {
+      font-size: clamp(16px, 5vw, 20px);
+    }
+
+    &__description {
+      font-size: clamp(12px, 3.5vw, 13px);
+    }
+
+    &__toolbar {
+      padding: var(--spacing-12);
+    }
+
+    &__table-section {
+      padding: var(--spacing-12);
+    }
   }
 }

@@ -1,108 +1,246 @@
 <div class="assessment-detail">
-  <!-- Header Section -->
-  <div class="assessment-detail__header">
-    @if (data) {
-      <h1 class="assessment-detail__title">{{ data.name }}</h1>
-    } @else {
-      <p-skeleton width="18rem" height="2rem" />
-    }
-  </div>
-
-  <!-- Unified Content Section -->
-  <div class="assessment-detail__section">
-    <!-- Rounds Selector -->
-    <div class="assessment-detail__rounds-selector">
-      @if (step && step.length > 0) {
-        <div class="rounds-tabs">
-          @for (stepHeader of step; track stepHeader.id; let i = $index) {
-            <button
-              type="button"
-              class="rounds-tab"
-              [ngClass]="{ 
-                'rounds-tab--active': i === activeMenuItemIndex,
-                'rounds-tab--completed': stepHeader.status === 'Completed'
-              }"
-              (click)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
-              (keydown.enter)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
-              (keydown.space)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
-              tabindex="0"
-            >
-              <span class="rounds-tab__label">{{ stepHeader.round }}</span>
-              @if (stepHeader.status === 'Completed') {
-                <i class="pi pi-check-circle rounds-tab__icon"></i>
-              }
-            </button>
+  <!-- Hero Header Section -->
+  <div class="assessment-detail__hero">
+    <div class="assessment-detail__hero-content">
+      <div class="assessment-detail__hero-title-section">
+        @if (data) {
+          <h1 class="assessment-detail__hero-title">
+            <i class="pi pi-briefcase"></i>
+            {{ data.name }}
+          </h1>
+          @if (data.description) {
+            <p class="assessment-detail__hero-subtitle">
+              {{ data.description }}
+            </p>
           }
-        </div>
-      } @else {
-        <div class="rounds-tabs">
-          @for (item of [1, 2, 3]; track item) {
-            <p-skeleton width="120px" height="2.5rem" styleClass="rounds-tab-skeleton" />
-          }
+        } @else {
+          <div class="assessment-detail__hero-skeleton">
+            <p-skeleton width="18rem" height="2rem" />
+            <p-skeleton
+              width="24rem"
+              height="1.2rem"
+              [style]="{ 'margin-top': '0.5rem' }"
+            />
+          </div>
+        }
+      </div>
+      @if (data) {
+        <div class="assessment-detail__hero-badge">
+          <i class="pi pi-info-circle"></i>
+          <span>Recruitment Details</span>
         </div>
       }
     </div>
+  </div>
 
-    <!-- Candidates Table -->
-    <div class="assessment-detail__table-container">
-      <app-table
-        [tableData]="tableData"
-        [columnsData]="columns"
-        [hasView]="true"
-        [hasRowEdit]="false"
-        [hasSearch]="true"
-        [parentLoader]="isLoading"
-        (selectedIds)="getSelectedCandidatesOnTable($event)"
-        (delete)="deleteCandidate($event)"
-        (view)="onView($event)"
-        (pageChangeAndSort)="onTablePayloadChange($event)"
-      >
-        <div class="assessment-detail__actions">
-          <p-button
-            icon="pi pi-calendar-plus"
-            pTooltip="Schedule Interview"
-            tooltipPosition="bottom"
-            [outlined]="true"
-            (onClick)="schedule()"
-          />
-          <p-button
-            icon="pi pi-user-plus"
-            pTooltip="Assign Candidate to Panel"
-            tooltipPosition="bottom"
-            severity="warn"
-            [outlined]="true"
-            (onClick)="OnPanelClick()"
-          />
-          <p-button
-            icon="pi pi-check-square"
-            pTooltip="Select Candidate"
-            severity="success"
-            tooltipPosition="bottom"
-            [outlined]="true"
-            (onClick)="selectCandidate()"
-          />
-          <p-button
-            icon="pi pi-ban"
-            severity="danger"
-            pTooltip="Reject Candidate"
-            tooltipPosition="bottom"
-            [outlined]="true"
-            (onClick)="rejectCandidate()"
-          />
+  <!-- Assessment Info Cards -->
+  @if (data) {
+    <div class="assessment-detail__info-grid">
+      <div class="assessment-detail__info-card">
+        <div class="assessment-detail__info-icon">
+          <i class="pi pi-calendar"></i>
         </div>
-      </app-table>
+        <div class="assessment-detail__info-content">
+          <span class="assessment-detail__info-label">Start Date</span>
+          <span class="assessment-detail__info-value">
+            @if (data.startDateTime) {
+              {{ data.startDateTime | date: "dd MMM yyyy" }}
+            } @else {
+              <span class="assessment-detail__info-placeholder">Not set</span>
+            }
+          </span>
+        </div>
+      </div>
+      <div class="assessment-detail__info-card">
+        <div class="assessment-detail__info-icon">
+          <i class="pi pi-calendar-times"></i>
+        </div>
+        <div class="assessment-detail__info-content">
+          <span class="assessment-detail__info-label">End Date</span>
+          <span class="assessment-detail__info-value">
+            @if (data.endDateTime) {
+              {{ data.endDateTime | date: "dd MMM yyyy" }}
+            } @else {
+              <span class="assessment-detail__info-placeholder">Not set</span>
+            }
+          </span>
+        </div>
+      </div>
+      @if (step && step.length > 0) {
+        <div class="assessment-detail__info-card">
+          <div class="assessment-detail__info-icon">
+            <i class="pi pi-list"></i>
+          </div>
+          <div class="assessment-detail__info-content">
+            <span class="assessment-detail__info-label">Total Rounds</span>
+            <span class="assessment-detail__info-value">
+              {{ step.length }} Round{{ step.length > 1 ? "s" : "" }}
+            </span>
+          </div>
+        </div>
+      }
     </div>
+  }
 
-    <!-- Complete Button -->
-    <div class="assessment-detail__footer">
-      <app-button
-        [disabled]="roundStatus"
-        [buttonSize]="'small'"
-        [buttonLabel]="'Complete Round'"
-        [buttonVariant]="'outlined'"
-        [isLoading]="!tableData"
-        (btnClick)="CompleteAssessmentRound()"
-      ></app-button>
+  <!-- Rounds Selector Section -->
+  <div class="assessment-detail__rounds-section">
+    <div class="assessment-detail__rounds-header">
+      <h2 class="assessment-detail__rounds-title">
+        <i class="pi pi-sitemap"></i>
+        Assessment Rounds
+      </h2>
+      <p class="assessment-detail__rounds-description">
+        Select a round to view and manage candidates
+      </p>
+    </div>
+    <div class="assessment-detail__rounds-selector">
+      @if (step && step.length > 0) {
+        <div class="rounds-tabs-wrapper">
+          <div class="rounds-tabs">
+            @for (stepHeader of step; track stepHeader.id; let i = $index) {
+              <button
+                type="button"
+                class="rounds-tab"
+                [ngClass]="{
+                  'rounds-tab--active': i === activeMenuItemIndex,
+                  'rounds-tab--completed': stepHeader.status === 'Completed',
+                }"
+                (click)="setActiveMenuItem(i, stepHeader.id, stepHeader.status)"
+                (keydown.enter)="
+                  setActiveMenuItem(i, stepHeader.id, stepHeader.status)
+                "
+                (keydown.space)="
+                  setActiveMenuItem(i, stepHeader.id, stepHeader.status)
+                "
+                tabindex="0"
+              >
+                <div class="rounds-tab__indicator">
+                  @if (stepHeader.status === "Completed") {
+                    <i class="pi pi-check"></i>
+                  } @else {
+                    <span class="rounds-tab__number">{{ i + 1 }}</span>
+                  }
+                </div>
+                <div class="rounds-tab__content">
+                  <span class="rounds-tab__label">{{ stepHeader.round }}</span>
+                  <span class="rounds-tab__status">{{
+                    stepHeader.status || "Active"
+                  }}</span>
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="rounds-tabs-wrapper">
+          <div class="rounds-tabs">
+            @for (item of [1, 2, 3]; track item) {
+              <p-skeleton
+                width="140px"
+                height="4rem"
+                styleClass="rounds-tab-skeleton"
+              />
+            }
+          </div>
+        </div>
+      }
+    </div>
+    <!-- Complete Round Button - Integrated with Rounds Section -->
+    @if (step && step.length > 0) {
+      <div class="assessment-detail__rounds-footer">
+        <div class="assessment-detail__rounds-footer-content">
+          <div class="assessment-detail__rounds-footer-info">
+            <i class="pi pi-info-circle"></i>
+            <span>Complete the current round to proceed to the next stage</span>
+          </div>
+          <app-button
+            [disabled]="roundStatus"
+            [buttonSize]="'medium'"
+            [buttonLabel]="'Complete Round'"
+            [icon]="'pi pi-check-circle'"
+            [isLoading]="!tableData"
+            (btnClick)="CompleteAssessmentRound()"
+          ></app-button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Candidates Table Section -->
+  <div class="assessment-detail__table-section">
+    <div class="assessment-detail__table-header">
+      <div class="assessment-detail__table-title-section">
+        <h2 class="assessment-detail__table-title">
+          <i class="pi pi-users"></i>
+          Candidates
+        </h2>
+        <p class="assessment-detail__table-description">
+          Manage candidate selection, scheduling, and status
+        </p>
+      </div>
+      <div class="assessment-detail__actions">
+        <p-button
+          icon="pi pi-calendar-plus"
+          label="Schedule"
+          pTooltip="Schedule Interview"
+          tooltipPosition="bottom"
+          [outlined]="true"
+          severity="info"
+          (onClick)="schedule()"
+        />
+        <p-button
+          icon="pi pi-user-plus"
+          label="Assign Panel"
+          pTooltip="Assign Candidate to Panel"
+          tooltipPosition="bottom"
+          severity="warn"
+          [outlined]="true"
+          (onClick)="OnPanelClick()"
+        />
+        <p-button
+          icon="pi pi-check-square"
+          label="Select"
+          pTooltip="Select Candidate"
+          severity="success"
+          tooltipPosition="bottom"
+          [outlined]="true"
+          (onClick)="selectCandidate()"
+        />
+        <p-button
+          icon="pi pi-ban"
+          label="Reject"
+          severity="danger"
+          pTooltip="Reject Candidate"
+          tooltipPosition="bottom"
+          [outlined]="true"
+          (onClick)="rejectCandidate()"
+        />
+      </div>
+    </div>
+    <div class="assessment-detail__table-container">
+      @if (isLoading && !tableData) {
+        <div class="assessment-detail__table-skeleton">
+          @for (item of [1, 2, 3, 4, 5]; track item) {
+            <div class="assessment-detail__skeleton-row">
+              <p-skeleton width="100%" height="3rem" />
+            </div>
+          }
+        </div>
+      } @else {
+        <app-table
+          [tableData]="tableData"
+          [columnsData]="columns"
+          [hasView]="true"
+          [hasRowEdit]="false"
+          [hasSearch]="true"
+          [parentLoader]="isLoading"
+          (selectedIds)="getSelectedCandidatesOnTable($event)"
+          (delete)="deleteCandidate($event)"
+          (view)="onView($event)"
+          (pageChangeAndSort)="onTablePayloadChange($event)"
+        >
+        </app-table>
+      }
     </div>
   </div>
 

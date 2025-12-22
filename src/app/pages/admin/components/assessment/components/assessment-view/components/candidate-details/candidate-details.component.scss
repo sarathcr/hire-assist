@@ -1,6 +1,45 @@
 .candidate-details {
-  padding: var(--spacing-30);
-  &:hover {
-    cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  height: 100%;
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #718096;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    i {
+      color: #667eea;
+      font-size: 0.9rem;
+    }
+  }
+
+  &__value {
+    font-size: 1rem;
+    color: #2d3748;
+    font-weight: 500;
+    padding-left: 1.75rem;
+    word-break: break-word;
+    line-height: 1.5;
+  }
+
+  ::ng-deep {
+    .p-divider {
+      margin: 0.5rem 0;
+      border-color: #e2e8f0;
+    }
   }
 }

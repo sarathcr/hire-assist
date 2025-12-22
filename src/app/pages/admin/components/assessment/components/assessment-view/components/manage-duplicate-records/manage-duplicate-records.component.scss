@@ -1,67 +1,369 @@
 .duplicates {
   height: 100%;
   display: flex;
-  gap: 1rem;
-  padding: var(--spacing-20);
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  min-height: 600px;
 
-  &__accordion {
-    max-width: 280px;
+  // Left Sidebar
+  &__sidebar {
+    min-width: 320px;
+    max-width: 380px;
     width: 100%;
-    height: 100%;
-    box-shadow: -1px -2px 4px 2px rgba(0, 0, 0, 0.05);
-    background-color: var(--color-white);
-    margin-top: var(--spacing-15);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+
+    &__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    &__title {
+      margin: 0;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      i {
+        font-size: 1.2rem;
+      }
+    }
+
+    &__card {
+      flex: 1;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+
+      ::ng-deep {
+        .p-card-body {
+          padding: 0;
+        }
+        .p-card-content {
+          padding: 0;
+        }
+      }
+    }
+  }
+
+  // Accordion Styles
+  &__accordion {
     ::ng-deep {
-      .p-accordionpanel:first-child > .p-accordionheader {
-        border-radius: 0 !important;
+      .p-accordion-tab {
+        margin-bottom: 0.5rem;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+
+        &:hover {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .p-accordion-header {
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          border: none;
+          padding: 0;
+
+          .p-accordion-header-link {
+            padding: 1rem;
+            border: none;
+            background: transparent;
+            border-radius: 0;
+            transition: all 0.2s ease;
+
+            &:hover {
+              background: rgba(102, 126, 234, 0.05);
+            }
+          }
+        }
+
+        .p-accordion-content {
+          border: none;
+          padding: 0;
+          background: white;
+        }
       }
-      .p-accordioncontent-content {
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+
+      &__info {
         display: flex;
-        flex-direction: column;
-        gap: 1rem;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        color: #2d3748;
+
+        i {
+          color: #667eea;
+        }
       }
     }
+
+    &__content-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 1rem;
+    }
+  }
+
+  // Candidate Card in Accordion
+  &__candidate-card {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 0;
+
+    &--clickable {
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        border-color: #667eea;
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+
+    ::ng-deep {
+      .p-card-body {
+        padding: 1rem;
+      }
+      .p-card-content {
+        padding: 0;
+      }
+    }
+
     &__content {
-      background-color: var(--color-warning-secondary);
-      padding: var(--spacing-15);
-      cursor: pointer;
-      p {
-        margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    &__avatar {
+      flex-shrink: 0;
+    }
+
+    &__info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    &__name,
+    &__phone {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #4a5568;
+
+      i {
+        color: #667eea;
+        font-size: 0.85rem;
+      }
+
+      span {
+        font-weight: 500;
       }
     }
-  }
-  &__panel {
-    &_selected {
-      background-color: #16a34a40;
+
+    &__name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #2d3748;
     }
   }
+
+  // Avatar Styles
+  &__avatar {
+    ::ng-deep {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 600;
+    }
+  }
+
+  // Right Content Area
   &__content {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
+    min-width: 0;
+
+    &__header {
+      padding: 1rem 1.5rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    &__title {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #2d3748;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      i {
+        color: #667eea;
+      }
+    }
+
+    &__subtitle {
+      margin: 0;
+      color: #718096;
+      font-size: 0.9rem;
+    }
   }
-  &__splitter {
-    flex-grow: 1;
-  }
+
+  // Split Panel
   &__split-panel {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    flex-grow: 1;
-    padding: var(--spacing-15) 0;
-    height: calc(100% - 90px);
-    overflow: auto;
+    min-height: 0;
+    overflow: hidden;
+
     ::ng-deep {
       .p-splitter {
         height: 100%;
-      }
-      .p-splitterpanel {
-        background-color: var(--background-secondary);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+        .p-splitter-panel {
+          background: transparent;
+          padding: 0.75rem;
+        }
+
+        .p-splitter-gutter {
+          background: #e2e8f0;
+          transition: background 0.2s ease;
+
+          &:hover {
+            background: #cbd5e0;
+          }
+        }
       }
     }
   }
+
+  // Panel (Individual Candidate Detail Panel)
+  &__panel {
+    height: 100%;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 10px;
+    padding: 0.5rem;
+
+    &:hover {
+      transform: scale(1.02);
+    }
+
+    &--selected {
+      .duplicates__panel__card {
+        border: 3px solid #10b981;
+        box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25);
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      }
+    }
+
+    &__card {
+      height: 100%;
+      border-radius: 10px;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+      overflow: hidden;
+
+      &:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+      }
+
+      ::ng-deep {
+        .p-card-body {
+          padding: 1.25rem;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .p-card-content {
+          flex: 1;
+          padding: 0;
+        }
+      }
+    }
+
+    &__header {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0.75rem 1rem;
+      background: rgba(102, 126, 234, 0.05);
+      border-bottom: 1px solid #e2e8f0;
+
+      &__badge {
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+
+  // Splitter
+  &__splitter {
+    flex-grow: 1;
+    min-height: 0;
+  }
+
+  // Button Container
   &__btn {
     display: flex;
     justify-content: flex-end;
+    padding: 1rem 0;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.5rem;
+  }
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+  .duplicates {
+    flex-direction: column;
+
+    &__sidebar {
+      max-width: 100%;
+      min-width: 100%;
+    }
+
+    &__split-panel {
+      height: 500px;
+    }
   }
 }

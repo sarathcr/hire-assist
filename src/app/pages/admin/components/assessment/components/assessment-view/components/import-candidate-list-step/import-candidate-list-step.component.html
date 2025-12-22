@@ -1,20 +1,75 @@
 <div class="candidate">
-  <div class="candidate__section">
-    <div class="coordinator__section-header">
-      <div class="candidate__header">
-        <h2 class="candidate__section__title app-title">Import Candidates</h2>
+  <!-- Header Section with Action Bar -->
+  <div class="candidate__header-section">
+    <div class="candidate__header-content">
+      <div class="candidate__header-text">
+        <h2 class="candidate__title">
+          <i class="pi pi-users"></i>
+          Import & Schedule Candidates
+        </h2>
+        <p class="candidate__description">
+          Import candidates from CSV, manage your candidate list, and schedule
+          assessments
+        </p>
+      </div>
+      <div class="candidate__header-actions">
         <app-button
           class="candidate__schedule-btn"
           tooltipPosition="top"
-          [buttonLabel]="'Schedule'"
+          [buttonLabel]="'Schedule Assessment'"
+          [icon]="'pi pi-calendar-check'"
           [disabled]="!selectedUsers || selectedUsers.length === 0"
           (btnClick)="scheduleAssessment()"
         ></app-button>
       </div>
-      <p class="candidate__section__description">
-        Import and schedule candidates
-      </p>
     </div>
+  </div>
+
+  <!-- Action Toolbar -->
+  <div class="candidate__toolbar">
+    <div class="candidate__toolbar-group">
+      <p-fileUpload
+        [disabled]="importStatus"
+        mode="basic"
+        accept=".csv"
+        [maxFileSize]="1000000"
+        label="Import CSV"
+        chooseLabel="Import CSV"
+        auto
+        customUpload
+        class="candidate__import-btn"
+        [chooseButtonProps]="{ severity: 'secondary', icon: 'pi pi-upload' }"
+        (uploadHandler)="onImport($event)"
+      />
+      <app-button
+        class="candidate__action-btn"
+        [disabled]="newStatus"
+        [buttonLabel]="'Add New'"
+        [icon]="'pi pi-plus'"
+        (btnClick)="addNewCandidate()"
+      ></app-button>
+    </div>
+    <div class="candidate__toolbar-group">
+      <app-button
+        class="candidate__action-btn candidate__action-btn--danger"
+        [buttonLabel]="'Delete Selected'"
+        [buttonSeverity]="'danger'"
+        [icon]="'pi pi-trash'"
+        [disabled]="!selectedUsers || selectedUsers.length === 0"
+        (btnClick)="deleteSelectedCandidates()"
+      ></app-button>
+      <app-button
+        class="candidate__action-btn"
+        [buttonLabel]="'Add to Batch'"
+        [icon]="'pi pi-layer-group'"
+        [disabled]="!selectedUsers || selectedUsers.length === 0"
+        (btnClick)="createBatchSelectedCandidates()"
+      ></app-button>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="candidate__table-section">
     <app-table
       [tableData]="data"
       [columnsData]="columns"
@@ -24,41 +79,8 @@
       (pageChangeAndSort)="onTablePayloadChange($event)"
       (view)="onView($event)"
     >
-      <div class="candidate__Cuatom-button">
-        <p-fileUpload
-          [disabled]="importStatus"
-          mode="basic"
-          accept=".csv"
-          [maxFileSize]="1000000"
-          label="Import"
-          chooseLabel="Import"
-          auto
-          customUpload
-          class="mr-2 inline-block"
-          [chooseButtonProps]="{ severity: 'secondary' }"
-          (uploadHandler)="onImport($event)"
-        />
-        <app-button
-          [disabled]="newStatus"
-          [buttonLabel]="'New'"
-          (btnClick)="addNewCandidate()"
-        ></app-button>
-
-        <app-button
-          [buttonLabel]="'Delete'"
-          [buttonSeverity]="'danger'"
-          [disabled]="!selectedUsers || selectedUsers.length === 0"
-          (btnClick)="deleteSelectedCandidates()"
-        ></app-button>
-
-        <app-button
-          [buttonLabel]="'Batch'"
-          [disabled]="!selectedUsers || selectedUsers.length === 0"
-          (btnClick)="createBatchSelectedCandidates()"
-        ></app-button>
-      </div>
     </app-table>
-
-    <p-toast position="top-right" class="Toast"></p-toast>
   </div>
+
+  <p-toast position="top-right" class="Toast"></p-toast>
 </div>
