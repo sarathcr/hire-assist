@@ -29,7 +29,9 @@ export class UserRoleAccessDataModel extends FormEntity {
         Validators.required,
         Validators.minLength(3),
         Validators.maxLength(150),
-        Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/),
+        Validators.pattern(
+          /^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]*[a-zA-Z0-9])?@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/,
+        ),
       ],
       roles: [Validators.required],
       department: [Validators.required],

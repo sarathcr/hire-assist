@@ -1,20 +1,31 @@
 <div class="frontdesk-assessments">
   <div>
-    <h1 class="frontdesk-assessments__title">Assigned Active Assessments</h1>
+    <h1 class="frontdesk-assessments__title">Recruitments</h1>
   </div>
   <div class="frontdesk-assessments__wrapper">
     <div class="frontdesk-assessments__list">
-      @for (assessment of assessmentDataSource; track assessment) {
-        <app-assessment-card
-          class="frontdesk-assessments__card"
-          [data]="assessment"
-          [showToggleButton]="false"
-          (click)="onClickAssessment(assessment.id ?? 0)"
-        ></app-assessment-card>
-      } @empty {
+      @if (isLoading) {
         <app-assessment-card-skeleton
           class="frontdesk-assessments__card"
         ></app-assessment-card-skeleton>
+        <app-assessment-card-skeleton
+          class="frontdesk-assessments__card"
+        ></app-assessment-card-skeleton>
+        <app-assessment-card-skeleton
+          class="frontdesk-assessments__card"
+        ></app-assessment-card-skeleton>
+      } @else {
+        @for (assessment of assessmentDataSource; track assessment) {
+          <app-assessment-card
+            class="frontdesk-assessments__card"
+            [data]="assessment"
+            [showToggleButton]="false"
+            (click)="onClickAssessment(assessment.id ?? 0)"
+            (keydown)="onClickAssessment(assessment.id ?? 0)"
+          ></app-assessment-card>
+        } @empty {
+          <h1 class="frontdesk-assessments__content">No Active Recruitments</h1>
+        }
       }
     </div>
   </div>

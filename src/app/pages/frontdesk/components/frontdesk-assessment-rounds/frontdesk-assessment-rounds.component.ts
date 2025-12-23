@@ -32,7 +32,6 @@ export class FrontdeskAssessmentRoundsComponent
   }
   override ngOnInit(): void {
     this.getAssessmentId();
-    this.getAllAssessmentRounds();
   }
 
   public onClickAssessment(id: number): void {
@@ -46,12 +45,17 @@ export class FrontdeskAssessmentRoundsComponent
   private getAssessmentId() {
     this.route.paramMap.subscribe((params) => {
       this.assessmentId = params.get('id')! as unknown as number;
+      if (this.assessmentId) {
+        this.getAllAssessmentRounds();
+      }
     });
   }
 
   private getAllAssessmentRounds(): void {
+    this.isLoading = true;
+    this.assessmentDataSource = [];
     const next = (res: Assessment[]) => {
-      this.assessmentDataSource = res;
+      this.assessmentDataSource = res || [];
       this.isLoading = false;
     };
 
@@ -61,6 +65,7 @@ export class FrontdeskAssessmentRoundsComponent
         summary: 'Error',
         detail: error.error.type,
       });
+      this.assessmentDataSource = [];
       this.isLoading = false;
     };
 

@@ -1,12 +1,16 @@
 <div class="frontdesk-assessment-rounds">
   <div>
-    <h1 class="frontdesk-assessment-rounds__title">
-      Assigned Assessment Active Rounds
-    </h1>
+    <h1 class="frontdesk-assessment-rounds__title">Recruitment Rounds</h1>
   </div>
   <div class="frontdesk-assessment-rounds__wrapper">
     <div class="frontdesk-assessment-rounds__list">
-      @if (!isLoading) {
+      @if (isLoading) {
+        @for (skeleton of [1, 2, 3]; track skeleton) {
+          <app-assessment-card-skeleton
+            class="frontdesk-assessment-rounds__card"
+          ></app-assessment-card-skeleton>
+        }
+      } @else {
         @for (assessment of assessmentDataSource; track assessment) {
           <app-assessment-card
             class="frontdesk-assessment-rounds__card"
@@ -18,10 +22,6 @@
         } @empty {
           <h1 class="frontdesk-assessment-rounds__content">No Active Rounds</h1>
         }
-      } @else {
-        <app-assessment-card-skeleton
-          class="frontdesk-assessment-rounds__card"
-        ></app-assessment-card-skeleton>
       }
     </div>
   </div>

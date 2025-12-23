@@ -708,7 +708,6 @@
       border-radius: 16px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      margin: 0 calc(-1 * var(--spacing-15));
       padding-left: var(--spacing-15);
       padding-right: var(--spacing-15);
     }
@@ -892,7 +891,6 @@
 
     &__stepper-wrapper {
       padding: var(--spacing-12);
-      margin: 0 calc(-1 * var(--spacing-10));
       padding-left: var(--spacing-10);
       padding-right: var(--spacing-10);
       overflow-x: auto;

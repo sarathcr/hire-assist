@@ -19,6 +19,7 @@ export class FrontdeskDashboardComponent
   implements OnInit
 {
   public assessmentDataSource: Assessment[] = [];
+  public isLoading = true;
 
   constructor(
     public router: Router,
@@ -38,8 +39,11 @@ export class FrontdeskDashboardComponent
   }
 
   private getAllAssessments(): void {
+    this.isLoading = true;
+    this.assessmentDataSource = [];
     const next = (res: Assessment[]) => {
-      this.assessmentDataSource = res;
+      this.assessmentDataSource = res || [];
+      this.isLoading = false;
     };
 
     const error = (error: CustomErrorResponse) => {
@@ -48,6 +52,8 @@ export class FrontdeskDashboardComponent
         summary: 'Error',
         detail: error.error.type,
       });
+      this.assessmentDataSource = [];
+      this.isLoading = false;
     };
 
     this.assessmentService

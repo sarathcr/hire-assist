@@ -3,12 +3,16 @@
 }
 
 .assessment-round__section {
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(21, 101, 192, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(33, 150, 243, 0.05) 0%,
+    rgba(21, 101, 192, 0.05) 100%
+  );
   border-radius: 16px;
   margin-top: var(--spacing-20);
   overflow: hidden;
   padding: 0;
-    border: 1px solid rgba(33, 150, 243, 0.2);
+  border: 1px solid rgba(33, 150, 243, 0.2);
   box-shadow:
     0 1px 3px 0 rgba(0, 0, 0, 0.1),
     0 1px 2px 0 rgba(0, 0, 0, 0.06);
@@ -26,7 +30,7 @@
 }
 
 .assessment-round__section-header {
-  background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+  background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
   padding: 32px;
   margin-bottom: 0;
   color: white;
@@ -78,7 +82,11 @@
 .assessment-round {
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(21, 101, 192, 0.05) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(33, 150, 243, 0.05) 0%,
+    rgba(21, 101, 192, 0.05) 100%
+  );
   padding: 24px;
   border: none;
 
@@ -86,7 +94,6 @@
   &__content {
     display: flex;
     flex-direction: column;
-    gap: 20px;
   }
 
   // Select Section
@@ -100,7 +107,7 @@
   &__select-wrapper {
     display: flex;
     gap: var(--spacing-20);
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 0;
     width: 100%;
   }
@@ -110,7 +117,10 @@
 
     &_skeleton {
       width: 100%;
-      height: 2.5rem;
+      ::ng-deep .input-multiselect {
+        margin-bottom: 0;
+        position: relative;
+      }
     }
   }
 
@@ -118,6 +128,8 @@
     flex-shrink: 0;
     white-space: nowrap;
     min-width: 140px;
+    border: 1px solid #2196f3;
+    border-radius: 10px;
   }
 
   // Rounds Section
@@ -160,7 +172,11 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-10);
-    background: linear-gradient(135deg, rgba(33, 150, 243, 0.08) 0%, rgba(21, 101, 192, 0.08) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(33, 150, 243, 0.08) 0%,
+      rgba(21, 101, 192, 0.08) 100%
+    );
     border: 1.5px solid rgba(33, 150, 243, 0.3);
     border-radius: 10px;
     padding: var(--spacing-15) var(--spacing-20);
@@ -178,14 +194,19 @@
     -moz-user-select: none;
     -ms-user-select: none;
     order: 0;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
 
     &:not(.assessment-round__sortable-chosen) {
-      transition: box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      transition:
+        box-shadow 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
     }
 
     &:hover:not(.assessment-round__sortable-chosen) {
-      border-color: #2196F3;
+      border-color: #2196f3;
       box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
       background: #fafbfc;
 
@@ -194,7 +215,7 @@
       }
 
       .assessment-round__grip-icon {
-        color: #2196F3;
+        color: #2196f3;
       }
     }
 
@@ -205,7 +226,7 @@
 
     &.assessment-round__sortable-drag {
       box-shadow: 0 8px 24px rgba(33, 150, 243, 0.4);
-      border-color: #2196F3;
+      border-color: #2196f3;
       background: white;
       transform: rotate(1deg);
       z-index: 1000;
@@ -215,9 +236,13 @@
 
     &.assessment-round__sortable-ghost {
       opacity: 0.4;
-      background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(21, 101, 192, 0.05) 100%);
+      background: linear-gradient(
+        135deg,
+        rgba(33, 150, 243, 0.05) 0%,
+        rgba(21, 101, 192, 0.05) 100%
+      );
       border-style: dashed;
-      border-color: #2196F3;
+      border-color: #2196f3;
       border-width: 2px;
       transition: none;
       width: auto !important;
@@ -262,7 +287,7 @@
 
     &:hover {
       .assessment-round__grip-icon {
-        color: #2196F3;
+        color: #2196f3;
       }
     }
 
@@ -283,7 +308,7 @@
     width: clamp(28px, 6vw, 30px);
     height: clamp(28px, 6vw, 30px);
     margin: var(--spacing-5);
-    background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+    background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
     color: var(--color-white);
     border-radius: 50%;
     font-size: clamp(12px, 2.5vw, 14px);
@@ -354,14 +379,14 @@
   &__footer {
     display: flex;
     justify-content: flex-end;
-    padding: 24px;
+    padding: 24px 0;
     border-top: 1px solid #e5e7eb;
     margin-top: 0;
   }
 
   &__create-button {
     ::ng-deep .p-button {
-      background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+      background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
       border: none;
 
       &:hover:not(:disabled) {
@@ -377,7 +402,7 @@
     font-size: var(--font-size-base);
 
     ::ng-deep .p-button {
-      background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+      background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
       border: none;
 
       &:hover:not(:disabled) {
@@ -458,26 +483,16 @@
 
   /* ---------------- RESPONSIVE ---------------- */
 
-  @media screen and (min-width: 768px) and (max-width: 1372px) {
-    ::ng-deep .p-multiselect .p-multiselect-label {
-      font-size: 12px !important;
-      white-space: normal !important;
-    }
-
-    ::ng-deep .p-multiselect-token {
-      padding: 2px 6px !important;
-      line-height: 1.2 !important;
-    }
-  }
-
   @media screen and (max-width: 768px) {
     .assessment-round__select-wrapper {
       flex-direction: column !important;
       width: 100% !important;
       align-items: stretch !important;
-      gap: clamp(16px, 10vw, 40px) !important;
+      gap: 20px;
     }
-
+    ::ng-deep .p-multiselect .p-multiselect-label {
+      font-size: var(--font-size-base);
+    }
     .assessment-round__multiselect,
     .assessment-round__multiselect_skeleton {
       width: 100% !important;
@@ -498,11 +513,6 @@
       padding: 2px 6px !important;
       font-size: 10px !important;
       line-height: 1.2 !important;
-    }
-
-    ::ng-deep .p-multiselect .p-multiselect-label {
-      font-size: 10px !important;
-      white-space: normal !important;
     }
 
     .assessment-round__rounds-list {
@@ -558,6 +568,10 @@
       opacity: 0.7 !important;
       flex-shrink: 0 !important;
     }
+    ::ng-deep .assessment-round__footer {
+      display: block;
+      padding: 20px 0 0 0;
+    }
   }
 
   @media screen and (max-width: 480px) {
@@ -595,11 +609,6 @@
       height: 24px !important;
     }
   }
-  @media screen and (min-width: 558px) and (max-width: 768px) {
-    .assessment-round__select-wrapper {
-      gap: 0 !important;
-    }
-  }
 }
 
 // Skeleton specific styles
@@ -632,6 +641,16 @@
 
   // Responsive skeleton widths
   @media screen and (max-width: 768px) {
+    .assessment-round {
+      padding: 25px 10px;
+    }
+    ::ng-deep .assessment-round__section-header {
+      padding: 16px;
+      font-size: var(--font-size-base);
+    }
+    ::ng-deep .assessment-round__header-icon {
+      display: none;
+    }
     .assessment-round__skeleton-title.p-skeleton {
       width: min(280px, 100%) !important;
       max-width: 100%;
@@ -660,7 +679,7 @@
 
   // Global button styles for all non-outlined buttons
   .p-button:not(.p-button-outlined):not(.p-button-text) {
-    background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%) !important;
+    background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%) !important;
     border: none !important;
 
     &:hover:not(:disabled) {

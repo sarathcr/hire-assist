@@ -234,6 +234,7 @@
           table_isDuplicate: product.isDuplicate,
           'table__row--disabled': product.isSelf,
           'table__row--batch-assigned': product.batchId && product.batchId > 0,
+          'table__row--not-scheduled': !product.isAlreadyExist && !product.isDuplicate && (!product.batchId || product.batchId === 0 || product.batchId === null),
         }"
         [pTooltip]="
           product.isAlreadyExist
@@ -241,8 +242,10 @@
             : product.isDuplicate
               ? 'Duplicate records were discovered in the sheet.'
               : product.batchId && product.batchId > 0
-                ? `Assigned to batch: ${product.batchName || 'Batch ' + product.batchId}`
-                : ''
+                ? `Scheduled - Assigned to batch: ${product.batchName || 'Batch ' + product.batchId}`
+                : !product.isAlreadyExist && !product.isDuplicate && (!product.batchId || product.batchId === 0 || product.batchId === null)
+                  ? 'Not scheduled - Candidate has not been scheduled for assessment'
+                  : ''
         "
       >
         @if (hasCheckbox) {
