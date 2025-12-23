@@ -1,7 +1,6 @@
 .dashboard-container {
   width: 100%;
   max-height: 100vh;
-  padding: var(--spacing-10) var(--spacing-15);
   background: var(--dashboard-main-background-color, #f5f6fa);
   display: flex;
   flex-direction: column;
@@ -51,10 +50,8 @@
   }
 
   .dashboard-title {
-    font-size: 1.5rem;
     font-weight: 700;
-    color: var(--color-dune, #333333);
-    margin: 0;
+    color:var(--color-grey);
     letter-spacing: -0.5px;
     flex: 1;
     min-width: 0;
@@ -164,17 +161,19 @@
     opacity: 0;
     transition: opacity 0.3s ease;
   }
-
   &:hover {
     transform: translateY(-6px) scale(1.02);
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 6px 16px rgba(0, 0, 0, 0.1);
     z-index: 1;
+    @media screen and (max-width: 640px) {
+       transform: none;
+    }
 
     &::before {
       opacity: 1;
     }
   }
-
+  
   .stat-card-background {
     position: absolute;
     top: 0;
@@ -821,6 +820,9 @@
       min-height: 220px;
       max-height: 280px;
     }
+     @media screen and (max-width: 480px) {
+       max-height: 380px;
+      }
   }
 
   ::ng-deep canvas {
@@ -1088,6 +1090,9 @@
     opacity: 0.5;
     background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%) !important;
     box-shadow: none !important;
+     width: 56px;
+    height: 56px;
+    border-radius: 16px;
   }
 
   .skeleton-badge {
@@ -1116,7 +1121,7 @@
 
   .skeleton-number {
     width: 100px;
-    height: 40px;
+    height: 10px;
     border-radius: 8px;
     background: linear-gradient(
       90deg,
@@ -1139,7 +1144,7 @@
 
   .skeleton-detail {
     width: 130px;
-    height: 36px;
+    height: 20px;
     border-radius: 8px;
     background: linear-gradient(
       90deg,

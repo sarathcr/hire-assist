@@ -173,6 +173,7 @@
   &__attachment-actions {
     display: flex;
     gap: var(--spacing-10);
+    flex-direction: column;
     opacity: 1;
     transition: opacity 0.2s ease;
     animation: fadeIn 0.2s ease;

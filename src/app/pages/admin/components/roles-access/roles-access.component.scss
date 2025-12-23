@@ -8,9 +8,11 @@
   }
 }
 .roles-access {
+   color: var(--color-grey);
   &__button {
     display: flex;
     gap: 1rem;
     justify-items: flex-start;
+   
   }
 }

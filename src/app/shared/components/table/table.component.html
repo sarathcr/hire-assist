@@ -9,6 +9,7 @@
     [lazy]="true"
     [first]="firstIndex()"
     (onLazyLoad)="onLazyLoad($event)"
+    (onFilter)="onFilterApplied($event)"
     [rowsPerPageOptions]="[5, 10, 15]"
     [showCurrentPageReport]="false"
     [rowHover]="true"

@@ -117,6 +117,9 @@ export class TableComponent<
   private isInitializingFromAlreadySelected = false;
   // Track last emitted selection to prevent duplicate emissions
   private lastEmittedSelection: string[] = [];
+  // Track applied filters separately from typed filters
+  // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+  private appliedFilters: { [key: string]: any } = {};
 
   // Input Properties
   public tableData = input<PaginatedData<T>>();
@@ -188,7 +191,6 @@ export class TableComponent<
         // Resync current page visual selection from persisted ids
         const currentPageData = currentTableData.data || [];
 
-        // --- FIX: Convert item.id to string for comparison ---
         const newSelectedItems = currentPageData.filter((item) =>
           this.persistedSelectedIds.has(String(item.id)),
         );
@@ -259,7 +261,6 @@ export class TableComponent<
 
         // Update current page selection if table data is available
         if (currentTableData?.data) {
-          // --- FIX: Convert item.id to string for comparison ---
           this.selectedItems = currentTableData.data.filter((item) =>
             this.persistedSelectedIds.has(String(item.id)),
           );
@@ -291,7 +292,6 @@ export class TableComponent<
         // Recompute page selection
         const pageData = this.tableData()?.data || [];
 
-        // --- FIX: Convert item.id to string for comparison ---
         this.selectedItems = pageData.filter((item) =>
           this.persistedSelectedIds.has(String(item.id)),
         );
@@ -346,7 +346,6 @@ export class TableComponent<
     // Optimistically prune selection for this id so header buttons update
     this.persistedSelectedIds.delete(id);
 
-    // --- FIX: Convert item.id to string for comparison ---
     this.selectedItems = (this.tableData()?.data || []).filter((item) =>
       this.persistedSelectedIds.has(String(item.id)),
     );
@@ -376,7 +375,6 @@ export class TableComponent<
 
   // Keep persistedSelectedIds in sync with UI selection changes (row or header)
   public onSelectionChange(newSelection: { id: string }[]): void {
-    // --- FIX: Convert item.id to string for logic ---
     const currentPageIds = (this.tableData()?.data || []).map((d) =>
       String(d.id),
     );
@@ -394,7 +392,6 @@ export class TableComponent<
     }
 
     // Update selectedItems to reflect persisted set on current page
-    // --- FIX: Convert item.id to string for comparison ---
     this.selectedItems = (this.tableData()?.data || []).filter((item) =>
       this.persistedSelectedIds.has(String(item.id)),
     );
@@ -469,6 +466,7 @@ export class TableComponent<
     this.internalIsLoading.set(true);
     this.searchValue = '';
     this.activeFilters.clear();
+    this.appliedFilters = {};
     this.isAnyFilterActive = false;
     this.table.clear();
     const payload: PaginatedPayload = new PaginatedPayload();
@@ -476,8 +474,17 @@ export class TableComponent<
   }
   // Inside your component's @Component decorator or class body
   @HostBinding('class.table-loading') get loadingClass() {
-    return this.isLoading(); // Assuming isLoading() returns a boolean or signal value
+    return this.isLoading();
   }
+
+  // Capture filters when user clicks Apply button
+  public onFilterApplied(event: any): void {
+    this.appliedFilters = JSON.parse(JSON.stringify(event.filters || {}));
+
+    // Process the filters immediately
+    this.processLazyLoad(event, true);
+  }
+
   public onLazyLoad(event: any): void {
     // Skip first lazy load to prevent duplicate with initial ngOnInit call
     if (this.isFirstLazyLoad) {
@@ -485,8 +492,12 @@ export class TableComponent<
       return;
     }
 
-    // Prevent calls if already loading (from parent or internal)
-    if (this.isLoading()) {
+    this.processLazyLoad(event, false);
+  }
+
+  private processLazyLoad(event: any, isFilterApply: boolean): void {
+    // Prevent calls if already loading (from parent or internal) - except when applying filters
+    if (!isFilterApply && this.isLoading()) {
       return;
     }
 
@@ -497,9 +508,9 @@ export class TableComponent<
     payload.pagination.pageSize =
       event.rows ?? this.tableData()?.pageSize ?? 10;
 
-    // Prevent duplicate calls within debounce window
+    // Prevent duplicate calls within debounce window - except when applying filters
     const now = Date.now();
-    if (this.lastPaginationCall) {
+    if (!isFilterApply && this.lastPaginationCall) {
       const timeSinceLastCall = now - this.lastPaginationCall.timestamp;
       const isSamePayload = this.isSamePayload(
         payload,
@@ -532,8 +543,8 @@ export class TableComponent<
     }
 
     // Filtering
-    if (event.filters) {
-      Object.entries(event.filters).forEach(([field, filterMeta]) => {
+    if (this.appliedFilters && Object.keys(this.appliedFilters).length > 0) {
+      Object.entries(this.appliedFilters).forEach(([field, filterMeta]) => {
         const constraints = filterMeta as {
           value: any;
           matchMode: string;
