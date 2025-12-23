@@ -11,10 +11,18 @@
     </div>
 
     <div class="assessment-list__wrapper">
-      @if ((isLoading$ | async) || isLoading) {
-        <app-assessment-card-skeleton
-          class="assessment-list__card"
-        ></app-assessment-card-skeleton>
+      @if (
+        (isLoading$ | async) ||
+        isLoading ||
+        (isInitialLoad && assessmentDataSource.length === 0)
+      ) {
+        <div class="assessment-list__list">
+          @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+            <app-assessment-card-skeleton
+              class="assessment-list__card"
+            ></app-assessment-card-skeleton>
+          }
+        </div>
       } @else {
         <div
           [ngClass]="{

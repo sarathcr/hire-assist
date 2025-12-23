@@ -3,8 +3,8 @@ import { RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { SideNavComponent } from '../../shared/components/side-nav/side-nav.component';
-import { SidebarCollapseService } from '../../shared/services/sidebar-collapse.service';
 import { CollectionService } from '../../shared/services/collection.service';
+import { SidebarCollapseService } from '../../shared/services/sidebar-collapse.service';
 import { StoreService } from '../../shared/services/store.service';
 
 @Component({
@@ -17,7 +17,7 @@ export class DashboardComponent implements OnInit {
   public links: MenuItem[] = [];
   private collapseService = inject(SidebarCollapseService);
   public collapsed = computed(() => this.collapseService.isCollapsed());
-  
+
   constructor(
     private readonly storeService: StoreService,
     private readonly collectionService: CollectionService,
@@ -154,11 +154,11 @@ export class DashboardComponent implements OnInit {
   private getInterviewerLinks(userRole: string[]): MenuItem[] {
     const links: MenuItem[] = [
       {
-        label: 'Dashboard',
-        icon: 'pi pi-home',
+        label: 'Interviews',
+        icon: 'pi pi-calendar',
         routerLink: ['/interviewer'],
         routerLinkActiveOptions: { exact: true },
-        tooltip: 'Dashboard',
+        tooltip: 'Interviews',
       },
     ];
     if (userRole.includes('coordinator')) {
@@ -185,27 +185,20 @@ export class DashboardComponent implements OnInit {
   private getCoordinatorLinks(userRole: string[]): MenuItem[] {
     const links: MenuItem[] = [
       {
-        label: 'Dashboard',
-        icon: 'pi pi-home',
+        label: 'Recruitments',
+        icon: 'pi pi-sitemap',
         routerLink: ['/coordinator'],
         routerLinkActiveOptions: { exact: true },
-        tooltip: 'Dashboard',
-      },
-      {
-        label: 'Recruitments',
-        icon: 'pi pi-file-edit',
-        routerLink: ['/coordinator/recruitments'],
-        routerLinkActiveOptions: { exact: false },
         tooltip: 'Recruitments',
       },
     ];
     if (userRole.includes('interviewer')) {
       links.push({
-        label: 'Interviewer',
+        label: 'Interviews',
         icon: 'pi pi-calendar',
         routerLink: ['/admin/interviews'],
         routerLinkActiveOptions: { exact: false },
-        tooltip: 'Interviewer',
+        tooltip: 'Interviews',
       });
     }
     if (userRole.includes('frontdesk')) {
@@ -241,11 +234,11 @@ export class DashboardComponent implements OnInit {
     }
     if (userRole.includes('interviewer')) {
       links.push({
-        label: 'Interviewer',
+        label: 'Interviews',
         icon: 'pi pi-calendar',
         routerLink: ['/admin/interviews'],
         routerLinkActiveOptions: { exact: false },
-        tooltip: 'Interviewer',
+        tooltip: 'Interviews',
       });
     }
     return links;

@@ -308,7 +308,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       this.reloadPaginatedData();
       this.isLoading = false;
     };
-    const error = (error: string) => {
+    const error = () => {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -324,11 +324,17 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   private subscribeToPaginatedData(): void {
     const sub = this.dataSource.connect().subscribe((data) => {
       this.assessmentDataSource = data;
-      if (this.isInitialLoad && data.length > 0) {
+    });
+    this.subscriptionList.push(sub);
+
+    // Track loading state to set isInitialLoad to false when loading completes
+    const loadingSub = this.dataSource.loading$.subscribe((isLoading) => {
+      if (!isLoading && this.isInitialLoad) {
+        // Only set to false when loading completes
         this.isInitialLoad = false;
       }
     });
-    this.subscriptionList.push(sub);
+    this.subscriptionList.push(loadingSub);
   }
 
   private reloadPaginatedData(): void {
