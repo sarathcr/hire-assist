@@ -294,7 +294,8 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 
-    ::ng-deep {
+    // Scope styles to only the candidate-table class to prevent affecting other tables
+    ::ng-deep app-table.candidate-table {
       .p-datatable {
         .p-datatable-header {
           background: transparent;

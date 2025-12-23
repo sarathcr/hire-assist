@@ -91,11 +91,13 @@
   <!-- Table Section -->
   <div class="candidate__table-section">
     <app-table
+      class="candidate-table"
       [tableData]="data"
       [columnsData]="columns"
       [hasSearch]="true"
       [parentLoader]="isLoading"
       [alreadySelected]="alreadySelectedCandidates"
+      [enableCandidateStyling]="true"
       (delete)="deleteCandidate($event)"
       (selectedIds)="getSelectedItems($event)"
       (pageChangeAndSort)="onTablePayloadChange($event)"

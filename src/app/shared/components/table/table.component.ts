@@ -140,6 +140,7 @@ export class TableComponent<
   public statusOptionsForSchedule: SelectItem[] = uniqueStatusesForIsSchedule;
   public hasSearch = input<boolean>(false);
   public searchDebounceTime = input<number>(400);
+  public enableCandidateStyling = input<boolean>(false); // Enable candidate-specific row styling and tooltips
   public activeFilters = new Set<string>();
   public isAnyFilterActive = false;
   public globalPayload = new PaginatedPayload();

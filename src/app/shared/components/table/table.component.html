@@ -230,22 +230,24 @@
     <ng-template pTemplate="body" let-product let-columns="columns">
       <tr
         [ngClass]="{
-          table_isAlready: product.isAlreadyExist,
-          table_isDuplicate: product.isDuplicate,
+          table_isAlready: enableCandidateStyling() && product.isAlreadyExist,
+          table_isDuplicate: enableCandidateStyling() && product.isDuplicate,
           'table__row--disabled': product.isSelf,
-          'table__row--batch-assigned': product.batchId && product.batchId > 0,
-          'table__row--not-scheduled': !product.isAlreadyExist && !product.isDuplicate && (!product.batchId || product.batchId === 0 || product.batchId === null),
+          'table__row--batch-assigned': enableCandidateStyling() && product.batchId && product.batchId > 0,
+          'table__row--not-scheduled': enableCandidateStyling() && !product.isAlreadyExist && !product.isDuplicate && (!product.batchId || product.batchId === 0 || product.batchId === null),
         }"
         [pTooltip]="
-          product.isAlreadyExist
-            ? 'We already have this record in our records.'
-            : product.isDuplicate
-              ? 'Duplicate records were discovered in the sheet.'
-              : product.batchId && product.batchId > 0
-                ? `Scheduled - Assigned to batch: ${product.batchName || 'Batch ' + product.batchId}`
-                : !product.isAlreadyExist && !product.isDuplicate && (!product.batchId || product.batchId === 0 || product.batchId === null)
-                  ? 'Not scheduled - Candidate has not been scheduled for assessment'
-                  : ''
+          enableCandidateStyling()
+            ? product.isAlreadyExist
+              ? 'We already have this record in our records.'
+              : product.isDuplicate
+                ? 'Duplicate records were discovered in the sheet.'
+                : product.batchId && product.batchId > 0
+                  ? `Scheduled - Assigned to batch: ${product.batchName || 'Batch ' + product.batchId}`
+                  : !product.isAlreadyExist && !product.isDuplicate && (!product.batchId || product.batchId === 0 || product.batchId === null)
+                    ? 'Not scheduled - Candidate has not been scheduled for assessment'
+                    : ''
+            : ''
         "
       >
         @if (hasCheckbox) {
