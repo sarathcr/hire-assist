@@ -2,34 +2,43 @@
   <h1 class="batch-detail__title">Batches Details</h1>
   <div class="batch-detail__view">
     <div class="batch-detail__view__content">
-      <p-accordion [value]="0" (onOpen)="onAccordionOpen($event)">
-        @if (batchList && batchList.length === 0) {
-          <p-accordion-panel [disabled]="true">
-            <p-accordion-header>No batches available</p-accordion-header>
-          </p-accordion-panel>
-        }
-        @for (item of batchList; track item.name) {
-          <p-accordion-panel [value]="item.name">
-            <p-accordion-header>{{ item.name }} </p-accordion-header>
-            <p-accordion-content>
-              <div>
-                <p-chip
-                  label="{{ item.scheduledTime }}"
-                  icon="pi pi-calendar"
-                />
-              </div>
+      @if (isLoading) {
+        <app-frontdesk-batch-assignment-skeleton></app-frontdesk-batch-assignment-skeleton>
+      } @else {
+        <p-accordion [value]="0" (onOpen)="onAccordionOpen($event)">
+          @if (batchList && batchList.length === 0) {
+            <p-accordion-panel [disabled]="true">
+              <p-accordion-header>No batches available</p-accordion-header>
+            </p-accordion-panel>
+          }
+          @for (item of batchList; track item.name) {
+            <p-accordion-panel [value]="item.name">
+              <p-accordion-header>{{ item.name }} </p-accordion-header>
+              <p-accordion-content>
+                <div>
+                  <p-chip
+                    label="{{ item.scheduledTime }}"
+                    icon="pi pi-calendar"
+                  />
+                </div>
 
-              <app-table
-                [tableData]="candidatesByBatch[item.id]"
-                [columnsData]="columns"
-                [hasSearch]="true"
-                (pageChangeAndSort)="onTablePayloadChange($event, item.id)"
-                (buttonClick)="onButtonClick($event, item.id)"
-              ></app-table>
-            </p-accordion-content>
-          </p-accordion-panel>
-        }
-      </p-accordion>
+                @if (loadingBatches[item.id] && !candidatesByBatch[item.id]) {
+                  <app-table-skeleton></app-table-skeleton>
+                } @else {
+                  <app-table
+                    [tableData]="candidatesByBatch[item.id]"
+                    [columnsData]="columns"
+                    [hasSearch]="true"
+                    [parentLoader]="loadingBatches[item.id] || false"
+                    (pageChangeAndSort)="onTablePayloadChange($event, item.id)"
+                    (buttonClick)="onButtonClick($event, item.id)"
+                  ></app-table>
+                }
+              </p-accordion-content>
+            </p-accordion-panel>
+          }
+        </p-accordion>
+      }
     </div>
   </div>
   <p-toast position="top-right" class="Toast"></p-toast>

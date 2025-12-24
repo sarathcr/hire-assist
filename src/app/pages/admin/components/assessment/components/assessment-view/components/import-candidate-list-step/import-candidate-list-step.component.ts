@@ -44,6 +44,7 @@ import { CreateBatchDialogComponent } from '../create-batch-dialog/create-batch-
 import { ManageDuplicateRecordsComponent } from '../manage-duplicate-records/manage-duplicate-records.component';
 import { StoreService } from '../../../../../../../../shared/services/store.service';
 import { StepsStatusService } from '../../../../services/steps-status.service';
+import { finalize } from 'rxjs/operators';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -517,12 +518,14 @@ export class ImportCandidateListStepComponent implements OnInit {
     });
   }
   private loadData(payload: PaginatedPayload): void {
+    this.isLoading = true;
     payload.filterMap = {
       ...payload.filterMap,
       assessmentId: Number(this.assessmentId()),
     };
     this.dataSourceService
       .getData(payload)
+      .pipe(finalize(() => (this.isLoading = false)))
       .subscribe((response: PaginatedData<CandidateModel>) => {
         this.data = response;
         if (!this.skipAutoSelection) {

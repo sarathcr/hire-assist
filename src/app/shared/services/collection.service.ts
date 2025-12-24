@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { Subscription, interval, filter } from 'rxjs';
+import { Subscription, interval, filter, Observable, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { StoreService } from './store.service';
 import { Option, OptionsMap } from '../models/app-state.models';
@@ -10,13 +10,14 @@ import { Option, OptionsMap } from '../models/app-state.models';
   providedIn: 'root',
 })
 export class CollectionService implements OnDestroy {
-  private readonly COLLECTION_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
-  private readonly COLLECTION_STALE_THRESHOLD = 10 * 60 * 1000; // 10 minutes
+  private readonly COLLECTION_REFRESH_INTERVAL = 5 * 60 * 1000;
+  private readonly COLLECTION_STALE_THRESHOLD = 10 * 60 * 1000;
   private readonly COLLECTION_TIMESTAMP_KEY = 'collectionLastFetched';
   
   private refreshSubscription?: Subscription;
   private routerSubscription?: Subscription;
   private visibilitySubscription?: Subscription;
+  private currentRequest$: Observable<OptionsMap> | null = null;
 
   constructor(
     private readonly http: HttpClient,
@@ -106,29 +107,43 @@ export class CollectionService implements OnDestroy {
   }
 
   public getCollection(silent = false) {
+    if (this.currentRequest$) {
+      this.currentRequest$.subscribe({
+        next: (collection) => {
+          if (collection) {
+            this.storeService.setCollection(collection);
+          }
+        },
+        error: () => {
+          // Silent error handling
+        },
+      });
+      return;
+    }
+
     const url = `${this.collectionUrl}/api/collection`;
 
-    this.http.get<OptionsMap>(url).subscribe({
+    this.currentRequest$ = this.http.get<OptionsMap>(url).pipe(
+      shareReplay(1),
+    );
+
+    this.currentRequest$.subscribe({
       next: (collection) => {
         if (!collection) {
+          this.currentRequest$ = null;
           return;
         }
 
         this.storeService.setCollection(collection);
         this.setLastFetchedTimestamp();
+        this.currentRequest$ = null;
       },
-      error: (error) => {
-        if (!silent) {
-          console.error('Failed to fetch collections:', error);
-        }
+      error: () => {
+        this.currentRequest$ = null;
       },
     });
   }
 
-  /**
-   * Force refresh collections from server (ignores stale threshold)
-   * Useful when you know collections have been updated on another device
-   */
   public forceRefreshCollections(): void {
     this.getCollection(true);
   }

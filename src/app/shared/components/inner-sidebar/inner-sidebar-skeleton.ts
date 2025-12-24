@@ -30,21 +30,21 @@ export class InnerSideBarSkeletonComponent {
       label: 'Item 1',
       icon: 'pi pi-fw pi-plus',
       command: () => {
-        console.log('Item 1 clicked');
+        // Item 1 action
       },
     },
     {
       label: 'Item 2',
       icon: 'pi pi-fw pi-plus',
       command: () => {
-        console.log('Item 2 clicked');
+        // Item 2 action
       },
     },
     {
       label: 'Item 3',
       icon: 'pi pi-fw pi-plus',
       command: () => {
-        console.log('Item 3 clicked');
+        // Item 3 action
       },
     },
   ];

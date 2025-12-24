@@ -83,7 +83,6 @@ export class AdminDashboardComponent implements OnInit {
       this.isLoadingDashboard = false;
     };
     const error = (error: ErrorResponse) => {
-      console.log('ERROR', error);
       this.isLoadingDashboard = false;
     };
     this.dashboardService.getEntityById(id).subscribe({ next, error });

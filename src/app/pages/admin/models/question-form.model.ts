@@ -18,11 +18,11 @@ export class QuestionForm extends FormEntity {
     validatorsMap: {
       questionText: [
         Validators.required,
-        Validators.pattern(/^(?!\s)(?=.*\S).+$/),
+        Validators.pattern(/^\S[\s\S]*$/),
         Validators.minLength(10),
-
         QuestionForm.noExtraSpacesValidator,
       ],
+
       questionType: [Validators.required],
       options: [
         Validators.required,

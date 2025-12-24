@@ -29,6 +29,7 @@ import { DepartmentService } from '../../../../services/department.service';
 
 import { DepartmentDialogComponent } from './components/department-dialog/department-dialog.component';
 import { CollectionService } from '../../../../../../shared/services/collection.service';
+import { finalize } from 'rxjs/operators';
 import { ASSESSMENT_URL } from '../../../../../../shared/constants/api';
 import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
@@ -245,9 +246,13 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
   }
 
   private loadData(payload: PaginatedPayload): void {
-    this.dataSourceService.getData(payload).subscribe((response: any) => {
-      this.data = response;
-    });
+    this.isLoading = true;
+    this.dataSourceService
+      .getData(payload)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe((response: any) => {
+        this.data = response;
+      });
   }
 
   // Private Methods

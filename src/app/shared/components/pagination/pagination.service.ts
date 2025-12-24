@@ -20,11 +20,8 @@ export class PaginatedService<T> {
     baseUrl: string,
     payload: PaginatedDataPayload,
   ): Observable<PaginatedData<T>> {
-    // console.log('Final API Call:', baseUrl, payload); // Debug log
-
     return this.http.post<PaginatedData<T>>(baseUrl, payload).pipe(
       catchError((err) => {
-        console.error('API Call Failed:', err);
         throw err;
       }),
     );

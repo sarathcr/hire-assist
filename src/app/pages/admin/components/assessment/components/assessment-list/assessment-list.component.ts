@@ -7,7 +7,6 @@ import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
 import { Observable } from 'rxjs';
-import { SkeletonComponent } from '../../../../../../shared/components/assessment-card/assessment-card-skeleton';
 import { AssessmentCardComponent } from '../../../../../../shared/components/assessment-card/assessment-card.component';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
@@ -21,13 +20,14 @@ import { CustomErrorResponse } from '../../../../../../shared/models/custom-erro
 import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { formatDate } from '../../../../../../shared/utilities/date.utility';
 import {
-  buildFormGroup,
   ConfigMap,
+  buildFormGroup,
 } from '../../../../../../shared/utilities/form.utility';
 import { AssessmentForm } from '../../../../models/assessment-form.model';
 import { Assessment } from '../../../../models/assessment.model';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { CreateUpdateAssessmentModalComponent } from '../create-update-assessment-modal/create-update-assessment-modal.component';
+import { SkeletonComponent } from '../../../../../../shared/components/assessment-card/assessment-card-skeleton';
 
 @Component({
   selector: 'app-assessment-list',
@@ -35,9 +35,9 @@ import { CreateUpdateAssessmentModalComponent } from '../create-update-assessmen
     AssessmentCardComponent,
     ButtonComponent,
     PaginationComponent,
-    SkeletonComponent,
     ToastModule,
     NgClass,
+    SkeletonComponent,
     AsyncPipe,
   ],
   providers: [GenericDataSource],
@@ -52,9 +52,9 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   public assessmentDataSource: Assessment[] = [];
   public totalRecords = 0;
   private ref: DynamicDialogRef | undefined;
-  public isLoading$!: Observable<boolean>;
   public isInitialLoad = true;
   public isLoading = false;
+  public isLoading$!: Observable<boolean>;
 
   constructor(
     public dataSource: GenericDataSource<AssessmentForm>,
@@ -322,15 +322,22 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   }
 
   private subscribeToPaginatedData(): void {
+    let hasReceivedData = false;
+
     const sub = this.dataSource.connect().subscribe((data) => {
       this.assessmentDataSource = data;
+      hasReceivedData = true;
+      // Set isLoading to false when data arrives
+      this.isLoading = false;
     });
     this.subscriptionList.push(sub);
 
     // Track loading state to set isInitialLoad to false when loading completes
     const loadingSub = this.dataSource.loading$.subscribe((isLoading) => {
-      if (!isLoading && this.isInitialLoad) {
-        // Only set to false when loading completes
+      // Update isLoading based on dataSource loading state
+      this.isLoading = isLoading;
+      // Set isInitialLoad to false when loading completes AND we have received data
+      if (!isLoading && this.isInitialLoad && hasReceivedData) {
         this.isInitialLoad = false;
       }
     });

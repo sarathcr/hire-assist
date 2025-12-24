@@ -117,29 +117,12 @@ export class AssignInterviewersDialogueComponent implements OnInit {
       return;
     }
 
-    // Debug: Log the values to see what we're working with
-    console.log(
-      'onSubmit - assessmentId:',
-      this.assessmentId,
-      'interviewId:',
-      this.interviewId,
-      'isEdit:',
-      this.isEdit,
-    );
-    console.log('onSubmit - config.data:', this.config.data);
-
-    // If assessmentId and interviewId are present, make API call for scheduling recruitment
-    // Check for !== undefined and !== null to allow 0 values
     if (
       this.assessmentId !== undefined &&
       this.assessmentId !== null &&
       this.interviewId !== undefined &&
       this.interviewId !== null
     ) {
-      console.log('Making API call with:', {
-        assessmentId: this.assessmentId,
-        interviewId: this.interviewId,
-      });
       const formValue = this.fGroup.value;
       const panelId = formValue.panels ? Number(formValue.panels) : null;
       const interviewers = Array.isArray(formValue.interviewers)
@@ -147,13 +130,6 @@ export class AssignInterviewersDialogueComponent implements OnInit {
         : formValue.interviewers
           ? [formValue.interviewers]
           : [];
-
-      console.log(
-        'Form values - panelId:',
-        panelId,
-        'interviewers:',
-        interviewers,
-      );
 
       if (!panelId || interviewers.length === 0) {
         this.messageService.add({
@@ -171,11 +147,8 @@ export class AssignInterviewersDialogueComponent implements OnInit {
         assessmentId: this.assessmentId,
       };
 
-      console.log('API Payload:', payload);
-
       this.interviewService.createInterviewPanel(payload).subscribe({
-        next: (response) => {
-          console.log('API Success Response:', response);
+        next: () => {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -184,7 +157,6 @@ export class AssignInterviewersDialogueComponent implements OnInit {
           this.ref.close({ ...this.fGroup.value, submitted: true });
         },
         error: (error: CustomErrorResponse) => {
-          console.error('API Error:', error);
           const errorMessage =
             error?.error?.errorValue ||
             error?.error?.message ||
@@ -197,8 +169,6 @@ export class AssignInterviewersDialogueComponent implements OnInit {
         },
       });
       return;
-    } else {
-      console.log('Skipping API call - assessmentId or interviewId missing');
     }
 
     // Default behavior for other contexts

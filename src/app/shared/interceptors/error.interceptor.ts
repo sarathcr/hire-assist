@@ -40,10 +40,6 @@ export const errorInterceptor = (
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse) {
         storeService.setIsLoading(false);
-        console.log('Intercepted HttpErrorResponse:', {
-          error,
-          status: error.status,
-        });
 
         return handleError(
           req,
@@ -106,18 +102,11 @@ if (error.error.status === 403) {
         );
     }
     case 5003: {
-      console.log('Refresh Token is Invalid or Expired');
       authService.logout();
       return throwError(() => error);
     }
     default: {
       storeService.setIsLoading(false);
-      const errorMessage =
-        error.error instanceof ErrorEvent
-          ? `Client-side error: ${error.error.message}`
-          : getServerErrorMessage(error);
-
-      console.log('Error Message:', errorMessage);
       return throwError(() => error);
     }
   }

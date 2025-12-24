@@ -30,6 +30,7 @@ import {
   interviewerInterface,
 } from '../../../../models/interviewers-model';
 import { AssignInterviewersDialogueComponent } from './components/assign-interviewers-dialogue/assign-interviewers-dialogue.component';
+import { finalize } from 'rxjs/operators';
 
 const panelTable: TableColumnsData = {
   columns: [
@@ -266,17 +267,21 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
   }
 
   private loadData(payload: PaginatedPayload): void {
-    this.dataSourceService.getData(payload).subscribe((response: any) => {
-      const resData = response.data.map((item: PanelSummary) => {
-        return {
-          ...item,
-          interviewerNames:
-            item.interviewers?.map((i) => i.name).join(', ') ?? '',
-          interviewers: item.interviewers ?? [],
-        };
+    this.isLoading = true;
+    this.dataSourceService
+      .getData(payload)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe((response: any) => {
+        const resData = response.data.map((item: PanelSummary) => {
+          return {
+            ...item,
+            interviewerNames:
+              item.interviewers?.map((i) => i.name).join(', ') ?? '',
+            interviewers: item.interviewers ?? [],
+          };
+        });
+        this.panelData = { ...response, data: resData };
       });
-      this.panelData = { ...response, data: resData };
-    });
   }
 
   private deletePanelAssignmentById(id: number) {

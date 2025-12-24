@@ -27,6 +27,9 @@ import { MarkAsPresentRequest } from '../../../../../admin/models/question.model
 import { AssessmentService } from '../../../../../admin/services/assessment.service';
 import { AssignBatchDialogComponent } from '../assign-batch-dialog/assign-batch-dialog.component';
 import { UploadIdProofDialogComponent } from '../upload-id-proof-dialog/upload-id-proof-dialog.component';
+import { FrontdeskBatchAssignmentSkeletonComponent } from './frontdesk-batch-assignment-skeleton.component';
+import { TableSkeletonComponent } from '../../../../../../shared/components/table/table.skeleton';
+import { finalize } from 'rxjs/operators';
 const tableColumns: TableColumnsData = {
   columns: [
     {
@@ -111,7 +114,7 @@ export interface AssignToAnotherBatchDialogData {
 
 @Component({
   selector: 'app-frontdesk-batch-assignment',
-  imports: [AccordionModule, TableComponent, CommonModule, ChipModule, Toast],
+  imports: [AccordionModule, TableComponent, CommonModule, ChipModule, Toast, FrontdeskBatchAssignmentSkeletonComponent, TableSkeletonComponent],
   templateUrl: './frontdesk-batch-assignment.component.html',
   styleUrl: './frontdesk-batch-assignment.component.scss',
   providers: [TableDataSourceService],
@@ -129,6 +132,8 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
   public candidatesList!: PaginatedData<Candidate>;
   public markAsPresentRequest!: MarkAsPresentRequest;
   private ref: DynamicDialogRef | undefined;
+  public isLoading: boolean = true;
+  public loadingBatches: Record<string, boolean> = {};
 
   public filterMap!: FilterMap;
 
@@ -165,6 +170,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
 
   public loadCandidatesForBatch(batchId: string): void {
     if (!this.candidatesByBatch[batchId]) {
+      this.loadingBatches[batchId] = true;
       const payload = new PaginatedPayload();
       this.getAllPaginatedCandidates(payload, batchId);
     }
@@ -265,7 +271,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
         }
       },
       error: () => {
-        console.log('Error fetching existing ID proofs');
+        // Error fetching existing ID proofs
       },
     });
   }
@@ -326,11 +332,14 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
   }
 
   private getAllBatches(): void {
+    this.isLoading = true;
     const next = (res: Batch[]) => {
       this.batchList = res;
+      this.isLoading = false;
     };
 
     const error = (error: CustomErrorResponse) => {
+      this.isLoading = false;
       const businerssErrorCode = error.error.businessError;
       if (businerssErrorCode === 3109) {
         this.messageService.add({
@@ -366,9 +375,11 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
         })),
       };
       this.candidatesByBatch[batchId] = updatedRes;
+      this.loadingBatches[batchId] = false;
     };
 
     const error = (error: CustomErrorResponse) => {
+      this.loadingBatches[batchId] = false;
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -391,6 +402,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     this.loadData(payload, batchId);
   }
   private loadData(payload: PaginatedPayload, batchId: string): void {
+    this.loadingBatches[batchId] = true;
     payload.filterMap = {
       ...payload.filterMap,
       assessmentId: this.assessmentId,
@@ -400,16 +412,19 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
 
     this.dataSourceService
       .getData(payload)
-      .subscribe((response: PaginatedData<Candidate>) => {
-        const updatedRes: PaginatedData<Candidate> = {
-          ...response,
-          data: response.data.map((candidate) => ({
-            ...candidate,
-            toggleTooltipIconIndex:
-              candidate.reportingTime === '0001-01-01T00:00:00' ? 1 : 0,
-          })),
-        };
-        this.candidatesByBatch[batchId] = updatedRes;
+      .pipe(finalize(() => (this.loadingBatches[batchId] = false)))
+      .subscribe({
+        next: (response: PaginatedData<Candidate>) => {
+          const updatedRes: PaginatedData<Candidate> = {
+            ...response,
+            data: response.data.map((candidate) => ({
+              ...candidate,
+              toggleTooltipIconIndex:
+                candidate.reportingTime === '0001-01-01T00:00:00' ? 1 : 0,
+            })),
+          };
+          this.candidatesByBatch[batchId] = updatedRes;
+        },
       });
   }
 }

@@ -29,6 +29,7 @@ import { BatchForm } from '../../../../models/batch-form.model';
 import { Batch } from '../../../../models/batch.model';
 import { BatchService } from '../../../../services/batch.service';
 import { BatchDialogComponent } from './components/batch-dialog/batch-dialog.component';
+import { finalize } from 'rxjs/operators';
 import { CollectionService } from '../../../../../../shared/services/collection.service';
 
 const tableColumns: TableColumnsData = {
@@ -224,7 +225,6 @@ export class BatchesComponent implements OnInit, OnDestroy {
     };
 
     const error = (error: CustomErrorResponse) => {
-      console.log('ERROR', error);
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -239,9 +239,13 @@ export class BatchesComponent implements OnInit, OnDestroy {
   }
 
   private loadData(payload: PaginatedPayload): void {
-    this.dataSourceService.getData(payload).subscribe((response: any) => {
-      this.data = response;
-    });
+    this.isLoading = true;
+    this.dataSourceService
+      .getData(payload)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe((response: any) => {
+        this.data = response;
+      });
   }
 
   // Private Methods

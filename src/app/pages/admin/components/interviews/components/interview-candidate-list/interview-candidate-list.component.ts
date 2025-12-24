@@ -18,6 +18,7 @@ import {
 import { InterviewByPanel } from '../../../../models/assessment-schedule.model';
 import { InterviewService } from '../../../../services/interview.service';
 import { TabPanel, TabPanels, Tab, TabList, Tabs } from 'primeng/tabs';
+import { finalize } from 'rxjs/operators';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -221,11 +222,15 @@ export class InterviewCandidateListComponent implements OnInit {
   }
 
   private loadData(payload: PaginatedPayload): void {
-    this.dataSourceService.getData(payload).subscribe((response: any) => {
-      this.data = {
-        ...response,
-        status: response.status,
-      };
-    });
+    this.isLoading = true;
+    this.dataSourceService
+      .getData(payload)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe((response: any) => {
+        this.data = {
+          ...response,
+          status: response.status,
+        };
+      });
   }
 }

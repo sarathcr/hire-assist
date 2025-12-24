@@ -233,8 +233,15 @@
           table_isAlready: enableCandidateStyling() && product.isAlreadyExist,
           table_isDuplicate: enableCandidateStyling() && product.isDuplicate,
           'table__row--disabled': product.isSelf,
-          'table__row--batch-assigned': enableCandidateStyling() && product.batchId && product.batchId > 0,
-          'table__row--not-scheduled': enableCandidateStyling() && !product.isAlreadyExist && !product.isDuplicate && (!product.batchId || product.batchId === 0 || product.batchId === null),
+          'table__row--batch-assigned':
+            enableCandidateStyling() && product.batchId && product.batchId > 0,
+          'table__row--not-scheduled':
+            enableCandidateStyling() &&
+            !product.isAlreadyExist &&
+            !product.isDuplicate &&
+            (!product.batchId ||
+              product.batchId === 0 ||
+              product.batchId === null),
         }"
         [pTooltip]="
           enableCandidateStyling()

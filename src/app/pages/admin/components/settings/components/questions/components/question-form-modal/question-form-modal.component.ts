@@ -237,22 +237,22 @@ export class QuestionFormModalComponent
     this.loadFormData();
   }
 
-private setupForm(): void {
-  this.questionForm = this.data.fGroup;
+  private setupForm(): void {
+    this.questionForm = this.data.fGroup;
 
-  this.questionForm.setValidators(attachmentRequiredValidator);
+    this.questionForm.setValidators(attachmentRequiredValidator);
 
-  this.questionForm.get('hasAttachments')?.valueChanges.subscribe(() => {
-    this.questionForm?.updateValueAndValidity();
-  });
+    this.questionForm.get('hasAttachments')?.valueChanges.subscribe(() => {
+      this.questionForm?.updateValueAndValidity();
+    });
 
-  this.questionForm.get('fileDto')?.valueChanges.subscribe(() => {
-    this.questionForm?.updateValueAndValidity();
-  });
+    this.questionForm.get('fileDto')?.valueChanges.subscribe(() => {
+      this.questionForm?.updateValueAndValidity();
+    });
 
-  this.initializeOptionsArray();
-  this.subscribeToOptionArray();
-}
+    this.initializeOptionsArray();
+    this.subscribeToOptionArray();
+  }
 
   private initializeOptionsArray(): void {
     const options = this.optionsArray;
@@ -337,7 +337,16 @@ private setupForm(): void {
       this.showWarningMessage('Validation', 'At least 2 options are required.');
       return;
     }
+
+    const removedOptionValue = this.optionsArray
+      .at(index)
+      ?.get('options')?.value;
+
     this.optionsArray.removeAt(index);
+
+    this.resetAnswerIfOptionRemoved(removedOptionValue);
+
+    this.cdr.detectChanges();
   }
 
   private createOptionFormGroup(): FormGroup {
@@ -774,6 +783,28 @@ private setupForm(): void {
       };
     }
     return this.data.fGroup.value;
+  }
+
+  private resetAnswerIfOptionRemoved(removedOption: string): void {
+    const answerCtrl = this.data.fGroup.get('answer');
+    if (!answerCtrl || !removedOption) return;
+
+    const isMultiple = this.data.fGroup.get('isMultipleChoice')?.value;
+
+    if (isMultiple && Array.isArray(answerCtrl.value)) {
+      const updatedAnswers = answerCtrl.value.filter(
+        (val: string) => val !== removedOption,
+      );
+
+      answerCtrl.setValue(updatedAnswers.length ? updatedAnswers : null);
+    } else {
+      if (answerCtrl.value === removedOption) {
+        answerCtrl.setValue(null);
+      }
+    }
+
+    answerCtrl.markAsTouched();
+    answerCtrl.updateValueAndValidity();
   }
 
   // ==================== Form Data Management ====================

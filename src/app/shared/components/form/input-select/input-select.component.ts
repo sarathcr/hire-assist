@@ -68,8 +68,6 @@ export class InputSelectComponent
   ngOnChanges(changes: SimpleChanges) {
     // if (changes && changes['config'] && changes['config'].currentValue ) {
     //   this.options = changes['config'].currentValue.options;
-
-    //   console.log('==>', this.options);
     // }
 
     if (changes['config']?.currentValue) {

@@ -58,7 +58,6 @@ export class CoordinatorAssessmentComponent
       this.isLoading = false;
     };
     const error = (error: ErrorResponse) => {
-      console.log('ERROR', error);
       this.isLoading = false;
     };
     this.assessmentService

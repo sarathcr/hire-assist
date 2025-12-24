@@ -80,9 +80,6 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
       console.error(error);
     }
 
-    // if (errors && errors.length) {
-    //   console.error(errors);
-    // }
   }
 
   private getUserInfo(

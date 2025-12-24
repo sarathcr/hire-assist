@@ -105,33 +105,25 @@ export class TableComponent<
   @Input() onLoadOptionImage?: (id: number) => void;
   @ViewChild('dt') table!: Table;
   @Input() hasCheckbox = true;
-  // Track first lazy load event
   public isFirstLazyLoad = true;
-  // Track last pagination call to prevent duplicates
   private lastPaginationCall: {
     payload: PaginatedPayload;
     timestamp: number;
   } | null = null;
-  private readonly PAGINATION_DEBOUNCE_MS = 100;
-  // Flag to prevent emitting selectedIds when initializing from alreadySelected
+  private readonly filterApplicationTimestamp = signal<number | null>(null);
   private isInitializingFromAlreadySelected = false;
-  // Track last emitted selection to prevent duplicate emissions
   private lastEmittedSelection: string[] = [];
-  // Track applied filters separately from typed filters
-  // eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
-  private appliedFilters: { [key: string]: any } = {};
-
-  // Input Properties
+  private appliedFilters: Record<string, any> = {};
+  private isManualFilterTrigger = false;
+  private isApplyingFilter = false;
   public tableData = input<PaginatedData<T>>();
   public columnsData = input<TableColumnsData>();
   public exportButton = input<boolean>(false);
   public hasView = input<boolean>(false);
   public hasRowEdit = input<boolean>(true);
   public alreadySelected = input<string[]>([]);
-  // Allows parent to clear selection for specific ids after API success
   public clearSelectionIds = input<string[] | null>(null);
   public selectedItems: { id: string }[] = [];
-  // Persist selection across pages using ids
   private readonly persistedSelectedIds = new Set<string>();
   public expandedRows: Record<string, boolean> = {};
   public matchModeOptions: SelectItem[] = matchOptions;
@@ -140,7 +132,7 @@ export class TableComponent<
   public statusOptionsForSchedule: SelectItem[] = uniqueStatusesForIsSchedule;
   public hasSearch = input<boolean>(false);
   public searchDebounceTime = input<number>(400);
-  public enableCandidateStyling = input<boolean>(false); // Enable candidate-specific row styling and tooltips
+  public enableCandidateStyling = input<boolean>(false);
   public activeFilters = new Set<string>();
   public isAnyFilterActive = false;
   public globalPayload = new PaginatedPayload();
@@ -150,8 +142,6 @@ export class TableComponent<
   public isLoading = computed(
     () => this.parentLoader() || this.internalIsLoading(),
   );
-
-  // Output Properties
   public edit = output<any>();
   public view = output<any>();
   public btnClick = output<any>();
@@ -170,57 +160,24 @@ export class TableComponent<
       const currentTableData = this.tableData();
       const alreadySelectedIds = this.alreadySelected();
 
-      if (currentTableData && this.table) {
-        this.internalIsLoading.set(false);
-
-        // Sync alreadySelected into persistedSelectedIds when table data loads
-        // This handles the case where alreadySelected was set before table data loaded
-        if (alreadySelectedIds && alreadySelectedIds.length > 0) {
-          const needsSync = !alreadySelectedIds.every((id) =>
-            this.persistedSelectedIds.has(id),
-          );
-          if (needsSync) {
-            // Add any missing IDs from alreadySelected
-            for (const id of alreadySelectedIds) {
-              this.persistedSelectedIds.add(id);
-            }
-            // Update lastEmittedSelection to prevent unnecessary emissions
-            this.lastEmittedSelection = [...alreadySelectedIds];
-          }
-        }
-
-        // Resync current page visual selection from persisted ids
-        const currentPageData = currentTableData.data || [];
-
-        const newSelectedItems = currentPageData.filter((item) =>
-          this.persistedSelectedIds.has(String(item.id)),
-        );
-
-        this.selectedItems = newSelectedItems;
-
-        // Only emit if not initializing from alreadySelected and selection has changed
-        if (!this.isInitializingFromAlreadySelected) {
-          const currentSelection = Array.from(this.persistedSelectedIds).sort(
-            (a, b) => a.localeCompare(b),
-          );
-          const lastSelection = [...this.lastEmittedSelection].sort((a, b) =>
-            a.localeCompare(b),
-          );
-
-          // Only emit if selection actually changed
-          if (
-            currentSelection.length !== lastSelection.length ||
-            !currentSelection.every((id, index) => id === lastSelection[index])
-          ) {
-            this.lastEmittedSelection = [...currentSelection];
-            // Emit persisted selection so parent controls reflect cross-page selection
-            const selectedAcrossPagesOnData = currentSelection.map((id) => ({
-              id,
-            }));
-            this.selectedIds.emit(selectedAcrossPagesOnData);
-          }
-        }
+      if (!currentTableData || !this.table) {
+        return;
       }
+
+      const wasLoading = this.internalIsLoading();
+      this.internalIsLoading.set(false);
+
+      if (
+        wasLoading &&
+        this.hasAppliedFilters() &&
+        this.lastPaginationCall &&
+        !this.hasFiltersInPayload(this.lastPaginationCall.payload)
+      ) {
+        this.triggerFilterApplication();
+        return;
+      }
+
+      this.handleSelectionSync(alreadySelectedIds, currentTableData);
     });
 
     const sub = this.searchSubject
@@ -230,16 +187,13 @@ export class TableComponent<
       });
     this.subscriptionList.push(sub);
 
-    // Effect to initialize persistedSelectedIds from alreadySelected input
     effect(() => {
       const alreadySelectedIds = this.alreadySelected();
       const currentTableData = this.tableData();
 
       if (alreadySelectedIds && alreadySelectedIds.length > 0) {
-        // Set flag to prevent emitting during initialization
         this.isInitializingFromAlreadySelected = true;
 
-        // Check if we need to update (avoid unnecessary updates)
         const currentIds = Array.from(this.persistedSelectedIds).sort((a, b) =>
           a.localeCompare(b),
         );
@@ -251,28 +205,22 @@ export class TableComponent<
           !currentIds.every((id, index) => id === newIds[index]);
 
         if (needsUpdate) {
-          // Clear existing selection and set new ones
           this.persistedSelectedIds.clear();
           for (const id of alreadySelectedIds) {
             this.persistedSelectedIds.add(id);
           }
-          // Update lastEmittedSelection to match, so we don't emit unnecessarily
           this.lastEmittedSelection = [...alreadySelectedIds];
         }
 
-        // Update current page selection if table data is available
-        if (currentTableData?.data) {
-          this.selectedItems = currentTableData.data.filter((item) =>
+        this.selectedItems =
+          currentTableData?.data?.filter((item) =>
             this.persistedSelectedIds.has(String(item.id)),
-          );
-        }
+          ) || [];
 
-        // Reset flag after a microtask to allow change detection to complete
         setTimeout(() => {
           this.isInitializingFromAlreadySelected = false;
         }, 0);
-      } else if (alreadySelectedIds && alreadySelectedIds.length === 0) {
-        // If alreadySelected is explicitly empty, clear selection
+      } else if (alreadySelectedIds?.length === 0) {
         this.isInitializingFromAlreadySelected = true;
         this.persistedSelectedIds.clear();
         this.selectedItems = [];
@@ -283,21 +231,18 @@ export class TableComponent<
       }
     });
 
-    // Effect to clear selection for provided ids from parent (e.g., after delete)
     effect(() => {
       const idsToClear = this.clearSelectionIds();
       if (idsToClear && idsToClear.length > 0) {
         for (const id of idsToClear) {
           this.persistedSelectedIds.delete(id);
         }
-        // Recompute page selection
         const pageData = this.tableData()?.data || [];
 
         this.selectedItems = pageData.filter((item) =>
           this.persistedSelectedIds.has(String(item.id)),
         );
 
-        // Emit updated cross-page selection
         const selectedAcrossPages = Array.from(this.persistedSelectedIds).map(
           (id) => ({ id }),
         );
@@ -344,7 +289,6 @@ export class TableComponent<
   }
 
   public onDelete(id: string): void {
-    // Optimistically prune selection for this id so header buttons update
     this.persistedSelectedIds.delete(id);
 
     this.selectedItems = (this.tableData()?.data || []).filter((item) =>
@@ -374,30 +318,25 @@ export class TableComponent<
     this.import.emit(file);
   }
 
-  // Keep persistedSelectedIds in sync with UI selection changes (row or header)
   public onSelectionChange(newSelection: { id: string }[]): void {
     const currentPageIds = (this.tableData()?.data || []).map((d) =>
       String(d.id),
     );
 
-    // Remove any current page ids first (we will re-add based on newSelection)
     for (const id of currentPageIds) {
       this.persistedSelectedIds.delete(id);
     }
 
-    // Add selected ids from current page
     for (const item of newSelection || []) {
       if (item?.id) {
         this.persistedSelectedIds.add(String(item.id));
       }
     }
 
-    // Update selectedItems to reflect persisted set on current page
     this.selectedItems = (this.tableData()?.data || []).filter((item) =>
       this.persistedSelectedIds.has(String(item.id)),
     );
 
-    // Emit full selection ids (persisted across pages) - user interaction, always emit
     const selectedAcrossPages = Array.from(this.persistedSelectedIds).map(
       (id) => ({ id }),
     );
@@ -405,7 +344,6 @@ export class TableComponent<
     this.selectedIds.emit(selectedAcrossPages);
   }
 
-  // Public helper for parent via ViewChild to clear all selections (e.g., after bulk delete)
   public clearAllSelections(): void {
     this.persistedSelectedIds.clear();
     this.selectedItems = [];
@@ -473,115 +411,78 @@ export class TableComponent<
     const payload: PaginatedPayload = new PaginatedPayload();
     this.pageChangeAndSort.emit(payload);
   }
-  // Inside your component's @Component decorator or class body
   @HostBinding('class.table-loading') get loadingClass() {
     return this.isLoading();
   }
 
-  // Capture filters when user clicks Apply button
   public onFilterApplied(event: any): void {
-    this.appliedFilters = JSON.parse(JSON.stringify(event.filters || {}));
+    if (!event.filters || !this.table) {
+      return;
+    }
 
-    // Process the filters immediately
-    this.processLazyLoad(event, true);
+    const eventFilters = structuredClone(event.filters || {});
+
+    if (!this.hasValidFilters(eventFilters)) {
+      this.appliedFilters = {};
+      return;
+    }
+
+    const previousAppliedFilters = structuredClone(this.appliedFilters);
+    const filtersChanged =
+      JSON.stringify(eventFilters) !== JSON.stringify(previousAppliedFilters);
+
+    if (filtersChanged) {
+      this.isApplyingFilter = true;
+      this.appliedFilters = structuredClone(eventFilters);
+      this.filterApplicationTimestamp.set(Date.now());
+
+      const lazyLoadEvent = this.createLazyLoadEvent();
+      this.isManualFilterTrigger = true;
+      try {
+        this.processLazyLoad(lazyLoadEvent);
+      } finally {
+        this.isManualFilterTrigger = false;
+        this.isApplyingFilter = false;
+      }
+    }
   }
 
   public onLazyLoad(event: any): void {
-    // Skip first lazy load to prevent duplicate with initial ngOnInit call
     if (this.isFirstLazyLoad) {
       this.isFirstLazyLoad = false;
       return;
     }
 
-    this.processLazyLoad(event, false);
+    this.processLazyLoad(event);
   }
 
-  private processLazyLoad(event: any, isFilterApply: boolean): void {
-    // Prevent calls if already loading (from parent or internal) - except when applying filters
-    if (!isFilterApply && this.isLoading()) {
+  private processLazyLoad(event: any): void {
+    if (this.isLoading() && !this.isManualFilterTrigger) {
+      return;
+    }
+
+    if (this.shouldSkipCall(event)) {
+      this.internalIsLoading.set(false);
       return;
     }
 
     this.internalIsLoading.set(true);
     this.activeFilters.clear();
-    const payload: PaginatedPayload = new PaginatedPayload();
-    payload.pagination.pageNumber = (event.first ?? 0) / (event.rows ?? 1) + 1;
-    payload.pagination.pageSize =
-      event.rows ?? this.tableData()?.pageSize ?? 10;
 
-    // Prevent duplicate calls within debounce window - except when applying filters
-    const now = Date.now();
-    if (!isFilterApply && this.lastPaginationCall) {
-      const timeSinceLastCall = now - this.lastPaginationCall.timestamp;
-      const isSamePayload = this.isSamePayload(
-        payload,
-        this.lastPaginationCall.payload,
-      );
+    const payload = this.buildPayload(event);
 
-      if (timeSinceLastCall < this.PAGINATION_DEBOUNCE_MS && isSamePayload) {
-        this.internalIsLoading.set(false);
-        return;
-      }
+    if (this.shouldSkipDuplicateCall(payload)) {
+      this.internalIsLoading.set(false);
+      return;
     }
 
-    // Update last call tracking
     this.lastPaginationCall = {
-      payload: { ...payload },
-      timestamp: now,
+      payload: structuredClone(payload),
+      timestamp: Date.now(),
     };
 
-    // Sorting
-    if (event.multiSortMeta) {
-      payload.multiSortedColumns = event.multiSortMeta.map((sort: any) => ({
-        active: sort.field,
-        direction: sort.order === 1 ? 'asc' : 'desc',
-      }));
-    } else if (event.sortField) {
-      payload.multiSortedColumns.push({
-        active: event.sortField,
-        direction: event.sortOrder === 1 ? 'asc' : 'desc',
-      });
-    }
-
-    // Filtering
-    if (this.appliedFilters && Object.keys(this.appliedFilters).length > 0) {
-      Object.entries(this.appliedFilters).forEach(([field, filterMeta]) => {
-        const constraints = filterMeta as {
-          value: any;
-          matchMode: string;
-          operator?: string;
-        }[];
-
-        if (Array.isArray(constraints) && constraints.length > 0) {
-          const validConstraints = constraints.filter(
-            (c) => c.value !== null && c.value !== undefined,
-          );
-
-          if (validConstraints.length > 0) {
-            this.activeFilters.add(field);
-            const filterString = validConstraints
-              .map((constraint, index) => {
-                const operator =
-                  constraint.operator?.toUpperCase() === 'OR' ? 'OR' : 'AND';
-                const condition = this.mapMatchModeToOperator(
-                  constraint.matchMode,
-                  constraint.value,
-                );
-                return index === 0 ? condition : `${operator} ${condition}`;
-              })
-              .join(' ');
-
-            payload.filterMap[field] = filterString;
-          }
-        }
-      });
-    }
-    if (this.searchValue) {
-      payload.filterMap['searchKey'] = this.searchValue;
-    }
     this.globalPayload = payload;
     this.isAnyFilterActive = this.activeFilters.size > 0 || !!this.searchValue;
-    // Emit the combined filter/sort/page info
     this.pageChangeAndSort.emit(payload);
   }
 
@@ -608,8 +509,6 @@ export class TableComponent<
     this.expandedRows = {};
   }
 
-  // Private methods
-
   public getMatchModes(column: any): SelectItem[] | undefined {
     if (column.hasMultiStatus) {
       return undefined;
@@ -630,6 +529,200 @@ export class TableComponent<
       JSON.stringify(payload1.multiSortedColumns) ===
         JSON.stringify(payload2.multiSortedColumns)
     );
+  }
+
+  private hasValidFilters(filters: Record<string, any>): boolean {
+    return Object.keys(filters).some((field) => {
+      const filterMeta = filters[field];
+      if (Array.isArray(filterMeta) && filterMeta.length > 0) {
+        return filterMeta.some(
+          (c: any) =>
+            c.value !== null && c.value !== undefined && c.value !== '',
+        );
+      }
+      return false;
+    });
+  }
+
+  private hasAppliedFilters(): boolean {
+    return this.appliedFilters && Object.keys(this.appliedFilters).length > 0;
+  }
+
+  private hasFiltersInPayload(payload: PaginatedPayload): boolean {
+    return payload.filterMap && Object.keys(payload.filterMap).length > 0;
+  }
+
+  private createLazyLoadEvent(): any {
+    return {
+      first: this.table.first || 0,
+      rows: this.table.rows || this.tableData()?.pageSize || 10,
+      sortField: this.table.sortField,
+      sortOrder: this.table.sortOrder,
+      multiSortMeta: this.table.multiSortMeta,
+      filters: this.appliedFilters,
+    };
+  }
+
+  private triggerFilterApplication(): void {
+    const lazyLoadEvent = this.createLazyLoadEvent();
+    this.isManualFilterTrigger = true;
+    try {
+      this.processLazyLoad(lazyLoadEvent);
+    } finally {
+      this.isManualFilterTrigger = false;
+    }
+  }
+
+  private shouldSkipCall(event: any): boolean {
+    if (this.isApplyingFilter && !this.isManualFilterTrigger) {
+      return !!(event.multiSortMeta || event.sortField);
+    }
+    return false;
+  }
+
+  private buildPayload(event: any): PaginatedPayload {
+    const payload = new PaginatedPayload();
+    payload.pagination.pageNumber = (event.first ?? 0) / (event.rows ?? 1) + 1;
+    payload.pagination.pageSize =
+      event.rows ?? this.tableData()?.pageSize ?? 10;
+
+    if (event.multiSortMeta) {
+      payload.multiSortedColumns = event.multiSortMeta.map((sort: any) => ({
+        active: sort.field,
+        direction: sort.order === 1 ? 'asc' : 'desc',
+      }));
+    } else if (event.sortField) {
+      payload.multiSortedColumns.push({
+        active: event.sortField,
+        direction: event.sortOrder === 1 ? 'asc' : 'desc',
+      });
+    }
+
+    if (this.hasAppliedFilters()) {
+      Object.entries(this.appliedFilters).forEach(([field, filterMeta]) => {
+        const constraints = filterMeta as {
+          value: any;
+          matchMode: string;
+          operator?: string;
+        }[];
+
+        if (Array.isArray(constraints) && constraints.length > 0) {
+          const validConstraints = constraints.filter(
+            (c) => c.value !== null && c.value !== undefined && c.value !== '',
+          );
+
+          if (validConstraints.length > 0) {
+            this.activeFilters.add(field);
+            const filterString = validConstraints
+              .map((constraint, index) => {
+                const operator =
+                  constraint.operator?.toUpperCase() === 'OR' ? 'OR' : 'AND';
+                const condition = this.mapMatchModeToOperator(
+                  constraint.matchMode,
+                  constraint.value,
+                );
+                return index === 0 ? condition : `${operator} ${condition}`;
+              })
+              .join(' ');
+
+            payload.filterMap[field] = filterString;
+          }
+        }
+      });
+    }
+
+    if (this.searchValue) {
+      payload.filterMap['searchKey'] = this.searchValue;
+    }
+
+    return payload;
+  }
+
+  private shouldSkipDuplicateCall(payload: PaginatedPayload): boolean {
+    if (!this.lastPaginationCall || this.isManualFilterTrigger) {
+      return false;
+    }
+
+    const lastPayload = this.lastPaginationCall.payload;
+    const sameSort =
+      JSON.stringify(lastPayload.multiSortedColumns || []) ===
+      JSON.stringify(payload.multiSortedColumns || []);
+    const samePagination =
+      lastPayload.pagination.pageNumber === payload.pagination.pageNumber &&
+      lastPayload.pagination.pageSize === payload.pagination.pageSize;
+    const lastHadFilters = this.hasFiltersInPayload(lastPayload);
+    const currentHasFilters = this.hasFiltersInPayload(payload);
+
+    if (
+      sameSort &&
+      samePagination &&
+      !currentHasFilters &&
+      !lastHadFilters &&
+      this.hasAppliedFilters()
+    ) {
+      return true;
+    }
+
+    if (sameSort && samePagination && !lastHadFilters && currentHasFilters) {
+      return this.isLoading();
+    }
+
+    if (sameSort && samePagination && lastHadFilters === currentHasFilters) {
+      return (
+        JSON.stringify(lastPayload.filterMap || {}) ===
+        JSON.stringify(payload.filterMap || {})
+      );
+    }
+
+    return false;
+  }
+
+  private handleSelectionSync(
+    alreadySelectedIds: string[] | undefined,
+    currentTableData: PaginatedData<T>,
+  ): void {
+    if (alreadySelectedIds && alreadySelectedIds.length > 0) {
+      const needsSync = !alreadySelectedIds.every((id) =>
+        this.persistedSelectedIds.has(id),
+      );
+      if (needsSync) {
+        for (const id of alreadySelectedIds) {
+          this.persistedSelectedIds.add(id);
+        }
+        this.lastEmittedSelection = [...alreadySelectedIds];
+      }
+    }
+
+    const currentPageData = currentTableData.data || [];
+    const newSelectedItems = currentPageData.filter((item) =>
+      this.persistedSelectedIds.has(String(item.id)),
+    );
+
+    this.selectedItems = newSelectedItems;
+
+    if (!this.isInitializingFromAlreadySelected) {
+      this.emitSelectionIfChanged();
+    }
+  }
+
+  private emitSelectionIfChanged(): void {
+    const currentSelection = Array.from(this.persistedSelectedIds).sort(
+      (a, b) => a.localeCompare(b),
+    );
+    const lastSelection = [...this.lastEmittedSelection].sort((a, b) =>
+      a.localeCompare(b),
+    );
+
+    if (
+      currentSelection.length !== lastSelection.length ||
+      !currentSelection.every((id, index) => id === lastSelection[index])
+    ) {
+      this.lastEmittedSelection = [...currentSelection];
+      const selectedAcrossPagesOnData = currentSelection.map((id) => ({
+        id,
+      }));
+      this.selectedIds.emit(selectedAcrossPagesOnData);
+    }
   }
 
   private mapMatchModeToOperator(matchMode: string, value: any): string {

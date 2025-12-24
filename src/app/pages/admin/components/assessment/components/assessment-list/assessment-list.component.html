@@ -11,11 +11,7 @@
     </div>
 
     <div class="assessment-list__wrapper">
-      @if (
-        (isLoading$ | async) ||
-        isLoading ||
-        (isInitialLoad && assessmentDataSource.length === 0)
-      ) {
+      @if (isInitialLoad || isLoading || (isLoading$ | async)) {
         <div class="assessment-list__list">
           @for (item of [1, 2, 3, 4, 5, 6]; track item) {
             <app-assessment-card-skeleton
@@ -42,18 +38,19 @@
             ></app-assessment-card>
           }
 
-          @if ((isLoading$ | async) === false && totalRecords === 0) {
+          @if (assessmentDataSource.length === 0 && totalRecords === 0) {
             <p class="assessment-list__empty">No recruitments found</p>
           }
         </div>
       }
     </div>
   </div>
+
   <app-pagination
     [dataSource]="dataSource"
     [filterMap]="filterMap"
     [totalRecords]="totalRecords"
-    [isLoading]="isInitialLoad"
+    [isLoading]="isInitialLoad || isLoading || ((isLoading$ | async) ?? false)"
   >
   </app-pagination>
 </div>

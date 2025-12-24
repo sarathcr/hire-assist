@@ -44,6 +44,7 @@ export class PaginationComponent
   private dataList: any[] = [];
   private search = new Subject<void>();
   private search$ = this.search.asObservable().pipe(debounceTime(150));
+  private hasInitialLoad = false;
 
   ngOnInit(): void {
     const sub = this.dataSource.connect().subscribe((dataList) => {
@@ -67,10 +68,13 @@ export class PaginationComponent
   }
 
   ngAfterViewInit() {
-    // this.initSubscriptions();
-    setTimeout(() => {
-      this.loadDataSource();
-    }, 150);
+    // Only load on initial view init, skip if already loaded
+    if (!this.hasInitialLoad) {
+      setTimeout(() => {
+        this.loadDataSource();
+        this.hasInitialLoad = true;
+      }, 150);
+    }
   }
 
   public onPageChange(event: PaginatorState) {

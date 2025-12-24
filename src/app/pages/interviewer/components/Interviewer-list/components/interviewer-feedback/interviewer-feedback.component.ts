@@ -360,10 +360,8 @@ export class InterviewerFeedbackComponent
       });
       this.isSubmitted = res.statusId == 7 ? true : false;
       this.getAssessmentDetails(this.requestData);
-      // Notify step status service to trigger reload
       const assessmentId = Number(this.assessmentId);
       if (assessmentId && this.stepsStatusService) {
-        console.log('InterviewerFeedback: Notifying step status service to reload for assessmentId:', assessmentId);
         this.stepsStatusService.notifyStepStatusUpdate(assessmentId);
       }
     };

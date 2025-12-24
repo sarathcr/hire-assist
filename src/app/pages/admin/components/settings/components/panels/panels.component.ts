@@ -28,6 +28,7 @@ import { PanelForm } from '../../../../models/panel-form.model';
 import { Panel } from '../../../../models/panel.model';
 import { PanelService } from '../../../../services/panel.service';
 import { PanelDialogComponent } from './components/panel-dialog/panel-dialog.component';
+import { finalize } from 'rxjs/operators';
 import { CollectionService } from '../../../../../../shared/services/collection.service';
 import { StoreService } from '../../../../../../shared/services/store.service';
 
@@ -247,8 +248,10 @@ export class PanelsComponent implements OnInit, OnDestroy {
 
   // Private Methods
   private loadData(payload: PaginatedPayload): void {
+    this.isLoading = true;
     this.dataSourceService
       .getData(payload)
+      .pipe(finalize(() => (this.isLoading = false)))
       .subscribe((response: PaginatedData<any>) => {
         this.data = response;
       });
@@ -387,7 +390,6 @@ export class PanelsComponent implements OnInit, OnDestroy {
     };
 
     const error = (error: HttpErrorResponse) => {
-      console.log('ERROR', error);
       this.storeService.setIsLoading(false);
       this.isLoading = false;
       if (error?.status === 422 && error?.error?.businessError === 3105) {

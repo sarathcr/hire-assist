@@ -39,6 +39,7 @@ import { QuestionService } from '../../../../services/question.service';
 import { InterviewService } from '../../../assessment/services/interview.service';
 import { QuestionFormModalComponent } from './components/question-form-modal/question-form-modal.component';
 import { CollectionService } from '../../../../../../shared/services/collection.service';
+import { finalize } from 'rxjs/operators';
 const tableColumns: TableColumnsData = {
   columns: [
     {
@@ -169,7 +170,6 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     this.ref?.onClose.subscribe((res) => {
       document.body.style.overflow = 'auto';
       if (res) {
-        console.log('res', res);
         const formValue = this.fGroup.value;
         formValue.active = true;
         const selectedQuestionTypeLabel =
@@ -353,7 +353,6 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     this.ref?.onClose.subscribe((res) => {
       document.body.style.overflow = 'auto';
       if (res) {
-        console.log('response', res);
         const raw = this.fGroup.value;
         const selectedQuestionTypeLabel =
           this.questionType.find(
@@ -586,26 +585,32 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     this.questionFileData = {};
     this.optionFileData = {};
     this.isUpdatingData = true;
-    this.dataSourceService.getData(payload).subscribe((response: any) => {
-      const transformedData = response.data.map((item: Questionsinterface) => ({
-        ...item,
-        options: this.transformOptions(item.options),
-        isExpanded: false,
-        questionUrl: item.file?.url,
-      }));
+    this.isLoading = true;
+    this.dataSourceService
+      .getData(payload)
+      .pipe(finalize(() => {
+        this.isLoading = false;
+        // Reset flag after data update
+        setTimeout(() => {
+          this.isUpdatingData = false;
+        }, 100);
+      }))
+      .subscribe((response: any) => {
+        const transformedData = response.data.map((item: Questionsinterface) => ({
+          ...item,
+          options: this.transformOptions(item.options),
+          isExpanded: false,
+          questionUrl: item.file?.url,
+        }));
 
-      response.data.forEach((response: any) => {
-        if (response.hasAttachment && response.files) {
-          // Store file data for lazy loading, don't load image yet
-          this.questionFileData[response.id] = response.files;
-        }
+        response.data.forEach((response: any) => {
+          if (response.hasAttachment && response.files) {
+            // Store file data for lazy loading, don't load image yet
+            this.questionFileData[response.id] = response.files;
+          }
+        });
+        this.data = { ...response, data: transformedData };
       });
-      this.data = { ...response, data: transformedData };
-      // Reset flag after data update
-      setTimeout(() => {
-        this.isUpdatingData = false;
-      }, 100);
-    });
   }
 
   private setConfigMaps(): void {

@@ -48,6 +48,7 @@ import {
 } from '../../../../models/stepper.model';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { InterviewService } from '../../services/interview.service';
+import { finalize } from 'rxjs/operators';
 import { PaginatedData } from './../../../../../../shared/models/pagination.models';
 import { ScheduleInterviewComponent } from './components/schedule-interview/schedule-interview.component';
 import { SelectPanelDailogComponent } from './components/select-panel-dailog/select-panel-dailog.component';
@@ -848,8 +849,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.dataSourceService
       .getData(payload)
+      .pipe(finalize(() => (this.isLoading = false)))
       .subscribe((response: PaginatedData<any>) => {
-        this.isLoading = false;
         const resData = response.data.map((item: CandidateData) => {
           return {
             ...item,

@@ -43,6 +43,12 @@
       border-radius: 8px;
     }
   }
+  &__skeleton-chip {
+    margin-bottom: var(--spacing-15);
+  }
+  &__skeleton-table {
+    margin-top: var(--spacing-10);
+  }
   ::ng-deep {
     .p-accordion .p-accordioncontent {
       overflow: unset;

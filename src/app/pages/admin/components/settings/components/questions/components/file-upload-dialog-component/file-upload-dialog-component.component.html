@@ -39,7 +39,7 @@
             <img [src]="previewUrl" alt="Preview" class="preview-img" />
             <p-button
               icon="pi pi-trash"
-              styleClass="file-upload__delete-btn"
+              class="file-upload__delete-btn"
               (onClick)="clearFileAndPreview()"
               type="button"
               [rounded]="true"
@@ -47,7 +47,7 @@
               [severity]="'danger'"
               ariaLabel="Delete image"
               pTooltip="Remove image"
-              tooltipPosition="bottom"
+              tooltipPosition="top"
             />
             @if (isUploading) {
               <div class="file-upload__loader-overlay">
