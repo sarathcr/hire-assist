@@ -11,7 +11,6 @@ const {
   intreviewUrl,
 } = environment;
 export const apiUrl = `${baseUrl}`;
-// const API_URL = environment.apiUrl;
 export const BASE_IMAGE_URL = environment;
 export const BASE_DOCUMENTS_URL = environment;
 // AUTH
@@ -38,6 +37,9 @@ export const INTERVIEW_URL = `${intreviewUrl}/api/interview`;
 export const USER_URL = `${authorizationUrl}/api/authorization/users-role-access`;
 
 export const CANDIDATE_TEST_URL = `${baseUrl}/api/questionSet`;
+
+// Profile
+export const Profile_URL = `${authorizationUrl}/api/profile`;
 
 //Batch
 export const BATCH_URL = `${assessmentUrl}/api/assessment/Batch`;

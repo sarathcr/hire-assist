@@ -1,0 +1,45 @@
+<div class="profile-form">
+  <form>
+    <div class="profile-form__image-container">
+      @if (isLoadingProfileImage) {
+        <p-skeleton shape="circle" width="250px" height="250px" />
+      } @else {
+        <p-image
+          [src]="data.formData.profileUrl"
+          alt="Image"
+          width="250"
+          [preview]="true"
+        />
+      }
+      <p-fileupload
+        mode="basic"
+        chooseLabel="Upload Profile Image"
+        chooseIcon="pi pi-upload"
+        accept="image/*"
+        (onSelect)="onProfileImageSelected($event)"
+        maxFileSize="1000000"
+        [disabled]="isLoadingProfileImage"
+        styleClass="profile-form__upload"
+      />
+    </div>
+    <app-input-text
+      class="profile-form__field"
+      [formGroup]="data.fGroup"
+      type="text"
+      [config]="data.configMap['designation']"
+    ></app-input-text>
+
+    <div class="profile-form__button">
+      <app-button
+        [buttonLabel]="'Cancel'"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"
+      ></app-button>
+      <app-button
+        [buttonLabel]="'Submit'"
+        [disabled]="!data.fGroup.valid"
+        (btnClick)="onSubmit()"
+      ></app-button>
+    </div>
+  </form>
+</div>

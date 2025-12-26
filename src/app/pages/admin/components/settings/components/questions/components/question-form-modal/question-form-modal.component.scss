@@ -4,12 +4,19 @@
 }
 
 ::ng-deep {
+  .p-dialog {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+  }
+
   .p-dialog-content {
     padding: 0 !important;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    max-height: 85vh;
+    flex: 1;
+    min-height: 0;
   }
 }
 
@@ -24,19 +31,17 @@
     flex-direction: column;
     height: 100%;
     min-height: 0;
-    position: relative;
+    max-height: 75vh;
   }
 
   &__container {
-    flex: 1 1 0;
+    flex: 1 1 auto;
     overflow-y: auto;
     overflow-x: hidden;
     padding: var(--spacing-20);
-    padding-bottom: var(--spacing-20);
-    min-height: 65vh;
+    min-height: 0;
   }
 
-  // Section Styling
   &__section {
     background: var(--color-white);
     border: 1px solid var(--color-seperator);
@@ -83,7 +88,6 @@
     padding: var(--spacing-20);
   }
 
-  // Field Styling
   &__field {
     margin-bottom: var(--spacing-20);
 
@@ -91,7 +95,6 @@
       margin-bottom: 0;
     }
 
-    // Ensure validation errors are visible
     .text-area {
       margin-bottom: var(--spacing-25) !important;
     }
@@ -103,7 +106,6 @@
     gap: var(--spacing-15);
     margin-bottom: var(--spacing-20);
 
-    // Ensure validation errors are visible in field rows
     .question-form__field-col {
       position: relative;
 
@@ -118,7 +120,6 @@
     width: 100%;
   }
 
-  // Toggle Group
   &__toggle-group {
     display: flex;
     flex-direction: column;
@@ -138,20 +139,18 @@
     display: flex;
     align-items: flex-start;
     gap: var(--spacing-10);
-    min-height: 40px; // Reserve space to prevent jumping
+    min-height: 40px;
     transition: min-height 0.2s ease;
     position: relative;
     width: 100%;
     flex-wrap: wrap;
 
-    // Ensure toggle switch stays in place and is vertically centered
     app-toggle-switch {
       flex-shrink: 0;
       align-self: center;
       order: 1;
     }
 
-    // Add label for toggle if needed
     .question-form__toggle-label {
       flex: 1;
       min-width: 200px;
@@ -159,7 +158,6 @@
     }
   }
 
-  // Add spacing below toggle in options section
   &__section-content > &__toggle-item:first-child {
     margin-bottom: var(--spacing-15);
   }
@@ -196,7 +194,6 @@
     }
   }
 
-  // Options Styling
   &__options {
     display: flex;
     flex-direction: column;
@@ -238,7 +235,6 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    // gap: var(--spacing-10);
   }
 
   &__option-input {
@@ -273,7 +269,6 @@
     font-style: italic;
   }
 
-  // Footer - Fixed like header
   &__footer {
     display: flex;
     align-items: center;
@@ -285,13 +280,11 @@
     box-shadow: 0px -15px 20px -26px #000;
     flex-shrink: 0;
     width: 100%;
-    position: relative;
     z-index: 10;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
   }
 
-  // Skeleton Loader
   &__skeleton {
     display: flex;
     flex-direction: column;
@@ -304,7 +297,6 @@
       overflow-x: hidden;
     }
 
-    // Section spacing in skeleton
     .question-form__section {
       margin-bottom: var(--spacing-25);
     }
@@ -317,22 +309,18 @@
     .question-form__section-content {
       padding: var(--spacing-20);
 
-      // Add extra spacing between direct child skeletons
       > p-skeleton:not(:last-child),
       > * > p-skeleton:not(:last-child) {
         margin-bottom: var(--spacing-25) !important;
       }
     }
 
-    // Skeleton item spacing - target all p-skeleton elements
     ::ng-deep {
-      // Apply spacing to skeleton items
       .question-form__skeleton-item {
         margin-bottom: var(--spacing-25) !important;
         display: block !important;
       }
 
-      // Ensure all skeleton elements have proper display
       p-skeleton {
         display: block !important;
 
@@ -340,13 +328,11 @@
           margin-bottom: var(--spacing-25) !important;
         }
 
-        // Add spacing to skeleton elements in section content
         .question-form__section-content & {
           margin-bottom: var(--spacing-25) !important;
         }
       }
 
-      // Override PrimeNG skeleton default styles
       .p-skeleton {
         margin-bottom: var(--spacing-25) !important;
 
@@ -415,7 +401,6 @@
       gap: var(--spacing-10);
     }
 
-    // Ensure proper spacing for answer selection section
     .question-form__section:last-child {
       .question-form__section-content {
         p-skeleton {
@@ -429,7 +414,6 @@
     }
   }
 
-  // Global Styles
   ::ng-deep {
     .p-toggleswitch {
       display: block;
@@ -461,7 +445,6 @@
     }
   }
 
-  // Responsive Design
   @media screen and (max-width: 768px) {
     &__container {
       padding: var(--spacing-15);

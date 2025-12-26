@@ -1,0 +1,74 @@
+<div class="basic-information">
+  <form [formGroup]="fGroup">
+    <div class="basic-information__field-wrapper">
+      <app-input-text
+        [formGroup]="fGroup"
+        [config]="configMap['name']"
+      ></app-input-text
+      ><app-input-text
+        [formGroup]="fGroup"
+        [config]="configMap['email']"
+      ></app-input-text>
+    </div>
+    <div class="basic-information__field-wrapper">
+      <app-input-text
+        [formGroup]="fGroup"
+        [config]="configMap['phone']"
+      ></app-input-text>
+      <app-input-text-calender
+        [formGroup]="fGroup"
+        [config]="configMap['dob']"
+      ></app-input-text-calender>
+    </div>
+    <div class="basic-information__field-wrapper">
+      <app-input-text
+        [formGroup]="fGroup"
+        [config]="configMap['gender']"
+      ></app-input-text>
+      <app-input-text-calender
+        [formGroup]="fGroup"
+        [config]="configMap['memberSince']"
+      ></app-input-text-calender>
+    </div>
+    <div class="basic-information__btn">
+      <app-button
+        [buttonLabel]="'Edit Basic Details'"
+        [icon]="'pi pi-pencil'"
+        [disabled]="editStatus"
+        (btnClick)="onEdit()"
+      ></app-button>
+    </div>
+  </form>
+  <div class="basic-information__interview-schedules">
+    <h3 class="basic-information__interview-schedules__title">
+      Upcoming Interview Schedules
+    </h3>
+    @if (upcomingInterviews && upcomingInterviews.length > 0) {
+      <div class="basic-information__interview-schedules__cards">
+        @for (interview of upcomingInterviews; track interview) {
+          <div
+            class="basic-information__interview-schedules__cards__calendar-tile"
+          >
+            <div
+              class="basic-information__interview-schedules__cards__calendar-day"
+            >
+              {{ interview.scheduleAt | date: "EEE" }}
+            </div>
+
+            <div
+              class="basic-information__interview-schedules__cards__calendar-date"
+            >
+              {{ interview.scheduleAt | date: "d MMM" }}
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="basic-information__interview-schedules__cards">
+        <span class="basic-information__interview-schedules__cards__sp"
+          >No data found</span
+        >
+      </div>
+    }
+  </div>
+</div>

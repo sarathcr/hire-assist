@@ -1,0 +1,114 @@
+@if (isLoading) {
+  <app-profile-skeleton />
+} @else {
+  <div class="profile">
+    <app-cover-image
+      [coverUrl]="coverImageUrl"
+      [isLoading]="isLoadingCoverImage"
+      (coverImage)="onCoverImageUpload($event)"
+      (deleteCover)="onDeleteCoverImage()"
+    ></app-cover-image>
+
+    <div class="profile__content-wrapper">
+    <div class="profile__sidebar">
+      <div class="profile__card">
+        <div class="profile__circle-container">
+          @for (circle of circles; track $index) {
+            <div class="circle"></div>
+          }
+        </div>
+        <div class="profile__button">
+          <p-button
+            icon="pi pi-pencil"
+            class="profile__button__icon"
+            [rounded]="true"
+            [text]="true"
+            [raised]="true"
+            severity="info"
+            (onClick)="onEdit()"
+          />
+        </div>
+
+        <div class="profile__avatar">
+          @if (isLoadingProfileImage) {
+            <p-skeleton shape="circle" width="150px" height="150px" />
+          } @else if (this.profileImageUrl !== undefined) {
+            <img
+              class="profile__avatar__img"
+              src="{{ this.profileImageUrl }}"
+              alt="Profile"
+            />
+          } @else {
+            <div class="profile__avatar__bg"></div>
+          }
+        </div>
+        @if (
+          profileDetailsDataSource &&
+          profileDetailsDataSource.name !== undefined
+        ) {
+          <h2 class="profile__card__name">
+            {{ profileDetailsDataSource.name }}
+          </h2>
+        }
+        @if (
+          profileDetailsDataSource &&
+          profileDetailsDataSource.designation !== undefined
+        ) {
+          <p class="profile__card__role">
+            {{ profileDetailsDataSource.designation }}
+          </p>
+        }
+      </div>
+      <div class="profile__skills profile__card">
+        <div class="profile__skills__button">
+          <p-button
+            icon="pi pi-pencil"
+            class="profile__skills__button__icon"
+            [rounded]="true"
+            [text]="true"
+            [raised]="true"
+            severity="info"
+          />
+        </div>
+        <h3 class="profile__skills__title">Expert in:</h3>
+        @if (
+          profileDetailsDataSource &&
+          profileDetailsDataSource.userSkills !== undefined
+        ) {
+          <ul class="profile__skills__list">
+            @if (profileDetailsDataSource.userSkills.length > 0) {
+              @for (
+                userSkills of profileDetailsDataSource.userSkills;
+                track userSkills.id
+              ) {
+                <li class="profile__skills__item">
+                  <p>{{ userSkills.name }}</p>
+                </li>
+              }
+            } @else {
+              <span>No data found</span>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+    <div class="profile__content">
+      <p-tabs value="0">
+        <p-tablist>
+          <p-tab value="0"><i class="pi pi-user"></i> Basic Details</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel value="0">
+            <p class="m-0">
+              <app-basic-information
+                [userDetails]="profileDetailsDataSource"
+              ></app-basic-information>
+            </p>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </div>
+  </div>
+  <p-toast position="top-right" class="Toast"></p-toast>
+</div>
+}

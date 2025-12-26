@@ -1,0 +1,52 @@
+:host {
+  padding: var(--spacing-30);
+}
+
+.profile-form {
+  padding: var(--spacing-10) 0 0;
+
+  &__label {
+    margin-bottom: var(--spacing-25);
+    display: flex;
+    align-items: center;
+  }
+  &__button {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  &__image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-15);
+    margin-bottom: var(--spacing-20);
+  }
+
+  &__upload {
+    margin-top: var(--spacing-10);
+  }
+
+  &__field {
+    width: 100%;
+    &-row {
+      &_one {
+        flex-basis: 50%;
+      }
+    }
+
+    &-container {
+      display: flex;
+      gap: 1rem;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    &__field {
+      &-container {
+        display: block;
+      }
+    }
+  }
+}

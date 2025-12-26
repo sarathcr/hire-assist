@@ -206,8 +206,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   public onView(data: CandidateData): void {
-    const userid = data.email;
-    this.router.navigate(['/profile', userid, this.assessmentId]);
+    this.router.navigate([
+      'admin/recruitments/candidateDetail',
+      this.assessmentId,
+      data.id,
+    ]);
   }
 
   public onTablePayloadChange(payload: PaginatedPayload): void {

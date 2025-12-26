@@ -1,79 +1,801 @@
-.candidate {
-  padding: var(--spacing-30) 0;
-  ::ng-deep {
-    .p-tabpanels {
-      background-color: transparent !important;
-    }
-  }
-  &__card-heading {
-    margin-bottom: var(--spacing-15);
-    color: var(--primary-color);
-    text-align: center;
-  }
-  &__details {
-    display: flex;
-    flex-direction: row;
-  }
-  &__card {
-    background-color: var(--color-white);
-    border: 1px var(--dashboard-main-background-color);
-    border-radius: var(--spacing-10);
-    padding: var(--spacing-15);
-    box-shadow: 0 2px 4px var(--dashboard-main-background-color);
-    width: 100%;
-  }
-  &__card-content {
-    display: flex;
-    flex-flow: row wrap;
-    gap: var(--spacing-30);
-  }
+.candidate-detail {
+  padding: 0 0 var(--spacing-30) 0;
+  max-width: 1400px;
+  margin: 0 auto;
 
-  &__card-info-item {
-    display: flex;
-    align-items: center;
-    flex-basis: 46%;
-    gap: var(--spacing-30);
-    font-size: var(--font-size-18);
-  }
+  // Header Section
+  &__header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    border-radius: 0;
+    padding: var(--spacing-30);
+    margin: 0 calc(-50vw + 50%) var(--spacing-30) calc(-50vw + 50%);
+    width: 100vw;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    color: white;
 
-  &__card-icon {
-    font-size: var(--font-size-20);
-    color: var(--secondary-color);
-  }
-  &__applicationDetails {
-    &__card-info-item {
+    &-content {
       display: flex;
       align-items: center;
-      flex-basis: 46%;
-      gap: var(--spacing-30);
-      font-size: var(--font-size-18);
-      margin-bottom: var(--spacing-15);
+      gap: var(--spacing-20);
+      max-width: 1400px;
+      margin: 0 auto;
     }
   }
-  &__previousAssessmentDetails {
-    &-score {
-      margin-left: auto;
-      padding-right: var(--spacing-15);
+
+  &__avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    flex-shrink: 0;
+  }
+
+  &__header-info {
+    flex: 1;
+  }
+
+  &__name {
+    font-size: 1.875rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: white;
+  }
+
+  &__email {
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    i {
+      font-size: 1rem;
     }
   }
-}
 
-::ng-deep {
-  .p-card-body {
-    background-color: #f3f3f3;
-    border-radius: var(--spacing-20);
-    padding: 0.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .candidate {
-    &__card {
-      width: 100%;
-
-      &__card-info-item {
-        font-size: 0.9rem;
+  // Tabs
+  &__tabs {
+    ::ng-deep {
+      .p-tablist {
+        border-bottom: 2px solid var(--color-seperator);
+        margin-bottom: var(--spacing-30);
       }
+
+      .p-tab {
+        padding: var(--spacing-15) var(--spacing-20);
+        font-weight: 500;
+        color: var(--color-grey);
+        transition: all 0.2s ease;
+
+        &:hover {
+          color: var(--primary-color);
+        }
+
+        &[aria-selected="true"] {
+          color: var(--primary-color);
+          border-bottom: 2px solid var(--primary-color);
+        }
+      }
+
+      .p-tabpanels {
+        background-color: transparent !important;
+        padding: 0;
+      }
+    }
+  }
+
+  // Content Section
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-30);
+  }
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-15);
+  }
+
+  &__section-title {
+    font-size: var(--font-size-20);
+    font-weight: 600;
+    color: var(--color-dune);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+
+    i {
+      color: var(--primary-color);
+      font-size: var(--font-size-18);
+    }
+  }
+
+  // Card Styles
+  &__card {
+    background: var(--color-white);
+    border: 1px solid var(--color-seperator);
+    border-radius: var(--spacing-10);
+    padding: var(--spacing-20);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  // Info Grid
+  &__info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-20);
+  }
+
+  &__info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-15);
+    padding: var(--spacing-15);
+    background: var(--dashboard-main-background-color);
+    border-radius: var(--spacing-8);
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background: #e8e9ed;
+    }
+  }
+
+  &__info-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--spacing-8);
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-18);
+    flex-shrink: 0;
+  }
+
+  &__info-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+    flex: 1;
+  }
+
+  &__info-label {
+    font-size: var(--font-size-base);
+    color: var(--color-grey);
+    font-weight: 500;
+  }
+
+  &__info-value {
+    font-size: var(--font-size-16);
+    color: var(--color-dune);
+    font-weight: 500;
+  }
+
+  // Accordion Styles
+  &__accordion {
+    ::ng-deep {
+      .p-accordion-header {
+        .p-accordion-header-link {
+          padding: var(--spacing-15) var(--spacing-18);
+          border-radius: var(--spacing-8);
+          background: var(--dashboard-main-background-color);
+          border: 1px solid var(--color-seperator);
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: #e8e9ed;
+            border-color: var(--primary-color);
+          }
+        }
+      }
+
+      .p-accordion-content {
+        padding: var(--spacing-18);
+      }
+    }
+  }
+
+  &__question {
+    font-weight: 500;
+    color: var(--color-dune);
+  }
+
+  &__answer {
+    color: var(--color-dune);
+    line-height: 1.6;
+    padding: var(--spacing-12);
+    background: var(--dashboard-main-background-color);
+    border-radius: var(--spacing-6);
+    border-left: 3px solid var(--primary-color);
+  }
+
+  // Assessment Cards
+  &__assessments {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-20);
+  }
+
+  &__assessment-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-seperator);
+    border-radius: var(--spacing-10);
+    padding: var(--spacing-20);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  &__assessment-header {
+    margin-bottom: var(--spacing-20);
+    padding-bottom: var(--spacing-15);
+    border-bottom: 2px solid var(--color-seperator);
+  }
+
+  &__assessment-title {
+    font-size: var(--font-size-20);
+    font-weight: 600;
+    color: var(--color-dune);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+
+    i {
+      color: var(--primary-color);
+    }
+  }
+
+  // Rounds Accordion
+  &__rounds-accordion {
+    ::ng-deep {
+      .p-accordion-header {
+        .p-accordion-header-link {
+          padding: var(--spacing-15) var(--spacing-18);
+        }
+      }
+    }
+  }
+
+  &__round-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__round-name {
+    font-weight: 500;
+    color: var(--color-dune);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+
+    i {
+      color: var(--primary-color);
+    }
+  }
+
+  &__round-status {
+    padding: var(--spacing-5) var(--spacing-12);
+    border-radius: var(--spacing-10);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    background: #e8e9ed;
+    color: var(--color-grey);
+  }
+
+  &__round-details {
+    padding: var(--spacing-15) 0;
+  }
+
+  &__details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-15);
+  }
+
+  &__detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+    padding: var(--spacing-12);
+    background: var(--dashboard-main-background-color);
+    border-radius: var(--spacing-6);
+  }
+
+  &__detail-label {
+    font-size: var(--font-size-base);
+    color: var(--color-grey);
+    font-weight: 500;
+  }
+
+  &__detail-value {
+    font-size: var(--font-size-16);
+    color: var(--color-dune);
+    font-weight: 600;
+
+    &--success {
+      color: var(--color-success);
+    }
+  }
+
+  // Interviewers Accordion
+  &__interviewers-accordion {
+    ::ng-deep {
+      .p-accordion-header {
+        .p-accordion-header-link {
+          padding: var(--spacing-12) var(--spacing-15);
+          background: var(--dashboard-main-background-color);
+        }
+      }
+    }
+  }
+
+  &__interviewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__interviewer-name {
+    font-weight: 500;
+    color: var(--color-dune);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+
+    i {
+      color: var(--primary-color);
+    }
+  }
+
+  &__score-badge {
+    padding: var(--spacing-6) var(--spacing-12);
+    border-radius: var(--spacing-8);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    background: var(--primary-color);
+    color: white;
+  }
+
+  // Feedback Accordion
+  &__feedback-accordion {
+    ::ng-deep {
+      .p-accordion-header {
+        .p-accordion-header-link {
+          padding: var(--spacing-12) var(--spacing-15);
+          background: #e8e9ed;
+        }
+      }
+    }
+  }
+
+  &__feedback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__feedback-criteria {
+    font-weight: 500;
+    color: var(--color-dune);
+  }
+
+  &__feedback-content {
+    padding: var(--spacing-15) 0;
+
+    ::ng-deep {
+      .p-editor-container {
+        border: 1px solid var(--color-seperator);
+        border-radius: var(--spacing-8);
+        overflow: hidden;
+      }
+    }
+  }
+
+  // Empty State
+  &__empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-50) var(--spacing-30);
+    text-align: center;
+    color: var(--color-grey);
+
+    i {
+      font-size: var(--spacing-50);
+      margin-bottom: var(--spacing-15);
+      color: var(--color-seperator);
+    }
+
+    p {
+      margin: 0;
+      font-size: var(--font-size-16);
+    }
+
+    &--large {
+      padding: var(--spacing-60) var(--spacing-30);
+
+      i {
+        font-size: var(--spacing-60);
+      }
+    }
+  }
+}
+
+// Responsive Design
+// Tablet View
+@media (max-width: 1024px) {
+  .candidate-detail {
+    padding: 0 0 var(--spacing-20) 0;
+
+    &__header {
+      padding: var(--spacing-20);
+      border-radius: 0;
+      margin: 0 calc(-50vw + 50%) var(--spacing-20) calc(-50vw + 50%);
+      width: 100vw;
+    }
+
+    &__header-content {
+      gap: var(--spacing-15) !important;
+    }
+
+    &__info-grid {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--spacing-15);
+    }
+
+    &__details-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--spacing-12);
+    }
+
+    &__tabs {
+      ::ng-deep {
+        .p-tab {
+          padding: var(--spacing-12) var(--spacing-15);
+          font-size: var(--font-size-base);
+        }
+      }
+    }
+  }
+}
+
+// Mobile View
+@media (max-width: 768px) {
+  .candidate-detail {
+    padding: 0 0 var(--spacing-15) 0;
+    max-width: 100%;
+
+    &__header {
+      padding: var(--spacing-15);
+      border-radius: 0;
+      margin: 0 calc(-50vw + 50%) var(--spacing-20) calc(-50vw + 50%);
+      width: 100vw;
+    }
+
+    &__header-content {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: var(--spacing-15) !important;
+    }
+
+    &__avatar {
+      width: 60px;
+      height: 60px;
+      font-size: 1.75rem;
+    }
+
+    &__header-info {
+      width: 100%;
+    }
+
+    &__name {
+      font-size: var(--font-size-22);
+      margin-bottom: var(--spacing-8);
+    }
+
+    &__email {
+      font-size: var(--font-size-base);
+      justify-content: center;
+    }
+
+    &__tabs {
+      ::ng-deep {
+        .p-tablist {
+          margin-bottom: var(--spacing-20);
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          
+          &::-webkit-scrollbar {
+            display: none;
+          }
+        }
+
+        .p-tab {
+          padding: var(--spacing-10) var(--spacing-12);
+          font-size: var(--font-size-base);
+          white-space: nowrap;
+          min-width: auto;
+          flex-shrink: 0;
+
+          i {
+            font-size: var(--font-size-base);
+          }
+        }
+      }
+    }
+
+    &__content {
+      gap: var(--spacing-20);
+    }
+
+    &__section {
+      gap: var(--spacing-12);
+    }
+
+    &__section-title {
+      font-size: var(--font-size-18);
+      gap: var(--spacing-10);
+
+      i {
+        font-size: var(--font-size-16);
+      }
+    }
+
+    &__card {
+      padding: var(--spacing-15);
+      border-radius: var(--spacing-8);
+    }
+
+    &__info-grid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-12);
+    }
+
+    &__info-item {
+      padding: var(--spacing-12);
+      gap: var(--spacing-10);
+    }
+
+    &__info-icon {
+      width: 36px;
+      height: 36px;
+      font-size: var(--font-size-16);
+    }
+
+    &__info-label {
+      font-size: var(--font-size-small);
+    }
+
+    &__info-value {
+      font-size: var(--font-size-base);
+    }
+
+    &__accordion {
+      ::ng-deep {
+        .p-accordion-header {
+          .p-accordion-header-link {
+            padding: var(--spacing-12) var(--spacing-15);
+            font-size: var(--font-size-base);
+          }
+        }
+
+        .p-accordion-content {
+          padding: var(--spacing-15);
+        }
+      }
+    }
+
+    &__question {
+      font-size: var(--font-size-base);
+    }
+
+    &__answer {
+      padding: var(--spacing-10);
+      font-size: var(--font-size-base);
+    }
+
+    &__assessments {
+      gap: var(--spacing-15);
+    }
+
+    &__assessment-card {
+      padding: var(--spacing-15);
+    }
+
+    &__assessment-header {
+      margin-bottom: var(--spacing-15);
+      padding-bottom: var(--spacing-12);
+    }
+
+    &__assessment-title {
+      font-size: var(--font-size-18);
+      gap: var(--spacing-10);
+      flex-wrap: wrap;
+    }
+
+    &__rounds-accordion,
+    &__interviewers-accordion,
+    &__feedback-accordion {
+      ::ng-deep {
+        .p-accordion-header {
+          .p-accordion-header-link {
+            padding: var(--spacing-10) var(--spacing-12);
+            font-size: var(--font-size-base);
+          }
+        }
+
+        .p-accordion-content {
+          padding: var(--spacing-12);
+        }
+      }
+    }
+
+    &__round-header,
+    &__interviewer-header,
+    &__feedback-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--spacing-8);
+      width: 100%;
+    }
+
+    &__round-name,
+    &__interviewer-name {
+      width: 100%;
+      font-size: var(--font-size-base);
+    }
+
+    &__round-status {
+      align-self: flex-start;
+      font-size: var(--font-size-small);
+      padding: var(--spacing-4) var(--spacing-10);
+    }
+
+    &__round-details {
+      padding: var(--spacing-12) 0;
+    }
+
+    &__details-grid {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-10);
+    }
+
+    &__detail-item {
+      padding: var(--spacing-10);
+      gap: var(--spacing-6);
+    }
+
+    &__detail-label {
+      font-size: var(--font-size-small);
+    }
+
+    &__detail-value {
+      font-size: var(--font-size-base);
+    }
+
+    &__score-badge {
+      padding: var(--spacing-4) var(--spacing-10);
+      font-size: var(--font-size-small);
+      align-self: flex-start;
+    }
+
+    &__feedback-content {
+      padding: var(--spacing-12) 0;
+
+      ::ng-deep {
+        .p-editor-container {
+          border-radius: var(--spacing-6);
+        }
+      }
+    }
+
+    &__empty-state {
+      padding: var(--spacing-30) var(--spacing-20);
+
+      i {
+        font-size: var(--spacing-40);
+        margin-bottom: var(--spacing-12);
+      }
+
+      p {
+        font-size: var(--font-size-base);
+      }
+
+      &--large {
+        padding: var(--spacing-40) var(--spacing-20);
+
+        i {
+          font-size: var(--spacing-50);
+        }
+      }
+    }
+  }
+}
+
+// Small Mobile View
+@media (max-width: 480px) {
+  .candidate-detail {
+    padding: 0 0 var(--spacing-12) 0;
+
+    &__header {
+      padding: var(--spacing-12);
+      border-radius: 0;
+      margin: 0 calc(-50vw + 50%) var(--spacing-15) calc(-50vw + 50%);
+      width: 100vw;
+    }
+
+    &__avatar {
+      width: 50px;
+      height: 50px;
+      font-size: 1.5rem;
+    }
+
+    &__name {
+      font-size: var(--font-size-20);
+    }
+
+    &__email {
+      font-size: var(--font-size-small);
+    }
+
+    &__tabs {
+      ::ng-deep {
+        .p-tab {
+          padding: var(--spacing-8) var(--spacing-10);
+          font-size: var(--font-size-small);
+
+          i {
+            display: none; // Hide icons on very small screens
+          }
+        }
+      }
+    }
+
+    &__section-title {
+      font-size: var(--font-size-16);
+    }
+
+    &__card {
+      padding: var(--spacing-12);
+    }
+
+    &__info-item {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: var(--spacing-10);
+    }
+
+    &__info-icon {
+      margin-bottom: var(--spacing-8);
+    }
+
+    &__assessment-title {
+      font-size: var(--font-size-16);
     }
   }
 }

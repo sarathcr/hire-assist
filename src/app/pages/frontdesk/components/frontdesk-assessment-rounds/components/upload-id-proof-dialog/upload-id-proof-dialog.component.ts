@@ -37,8 +37,8 @@ export class UploadIdProofDialogComponent implements OnInit {
   public blob!: Blob;
   public isLoading = true;
   constructor(
-    private fb: FormBuilder,
-    private ref: DynamicDialogRef,
+    private readonly fb: FormBuilder,
+    private readonly ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
     private readonly assessmentService: AssessmentService,
   ) {}

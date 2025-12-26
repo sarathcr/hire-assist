@@ -1,0 +1,40 @@
+<div class="cover-image">
+  @if (isLoading()) {
+    <div class="cover-image__skeleton">
+      <p-skeleton width="100%" height="100%" styleClass="cover-image__skeleton-img" />
+    </div>
+  } @else if (coverUrl() !== undefined && coverUrl() !== null && coverUrl() !== '') {
+    <img class="cover-image__img" [src]="coverUrl()" alt="Cover" />
+  } @else {
+    <div class="cover-image__bg"></div>
+  }
+  <input
+    type="file"
+    hidden
+    #fileInput
+    (change)="onFileSelected($event)"
+    accept="image/png, image/jpeg, image/gif"
+  />
+  @if (!isLoading()) {
+    <div class="cover-image__icon">
+      <p-button
+        icon="pi pi-pencil "
+        [rounded]="true"
+        [text]="true"
+        [raised]="true"
+        severity="info"
+        (click)="onEditCoverImage(fileInput)"
+        (keydown)="onButtonKeyDown($event, fileInput)"
+      />
+      <p-button
+        icon="pi pi-trash"
+        [rounded]="true"
+        [text]="true"
+        [raised]="true"
+        severity="info"
+        (click)="onDeleteCoverImage()"
+        (keydown)="onDeleteButtonKeyDown($event)"
+      />
+    </div>
+  }
+</div>

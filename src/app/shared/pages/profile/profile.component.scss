@@ -1,0 +1,193 @@
+@use "sass:list";
+.profile {
+  height: 100%;
+
+  &__content {
+    width: 100%;
+    margin-top: var(--spacing-30);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    &-wrapper {
+      display: flex;
+      gap: 2rem;
+      width: 100%;
+      max-height: calc(100% - 235px);
+    }
+  }
+  &__sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    margin-top: -100px;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  &__card {
+    padding: var(--spacing-10);
+    border-radius: 6px;
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    &__name {
+      font-size: var(--font-size-2xl);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      text-align: center;
+    }
+    &__role {
+      font-size: var(--font-size-lg);
+      color: var(--color-text-secondary);
+      text-align: center;
+      margin-top: var(--spacing-10);
+    }
+  }
+
+  &__circle-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    background-color: var(--color-white);
+  }
+  &__skills {
+    margin-top: var(--spacing-20);
+    padding: var(--spacing-10) var(--spacing-20) var(--spacing-20)
+      var(--spacing-20);
+    position: relative;
+    background-color: var(--color-white);
+    flex-grow: 1;
+    &__title {
+      font-size: var(--font-size-lg);
+      margin-top: 0;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      margin-bottom: var(--spacing-10);
+    }
+    &__list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--spacing-10);
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    &__item {
+      border: 1px solid var(--color-grey-light);
+      padding: 0 var(--spacing-20);
+      border-radius: 4px;
+      font-size: var(--font-size-base);
+      color: var(--color-text-secondary);
+      line-height: 10px;
+    }
+    &__button {
+      margin-bottom: var(--spacing-20);
+      &__icon {
+        position: absolute;
+        right: var(--spacing-15);
+        font-size: var(--font-size-extra-small);
+        color: var(--primary-color);
+        cursor: pointer;
+        ::ng-deep {
+          .p-button {
+            background-color: var(--color-white);
+            color: var(--primary-color);
+            box-shadow:
+              0 3px 1px -2px rgba(0, 0, 0, 0.1),
+              0 2px 2px 0 rgba(0, 0, 0, 0.08),
+              0 1px 5px 0 rgba(0, 0, 0, 0.06);
+          }
+        }
+      }
+    }
+  }
+  &__avatar,
+  &__card__name,
+  &__card__role {
+    position: relative;
+    z-index: 1;
+  }
+
+  &__avatar {
+    width: 150px;
+    height: 150px;
+    margin: auto;
+    border-radius: 50%;
+    overflow: hidden;
+    
+    &__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+    &__bg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      background-color: var(--background-secondary);
+    }
+  }
+  &__button {
+    margin-bottom: var(--spacing-10);
+    &__icon {
+      position: absolute;
+      right: var(--spacing-15);
+      font-size: var(--font-size-extra-small);
+      color: var(--primary-color);
+      cursor: pointer;
+      ::ng-deep {
+        .p-button {
+          background-color: var(--color-white);
+          color: var(--primary-color);
+          box-shadow:
+            0 3px 1px -2px rgba(0, 0, 0, 0.1),
+            0 2px 2px 0 rgba(0, 0, 0, 0.08),
+            0 1px 5px 0 rgba(0, 0, 0, 0.06);
+        }
+      }
+    }
+  }
+
+  ::ng-deep {
+    .p-tabs {
+      height: 100%;
+    }
+    .p-tabpanels {
+      flex-grow: 1;
+    }
+  }
+}
+.circle {
+  position: absolute;
+  border-radius: 50%;
+}
+
+$circles-list:
+  (6px, rgba(118, 110, 7, 0.7), 48%, 20%),
+  (8px, rgba(16, 224, 224, 0.7), 18%, 8%),
+  (7px, rgba(243, 156, 18, 0.7), 9%, 26%),
+  (5px, rgba(46, 204, 113, 0.7), 34%, 7%),
+  (5px, rgba(155, 89, 182, 0.7), 6%, 43%),
+  (3px, rgba(231, 76, 60, 0.7), 25%, 18%),
+  (8px, rgba(52, 152, 219, 0.7), 53%, 30%),
+  (5px, rgba(241, 196, 15, 0.7), 6%, 69%),
+  (5px, rgba(26, 188, 156, 0.7), 31%, 79%),
+  (6px, rgba(230, 126, 34, 0.7), 37%, 93%),
+  (9px, rgba(142, 68, 173, 0.7), 50%, 90%),
+  (5px, rgba(192, 57, 43, 0.7), 58%, 60%),
+  (4px, rgba(41, 128, 185, 0.7), 14%, 80%),
+  (6px, rgba(39, 174, 96, 0.7), 48%, 82%),
+  (9px, rgba(211, 84, 0, 0.7), 22%, 77%);
+
+@for $i from 1 through list.length($circles-list) {
+  .circle:nth-child(#{$i}) {
+    $circle-properties: list.nth($circles-list, $i);
+    width: list.nth($circle-properties, 1);
+    height: list.nth($circle-properties, 1);
+    background: list.nth($circle-properties, 2);
+    top: list.nth($circle-properties, 3);
+    left: list.nth($circle-properties, 4);
+  }
+}

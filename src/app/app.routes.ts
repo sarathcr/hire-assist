@@ -35,9 +35,10 @@ import { FrontdeskDashboardComponent } from './pages/frontdesk/components/frontd
 import { InterviewerCandidateListComponent } from './pages/interviewer/components/Interviewer-list/components/interviewer-candidate-list/interviewer-candidate-list.component';
 import { InterviewerFeedbackComponent } from './pages/interviewer/components/Interviewer-list/components/interviewer-feedback/interviewer-feedback.component';
 import { InterviewerDashboardComponent } from './pages/interviewer/components/interviewer-dashboard/interviewer-dashboard.component';
-import { ProfileComponent } from './shared/components/pages/profile/profile.component';
+
 import { backButtonGuard } from './shared/guards/back-button.guard';
 import { DeviceWidthGuard } from './shared/guards/device-width.guard';
+import { ProfileComponent } from './shared/pages/profile/profile.component';
 
 export const routes: Routes = [
   {

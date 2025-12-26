@@ -15,6 +15,7 @@ import { AssessmentService } from '../../../../../../services/assessment.service
 import { InterviewService } from '../../../../services/interview.service';
 import { CandidateDetailPreviousAssessmentSkeletonComponent } from './candidate-detail-previous-assessment-skeleton';
 import { CandidateDetailViewSkeletonComponent } from './candidate-detail-view-skeleton';
+import { CandidateDetailHeaderSkeletonComponent } from './candidate-detail-header-skeleton';
 
 @Component({
   selector: 'app-candidate-detail-view',
@@ -26,6 +27,7 @@ import { CandidateDetailViewSkeletonComponent } from './candidate-detail-view-sk
     EditorModule,
     CandidateDetailViewSkeletonComponent,
     CandidateDetailPreviousAssessmentSkeletonComponent,
+    CandidateDetailHeaderSkeletonComponent,
   ],
   templateUrl: './candidate-detail-view.component.html',
   styleUrl: './candidate-detail-view.component.scss',
@@ -42,17 +44,22 @@ export class CandidateDetailViewComponent
   public editorStatus = true;
   public isLoading = true;
   public isLoadingPreviousAssessments = true;
+  public isCoverImageLoading = false;
 
   constructor(
-    private activatedRoute: ActivatedRoute,
-    private assessmentService: AssessmentService,
-    private interviewService: InterviewService,
+    public activatedRoute: ActivatedRoute,
+    public assessmentService: AssessmentService,
+    public interviewService: InterviewService,
   ) {
     super();
   }
 
   // LifeCycle Hooks
   ngOnInit(): void {
+    // Ensure loading state is set before fetching data
+    this.isLoading = true;
+    this.isLoadingPreviousAssessments = true;
+    
     this.assessmentId = Number(
       this.activatedRoute.snapshot.paramMap.get('recruitmentId'),
     );
@@ -88,5 +95,32 @@ export class CandidateDetailViewComponent
     this.interviewService
       .GetCandidateAssessmentDetails(this.candidateId, this.assessmentId)
       .subscribe({ next, error });
+  }
+
+  // Public method to update cover image
+  public updateCoverImage(file: File): void {
+    this.isCoverImageLoading = true;
+    
+    // TODO: Replace with actual cover image upload service call
+    // Example implementation:
+    // this.assessmentService.uploadCoverImage(file, this.candidateId, this.assessmentId)
+    //   .subscribe({
+    //     next: (response) => {
+    //       // Update candidateDetailsDataSource with new cover image URL
+    //       if (this.candidateDetailsDataSource) {
+    //         this.candidateDetailsDataSource.coverImageUrl = response.imageUrl;
+    //       }
+    //       this.isCoverImageLoading = false;
+    //     },
+    //     error: () => {
+    //       this.isCoverImageLoading = false;
+    //     }
+    //   });
+
+    // For now, simulate the loading with a timeout
+    // Remove this when implementing actual upload
+    setTimeout(() => {
+      this.isCoverImageLoading = false;
+    }, 2000);
   }
 }
