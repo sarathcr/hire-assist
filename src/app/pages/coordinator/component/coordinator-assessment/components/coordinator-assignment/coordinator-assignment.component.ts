@@ -5,9 +5,12 @@ import { FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AccordionModule } from 'primeng/accordion';
 import { MenuItem, MessageService } from 'primeng/api';
+import { BadgeModule } from 'primeng/badge';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { DividerModule } from 'primeng/divider';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
-import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
 import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
@@ -28,8 +31,8 @@ import { InterviewService } from '../../../../../admin/components/assessment/ser
 import { AssignInterviewersDialogueComponent } from '../../../../../admin/components/settings/components/interviewer-panel-assignment/components/assign-interviewers-dialogue/assign-interviewers-dialogue.component';
 import { interviewerEditResponse } from '../../../../../admin/components/settings/components/interviewer-panel-assignment/interviewer-panel-assignment.component';
 import {
-  Interviewer,
   InterviewSummary,
+  Interviewer,
   PanelSummary,
 } from '../../../../../admin/models/assessment-schedule.model';
 import { Interview } from '../../../../../admin/models/interviewer.model';
@@ -40,7 +43,6 @@ import {
   InterviewPanelsResponse,
 } from '../../../../models/interview-panels.model';
 import { CoordinatorPanelBridgeService } from '../../../../services/coordinator-panel-bridge.service';
-
 const candidateTable: TableColumnsData = {
   columns: [
     {
@@ -103,7 +105,15 @@ type payload = Record<string, any>;
 
 @Component({
   selector: 'app-coordinator-assignment',
-  imports: [AccordionModule, TableComponent, ButtonComponent, ToastModule],
+  imports: [
+    AccordionModule,
+    TableComponent,
+    ToastModule,
+    CardModule,
+    DividerModule,
+    BadgeModule,
+    ButtonModule,
+  ],
   providers: [
     TableDataSourceService,
     MessageService,
@@ -136,6 +146,9 @@ export class CoordinatorAssignmentComponent implements OnInit {
   public existingPanel: string[] = [];
   public updateInterview!: Interview;
   public combinedPayloadData: any;
+  public isCandidateLoading = false;
+  public isPanelLoading = false;
+  private lastSelectedPanelId: string | null = null;
 
   private ref: DynamicDialogRef | undefined;
 
@@ -144,7 +157,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
     public messageService: MessageService,
     private readonly interviewService: InterviewService,
     private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
-    private activatedRoute: ActivatedRoute,
+    private readonly activatedRoute: ActivatedRoute,
     @Inject('CANDIDATE_TABLE') public dataSource1: TableDataSourceService<any>,
     @Inject('PANEL_TABLE') public dataSource2: TableDataSourceService<any>,
   ) {}
@@ -195,7 +208,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
     this.loadPanelData(payload);
   }
 
-  public getSelectedcandidateId(selectedIds: InterviewSummary[]) {
+  public getSelectedcandidateId(selectedIds: { id: string }[]) {
     if (selectedIds.length > 1) {
       this.messageService.add({
         severity: 'warn',
@@ -204,12 +217,18 @@ export class CoordinatorAssignmentComponent implements OnInit {
       });
       return;
     }
-    this.selectedCandidatesIds = selectedIds.map(
-      (item: InterviewSummary) => item,
-    );
-    if (this.selectedCandidatesIds.length > 0) {
-      this.getInterviewPanel(Number(this.selectedCandidatesIds[0].id));
+    // Map IDs to full candidate objects
+    if (selectedIds.length > 0 && this.data?.data) {
+      const candidate = this.data.data.find((c) => c.id === selectedIds[0].id);
+      if (candidate) {
+        this.selectedCandidatesIds = [candidate];
+        this.getInterviewPanel(Number(candidate.id));
+      } else {
+        this.selectedCandidatesIds = [];
+        this.selectedPanel = [];
+      }
     } else {
+      this.selectedCandidatesIds = [];
       this.selectedPanel = [];
     }
   }
@@ -223,7 +242,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       });
   }
 
-  public getSelectedPanelId(selectedIds: PanelSummary[]) {
+  public getSelectedPanelId(selectedIds: { id: string }[]) {
     if (selectedIds.length > 1) {
       this.messageService.add({
         severity: 'warn',
@@ -232,7 +251,30 @@ export class CoordinatorAssignmentComponent implements OnInit {
       });
       return;
     }
-    this.selectedPanelIds = selectedIds.map((item: PanelSummary) => item);
+    // Map IDs to full panel objects
+    if (selectedIds.length > 0) {
+      const selectedId = selectedIds[0].id;
+      this.lastSelectedPanelId = selectedId;
+      // Update selectedPanel array to match the selection
+      this.selectedPanel = [selectedId];
+      // Try to find panel by matching id (handle both string and number comparison)
+      this.updateSelectedPanelFromData(selectedId);
+    } else {
+      this.selectedPanelIds = [];
+      this.selectedPanel = [];
+      this.lastSelectedPanelId = null;
+    }
+  }
+
+  private updateSelectedPanelFromData(panelId: string): void {
+    if (this.panelData?.data) {
+      const panel = this.panelData.data.find(
+        (p) => String(p.id) === String(panelId),
+      );
+      if (panel) {
+        this.selectedPanelIds = [panel];
+      }
+    }
   }
 
   public getPaginatedCandidateData(data: payload) {
@@ -245,6 +287,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       },
     };
 
+    this.isCandidateLoading = true;
     this.interviewService
       .paginationEntity('InterviewSummary', payload)
       .subscribe({
@@ -258,15 +301,14 @@ export class CoordinatorAssignmentComponent implements OnInit {
 
           this.data = { ...res, data: resData };
 
-          this.isCompleteDisabled =
-            this.data.data.length !== 0 &&
-            this.data.data.some(
-              (candidate: InterviewSummary) =>
-                candidate.status === 'Pending' ||
-                candidate.isScheduled === false,
-            );
+          this.isCompleteDisabled = this.data.data.some(
+            (candidate: InterviewSummary) =>
+              candidate.status === 'Pending' || candidate.isScheduled === false,
+          );
+          this.isCandidateLoading = false;
         },
         error: () => {
+          this.isCandidateLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -286,6 +328,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       },
     };
 
+    this.isPanelLoading = true;
     this.coordinatorPanelBridgeService
       .paginationEntity('panel/activePanelSummary', payload)
       .subscribe({
@@ -299,8 +342,14 @@ export class CoordinatorAssignmentComponent implements OnInit {
             };
           });
           this.panelData = { ...res, data: resData };
+          // If there's a selected panel ID, try to restore the full panel object
+          if (this.lastSelectedPanelId) {
+            this.updateSelectedPanelFromData(this.lastSelectedPanelId);
+          }
+          this.isPanelLoading = false;
         },
         error: () => {
+          this.isPanelLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -339,8 +388,10 @@ export class CoordinatorAssignmentComponent implements OnInit {
     this.fGroup?.get('panels')?.updateValueAndValidity();
 
     const normalizedFormData: interviewerInterface = {
-      id: panelData.id ? parseInt(panelData.id) : undefined,
-      panelId: panelData.id ? parseInt(panelData.id) : undefined,
+      id: panelData.id ? Number.parseInt(panelData.id, 10) : undefined,
+      panelId: panelData.panelId
+        ? Number.parseInt(panelData.panelId.toString(), 10)
+        : undefined,
       interviewers: panelData.interviewers?.map((i: any) => i.id) ?? [],
       panelName: panelData.panelName,
     };
@@ -449,9 +500,15 @@ export class CoordinatorAssignmentComponent implements OnInit {
       const isInterviewIdSame =
         payload.interviewId === this.interview.interviewId;
       const isPanelIdSame = payload.panelId === this.interview.panelId;
+      const payloadInterviewerIds = payload.interviewers
+        .map((i) => i.id)
+        .sort((a, b) => a.localeCompare(b));
+      const interviewInterviewerIds = this.interview.interviewer
+        .map((i) => i.id)
+        .sort((a, b) => a.localeCompare(b));
       const isInterviewerSame =
-        JSON.stringify(payload.interviewers.sort()) ===
-        JSON.stringify(this.interview.interviewer.sort());
+        JSON.stringify(payloadInterviewerIds) ===
+        JSON.stringify(interviewInterviewerIds);
 
       const isAlreadyScheduled =
         isInterviewIdSame && isPanelIdSame && isInterviewerSame;
@@ -462,9 +519,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
           detail: 'This panel is already scheduled for the candidate.',
         });
         return;
-      } else {
-        this.updateInterviewPanels(payload);
       }
+      this.updateInterviewPanels(payload);
     };
 
     const error = (error: HttpErrorResponse) => {
@@ -517,29 +573,48 @@ export class CoordinatorAssignmentComponent implements OnInit {
   }
 
   private loadCandidateData(payload: PaginatedPayload): void {
-    this.dataSource1.getData(payload).subscribe((response: any) => {
-      const resData = response.data.map((item: any) => {
-        return {
-          ...item,
-          isScheduled: item.isScheduled ? 'Scheduled' : '',
-        };
-      });
+    this.isCandidateLoading = true;
+    this.dataSource1.getData(payload).subscribe({
+      next: (response: any) => {
+        const resData = response.data.map((item: any) => {
+          return {
+            ...item,
+            isScheduled: item.isScheduled ? 'Scheduled' : '',
+          };
+        });
 
-      this.data = { ...response, data: resData };
+        this.data = { ...response, data: resData };
+        this.isCandidateLoading = false;
+      },
+      error: () => {
+        this.isCandidateLoading = false;
+      },
     });
   }
   private loadPanelData(payload: PaginatedPayload): void {
-    this.dataSource2.getData(payload).subscribe((response: any) => {
-      const resData = response.data.map((item: any) => {
-        return {
-          ...item,
-          interviewerNames:
-            item.interviewers?.map((i: Interviewer) => i.name).join(', ') ?? '',
-          interviewers: item.interviewers ?? [],
-        };
-      });
+    this.isPanelLoading = true;
+    this.dataSource2.getData(payload).subscribe({
+      next: (response: any) => {
+        const resData = response.data.map((item: any) => {
+          return {
+            ...item,
+            interviewerNames:
+              item.interviewers?.map((i: Interviewer) => i.name).join(', ') ??
+              '',
+            interviewers: item.interviewers ?? [],
+          };
+        });
 
-      this.panelData = { ...response, data: resData };
+        this.panelData = { ...response, data: resData };
+        // If there's a selected panel ID, try to restore the full panel object
+        if (this.lastSelectedPanelId) {
+          this.updateSelectedPanelFromData(this.lastSelectedPanelId);
+        }
+        this.isPanelLoading = false;
+      },
+      error: () => {
+        this.isPanelLoading = false;
+      },
     });
   }
 }

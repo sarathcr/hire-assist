@@ -45,6 +45,7 @@ export class PaginationComponent
   private search = new Subject<void>();
   private search$ = this.search.asObservable().pipe(debounceTime(150));
   private hasInitialLoad = false;
+  private initialLoadTimeout: ReturnType<typeof setTimeout> | null = null;
 
   ngOnInit(): void {
     const sub = this.dataSource.connect().subscribe((dataList) => {
@@ -52,12 +53,16 @@ export class PaginationComponent
     });
     this.subscriptionList.push(sub);
     this.search$.subscribe(() => {
-      this.loadDataSource(); // Debounced search
+      // Only load if initial load has already happened (prevents duplicate initial load)
+      if (this.hasInitialLoad) {
+        this.loadDataSource(); // Debounced search
+      }
     });
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes && changes['filterMap']) {
+    if (changes && changes['filterMap'] && !changes['filterMap'].firstChange) {
+      // Only trigger search on filterMap changes after initial load
       const searchFilterMap = changes['filterMap']?.currentValue;
       this.onSearch(searchFilterMap);
     }
@@ -70,9 +75,16 @@ export class PaginationComponent
   ngAfterViewInit() {
     // Only load on initial view init, skip if already loaded
     if (!this.hasInitialLoad) {
-      setTimeout(() => {
-        this.loadDataSource();
-        this.hasInitialLoad = true;
+      // Clear any existing timeout
+      if (this.initialLoadTimeout) {
+        clearTimeout(this.initialLoadTimeout);
+      }
+      this.initialLoadTimeout = setTimeout(() => {
+        if (!this.hasInitialLoad) {
+          this.loadDataSource();
+          this.hasInitialLoad = true;
+        }
+        this.initialLoadTimeout = null;
       }, 150);
     }
   }

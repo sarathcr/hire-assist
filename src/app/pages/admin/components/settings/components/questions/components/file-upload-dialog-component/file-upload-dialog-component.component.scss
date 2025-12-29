@@ -9,8 +9,8 @@
       padding: 0 !important;
       display: flex;
       flex-direction: column;
+      flex: 1;
       overflow: hidden;
-      max-height: 85vh;
     }
 
     .p-dialog-header {
@@ -44,15 +44,11 @@
 .file-upload {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
+  max-height: 75vh;
+  overflow-y: hidden;
 
   &__container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-20);
-    flex: 1;
+    flex: 1 1 auto;
     overflow-y: auto;
     overflow-x: hidden;
     padding: var(--spacing-20);
@@ -187,7 +183,7 @@
     padding: var(--spacing-20);
   }
 
-  &__delete-btn{
+  &__delete-btn {
     position: absolute;
     bottom: 0;
     right: 0 !important;
@@ -223,14 +219,16 @@
     flex-direction: column;
     gap: var(--spacing-15);
     padding: var(--spacing-20);
-    border-top: 1px solid var(--color-seperator);
     background: var(--color-white);
+    border-top: 1px solid var(--color-seperator);
+    box-shadow: 0px -15px 20px -26px #000;
     flex-shrink: 0;
-    position: sticky;
-    bottom: 0;
+    width: 100%;
     z-index: 10;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
+    position: sticky;
+    bottom: 0;
   }
 
   &__loader-text {

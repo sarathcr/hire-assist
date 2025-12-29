@@ -20,10 +20,9 @@
   }
   &__list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, 300px);
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     column-gap: var(--spacing-15);
     row-gap: var(--spacing-15);
     width: 100%;
-    justify-content: center;
   }
 }

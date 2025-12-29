@@ -1,46 +1,321 @@
 .coordinator-detail {
   overflow-x: hidden;
-  &__title {
-    text-align: left;
-    font-weight: 700;
-    color: var(--color-grey);
-    font-size: var(--font-size-20);
-    margin-bottom: var(--spacing-20);
+  padding: var(--spacing-20);
+  background: var(--surface-ground, #f8f9fa);
+  min-height: calc(100vh - 120px);
+
+  // Header Section
+  &__header {
+    margin-bottom: var(--spacing-30);
+    background: linear-gradient(
+      135deg,
+      var(--primary-color) 0%,
+      var(--primary-color-dark, #0056b3) 100%
+    );
+    border-radius: 12px;
+    padding: var(--spacing-30);
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    color: white;
+
+    &-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-10);
+    }
+
+    &-title {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-15);
+    }
+
+    &-icon {
+      font-size: 2rem;
+      opacity: 0.9;
+    }
   }
+
+  &__title {
+    font-weight: 700;
+    font-size: 2rem;
+    margin: 0;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &__subtitle {
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.95;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+
+  // Summary Section
+  &__summary {
+    margin-bottom: var(--spacing-30);
+    animation: fadeInDown 0.4s ease-out;
+
+    &-card {
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      border-radius: 12px;
+
+      transition: all 0.3s ease;
+
+      &:hover {
+        box-shadow:
+          0 10px 15px -3px rgba(0, 0, 0, 0.1),
+          0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      }
+
+      ::ng-deep .p-card-body {
+        padding: var(--spacing-20);
+      }
+
+      ::ng-deep .p-card-content {
+        padding: 0;
+      }
+    }
+
+    &-content {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-20);
+      flex-wrap: wrap;
+    }
+
+    &-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-15);
+      flex: 1;
+      min-width: 200px;
+    }
+
+    &-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+
+      &.candidate {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      &.panel {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+      }
+    }
+
+    &-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      flex: 1;
+    }
+
+    &-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-color-secondary, #6c757d);
+    }
+
+    &-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-color, #212529);
+    }
+
+    &-placeholder {
+      color: var(--text-color-secondary, #6c757d);
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    &-actions {
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+  }
+
+  // Main View Section
   &__view {
     display: flex;
     width: 100%;
-    gap: 1rem;
     position: relative;
-    overflow: auto;
-    height: calc(100vh - 180px);
     box-sizing: border-box;
+
     &__content {
       flex-grow: 1;
-      overflow: auto;
-      &__btn-grp {
-        bottom: 0;
-        padding-right: var(--spacing-10);
-        left: 0;
-        right: 0;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-      }
-    }
-    app-stepper-skeleton {
-      flex-grow: 1;
+      width: 100%;
     }
   }
+
+  // Schedule Layout
   &__schedule-layout {
-    display: flex;
-    gap: 2rem;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: var(--spacing-20);
+    align-items: start;
+
+    @media (max-width: 1200px) {
+      grid-template-columns: 1fr;
+      gap: var(--spacing-30);
+
+      ::ng-deep p-divider {
+        display: none;
+      }
+    }
 
     &__left,
     &__right {
       flex: 1;
-      padding: 1rem;
-      border-radius: 8px;
+      min-width: 0;
     }
+  }
+
+  // Card Styling
+  &__card {
+    height: 100%;
+    box-shadow:
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    ::ng-deep .p-card-body {
+      padding: var(--spacing-20);
+    }
+
+    ::ng-deep .p-card-header {
+      padding: var(--spacing-20);
+      background: var(--surface-section, #ffffff);
+      border-bottom: 1px solid var(--surface-border, #dee2e6);
+      border-radius: 12px 12px 0 0;
+    }
+
+    ::ng-deep .p-card-content {
+      padding: 0;
+    }
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-15);
+
+    &-content {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-15);
+      flex: 1;
+    }
+  }
+
+  &__card-icon {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    background: var(--primary-color-light, rgba(0, 123, 255, 0.1));
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-color, #212529);
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  &__card-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-color-secondary, #6c757d);
+    margin: 0.25rem 0 0 0;
+    line-height: 1.4;
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    padding: var(--spacing-15);
+
+    &__header {
+      padding: var(--spacing-20);
+    }
+
+    &__title {
+      font-size: 1.5rem;
+    }
+
+    &__summary {
+      &-content {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      &-item {
+        min-width: 100%;
+      }
+
+      &-actions {
+        margin-left: 0;
+        width: 100%;
+
+        ::ng-deep .p-button {
+          width: 100%;
+        }
+      }
+
+      ::ng-deep p-divider {
+        display: none;
+      }
+    }
+
+    &__schedule-layout {
+      gap: var(--spacing-20);
+    }
+
+    &__card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--spacing-10);
+    }
+  }
+}
+
+// Animations
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

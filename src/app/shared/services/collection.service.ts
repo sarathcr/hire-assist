@@ -48,21 +48,16 @@ export class CollectionService implements OnDestroy {
       }
     });
 
-    // Refresh collections on route navigation to dashboard/main pages
     this.routerSubscription = this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event) => {
         const url = (event as NavigationEnd).url;
-        // Refresh on navigation to main dashboard pages
-        if (
-          url.includes('/admin') ||
-          url.includes('/coordinator') ||
-          url.includes('/frontdesk') ||
-          url.includes('/interviewer')
-        ) {
-          if (this.shouldRefreshCollections()) {
-            this.getCollection(true);
-          }
+        const isAuthRoute = url.includes('/login') || 
+                           url.includes('/forgot-password') || 
+                           url.includes('/reset-password');
+        
+        if (!isAuthRoute && this.storeService.isAuthenticated()) {
+          this.getCollection(true);
         }
       });
   }

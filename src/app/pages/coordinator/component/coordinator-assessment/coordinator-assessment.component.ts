@@ -22,6 +22,7 @@ export class CoordinatorAssessmentComponent
   public assessmentId!: number;
   public configMap!: ConfigMap;
   public isLoading = false;
+  public skeletonCards = [1, 2, 3]; // For rendering 3 skeleton cards
 
   constructor(
     public router: Router,

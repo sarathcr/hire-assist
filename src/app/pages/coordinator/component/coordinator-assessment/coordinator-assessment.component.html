@@ -18,9 +18,11 @@
           <p>No results found</p>
         }
       } @else {
-        <app-assessment-card-skeleton
-          class="coordinator-assessment__card"
-        ></app-assessment-card-skeleton>
+        @for (skeleton of skeletonCards; track $index) {
+          <app-assessment-card-skeleton
+            class="coordinator-assessment__card"
+          ></app-assessment-card-skeleton>
+        }
       }
     </div>
   </div>

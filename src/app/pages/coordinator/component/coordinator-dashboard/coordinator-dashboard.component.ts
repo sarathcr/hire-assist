@@ -27,6 +27,8 @@ export class CoordinatorDashboardComponent
   public configMap!: ConfigMap;
   public totalRecords = 0;
   public filterMap!: KeyValueMap<string>;
+  public isLoading = false;
+  public skeletonCards = [1, 2, 3]; // For rendering 3 skeleton cards
 
   constructor(
     public router: Router,
@@ -40,6 +42,7 @@ export class CoordinatorDashboardComponent
     this.setPaginationEndpoint();
     this.setConfigMaps();
     this.subscribeToPaginatedData();
+    this.subscribeToLoadingState();
   }
 
   // Public Methods
@@ -74,6 +77,13 @@ export class CoordinatorDashboardComponent
       this.totalRecords = records;
     });
 
+    this.subscriptionList.push(sub);
+  }
+
+  private subscribeToLoadingState() {
+    const sub = this.dataSource.loading$.subscribe((loading) => {
+      this.isLoading = loading;
+    });
     this.subscriptionList.push(sub);
   }
 }

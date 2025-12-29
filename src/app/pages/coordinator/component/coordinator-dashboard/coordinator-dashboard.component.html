@@ -3,7 +3,15 @@
     <h1 class="coordinator-assessment__title">Assessments</h1>
   </div>
   <div class="coordinator-assessment__wrapper">
-    @if (assessmentDataSource !== undefined) {
+    @if (isLoading) {
+      <div class="coordinator-assessment__list">
+        @for (skeleton of skeletonCards; track $index) {
+          <app-assessment-card-skeleton
+            class="coordinator-assessment__card"
+          ></app-assessment-card-skeleton>
+        }
+      </div>
+    } @else {
       <div class="coordinator-assessment__list">
         @for (assessment of assessmentDataSource; track assessment) {
           <app-assessment-card
@@ -17,10 +25,6 @@
           <p>No data available</p>
         }
       </div>
-    } @else {
-      <app-assessment-card-skeleton
-        class="coordinator-assessment__card"
-      ></app-assessment-card-skeleton>
     }
   </div>
   <app-pagination

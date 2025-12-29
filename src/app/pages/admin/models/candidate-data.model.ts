@@ -1,18 +1,19 @@
 import { Validators } from '@angular/forms';
 import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
 import { Candidate } from './assessment-schedule.model';
+import { minAgeValidator } from '../../../shared/utilities/dob.utility';
 
 export class CandidateDataModel extends FormEntity {
   id = '';
   name = '';
   email = '';
-  batch = undefined;
-  questionSet = undefined;
+  // batch = undefined;
+  // questionSet = undefined;
   dob = '';
   gender = '';
   phone = '';
-  endDate = '';
-  startDate = '';
+  // endDate = '';
+  // startDate = '';
   metadata: Metadata = {
     validatorsMap: {
       name: [Validators.required],
@@ -20,19 +21,19 @@ export class CandidateDataModel extends FormEntity {
         Validators.required,
         Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/),
       ],
-      dob: [Validators.required],
+      dob: [Validators.required, minAgeValidator(18)],
       gender: [Validators.required],
       phone: [Validators.required, Validators.pattern(/^\+?[0-9]{7,15}$/)],
-      startDate: [Validators.required],
-      endDate: [Validators.required],
-      batch: [Validators.required],
-      questionSet: [Validators.required],
+      // startDate: [Validators.required],
+      // endDate: [Validators.required],
+      // batch: [Validators.required],
+      // questionSet: [Validators.required],
     },
     configMap: {
       name: { id: 'name', labelKey: 'Name' },
       email: { id: 'email', labelKey: 'Email' },
-      batch: { id: 'batch', labelKey: 'Batch' },
-      questionSet: { id: 'questionSet', labelKey: 'Question Set' },
+      // batch: { id: 'batch', labelKey: 'Batch' },
+      // questionSet: { id: 'questionSet', labelKey: 'Question Set' },
       dob: { id: 'dob', labelKey: 'Date of Birth' },
       gender: {
         id: 'gender',
@@ -44,8 +45,8 @@ export class CandidateDataModel extends FormEntity {
         ],
       },
       phone: { id: 'phone', labelKey: 'Contact Number' },
-      startDate: { id: 'startDate', labelKey: 'StartDate' },
-      endDate: { id: 'endDate', labelKey: 'EndDate' },
+      // startDate: { id: 'startDate', labelKey: 'StartDate' },
+      // endDate: { id: 'endDate', labelKey: 'EndDate' },
     },
   };
 }

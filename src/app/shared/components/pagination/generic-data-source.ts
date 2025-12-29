@@ -45,6 +45,11 @@ export class GenericDataSource<T>
   }
 
   public loadPaginatedData(payload: PaginatedDataPayload) {
+    // Prevent duplicate concurrent calls by checking if already loading
+    if (this.loadingSubject.value) {
+      return;
+    }
+
     this.lastPayload = payload;
     this.loadingSubject.next(true);
     payload = { ...payload, ...this.optionInitialPayload };
