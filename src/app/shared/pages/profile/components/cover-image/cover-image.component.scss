@@ -43,4 +43,27 @@
       }
     }
   }
+
+  @media (max-width: 1024px) {
+    width: calc(100% + 40px);
+    margin: 0 -20px;
+    height: 250px;
+  }
+
+  @media (max-width: 768px) {
+    width: calc(100% + 40px);
+    margin: 0 -20px;
+    height: 200px;
+    &__icon {
+      bottom: 10px;
+      right: 10px;
+      ::ng-deep {
+        .p-button {
+          width: 32px;
+          height: 32px;
+          font-size: var(--font-size-small);
+        }
+      }
+    }
+  }
 }

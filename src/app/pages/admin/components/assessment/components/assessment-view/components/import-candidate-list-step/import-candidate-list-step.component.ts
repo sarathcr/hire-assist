@@ -104,6 +104,7 @@ export class ImportCandidateListStepComponent implements OnInit {
   public columns: TableColumnsData = tableColumns;
   public fGroup!: FormGroup;
   public duplicateRecords: unknown[] = [];
+  public isUploading = false;
   public assessmentId = input<number>();
   public selectedUsers: (string | undefined)[] = [];
   public importStatus = false;
@@ -187,6 +188,7 @@ export class ImportCandidateListStepComponent implements OnInit {
     });
   }
   public getAllCandidates(payload: PaginatedPayload, clearLoading = false) {
+    this.isLoading = true;
     payload.filterMap = {
       assessmentId: Number(this.assessmentId()),
     };
@@ -205,13 +207,13 @@ export class ImportCandidateListStepComponent implements OnInit {
       this.skipAutoSelection = false;
       if (clearLoading) {
         this.isLoading = false;
+      } else {
+        this.isLoading = false;
       }
     };
 
     const error = (error: CustomErrorResponse) => {
-      if (clearLoading) {
-        this.isLoading = false;
-      }
+      this.isLoading = false;
       this.errorMessage(error);
     };
     this.candidateService
@@ -236,6 +238,7 @@ export class ImportCandidateListStepComponent implements OnInit {
   public onImport(event: FileUploadHandlerEvent): void {
     const file = event.files[0];
     this.isLoading = true;
+    this.isUploading = true;
     this.importCandidates(file);
   }
   public importCandidates(file: File) {
@@ -253,12 +256,12 @@ export class ImportCandidateListStepComponent implements OnInit {
           } else {
             this.getAllCandidates(new PaginatedPayload(), true);
           }
-
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
             detail: `Imported candidates successfully.`,
           });
+          this.isUploading = false;
         },
         error: () => {
           this.isLoading = false;
@@ -267,6 +270,7 @@ export class ImportCandidateListStepComponent implements OnInit {
             summary: 'Error',
             detail: 'Import failed',
           });
+          this.isUploading = false;
         },
       });
   }
@@ -626,20 +630,24 @@ export class ImportCandidateListStepComponent implements OnInit {
     });
   }
 
-  private updateAlreadySelectedCandidates(): void {
-    if (!this.data || !this.data.data) {
-      this.alreadySelectedCandidates = [];
-      return;
-    }
+  // private updateAlreadySelectedCandidates(): void {
+  //   if (!this.data || !this.data.data) {
+  //     this.alreadySelectedCandidates = [];
+  //     return;
+  //   }
 
-    this.alreadySelectedCandidates = this.data.data
-      .filter(
-        (candidate: CandidateModel) =>
-          candidate.batchId !== null &&
-          candidate.batchId !== undefined &&
-          candidate.batchId > 0,
-      )
-      .map((candidate: CandidateModel) => candidate.id);
+  //   this.alreadySelectedCandidates = this.data.data
+  //     .filter(
+  //       (candidate: CandidateModel) =>
+  //         candidate.batchId !== null &&
+  //         candidate.batchId !== undefined &&
+  //         candidate.batchId > 0,
+  //     )
+  //     .map((candidate: CandidateModel) => candidate.id);
+  // }
+  private updateAlreadySelectedCandidates(): void {
+    this.alreadySelectedCandidates = [];
+    this.selectedUsers = [];
   }
 
   private checkStepStatusAndMoveNext(): void {

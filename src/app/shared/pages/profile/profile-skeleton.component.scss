@@ -209,7 +209,7 @@ $circles-list:
 }
 
 .basic-information {
-  padding: var(--spacing-20) 0 0;
+  padding: var(--spacing-20);
   display: flex;
   gap: 1rem;
   justify-content: space-between;
@@ -299,24 +299,116 @@ $circles-list:
   }
 }
 
-@media (max-width: 768px) {
-  .profile-skeleton {
-    &__content-wrapper {
-      flex-direction: column;
-      gap: var(--spacing-20);
+@media (max-width: 1024px) {
+  .profile {
+    &__content {
+      &-wrapper {
+        flex-direction: column;
+        gap: var(--spacing-20);
+        max-height: none;
+      }
     }
-
     &__sidebar {
       width: 100%;
       margin-top: var(--spacing-20);
     }
-
-    &__basic-info {
-      flex-direction: column;
+    &__content {
+      margin-top: var(--spacing-20);
     }
+  }
+
+  .cover-image {
+    width: calc(100% + 40px);
+    margin: 0 -20px;
+    height: 250px;
+  }
+
+  .basic-information {
+    flex-direction: column;
+    gap: var(--spacing-20);
+    padding: var(--spacing-15) 0 0;
 
     &__field-wrapper {
       flex-direction: column;
+      gap: var(--spacing-15);
+    }
+
+    &__interview-schedules {
+      width: 100%;
+      flex-basis: auto;
+      margin-top: var(--spacing-20);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .profile {
+    &__content {
+      &-wrapper {
+        gap: var(--spacing-15);
+      }
+    }
+    &__sidebar {
+      margin-top: var(--spacing-15);
+    }
+    &__card {
+      padding: var(--spacing-15);
+    }
+    &__avatar {
+      width: 120px !important;
+      height: 120px !important;
+    }
+    &__card__name {
+      font-size: var(--font-size-xl);
+    }
+    &__card__role {
+      font-size: var(--font-size-base);
+    }
+    &__skills {
+      padding: var(--spacing-15);
+    }
+  }
+
+  .cover-image {
+    width: calc(100% + 40px);
+    margin: 0 -20px;
+    height: 200px;
+  }
+
+  .basic-information {
+    padding: var(--spacing-15) 0 0;
+    gap: var(--spacing-15);
+
+    &__field-wrapper {
+      gap: var(--spacing-12);
+    }
+
+    &__interview-schedules {
+      padding: var(--spacing-15);
+      margin-top: var(--spacing-15);
+
+      &__title {
+        font-size: var(--font-size-base);
+        padding-left: var(--spacing-8);
+      }
+
+      &__cards {
+        flex-wrap: wrap;
+        padding-top: var(--spacing-15);
+        justify-content: center;
+
+        &__calendar-tile {
+          width: calc(50% - var(--spacing-20));
+          min-width: 80px;
+          margin: var(--spacing-8);
+        }
+      }
+    }
+
+    &__btn {
+      width: 100%;
+      margin-left: 0;
+      margin-top: var(--spacing-15);
     }
   }
 }

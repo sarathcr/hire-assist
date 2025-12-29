@@ -79,6 +79,25 @@
       font-size: var(--font-size-base);
       color: var(--color-text-secondary);
       line-height: 10px;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-10);
+      justify-content: space-between;
+
+      p {
+        margin: 0;
+        flex: 1;
+      }
+
+      &__delete {
+        flex-shrink: 0;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
     &__button {
       margin-bottom: var(--spacing-20);
@@ -156,6 +175,50 @@
     }
     .p-tabpanels {
       flex-grow: 1;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    &__content {
+      &-wrapper {
+        flex-direction: column;
+        gap: var(--spacing-20);
+        max-height: none;
+      }
+    }
+    &__sidebar {
+      width: 100%;
+      margin-top: var(--spacing-20);
+    }
+    &__content {
+      margin-top: var(--spacing-20);
+    }
+  }
+
+  @media (max-width: 768px) {
+    &__content {
+      &-wrapper {
+        gap: var(--spacing-15);
+      }
+    }
+    &__sidebar {
+      margin-top: var(--spacing-15);
+    }
+    &__card {
+      padding: var(--spacing-15);
+    }
+    &__avatar {
+      width: 120px;
+      height: 120px;
+    }
+    &__card__name {
+      font-size: var(--font-size-xl);
+    }
+    &__card__role {
+      font-size: var(--font-size-base);
+    }
+    &__skills {
+      padding: var(--spacing-15);
     }
   }
 }

@@ -10,15 +10,22 @@ export class BasicInformation {
   metadata: Metadata = {
     validatorsMap: {},
     configMap: {
-      name: { id: 'name', labelKey: 'Name', readonly: true },
-      email: { id: 'email', labelKey: 'Email', readonly: true },
-      phone: { id: 'phone', labelKey: 'Phone', readonly: true },
-      dob: { id: 'dob', labelKey: 'Date of Birth', readonly: true },
-      gender: { id: 'gender', labelKey: 'Gender', readonly: true },
+      name: { id: 'name', labelKey: 'Name' },
+      email: { id: 'email', labelKey: 'Email' },
+      phone: { id: 'phone', labelKey: 'Phone' },
+      dob: { id: 'dob', labelKey: 'Date of Birth' },
+      gender: {
+        id: 'gender',
+        labelKey: 'Gender',
+        options: [
+          { value: 'male', label: 'Male' },
+          { value: 'female', label: 'Female' },
+          { value: 'others', label: 'Others' },
+        ],
+      },
       memberSince: {
         id: 'memberSince',
         labelKey: 'Member Since',
-        readonly: true,
       },
     },
   };

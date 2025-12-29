@@ -390,7 +390,11 @@
                 let i = $index;
                 track icon
               ) {
-                @if (product.toggleTooltipIconIndex !== i) {
+                @if (
+                  product.visibleButtonIndices
+                    ? product.visibleButtonIndices.includes(i)
+                    : product.toggleTooltipIconIndex !== i
+                ) {
                   <p-button
                     [outlined]="true"
                     [raised]="true"

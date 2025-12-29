@@ -59,38 +59,6 @@
           </p>
         }
       </div>
-      <div class="profile__skills profile__card">
-        <div class="profile__skills__button">
-          <p-button
-            icon="pi pi-pencil"
-            class="profile__skills__button__icon"
-            [rounded]="true"
-            [text]="true"
-            [raised]="true"
-            severity="info"
-          />
-        </div>
-        <h3 class="profile__skills__title">Expert in:</h3>
-        @if (
-          profileDetailsDataSource &&
-          profileDetailsDataSource.userSkills !== undefined
-        ) {
-          <ul class="profile__skills__list">
-            @if (profileDetailsDataSource.userSkills.length > 0) {
-              @for (
-                userSkills of profileDetailsDataSource.userSkills;
-                track userSkills.id
-              ) {
-                <li class="profile__skills__item">
-                  <p>{{ userSkills.name }}</p>
-                </li>
-              }
-            } @else {
-              <span>No data found</span>
-            }
-          </ul>
-        }
-      </div>
     </div>
     <div class="profile__content">
       <p-tabs value="0">

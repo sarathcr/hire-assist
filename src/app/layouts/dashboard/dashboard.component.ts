@@ -1,10 +1,11 @@
 import { Component, OnInit, computed, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { SideNavComponent } from '../../shared/components/side-nav/side-nav.component';
 import { CollectionService } from '../../shared/services/collection.service';
 import { SidebarCollapseService } from '../../shared/services/sidebar-collapse.service';
+import { ProfileServicesService } from '../../shared/pages/profile/services/profile-services.service';
 import { StoreService } from '../../shared/services/store.service';
 
 @Component({
@@ -21,10 +22,11 @@ export class DashboardComponent implements OnInit {
   constructor(
     private readonly storeService: StoreService,
     private readonly collectionService: CollectionService,
+    private readonly profileServices: ProfileServicesService,
+    private readonly router: Router,
   ) {}
 
   ngOnInit(): void {
-    // Refresh collections when dashboard loads if they are stale
     if (this.collectionService.shouldRefreshCollections()) {
       this.collectionService.getCollection(true);
     }
@@ -45,6 +47,47 @@ export class DashboardComponent implements OnInit {
       }
     } else {
       this.links = this.getDefaultLinks();
+    }
+    this.loadProfileImageIfNeeded();
+  }
+
+  private loadProfileImageIfNeeded(): void {
+    const isOnProfilePage = this.router.url.includes('/profile');
+    
+    if (!this.storeService.getProfileImageUrl() && !this.storeService.isProfileDetailsLoading && !isOnProfilePage) {
+      this.storeService.setIsLoadingProfileImage(true);
+      this.storeService.setIsProfileDetailsLoading(true);
+
+      this.profileServices.GetProfileDetails().subscribe({
+        next: (profileDetails) => {
+          if (profileDetails.profilePhoto?.id && profileDetails.profilePhoto?.attachmentType) {
+            this.profileServices
+              .GetPhoto(
+                profileDetails.profilePhoto.id,
+                profileDetails.profilePhoto.attachmentType,
+              )
+              .subscribe({
+                next: (blob: Blob) => {
+                  const url = URL.createObjectURL(blob);
+                  this.storeService.setProfileImageUrl(url);
+                  this.storeService.setIsLoadingProfileImage(false);
+                  this.storeService.setIsProfileDetailsLoading(false);
+                },
+                error: () => {
+                  this.storeService.setIsLoadingProfileImage(false);
+                  this.storeService.setIsProfileDetailsLoading(false);
+                },
+              });
+          } else {
+            this.storeService.setIsLoadingProfileImage(false);
+            this.storeService.setIsProfileDetailsLoading(false);
+          }
+        },
+        error: () => {
+          this.storeService.setIsLoadingProfileImage(false);
+          this.storeService.setIsProfileDetailsLoading(false);
+        },
+      });
     }
   }
 
@@ -99,7 +142,6 @@ export class DashboardComponent implements OnInit {
         tooltip: 'Frontdesk',
       });
     }
-    // Append Settings as the last menu item
     links.push({
       label: 'Settings',
       icon: 'pi pi-cog',

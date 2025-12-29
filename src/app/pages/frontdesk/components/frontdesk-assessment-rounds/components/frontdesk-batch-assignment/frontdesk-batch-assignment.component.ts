@@ -29,6 +29,7 @@ import { AssignBatchDialogComponent } from '../assign-batch-dialog/assign-batch-
 import { UploadIdProofDialogComponent } from '../upload-id-proof-dialog/upload-id-proof-dialog.component';
 import { FrontdeskBatchAssignmentSkeletonComponent } from './frontdesk-batch-assignment-skeleton.component';
 import { TableSkeletonComponent } from '../../../../../../shared/components/table/table.skeleton';
+import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { finalize } from 'rxjs/operators';
 const tableColumns: TableColumnsData = {
   columns: [
@@ -74,8 +75,8 @@ const tableColumns: TableColumnsData = {
         'Upload Id Proof',
       ],
       buttonIcons: [
-        'pi pi-check-circle',
-        'pi pi-times-circle',
+        'pi pi-check', // Mark as Present - check icon
+        'pi pi-times', // Unmark Presence - close/cross icon
         'pi pi-arrows-v',
         'pi pi-id-card',
       ],
@@ -95,6 +96,7 @@ export interface Candidate {
   status?: string;
   batchQuestionSetsId?: string;
   toggleTooltipIconIndex?: number;
+  visibleButtonIndices?: number[];
 }
 
 export interface ButtonAction {
@@ -185,16 +187,21 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
 
   private markAsPresent(candidate: Candidate, batchId: string, event?: string) {
     this.markAsPresentRequest = { InterviewsId: candidate.id };
+    // Show loading skeleton while API call is in progress
+    this.loadingBatches[batchId] = true;
+    
     const next = () => {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
         detail: `Candidate ${candidate.name} ${event}`,
       });
+      // Refresh candidates data after successful API call
       this.getAllPaginatedCandidates(new PaginatedPayload(), batchId);
     };
 
     const error = (error: CustomErrorResponse) => {
+      this.loadingBatches[batchId] = false;
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -262,25 +269,15 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
   }
 
   private uploadIdProof(candidate: Candidate) {
-    this.assessmentService.getIdProofsByCandidateId(candidate.email).subscribe({
-      next: (existingProof: FileDto[]) => {
-        if (existingProof && existingProof.length > 0) {
-          this.openUploadDialog(candidate, existingProof);
-        } else {
-          this.openUploadDialog(candidate);
-        }
-      },
-      error: () => {
-        // Error fetching existing ID proofs
-      },
-    });
+    // Open modal instantly - API call will happen inside the dialog component
+    this.openUploadDialog(candidate);
   }
-  private openUploadDialog(candidate: Candidate, files?: FileDto[]) {
+
+  private openUploadDialog(candidate: Candidate) {
+    const batchId = candidate.batchQuestionSetsId;
     this.ref = this.dialog.open(UploadIdProofDialogComponent, {
-      // data: filteredBatchList,
       data: {
         candidateEmail: candidate.email,
-        existingFileUrl: files,
       },
       header: 'Upload ID Proof',
       width: '50vw',
@@ -293,35 +290,12 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       },
     });
 
-    this.ref.onClose.subscribe(
-      (result: { idType: string; file: File } | undefined) => {
-        if (result) {
-          const payload: IdProofUploadRequest = {
-            CandidateId: candidate.email,
-            IdType: +result.idType,
-            File: result.file,
-            Description: '',
-          };
-
-          this.assessmentService.uploadIdProof(payload).subscribe({
-            next: () => {
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'ID Proof uploaded successfully',
-              });
-            },
-            error: (error: CustomErrorResponse) => {
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Upload Failed',
-                detail: error?.error?.type || 'Something went wrong',
-              });
-            },
-          });
-        }
-      },
-    );
+    this.ref.onClose.subscribe((result: { success?: boolean } | undefined) => {
+      // Modal handles upload internally, refresh candidate data if upload was successful
+      if (result?.success && batchId) {
+        this.getAllPaginatedCandidates(new PaginatedPayload(), batchId);
+      }
+    });
   }
 
   private getCurrentRouteIds() {
@@ -368,11 +342,17 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     const next = (res: PaginatedData<Candidate>) => {
       const updatedRes: PaginatedData<Candidate> = {
         ...res,
-        data: res.data.map((candidate) => ({
-          ...candidate,
-          toggleTooltipIconIndex:
-            candidate.reportingTime === '0001-01-01T00:00:00' ? 1 : 0,
-        })),
+        data: res.data.map((candidate) => {
+          // Candidate is present if statusId is Active (1) or status is 'Active'
+          const isPresent = candidate.statusId === StatusEnum.Active || candidate.status?.toLowerCase() === 'active';
+          return {
+            ...candidate,
+            // Default to absent: show only "Mark as Present" (index 0) - check icon
+            // When present (Active): show "Unmark Presence" (index 1) - close icon, "Assign to another batch" (index 2), and "Upload Id Proof" (index 3)
+            toggleTooltipIconIndex: isPresent ? 0 : 1,
+            visibleButtonIndices: isPresent ? [1, 2, 3] : [0],
+          };
+        }),
       };
       this.candidatesByBatch[batchId] = updatedRes;
       this.loadingBatches[batchId] = false;
@@ -417,11 +397,17 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
         next: (response: PaginatedData<Candidate>) => {
           const updatedRes: PaginatedData<Candidate> = {
             ...response,
-            data: response.data.map((candidate) => ({
-              ...candidate,
-              toggleTooltipIconIndex:
-                candidate.reportingTime === '0001-01-01T00:00:00' ? 1 : 0,
-            })),
+            data: response.data.map((candidate) => {
+              // Candidate is present if statusId is Active (1) or status is 'Active'
+              const isPresent = candidate.statusId === StatusEnum.Active || candidate.status?.toLowerCase() === 'active';
+              return {
+                ...candidate,
+                // Default to absent: show only "Mark as Present" (index 0) - check icon
+                // When present (Active): show "Unmark Presence" (index 1) - close icon, "Assign to another batch" (index 2), and "Upload Id Proof" (index 3)
+                toggleTooltipIconIndex: isPresent ? 0 : 1,
+                visibleButtonIndices: isPresent ? [1, 2, 3] : [0],
+              };
+            }),
           };
           this.candidatesByBatch[batchId] = updatedRes;
         },

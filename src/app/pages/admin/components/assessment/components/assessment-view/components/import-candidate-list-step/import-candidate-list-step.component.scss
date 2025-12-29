@@ -131,7 +131,7 @@
     @media (max-width: 768px) {
       width: 100%;
       justify-content: stretch;
-
+      flex-direction: column;
       > * {
         flex: 1;
         min-width: 0;
@@ -272,7 +272,7 @@
 
   &__legend-label {
     font-weight: 600;
-    font-size: clamp(14px, 1.8vw + 0.25rem, 15px);
+    font-size: clamp(12px, 1.8vw + 0.25rem, 15px);
     color: #1f2937;
     min-width: 120px;
   }
@@ -438,11 +438,12 @@
 
     &__legend-items {
       flex-direction: column;
-      gap: var(--spacing-12);
+      gap: var(--spacing-5);
     }
 
     &__legend-item {
       min-width: 100%;
+      gap: var(--spacing-5);
     }
   }
 }

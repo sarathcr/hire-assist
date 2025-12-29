@@ -2,32 +2,37 @@
   <div class="dialog__header">
     <h2>{{ candidateData?.title }}</h2>
   </div>
-  <form [formGroup]="fGroup">
-    <app-input-text
-      [formGroup]="fGroup"
-      type="text"
-      [config]="configMap['name']"
-      [ariaMultiSelectable]=""
-    ></app-input-text>
+  <div class="dialog__content">
+    <form [formGroup]="fGroup">
+      <app-input-text
+        [formGroup]="fGroup"
+        type="text"
+        [config]="configMap['name']"
+        [ariaMultiSelectable]=""
+      ></app-input-text>
 
-    <app-input-text
-      [formGroup]="fGroup"
-      type="text"
-      [config]="configMap['email']"
-    ></app-input-text>
-    <app-input-text-calender
-      [formGroup]="fGroup"
-      [config]="configMap['dob']"
-      [showTime]="false"
-      [maxDate]="today"
-    ></app-input-text-calender>
-    <app-input-select [formGroup]="fGroup" [config]="configMap['gender']" />
-    <app-input-text
-      [formGroup]="fGroup"
-      type="text"
-      [config]="configMap['phone']"
-    ></app-input-text>
-    <app-input-select [formGroup]="fGroup" [config]="configMap['batch']" />
+      <app-input-text
+        [formGroup]="fGroup"
+        type="text"
+        [config]="configMap['email']"
+      ></app-input-text>
+      <app-input-text-calender
+        [formGroup]="fGroup"
+        [config]="configMap['dob']"
+        [showTime]="false"
+        [maxDate]="today"
+      ></app-input-text-calender>
+      <app-input-select
+        [formGroup]="fGroup"
+        [config]="configMap['gender']"
+        [showClear]="false"
+      />
+      <app-input-text
+        [formGroup]="fGroup"
+        type="text"
+        [config]="configMap['phone']"
+      ></app-input-text>
+      <!-- <app-input-select [formGroup]="fGroup" [config]="configMap['batch']" />
     @if (fGroup.get("batch")?.value) {
       <app-input-text-calender
         class="batch-form_field-col_one"
@@ -57,15 +62,16 @@
         [formGroup]="fGroup"
         [config]="configMap['questionSet']"
       />
-    }
-    @for (q of applicationQuestions; track q.id) {
-      <app-input-text
-        [formGroup]="fGroup"
-        type="text"
-        [config]="{ id: q.id.toString(), labelKey: q.question }"
-      />
-    }
-  </form>
+    }-->
+      @for (q of applicationQuestions; track q.id) {
+        <app-input-text
+          [formGroup]="fGroup"
+          type="text"
+          [config]="{ id: q.id.toString(), labelKey: q.question }"
+        />
+      }
+    </form>
+  </div>
 </div>
 <footer class="dialog-footer">
   <div class="dialog-footer__btn-wrapper">

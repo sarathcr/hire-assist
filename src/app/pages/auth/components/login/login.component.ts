@@ -123,6 +123,7 @@ export class LoginComponent implements OnInit {
       this.navigateToUserDashboard(userRole);
       // Reset collection timestamp and fetch fresh collections on login
       this.collectionService.getCollection();
+      // Profile image will be loaded by dashboard component
     }
   }
 

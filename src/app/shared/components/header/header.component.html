@@ -23,9 +23,16 @@
       aria-label="Close menu"
     ></button>
     <div class="header__avatar">
-      <app-drop-down class="dropdown"
-        ><img src="avatar.png" alt="avatar"
-      /></app-drop-down>
+      @if (isLoadingProfileImage) {
+        <p-skeleton shape="circle" [width]="isMobile ? '30px' : '50px'" [height]="isMobile ? '30px' : '50px'" />
+      } @else {
+        <app-drop-down class="dropdown"
+          ><img
+            [src]="profileImageUrl || 'avatar.png'"
+            alt="avatar"
+            (error)="onImageError($event)"
+        /></app-drop-down>
+      }
     </div>
   </div>
 </header>

@@ -29,7 +29,7 @@
   <div class="candidate__toolbar">
     <div class="candidate__toolbar-group">
       <p-fileUpload
-        [disabled]="importStatus"
+        [disabled]="importStatus || isUploading"
         mode="basic"
         accept=".csv"
         [maxFileSize]="1000000"
@@ -43,7 +43,7 @@
       />
       <app-button
         class="candidate__action-btn"
-        [disabled]="newStatus"
+        [disabled]="newStatus || isLoading"
         [buttonLabel]="'Add New'"
         [icon]="'pi pi-plus'"
         (btnClick)="addNewCandidate()"
@@ -78,12 +78,16 @@
       <div class="candidate__legend-item candidate__legend-item--scheduled">
         <div class="candidate__legend-indicator"></div>
         <span class="candidate__legend-label">Scheduled</span>
-        <span class="candidate__legend-description">Candidate has been scheduled for assessment</span>
+        <span class="candidate__legend-description"
+          >Candidate has been scheduled for assessment</span
+        >
       </div>
       <div class="candidate__legend-item candidate__legend-item--unscheduled">
         <div class="candidate__legend-indicator"></div>
         <span class="candidate__legend-label">Not Scheduled</span>
-        <span class="candidate__legend-description">Candidate needs to be scheduled</span>
+        <span class="candidate__legend-description"
+          >Candidate needs to be scheduled</span
+        >
       </div>
     </div>
   </div>

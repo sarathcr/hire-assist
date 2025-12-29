@@ -1,0 +1,43 @@
+<div class="skills-form">
+  @if (isLoading) {
+    <div class="skills-form__loading">Loading skills...</div>
+  } @else {
+    <form [formGroup]="skillsForm">
+      <app-input-multiselect
+        class="skills-form__field"
+        [formGroup]="skillsForm"
+        [config]="skillsConfig"
+        placeholder="Select skills"
+      ></app-input-multiselect>
+
+      <div class="skills-form__add-skill">
+        <app-input-text
+          class="skills-form__add-skill__input"
+          [formGroup]="skillsForm"
+          type="text"
+          [config]="newSkillConfig"
+        ></app-input-text>
+        <app-button
+          [buttonLabel]="'Add'"
+          [disabled]="!skillsForm.get('newSkill')?.valid || isAddingSkill"
+          (btnClick)="onAddSkill()"
+          class="skills-form__add-skill__button"
+        ></app-button>
+      </div>
+
+      <div class="skills-form__button">
+        <app-button
+          [buttonLabel]="'Cancel'"
+          [buttonVariant]="'outlined'"
+          (btnClick)="onClose()"
+        ></app-button>
+        <app-button
+          [buttonLabel]="'Save'"
+          [disabled]="!skillsForm.get('skills')?.valid"
+          (btnClick)="onSubmit()"
+        ></app-button>
+      </div>
+    </form>
+  }
+</div>
+

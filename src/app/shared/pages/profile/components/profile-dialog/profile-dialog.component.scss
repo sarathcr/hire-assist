@@ -1,52 +1,181 @@
 :host {
-  padding: var(--spacing-30);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .profile-form {
-  padding: var(--spacing-10) 0 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 400px;
 
-  &__label {
-    margin-bottom: var(--spacing-25);
-    display: flex;
-    align-items: center;
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-20) var(--spacing-30);
   }
-  &__button {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-  &__image-container {
+
+  &__image-section {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: var(--spacing-15);
-    margin-bottom: var(--spacing-20);
+    gap: var(--spacing-20);
+    margin-bottom: var(--spacing-30);
+    padding-bottom: var(--spacing-30);
+    border-bottom: 1px solid var(--color-grey-light);
   }
 
-  &__upload {
-    margin-top: var(--spacing-10);
+  &__image-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__image-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--color-white);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.02);
+    }
+
+    &:hover .profile-form__image-overlay {
+      opacity: 1;
+    }
+
+    ::ng-deep {
+      .p-image {
+        width: 100%;
+        height: 100%;
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+    }
+  }
+
+  &__image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+
+    i {
+      color: var(--color-white);
+      font-size: 2rem;
+    }
+  }
+
+  &__preview-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--primary-color);
+    color: var(--color-white);
+    padding: var(--spacing-5) var(--spacing-10);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-5);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 2;
+
+    i {
+      font-size: var(--font-size-base);
+    }
+  }
+
+  &__upload-btn {
+    ::ng-deep {
+      .p-button {
+        padding: var(--spacing-10) var(--spacing-20);
+      }
+    }
+  }
+
+  &__field-section {
+    width: 100%;
   }
 
   &__field {
     width: 100%;
-    &-row {
-      &_one {
-        flex-basis: 50%;
-      }
-    }
+    margin-bottom: var(--spacing-20);
+  }
+}
 
-    &-container {
-      display: flex;
-      gap: 1rem;
-    }
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-10);
+  padding: var(--spacing-20) var(--spacing-30);
+  background-color: var(--color-white);
+  border-top: 1px solid var(--color-grey-light);
+  box-shadow: 0px -4px 12px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  margin-top: auto;
+
+  &__btn-wrapper {
+    display: flex;
+    align-items: center;
+  }
+}
+
+::ng-deep {
+  .p-dialog-content {
+    padding: 0 !important;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
-  @media screen and (max-width: 768px) {
-    &__field {
-      &-container {
-        display: block;
-      }
+  .p-dialog-footer {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .profile-form {
+    &__content {
+      padding: var(--spacing-15) var(--spacing-20);
+    }
+
+    &__image-container {
+      width: 150px;
+      height: 150px;
+    }
+
+    &__image-section {
+      margin-bottom: var(--spacing-20);
+      padding-bottom: var(--spacing-20);
+    }
+
+    .dialog-footer {
+      padding: var(--spacing-15) var(--spacing-20);
     }
   }
 }

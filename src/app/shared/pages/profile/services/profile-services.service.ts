@@ -6,7 +6,7 @@ import { ASSESSMENT_URL, Profile_URL } from '../../../constants/api';
 import { FileDto, FileRequest } from '../../../models/files.models';
 import { ApiService } from '../../../services/api.service';
 import { StoreService } from '../../../services/store.service';
-import { ProfileDetails } from '../models/basic-information.model';
+import { ProfileDetails, SkillsDto } from '../models/basic-information.model';
 
 @Injectable({
   providedIn: 'root',
@@ -51,5 +51,31 @@ export class ProfileServicesService extends ApiService<any> {
   ): Observable<Blob> {
     const url = `${Profile_URL}/delete-image?blobId=${blobId}&attachmentTypeId=${attachmentTypeId}`;
     return this.httpClient.delete(url, { responseType: 'blob' });
+  }
+
+  public getSkills(): Observable<SkillsDto[]> {
+    return this.httpClient.get<SkillsDto[]>(
+      `${this.getResourceUrl()}/get-skills`,
+    );
+  }
+
+  public postUserSkills(skills: SkillsDto[]): Observable<void> {
+    return this.httpClient.post<void>(
+      `${this.getResourceUrl()}/post-user-skills`,
+      skills,
+    );
+  }
+
+  public deleteUserSkill(id: number): Observable<void> {
+    return this.httpClient.delete<void>(
+      `${this.getResourceUrl()}/delete-user-skills/${id}`,
+    );
+  }
+
+  public createSkill(skillName: string): Observable<SkillsDto> {
+    return this.httpClient.post<SkillsDto>(
+      `${this.getResourceUrl()}/post-skill`,
+      { name: skillName },
+    );
   }
 }

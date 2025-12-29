@@ -100,7 +100,6 @@ import { TabsModule } from 'primeng/tabs';
       display: block;
       width: 100%;
       padding: 0 0 var(--spacing-30) 0;
-      max-width: 1400px;
       margin: 0 auto;
 
       &__header {
@@ -111,8 +110,6 @@ import { TabsModule } from 'primeng/tabs';
         );
         border-radius: 0;
         padding: var(--spacing-30);
-        margin: 0 calc(-50vw + 50%) var(--spacing-30) calc(-50vw + 50%);
-        width: 100vw;
         box-shadow:
           0 4px 6px -1px rgba(0, 0, 0, 0.1),
           0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -122,7 +119,6 @@ import { TabsModule } from 'primeng/tabs';
         display: flex;
         align-items: center;
         gap: var(--spacing-20);
-        max-width: 1400px;
         margin: 0 auto;
       }
 

@@ -1,10 +1,11 @@
-import { CommonModule, DatePipe } from '@angular/common';
-import { Component, effect, input, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, effect, input } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ButtonComponent } from '../../../../components/button/button.component';
+import { InputSelectComponent } from '../../../../components/form/input-select/input-select.component';
 import { InputTextCalenderComponent } from '../../../../components/form/input-text-calender/input-text-calender.component';
 import { InputTextComponent } from '../../../../components/form/input-text/input-text.component';
-import { buildFormGroup, ConfigMap } from '../../../../utilities/form.utility';
+import { ConfigMap, buildFormGroup } from '../../../../utilities/form.utility';
 import {
   BasicInformation,
   ProfileDetails,
@@ -17,8 +18,8 @@ import {
     ReactiveFormsModule,
     InputTextComponent,
     InputTextCalenderComponent,
+    InputSelectComponent,
     ButtonComponent,
-    DatePipe,
     CommonModule,
   ],
   templateUrl: './basic-information.component.html',
@@ -27,7 +28,6 @@ import {
 export class BasicInformationComponent implements OnInit {
   public fGroup!: FormGroup;
   public configMap!: ConfigMap;
-  public editStatus = true;
   public basicInformationForm = new BasicInformation();
   public upcomingInterviews: UpcomingInterviewDto[] = [];
   userDetails = input<ProfileDetails>();

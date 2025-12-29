@@ -6,15 +6,18 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { TabsModule } from 'primeng/tabs';
 import { Toast } from 'primeng/toast';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TooltipModule } from 'primeng/tooltip';
 import { BaseComponent } from '../../components/base/base.component';
 import { AttachmentTypeEnum } from '../../enums/status.enum';
 import { ErrorResponse } from '../../models/custom-error.models';
 import { FileRequest } from '../../models/files.models';
 import { buildFormGroup, ConfigMap } from '../../utilities/form.utility';
+import { StoreService } from '../../services/store.service';
 import { BasicInformationComponent } from './components/basic-information/basic-information.component';
 import { CoverImageComponent } from './components/cover-image/cover-image.component';
 import { ProfileDialogComponent } from './components/profile-dialog/profile-dialog.component';
-import { ProfileDetails } from './models/basic-information.model';
+import { SkillsDialogComponent, SkillsDialogData } from './components/skills-dialog/skills-dialog.component';
+import { ProfileDetails, SkillsDto } from './models/basic-information.model';
 import { Profile, ProfileForm } from './models/profile.model';
 import { ProfileServicesService } from './services/profile-services.service';
 import { ProfileSkeletonComponent } from './profile-skeleton.component';
@@ -29,6 +32,7 @@ import { ProfileSkeletonComponent } from './profile-skeleton.component';
     Toast,
     ProfileSkeletonComponent,
     SkeletonModule,
+    TooltipModule,
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
@@ -55,16 +59,15 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     private readonly profileServices: ProfileServicesService,
     public messageService: MessageService,
     public dialog: DialogService,
+    private readonly storeService: StoreService,
   ) {
     super();
     this.fGroup = buildFormGroup(this.ProfileFormData);
   }
-  // LifeCycle Hooks
   ngOnInit(): void {
     this.getProfileDetails();
     this.setConfigMaps();
   }
-  // Public methods
   public onCoverImageUpload(file: File): void {
     this.isLoadingCoverImage = true;
     const payload: FileRequest = {
@@ -81,7 +84,6 @@ export class ProfileComponent extends BaseComponent implements OnInit {
         this.getProfileDetails();
       },
       error: (error) => {
-        console.error('Error uploading file:', error);
         this.isLoadingCoverImage = false;
       },
     });
@@ -109,8 +111,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     }
     this.ref?.onClose.subscribe((res) => {
       if (res) {
-        // this.updatePanel(res);
-        console.log(res);
+        // Handle dialog close response if needed
       }
       this.fGroup.reset();
     });
@@ -118,7 +119,6 @@ export class ProfileComponent extends BaseComponent implements OnInit {
 
   public onProfileImageUpload(file: File): void {
     this.isLoadingProfileImage = true;
-    // Update dialog's loading state if it's open
     if (this.ref) {
       const dialogData = (this.ref as any).config?.data;
       if (dialogData) {
@@ -138,11 +138,20 @@ export class ProfileComponent extends BaseComponent implements OnInit {
           detail: 'Profile image uploaded successfully',
         });
         this.getProfileDetails();
+        if (this.ref) {
+          const dialogData = (this.ref as any).config?.data;
+          if (dialogData) {
+            dialogData.isLoadingProfileImage = false;
+          }
+        }
       },
       error: (error) => {
-        console.error('Error uploading profile image:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to upload profile image',
+        });
         this.isLoadingProfileImage = false;
-        // Update the dialog's loading state if it's open
         if (this.ref) {
           const dialogData = (this.ref as any).config?.data;
           if (dialogData) {
@@ -155,7 +164,6 @@ export class ProfileComponent extends BaseComponent implements OnInit {
 
   public onDeleteCoverImage(): void {
     if (!this.coverBlob) {
-      console.warn('No cover image to delete');
       return;
     }
     this.profileServices
@@ -169,15 +177,92 @@ export class ProfileComponent extends BaseComponent implements OnInit {
           });
           this.coverImageUrl = '';
         },
-        error: (error) => {
-          console.error('Failed to delete file:', error);
+        error: () => {
+          // Error handling
         },
       });
   }
 
-  // Private Methods
+  public onEditSkills(): void {
+    const data: SkillsDialogData = {
+      availableSkills: [],
+      userSkills: this.profileDetailsDataSource?.userSkills || [],
+      onSave: (skills: SkillsDto[]) => this.onSaveSkills(skills),
+    };
+    this.ref = this.dialog.open(SkillsDialogComponent, {
+      data: data,
+      header: 'Edit Skills',
+      width: '50vw',
+      modal: true,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+    });
+    this.ref?.onClose.subscribe(() => {
+      // Handle dialog close
+    });
+  }
+
+  private onSaveSkills(skills: SkillsDto[]): void {
+    this.profileServices.postUserSkills(skills).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Skills updated successfully',
+        });
+        this.getProfileDetails();
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to update skills',
+        });
+      },
+    });
+  }
+
+  public onDeleteSkill(skillId: number): void {
+    this.profileServices.deleteUserSkill(skillId).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Skill removed successfully',
+        });
+        this.getProfileDetails();
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to remove skill',
+        });
+      },
+    });
+  }
+
   private getProfileDetails(): void {
+    if (this.storeService.isProfileDetailsLoading) {
+      setTimeout(() => {
+        if (!this.storeService.isProfileDetailsLoading) {
+          this.loadProfileDetails();
+        } else {
+          setTimeout(() => this.loadProfileDetails(), 200);
+        }
+      }, 100);
+      return;
+    }
+
+    this.loadProfileDetails();
+  }
+
+  private loadProfileDetails(): void {
     this.isLoading = true;
+    this.storeService.setIsProfileDetailsLoading(true);
+    
     const next = (res: ProfileDetails) => {
       this.profileDetailsDataSource = res;
       this.coverBlob = res.coverPhoto?.id;
@@ -194,16 +279,16 @@ export class ProfileComponent extends BaseComponent implements OnInit {
         this.getCoverPhoto(this.coverBlob, this.coverType);
       
       this.isLoading = false;
+      this.storeService.setIsProfileDetailsLoading(false);
     };
-    const error = (error: ErrorResponse) => {
-      console.log('ERROR', error);
+    const error = () => {
       this.isLoading = false;
+      this.storeService.setIsProfileDetailsLoading(false);
     };
     this.profileServices.GetProfileDetails().subscribe({ next, error });
   }
   private getProfilePhoto(blob: string, attachmentType: number): void {
     this.isLoadingProfileImage = true;
-    // Update dialog's loading state if it's open
     if (this.ref) {
       const dialogData = (this.ref as any).config?.data;
       if (dialogData) {
@@ -215,9 +300,11 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       next: (blob: Blob) => {
         const url = URL.createObjectURL(blob);
         this.profileImageUrl = url;
-        if (url != undefined) this.profileDataSource.profileUrl = url;
+        if (url != undefined) {
+          this.profileDataSource.profileUrl = url;
+          this.storeService.setProfileImageUrl(url);
+        }
         this.isLoadingProfileImage = false;
-        // Update dialog's loading state if it's open
         if (this.ref) {
           const dialogData = (this.ref as any).config?.data;
           if (dialogData) {
@@ -225,10 +312,8 @@ export class ProfileComponent extends BaseComponent implements OnInit {
           }
         }
       },
-      error: (error: ErrorResponse) => {
-        console.log('ERROR', error);
+      error: () => {
         this.isLoadingProfileImage = false;
-        // Update dialog's loading state if it's open
         if (this.ref) {
           const dialogData = (this.ref as any).config?.data;
           if (dialogData) {
@@ -246,8 +331,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
         this.coverImageUrl = url;
         this.isLoadingCoverImage = false;
       },
-      error: (error: ErrorResponse) => {
-        console.log('ERROR', error);
+      error: () => {
         this.isLoadingCoverImage = false;
       },
     });

@@ -57,6 +57,9 @@ export class CandidateDialogComponent implements OnInit {
   ngOnInit(): void {
     this.fGroup = buildFormGroup(this.candidateDataModel);
     this.candidateData = this.config.data;
+    if (this.candidateData) {
+      this.fGroup.patchValue(this.candidateData);
+    }
     this.fGroup.updateValueAndValidity();
     this.setConfigMaps();
     this.setOptions();
@@ -266,20 +269,55 @@ export class CandidateDialogComponent implements OnInit {
     this.applicationQuestions.forEach((q) => {
       this.fGroup.addControl(q.id.toString(), new FormControl(''));
     });
-    const batches = this.candidateData?.batches || [];
-    const questionSets = this.candidateData?.questionSets || [];
-    (this.configMap['batch'] as CustomSelectConfig).options = batches.map(
-      (batch: any) => ({
-        label: batch.title,
-        value: batch.id.toString(),
-      }),
-    );
+    // const batches = this.candidateData?.batches || [];
+    // const questionSets = this.candidateData?.questionSets || [];
+    // (this.configMap['batch'] as CustomSelectConfig).options = batches.map(
+    //   (batch: any) => ({
+    //     label: batch.title,
+    //     value: batch.id.toString(),
+    //   }),
+    // );
+    let batches: any[] = [];
+    if (this.candidateData?.batches) {
+      if (Array.isArray(this.candidateData.batches)) {
+        batches = this.candidateData.batches;
+      } else if (
+        this.candidateData.batches.data &&
+        Array.isArray(this.candidateData.batches.data)
+      ) {
+        // Handle PaginatedData object
+        batches = this.candidateData.batches.data;
+      }
+    }
+    // (this.configMap['questionSet'] as CustomSelectConfig).options =
+    //   questionSets.map((batch: any) => ({
+    //     label: batch.title,
+    //     value: batch.id.toString(),
+    //   }));
+    let questionSets: any[] = [];
+    if (this.candidateData?.questionSets) {
+      if (Array.isArray(this.candidateData.questionSets)) {
+        questionSets = this.candidateData.questionSets;
+      } else if (
+        this.candidateData.questionSets.data &&
+        Array.isArray(this.candidateData.questionSets.data)
+      ) {
+        // Handle PaginatedData object
+        questionSets = this.candidateData.questionSets.data;
+      }
+    }
+    this.batches = batches.map((batch: any) => ({
+      label: batch.title,
+      value: batch.id.toString(),
+    }));
+    (this.configMap['batch'] as CustomSelectConfig).options = this.batches;
 
+    this.questionSets = questionSets.map((qs: any) => ({
+      label: qs.title,
+      value: qs.id.toString(),
+    }));
     (this.configMap['questionSet'] as CustomSelectConfig).options =
-      questionSets.map((batch: any) => ({
-        label: batch.title,
-        value: batch.id.toString(),
-      }));
+      this.questionSets;
   }
 
   private extractSharedDateTimes(): { startDate?: Date; endDate?: Date } {

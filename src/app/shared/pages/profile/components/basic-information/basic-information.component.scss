@@ -7,6 +7,9 @@
     &-wrapper {
       display: flex;
       gap: 1rem;
+      &__select {
+        flex-basis: 50%;
+      }
     }
   }
   &__interview-schedules {
@@ -61,5 +64,59 @@
   &__btn {
     width: fit-content;
     margin-left: auto;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    gap: var(--spacing-20);
+    padding: var(--spacing-15) 0 0;
+
+    &__field-wrapper {
+      flex-direction: column;
+      gap: var(--spacing-15);
+    }
+
+    &__interview-schedules {
+      width: 100%;
+      flex-basis: auto;
+      margin-top: var(--spacing-20);
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: var(--spacing-15) 0 0;
+    gap: var(--spacing-15);
+
+    &__field-wrapper {
+      gap: var(--spacing-12);
+    }
+
+    &__interview-schedules {
+      padding: var(--spacing-15);
+      margin-top: var(--spacing-15);
+
+      &__title {
+        font-size: var(--font-size-base);
+        padding-left: var(--spacing-8);
+      }
+
+      &__cards {
+        flex-wrap: wrap;
+        padding-top: var(--spacing-15);
+        justify-content: center;
+
+        &__calendar-tile {
+          width: calc(50% - var(--spacing-20));
+          min-width: 80px;
+          margin: var(--spacing-8);
+        }
+      }
+    }
+
+    &__btn {
+      width: 100%;
+      margin-left: 0;
+      margin-top: var(--spacing-15);
+    }
   }
 }

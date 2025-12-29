@@ -1,51 +1,181 @@
 <div class="proofUpload">
-  <app-input-select [formGroup]="fGroup" [config]="idTypeSelectConfig" />
+  <p-toast position="top-right"></p-toast>
 
-  <p-fileupload
-    class="proofUpload__choosefile"
-    mode="basic"
-    chooseLabel="Upload File"
-    chooseIcon="pi pi-upload"
-    name="demo[]"
-    url="https://www.primefaces.org/cdn/api/upload.php"
-    accept="image/*"
-    (onSelect)="onFileChange($event)"
-    maxFileSize="1000000"
-  />
-  @if (uploadedFileUrl) {
-    @if (isLoading) {
-      <app-upload-id-proof-skeleton></app-upload-id-proof-skeleton>
+  <!-- Scrollable Content Area -->
+  <div class="proofUpload__content">
+    <!-- ID Type Selection -->
+    <div class="proofUpload__field">
+      <app-input-select [formGroup]="fGroup" [config]="idTypeSelectConfig" />
+    </div>
+
+    <!-- File Upload Section -->
+    <div class="proofUpload__upload-section">
+    <p-fileupload
+      #fileUpload
+      name="idProofFiles[]"
+      [multiple]="true"
+      accept="image/*"
+      maxFileSize="5000000"
+      [auto]="false"
+      customUpload
+      [showUploadButton]="false"
+      [showCancelButton]="false"
+      (onSelect)="onFileChange($event)"
+    >
+      <ng-template #content let-files>
+        <div class="proofUpload__upload-area">
+          @if (previewImages.length > 0) {
+            <div class="proofUpload__file-list">
+              @for (preview of previewImages; track preview.previewUrl; let i = $index) {
+                <div class="proofUpload__file-item">
+                  <div class="proofUpload__file-info">
+                    <i class="pi pi-image"></i>
+                    <span class="proofUpload__file-name">{{ preview.file.name }}</span>
+                    <span class="proofUpload__file-size">({{ formatFileSize(preview.file.size) }})</span>
+                  </div>
+                  <button
+                    type="button"
+                    class="proofUpload__file-remove"
+                    (click)="removePreviewImage(i)"
+                    [attr.aria-label]="'Remove ' + preview.file.name"
+                  >
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="proofUpload__upload-placeholder">
+              <i class="pi pi-cloud-upload proofUpload__upload-icon"></i>
+              <p class="proofUpload__upload-text">Drag and drop images here</p>
+              <p class="proofUpload__upload-hint">or click to browse</p>
+              <p class="proofUpload__upload-info">
+                <i class="pi pi-info-circle"></i>
+                Maximum file size: 5MB per image
+              </p>
+            </div>
+          }
+        </div>
+      </ng-template>
+    </p-fileupload>
+
+    <!-- Image Previews -->
+    @if (previewImages.length > 0) {
+      <div class="proofUpload__preview-section">
+        <div class="proofUpload__preview-header">
+          <span class="proofUpload__preview-title">
+            <i class="pi pi-image"></i>
+            Selected Images ({{ previewImages.length }})
+          </span>
+        </div>
+        <div class="proofUpload__preview-grid">
+          @for (preview of previewImages; track preview.previewUrl; let i = $index) {
+            <div class="proofUpload__preview-card">
+              <div class="proofUpload__preview-image-wrapper">
+                <img 
+                  [src]="preview.previewUrl" 
+                  [alt]="preview.file.name"
+                  class="proofUpload__preview-image"
+                />
+                <button 
+                  class="proofUpload__preview-remove"
+                  (click)="removePreviewImage(i)"
+                  type="button"
+                  [attr.aria-label]="'Remove ' + preview.file.name"
+                >
+                  <i class="pi pi-times"></i>
+                </button>
+              </div>
+              <div class="proofUpload__preview-info">
+                <span class="proofUpload__preview-filename" [title]="preview.file.name">
+                  {{ preview.file.name }}
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Existing Images Section -->
+  <div class="proofUpload__existing-section">
+    <div class="proofUpload__section-header">
+      <span class="proofUpload__section-title">
+        <i class="pi pi-images"></i>
+        Existing ID Proof Images
+      </span>
+    </div>
+
+    @if (isLoadingExistingImages) {
+      <div class="proofUpload__loader-container">
+        <p-progressSpinner 
+          [style]="{ width: '40px', height: '40px' }" 
+          strokeWidth="4"
+        ></p-progressSpinner>
+        <p class="proofUpload__loader-text">Loading images...</p>
+      </div>
     } @else {
-      @for (imgUrl of imageUrl; track imgUrl; let i = $index) {
-        <div class="proofUpload__preview">
-          <app-image
-            [imageUrl]="imgUrl"
-            [paddingTop]="'0'"
-            [forceCancelRequest]="forceCancelRequest"
-            (closeImage)="onClose()"
-          ></app-image>
-          <div class="proofUpload__preview__delete">
-            <app-button
-              icon="pi pi-trash"
-              [buttonVariant]="'text'"
-              (btnClick)="onDeleteImage(i)"
-            ></app-button>
-          </div>
+      @if (uploadedFileUrl && uploadedFileUrl.length > 0 && imageUrl.length > 0) {
+        <div class="proofUpload__preview-grid">
+          @for (imgUrl of imageUrl; track imgUrl; let i = $index) {
+            <div class="proofUpload__preview-card proofUpload__preview-card--existing">
+              <div class="proofUpload__preview-image-wrapper">
+                <img 
+                  [src]="imgUrl" 
+                  alt="Existing ID proof"
+                  class="proofUpload__preview-image"
+                />
+                <button 
+                  class="proofUpload__preview-remove"
+                  (click)="onDeleteImage(i)"
+                  type="button"
+                  aria-label="Delete existing image"
+                >
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="proofUpload__empty-state">
+          <i class="pi pi-inbox"></i>
+          <p>No existing images</p>
         </div>
       }
     }
-  }
+    </div>
 
-  <div class="proofUpload__button">
-    <app-button
-      [buttonLabel]="'Cancel'"
-      [buttonVariant]="'outlined'"
-      (btnClick)="onClose()"
-    ></app-button>
-    <app-button
-      [buttonLabel]="'Submit'"
-      [disabled]="!fGroup.valid"
-      (btnClick)="onSubmit()"
-    ></app-button>
+    <!-- Upload Progress Overlay -->
+    @if (isUploading) {
+      <div class="proofUpload__upload-overlay">
+        <div class="proofUpload__upload-progress">
+          <p-progressSpinner 
+            [style]="{ width: '60px', height: '60px' }" 
+            strokeWidth="4"
+          ></p-progressSpinner>
+          <p class="proofUpload__upload-progress-text">Uploading images...</p>
+          <p class="proofUpload__upload-progress-percent">{{ uploadProgress }}%</p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Fixed Footer -->
+  <div class="proofUpload__actions">
+    <p-button
+      label="Cancel"
+      severity="secondary"
+      [outlined]="true"
+      [disabled]="isUploading"
+      (onClick)="onClose()"
+    ></p-button>
+    <p-button
+      label="Upload Images"
+      [disabled]="!fGroup.valid || previewImages.length === 0 || isUploading"
+      [loading]="isUploading"
+      (onClick)="onSubmit()"
+    ></p-button>
   </div>
 </div>

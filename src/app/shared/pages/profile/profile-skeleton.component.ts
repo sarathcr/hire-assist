@@ -43,21 +43,6 @@ import { TabsModule } from 'primeng/tabs';
               <p-skeleton width="150px" height="20px" />
             </p>
           </div>
-
-          <!-- Skills Card Skeleton -->
-          <div class="profile__skills profile__card">
-            <div class="profile__skills__button">
-              <p-skeleton shape="circle" width="40px" height="40px" />
-            </div>
-            <h3 class="profile__skills__title">Expert in:</h3>
-            <ul class="profile__skills__list">
-              @for (item of skeletonSkills; track $index) {
-                <li class="profile__skills__item">
-                  <p-skeleton width="80px" height="20px" />
-                </li>
-              }
-            </ul>
-          </div>
         </div>
 
         <!-- Content Skeleton -->
@@ -88,29 +73,6 @@ import { TabsModule } from 'primeng/tabs';
                       <p-skeleton width="180px" height="40px" />
                     </div>
                   </form>
-                  <div class="basic-information__interview-schedules">
-                    <h3 class="basic-information__interview-schedules__title">
-                      Upcoming Interview Schedules
-                    </h3>
-                    <div class="basic-information__interview-schedules__cards">
-                      @for (item of skeletonInterviews; track $index) {
-                        <div
-                          class="basic-information__interview-schedules__cards__calendar-tile"
-                        >
-                          <div
-                            class="basic-information__interview-schedules__cards__calendar-day"
-                          >
-                            <p-skeleton width="40px" height="14px" />
-                          </div>
-                          <div
-                            class="basic-information__interview-schedules__cards__calendar-date"
-                          >
-                            <p-skeleton width="50px" height="18px" />
-                          </div>
-                        </div>
-                      }
-                    </div>
-                  </div>
                 </div>
               </p-tabpanel>
             </p-tabpanels>
@@ -122,7 +84,5 @@ import { TabsModule } from 'primeng/tabs';
   styleUrl: './profile-skeleton.component.scss',
 })
 export class ProfileSkeletonComponent {
-  skeletonSkills: number[] = Array.from({ length: 3 });
-  skeletonInterviews: number[] = Array.from({ length: 4 });
   skeletonCircles: number[] = Array.from({ length: 15 });
 }

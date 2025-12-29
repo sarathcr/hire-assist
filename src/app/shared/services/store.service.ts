@@ -130,4 +130,36 @@ export class StoreService {
   public getCollection(): OptionsMap {
     return this.state.collection;
   }
+
+  public setProfileImageUrl(profileImageUrl: string): void {
+    const state = _.cloneDeep(this.state);
+    state.userState.profileImageUrl = profileImageUrl;
+    this.state = state;
+    this.updateStore();
+  }
+
+  public getProfileImageUrl(): string | undefined {
+    return this.state.userState.profileImageUrl;
+  }
+
+  public setIsLoadingProfileImage(isLoading: boolean): void {
+    const state = _.cloneDeep(this.state);
+    state.userState.isLoadingProfileImage = isLoading;
+    this.state = state;
+    this.updateStore();
+  }
+
+  public getIsLoadingProfileImage(): boolean {
+    return this.state.userState.isLoadingProfileImage || false;
+  }
+
+  private _isProfileDetailsLoading = false;
+
+  public get isProfileDetailsLoading(): boolean {
+    return this._isProfileDetailsLoading;
+  }
+
+  public setIsProfileDetailsLoading(value: boolean): void {
+    this._isProfileDetailsLoading = value;
+  }
 }

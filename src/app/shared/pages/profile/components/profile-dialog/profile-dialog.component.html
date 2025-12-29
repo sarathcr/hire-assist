@@ -1,45 +1,76 @@
 <div class="profile-form">
-  <form>
-    <div class="profile-form__image-container">
-      @if (isLoadingProfileImage) {
-        <p-skeleton shape="circle" width="250px" height="250px" />
-      } @else {
-        <p-image
-          [src]="data.formData.profileUrl"
-          alt="Image"
-          width="250"
-          [preview]="true"
+  <form [formGroup]="data.fGroup">
+    <div class="profile-form__content">
+      <div class="profile-form__image-section">
+        <div class="profile-form__image-wrapper">
+          @if (isLoadingProfileImage) {
+            <p-skeleton shape="circle" width="200px" height="200px" />
+          } @else {
+            <div class="profile-form__image-container">
+              <p-image
+                [src]="displayImageUrl"
+                alt="Profile Image"
+                width="200"
+                height="200"
+                [preview]="true"
+                [style]="{ 'border-radius': '50%', 'object-fit': 'cover' }"
+              />
+              @if (previewImageUrl) {
+                <div class="profile-form__preview-badge">
+                  <i class="pi pi-check-circle"></i>
+                  <span>Preview</span>
+                </div>
+              }
+              <div class="profile-form__image-overlay">
+                <i class="pi pi-camera"></i>
+              </div>
+            </div>
+          }
+        </div>
+        <p-button
+          [label]="selectedFile ? 'Change Photo' : 'Choose Photo'"
+          [icon]="selectedFile ? 'pi pi-refresh' : 'pi pi-upload'"
+          [outlined]="true"
+          [rounded]="true"
+          (onClick)="fileUploadInput.click()"
+          [disabled]="isLoadingProfileImage"
+          class="profile-form__upload-btn"
         />
-      }
-      <p-fileupload
-        mode="basic"
-        chooseLabel="Upload Profile Image"
-        chooseIcon="pi pi-upload"
-        accept="image/*"
-        (onSelect)="onProfileImageSelected($event)"
-        maxFileSize="1000000"
-        [disabled]="isLoadingProfileImage"
-        styleClass="profile-form__upload"
-      />
-    </div>
-    <app-input-text
-      class="profile-form__field"
-      [formGroup]="data.fGroup"
-      type="text"
-      [config]="data.configMap['designation']"
-    ></app-input-text>
+        <input
+          #fileUploadInput
+          type="file"
+          accept="image/*"
+          (change)="onFileSelected($event)"
+          style="display: none"
+          [disabled]="isLoadingProfileImage"
+        />
+      </div>
 
-    <div class="profile-form__button">
-      <app-button
-        [buttonLabel]="'Cancel'"
-        [buttonVariant]="'outlined'"
-        (btnClick)="onClose()"
-      ></app-button>
-      <app-button
-        [buttonLabel]="'Submit'"
-        [disabled]="!data.fGroup.valid"
-        (btnClick)="onSubmit()"
-      ></app-button>
+      <div class="profile-form__field-section">
+        <app-input-text
+          class="profile-form__field"
+          [formGroup]="data.fGroup"
+          type="text"
+          [config]="data.configMap['designation']"
+        ></app-input-text>
+      </div>
     </div>
+
+    <footer class="dialog-footer">
+      <div class="dialog-footer__btn-wrapper">
+        <app-button
+          [buttonLabel]="'Cancel'"
+          [buttonVariant]="'outlined'"
+          (btnClick)="onClose()"
+        ></app-button>
+      </div>
+      <div class="dialog-footer__btn-wrapper">
+        <app-button
+          [buttonLabel]="isLoadingProfileImage ? 'Saving...' : 'Save'"
+          [disabled]="!data.fGroup.valid || isLoadingProfileImage"
+          (btnClick)="onSubmit()"
+        ></app-button>
+      </div>
+    </footer>
   </form>
 </div>
