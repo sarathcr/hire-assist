@@ -6,6 +6,7 @@
 ::ng-deep {
   .p-dialog {
     max-height: 90vh;
+    max-height: 90svh;
     display: flex;
     flex-direction: column;
   }
@@ -33,6 +34,7 @@
     height: 100%;
     min-height: 0;
     max-height: 75vh;
+    max-height: 75svh;
   }
 
   &__container {
@@ -292,6 +294,7 @@
     flex-direction: column;
     min-height: 0;
     height: 85vh;
+    height: 85svh;
     overflow: hidden;
 
     .question-form__container {

@@ -11,6 +11,8 @@
       flex-direction: column;
       flex: 1;
       overflow: hidden;
+      max-height: 85vh;
+      max-height: 85svh;
     }
 
     .p-dialog-header {
@@ -45,6 +47,7 @@
   display: flex;
   flex-direction: column;
   max-height: 75vh;
+  max-height: 75svh;
   overflow-y: hidden;
 
   &__container {
