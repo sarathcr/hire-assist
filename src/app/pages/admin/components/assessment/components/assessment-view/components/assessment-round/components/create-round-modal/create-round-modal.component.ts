@@ -1,5 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonComponent } from '../../../../../../../../../../shared/components/button/button.component';
 import { InputTextComponent } from '../../../../../../../../../../shared/components/form/input-text/input-text.component';
@@ -53,7 +59,13 @@ export class CreateRoundModalComponent implements OnInit {
     // Add required validator for name field
     const nameControl = this.fGroup.get('name');
     if (nameControl) {
-      nameControl.setValidators([Validators.required]);
+      nameControl.setValidators([
+        Validators.required,
+        Validators.pattern('^[A-Za-z].*'),
+        Validators.minLength(3),
+        Validators.maxLength(25),
+        this.noExtraSpacesValidator,
+      ]);
       nameControl.updateValueAndValidity();
     }
   }
@@ -84,5 +96,16 @@ export class CreateRoundModalComponent implements OnInit {
   private setConfigMaps(): void {
     const { metadata } = new AssessmentScheduleModal();
     this.configMap = metadata.configMap || {};
+  }
+  private noExtraSpacesValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+
+    if (/\s{2,}/.test(value)) {
+      return { extraSpaces: true };
+    }
+    return null;
   }
 }

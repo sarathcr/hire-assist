@@ -2,23 +2,106 @@
   width: 100%;
   height: 100%;
   background-color: var(--color-white);
-  box-shadow: 1px 2px 4px 0px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius-20);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
   position: relative;
-  padding: var(--spacing-20);
+  padding: var(--spacing-25);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  // Decorative gradient accent at top
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .card__tag {
+      transform: scale(1.05);
+    }
+  }
+
+  &__header {
+    position: relative;
+    margin-bottom: var(--spacing-20);
+    min-height: 32px;
+  }
 
   &__tag {
-    background-color: var(--primary-color);
-    padding: var(--spacing-5) var(--spacing-10);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: var(--spacing-6) var(--spacing-15);
     position: absolute;
     right: 0;
     top: 0;
     color: var(--color-white);
-    font-weight: 400;
+    font-weight: 600;
     text-transform: uppercase;
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-small);
+    border-radius: var(--border-radius-15) 0 0 var(--border-radius-15);
+    box-shadow: 0 2px 8px rgba(21, 101, 192, 0.25);
+    letter-spacing: 0.5px;
+    transition: transform 0.3s ease;
   }
+
   &__content {
     font-weight: 400;
     font-size: var(--font-size-base);
+    color: var(--color-dune);
+    flex: 1;
+    line-height: 1.7;
+
+    p {
+      margin: 0 0 var(--spacing-12) 0;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-8);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      b {
+        font-weight: 600;
+        color: var(--color-davy-grey);
+        min-width: 140px;
+        
+        @media (max-width: 480px) {
+          min-width: 120px;
+          font-size: var(--font-size-small);
+        }
+      }
+
+      span {
+        color: var(--color-dune);
+        font-weight: 400;
+        flex: 1;
+        word-break: break-word;
+      }
+    }
+  }
+
+  &__footer {
+    margin-top: var(--spacing-25);
+    padding-top: var(--spacing-20);
+    border-top: 1px solid var(--color-seperator);
+    display: flex;
+    justify-content: flex-end;
   }
 }

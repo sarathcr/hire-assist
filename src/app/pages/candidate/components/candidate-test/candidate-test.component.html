@@ -75,7 +75,9 @@
         <app-question
           [question]="activeQuestion"
           [previewImageUrls]="previewImageUrls"
-          [imageLoading]="isImageLoading"
+          [imageLoading]="isImageLoadings[activeQuestion.id]"
+          [hasImageError]="hasImageErrors[activeQuestion.id]"
+          [placeholderImageUrl]="placeholderImageUrl"
         >
         </app-question>
         @if (activeQuestion.isMultipleChoice === true) {
@@ -96,14 +98,10 @@
                 >
               </div>
 
-              @if (
-                previewImageUrls[option.id] &&
-                previewImageUrls[option.id].length &&
-                option.hasAttachments
-              ) {
+              @if (option.hasAttachments) {
                 @if (isImageLoadings[option.id]) {
                   <app-image-skeleton></app-image-skeleton>
-                } @else {
+                } @else if (previewImageUrls[option.id] && previewImageUrls[option.id].length) {
                   @for (
                     imgUrl of previewImageUrls[option.id];
                     track imgUrl;
@@ -122,6 +120,14 @@
                       </app-image>
                     </div>
                   }
+                } @else if (hasImageErrors[option.id]) {
+                  <div class="assessment__previewImage">
+                    <img
+                      [src]="placeholderImageUrl"
+                      alt="Error fetching attachment"
+                      style="width: 100px; height: 70px; object-fit: contain; border: 1px solid #ddd;"
+                    />
+                  </div>
                 }
               }
             }
@@ -135,14 +141,10 @@
               (selectedValueChange)="onOptionSelect(activeQuestion.id, $event)"
             ></app-input-radio>
 
-            @if (
-              previewImageUrls[item.id] &&
-              previewImageUrls[item.id].length &&
-              item.hasAttachments
-            ) {
+            @if (item.hasAttachments) {
               @if (isImageLoadings[item.id]) {
                 <app-image-skeleton></app-image-skeleton>
-              } @else {
+              } @else if (previewImageUrls[item.id] && previewImageUrls[item.id].length) {
                 @for (
                   imgUrl of previewImageUrls[item.id];
                   track imgUrl;
@@ -161,6 +163,14 @@
                     </app-image>
                   </div>
                 }
+              } @else if (hasImageErrors[item.id]) {
+                <div class="assessment__previewImage">
+                  <img
+                    [src]="placeholderImageUrl"
+                    alt="Error fetching attachment"
+                    style="width: 100px; height: 70px; object-fit: contain; border: 1px solid #ddd;"
+                  />
+                </div>
               }
             }
           }

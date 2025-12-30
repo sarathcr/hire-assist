@@ -89,7 +89,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   public isLoading = true;
   public questionFileData: Record<number, FileDto> = {};
   public optionFileData: Record<number, FileDto> = {};
-
+  private previousFilterMap: any = {};
   private currentPayload: PaginatedPayload = new PaginatedPayload();
   // Flag to prevent recursive calls when updating data programmatically
   private isUpdatingData = false;
@@ -131,17 +131,16 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   }
   // Public Methods
   public onTablePayloadChange(payload: PaginatedPayload): void {
-    // Prevent recursive calls when updating data programmatically
-    if (this.isUpdatingData) {
-      return;
+    const isSearch =
+      JSON.stringify(payload.filterMap) !==
+      JSON.stringify(this.previousFilterMap);
+
+    if (isSearch) {
+      payload.pagination.pageNumber = 1;
     }
-    this.currentPayload = {
-      ...payload,
-      pagination: {
-        ...payload.pagination,
-        pageNumber: 1,
-      },
-    };
+
+    this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
+    this.currentPayload = payload;
     this.loadData(payload);
   }
 
@@ -360,19 +359,21 @@ export class QuestionsComponent implements OnInit, OnDestroy {
           )?.label || 'default';
         const isMultipleChoice = raw.isMultipleChoice ?? false;
         const questionId = question?.id || this.questionId;
+        const optionAttachmentsEnabled = raw.optionHasAttachments;
         const transformed = {
           id: questionId,
           questionText: raw.questionText,
           maxMark: raw.maxmark,
-          options: raw.options.map((o: any) => ({
-            optionText: o.options,
-            hasAttachment: o.optionHasAttachments ?? false,
-            isCorrect: o.options === raw.answer,
-            fileDto:
-              Array.isArray(o.fileDto) && o.fileDto.length > 0
-                ? o.fileDto[0]
-                : null,
-          })),
+          options: raw.options.map((o: any) => {
+            const hasFile = Array.isArray(o.fileDto) && o.fileDto.length > 0;
+            const shouldSaveAttachment = optionAttachmentsEnabled && hasFile;
+            return {
+              optionText: o.options,
+              hasAttachment: shouldSaveAttachment,
+              isCorrect: o.options === raw.answer,
+              fileDto: shouldSaveAttachment ? o.fileDto[0] : null,
+            };
+          }),
           answer: (() => {
             if (Array.isArray(raw.answer)) {
               return raw.answer;
@@ -577,9 +578,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
   private loadData(payload: PaginatedPayload): void {
     // Prevent recursive calls when updating data programmatically
-    if (this.isUpdatingData) {
-      return;
-    }
+    // if (this.isUpdatingData) {
+    //   return;
+    // }
     this.previewImageUrls = {};
     this.isImageLoadings = {};
     this.questionFileData = {};
@@ -588,20 +589,24 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.dataSourceService
       .getData(payload)
-      .pipe(finalize(() => {
-        this.isLoading = false;
-        // Reset flag after data update
-        setTimeout(() => {
-          this.isUpdatingData = false;
-        }, 100);
-      }))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          // Reset flag after data update
+          setTimeout(() => {
+            this.isUpdatingData = false;
+          }, 100);
+        }),
+      )
       .subscribe((response: any) => {
-        const transformedData = response.data.map((item: Questionsinterface) => ({
-          ...item,
-          options: this.transformOptions(item.options),
-          isExpanded: false,
-          questionUrl: item.file?.url,
-        }));
+        const transformedData = response.data.map(
+          (item: Questionsinterface) => ({
+            ...item,
+            options: this.transformOptions(item.options),
+            isExpanded: false,
+            questionUrl: item.file?.url,
+          }),
+        );
 
         response.data.forEach((response: any) => {
           if (response.hasAttachment && response.files) {
@@ -625,5 +630,18 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       .optionsMap['attachments'] as unknown as Option[];
     (this.configMap['optionAttachmentType'] as CustomSelectConfig).options =
       this.optionsMap['attachments'] as unknown as Option[];
+  }
+  private isSamePayload(
+    payload1: PaginatedPayload,
+    payload2: PaginatedPayload,
+  ): boolean {
+    return (
+      payload1.pagination.pageNumber === payload2.pagination.pageNumber &&
+      payload1.pagination.pageSize === payload2.pagination.pageSize &&
+      JSON.stringify(payload1.filterMap) ===
+        JSON.stringify(payload2.filterMap) &&
+      JSON.stringify(payload1.multiSortedColumns) ===
+        JSON.stringify(payload2.multiSortedColumns)
+    );
   }
 }

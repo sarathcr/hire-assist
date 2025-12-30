@@ -197,8 +197,34 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
   // Public Methods
 
-  public getSelectedCandidatesOnTable(selectedIds: InterviewSummary[]) {
-    this.selectedCandidates = selectedIds;
+  public getSelectedCandidatesOnTable(selectedIds: { id: string }[]) {
+    // Map selected IDs to full candidate objects from tableData
+    // The table component emits only { id } objects, so we need to look up the full data
+    this.selectedCandidates = selectedIds
+      .map((selected) => {
+        const fullCandidate = this.tableData?.data?.find(
+          (candidate) => String(candidate.id) === String(selected.id),
+        );
+        if (fullCandidate) {
+          // Map CandidateData to InterviewSummary format
+          return {
+            id: fullCandidate.id,
+            name: fullCandidate.name,
+            email: fullCandidate.email,
+            score: Number(fullCandidate.score) || 0,
+            status: fullCandidate.status,
+            isScheduled: fullCandidate.isScheduled === 'Scheduled',
+            scheduledDate: fullCandidate.scheduledDate
+              ? new Date(fullCandidate.scheduledDate)
+              : new Date(),
+            assessmentRoundId: fullCandidate.assessmentRoundId,
+          } as InterviewSummary;
+        }
+        return undefined;
+      })
+      .filter(
+        (candidate): candidate is InterviewSummary => candidate !== undefined,
+      );
   }
 
   public deleteCandidate(id: string) {
@@ -619,10 +645,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       this.data = res;
       // Normalize dates for proper display
       if (this.data.startDateTime) {
-        this.data.startDateTime = this.parseDate(this.data.startDateTime) || this.data.startDateTime;
+        this.data.startDateTime =
+          this.parseDate(this.data.startDateTime) || this.data.startDateTime;
       }
       if (this.data.endDateTime) {
-        this.data.endDateTime = this.parseDate(this.data.endDateTime) || this.data.endDateTime;
+        this.data.endDateTime =
+          this.parseDate(this.data.endDateTime) || this.data.endDateTime;
       }
     };
     const error = (error: string) => {
@@ -774,11 +802,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.filterMap = filter;
     this.ref = this.dialog.open(ScheduleInterviewComponent, {
       data: selectedCandidateIds,
-      header: 'Schedule Interview',
-      height: '40vh',
-      width: '40vw',
+      header: '',
+      width: '50vw',
       modal: true,
       focusOnShow: false,
+      closable: true,
+      dismissableMask: true,
+      styleClass: 'schedule-interview-dialog',
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -879,6 +909,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       AssessmentRoundId: this.currentStep,
     };
     this.filterMap = filter;
+
+    // Set loading state and clear tableData to show skeleton immediately
+    this.isLoading = true;
+    this.tableData = undefined as any;
+
     const next = () => {
       if (name == 'selected') {
         this.messageService.add({
@@ -897,6 +932,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     };
 
     const error = () => {
+      this.isLoading = false;
       if (name == 'selected') {
         this.messageService.add({
           severity: 'error',

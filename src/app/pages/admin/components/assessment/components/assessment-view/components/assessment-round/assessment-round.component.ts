@@ -1,4 +1,16 @@
-import { Component, EventEmitter, input, OnDestroy, OnInit, Output, ViewChild, ElementRef, AfterViewInit, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  ElementRef,
+  AfterViewInit,
+  AfterViewChecked,
+  ChangeDetectorRef,
+} from '@angular/core';
 import Sortable from 'sortablejs';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -41,7 +53,9 @@ import { StepsStatusService } from '../../../../services/steps-status.service';
   templateUrl: './assessment-round.component.html',
   styleUrl: './assessment-round.component.scss',
 })
-export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
+export class AssessmentRoundComponent
+  implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
+{
   public configMap!: ConfigMap;
   public fGroup!: FormGroup;
   public assessmentSchedule = new AssessmentScheduleModal();
@@ -81,16 +95,32 @@ export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewIni
 
   ngAfterViewInit(): void {
     setTimeout(() => {
-      if (this.submittedData && this.submittedData.length > 0 && !this.isLoading) {
+      if (
+        this.submittedData &&
+        this.submittedData.length > 0 &&
+        !this.isLoading
+      ) {
         this.initSortable();
       }
     }, 500);
   }
 
   ngAfterViewChecked(): void {
-    if (!this.isLoading && this.submittedData && this.submittedData.length > 0 && !this.sortableInstance) {
-      const element = this.roundsListRef?.nativeElement || document.querySelector('.assessment-round__rounds-list') as HTMLElement;
-      if (element && element.querySelectorAll('.assessment-round__round-item').length > 0) {
+    if (
+      !this.isLoading &&
+      this.submittedData &&
+      this.submittedData.length > 0 &&
+      !this.sortableInstance
+    ) {
+      const element =
+        this.roundsListRef?.nativeElement ||
+        (document.querySelector(
+          '.assessment-round__rounds-list',
+        ) as HTMLElement);
+      if (
+        element &&
+        element.querySelectorAll('.assessment-round__round-item').length > 0
+      ) {
         setTimeout(() => {
           this.initSortable();
         }, 100);
@@ -147,28 +177,35 @@ export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewIni
 
   private initSortable(): void {
     this.destroySortable();
-    
+
     if (this.submittedData.length === 0 || this.isLoading) {
       return;
     }
-    
+
     if (typeof Sortable === 'undefined') {
       return;
     }
-    
+
     const getElement = (): HTMLElement | null => {
       if (this.roundsListRef?.nativeElement) {
         return this.roundsListRef.nativeElement;
       }
-      return document.querySelector('.assessment-round__rounds-list') as HTMLElement;
+      return document.querySelector(
+        '.assessment-round__rounds-list',
+      ) as HTMLElement;
     };
-    
+
     let element = getElement();
-    
+
     if (!element) {
       setTimeout(() => {
         element = getElement();
-        if (element && this.submittedData && this.submittedData.length > 0 && !this.isLoading) {
+        if (
+          element &&
+          this.submittedData &&
+          this.submittedData.length > 0 &&
+          !this.isLoading
+        ) {
           this.initializeSortableOnElement(element);
         }
       }, 300);
@@ -180,7 +217,7 @@ export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewIni
 
   private initializeSortableOnElement(element: HTMLElement): void {
     const items = element.querySelectorAll('.assessment-round__round-item');
-    
+
     if (items.length === 0) {
       return;
     }
@@ -197,12 +234,16 @@ export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewIni
         draggable: '.assessment-round__round-item',
         filter: '.assessment-round__remove-button',
         preventOnFilter: false,
-        onStart: (evt) => {
+        onStart: () => {
           element.classList.add('sortable-dragging');
         },
         onEnd: (evt) => {
           element.classList.remove('sortable-dragging');
-          if (evt.oldIndex !== undefined && evt.newIndex !== undefined && evt.oldIndex !== evt.newIndex) {
+          if (
+            evt.oldIndex !== undefined &&
+            evt.newIndex !== undefined &&
+            evt.oldIndex !== evt.newIndex
+          ) {
             const movedItem = this.submittedData[evt.oldIndex];
             this.submittedData.splice(evt.oldIndex, 1);
             this.submittedData.splice(evt.newIndex, 0, movedItem);
@@ -225,7 +266,11 @@ export class AssessmentRoundComponent implements OnInit, OnDestroy, AfterViewIni
   private reinitSortable(): void {
     this.destroySortable();
     setTimeout(() => {
-      if (this.submittedData && this.submittedData.length > 0 && !this.isLoading) {
+      if (
+        this.submittedData &&
+        this.submittedData.length > 0 &&
+        !this.isLoading
+      ) {
         this.initSortable();
       }
     }, 500);

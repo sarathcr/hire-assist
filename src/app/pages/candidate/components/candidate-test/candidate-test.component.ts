@@ -110,11 +110,19 @@ export class CandidateTestComponent
   public previewImageUrls: Record<number, string[]> = {};
   public isImageLoading = true;
   public isImageLoadings: Record<number, boolean> = {};
+  public hasImageErrors: Record<number, boolean> = {};
   // Private
   private warningCount!: number;
   private browserRefresh = false;
   private candidateId!: string;
   private candidateInterview: any;
+  private questionFileData: Record<number, FileDto[]> = {};
+  private optionFileData: Record<number, FileDto[]> = {};
+  private imageLoadErrors: Record<number, boolean> = {};
+  private attachmentLoadPromises: Promise<void>[] = [];
+  private expectedFileCounts: Record<number, number> = {};
+  private failedFileCounts: Record<number, number> = {};
+  public placeholderImageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjcwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iNzAiIGZpbGw9IiNmNWY1ZjUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+RXJyb3IgRmV0Y2hpbmcgQXR0YWNobWVudDwvdGV4dD48L3N2Zz4=';
   @ViewChild(TimerComponent) timerComponent!: TimerComponent;
   constructor(
     private readonly dialog: DialogService,
@@ -235,14 +243,14 @@ export class CandidateTestComponent
   public onButtonClick(buttonId: number) {
     this.activeButtonId = buttonId;
 
-    this.activeQuestion = this.data?.questions.find((q) => q.id === buttonId);
-
     const selectedQuestion = this.data?.questions.find(
       (quest) => quest.id === buttonId,
     );
 
     if (selectedQuestion) {
       this.activeQuestion = selectedQuestion; // Set the active question
+      // Load images for the clicked question and its options
+      this.loadQuestionAttachments(selectedQuestion);
     }
   }
 
@@ -313,33 +321,36 @@ export class CandidateTestComponent
       }
     });
   }
-  public previewImage(file: FileDto, id: number): void {
-    this.isImageLoading = true;
-    this.isImageLoadings[id] = true;
-    this.interviewService
-      .GetFiles({
-        blobId: file.blobId || file.id,
-        attachmentType: file.attachmentType,
-      })
-      .subscribe({
-        next: (blob: Blob) => {
-          const imageUrl = URL.createObjectURL(blob);
-          if (!this.previewImageUrls[id]) {
-            this.previewImageUrls[id] = [];
-          }
-          this.previewImageUrls[id].push(imageUrl);
-          setTimeout(() => {
-            this.isImageLoading = false;
-            this.isImageLoadings[id] = false;
-          }, 300);
-        },
+  public previewImage(file: FileDto, id: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.isImageLoading = true;
+      this.isImageLoadings[id] = true;
+      this.interviewService
+        .GetFiles({
+          blobId: file.blobId || file.id,
+          attachmentType: file.attachmentType,
+        })
+        .subscribe({
+          next: (blob: Blob) => {
+            const imageUrl = URL.createObjectURL(blob);
+            if (!this.previewImageUrls[id]) {
+              this.previewImageUrls[id] = [];
+            }
+            this.previewImageUrls[id].push(imageUrl);
+            setTimeout(() => {
+              this.isImageLoading = false;
+              // Don't set isImageLoadings[id] to false here - let the Promise.allSettled handle it
+            }, 300);
+            resolve();
+          },
 
-        error: () => {
-          this.isImageLoading = false;
-          this.isImageLoadings[id] = false;
-          console.error('Failed to load image');
-        },
-      });
+          error: (error) => {
+            this.isImageLoading = false;
+            this.imageLoadErrors[id] = true;
+            reject(error);
+          },
+        });
+    });
   }
 
   // Private
@@ -649,24 +660,22 @@ export class CandidateTestComponent
       if (res) {
         this.setInitialActiveQuestion(res);
         this.data = res;
+        // Store file data for lazy loading instead of loading immediately
         res.questions.forEach((q) => {
           if (q.hasAttachment && q.file?.length) {
-            this.isImageLoading = true;
-            this.isImageLoadings[q.id] = true;
-            q.file.forEach((file: FileDto) => this.previewImage(file, q.id));
+            this.questionFileData[q.id] = q.file;
           }
           q.options?.forEach((opt) => {
             if (opt.hasAttachments && opt.file?.length) {
-              this.isImageLoading = true;
-              this.isImageLoadings[opt.id] = true;
-              opt.file.forEach((file: FileDto) =>
-                this.previewImage(file, opt.id),
-              );
+              this.optionFileData[opt.id] = opt.file;
             }
           });
         });
         this.isLoading = false;
-        this.isImageLoading = false;
+        // Load images for the initial active question
+        if (this.activeQuestion) {
+          this.loadQuestionAttachments(this.activeQuestion);
+        }
       }
     };
     const error = (error: string) => {
@@ -836,5 +845,110 @@ export class CandidateTestComponent
           }
         },
       });
+  }
+
+  private loadQuestionAttachments(question: any): void {
+    // Reset error tracking for this question's attachments
+    const questionErrors: number[] = [];
+    this.attachmentLoadPromises = [];
+
+    // Load question images if not already loaded
+    // Check if question has attachment and file data exists
+    if (question.hasAttachment) {
+      // Try to get file data from stored data first, then from question object directly
+      const questionFiles = this.questionFileData[question.id] || question.file;
+      const existingUrls = this.previewImageUrls[question.id];
+      const hasImagesLoaded = existingUrls && existingUrls.length > 0;
+      
+      if (questionFiles && questionFiles.length > 0 && !hasImagesLoaded) {
+        // Initialize the array if it doesn't exist
+        if (!this.previewImageUrls[question.id]) {
+          this.previewImageUrls[question.id] = [];
+        }
+        // Track expected file count
+        this.expectedFileCounts[question.id] = questionFiles.length;
+        this.failedFileCounts[question.id] = 0;
+        // Set loading state
+        this.isImageLoadings[question.id] = true;
+        
+        const questionPromises: Promise<void>[] = [];
+        questionFiles.forEach((file: FileDto) => {
+          const promise = this.previewImage(file, question.id).catch((error) => {
+            questionErrors.push(question.id);
+            this.imageLoadErrors[question.id] = true;
+            this.failedFileCounts[question.id] = (this.failedFileCounts[question.id] || 0) + 1;
+            this.showAttachmentErrorMessage(question.id, 'question');
+          });
+          questionPromises.push(promise);
+          this.attachmentLoadPromises.push(promise);
+        });
+        
+        // Check completion after all promises
+        Promise.allSettled(questionPromises).then((results) => {
+          const successCount = results.filter(r => r.status === 'fulfilled').length;
+          // If no images loaded successfully, show error placeholder
+          if (successCount === 0 && questionFiles.length > 0) {
+            this.hasImageErrors[question.id] = true;
+          }
+          this.isImageLoadings[question.id] = false;
+        });
+      }
+    }
+
+    // Load option images if not already loaded
+    if (question.options && question.options.length > 0) {
+      question.options.forEach((opt: any) => {
+        if (opt.hasAttachments) {
+          // Try to get file data from stored data first, then from option object directly
+          const optionFiles = this.optionFileData[opt.id] || opt.file;
+          const hasOptionImagesLoaded = this.previewImageUrls[opt.id] && 
+                                       this.previewImageUrls[opt.id].length > 0;
+          
+          if (optionFiles && optionFiles.length > 0 && !hasOptionImagesLoaded) {
+            // Initialize the array if it doesn't exist
+            if (!this.previewImageUrls[opt.id]) {
+              this.previewImageUrls[opt.id] = [];
+            }
+            // Track expected file count
+            this.expectedFileCounts[opt.id] = optionFiles.length;
+            this.failedFileCounts[opt.id] = 0;
+            // Set loading state
+            this.isImageLoadings[opt.id] = true;
+            
+            const optionPromises: Promise<void>[] = [];
+            optionFiles.forEach((file: FileDto) => {
+              const promise = this.previewImage(file, opt.id).catch((error) => {
+                questionErrors.push(opt.id);
+                this.imageLoadErrors[opt.id] = true;
+                this.failedFileCounts[opt.id] = (this.failedFileCounts[opt.id] || 0) + 1;
+                this.showAttachmentErrorMessage(opt.id, 'option');
+              });
+              optionPromises.push(promise);
+              this.attachmentLoadPromises.push(promise);
+            });
+            
+            // Check completion after all promises
+            Promise.allSettled(optionPromises).then((results) => {
+              const successCount = results.filter(r => r.status === 'fulfilled').length;
+              // If no images loaded successfully, show error placeholder
+              if (successCount === 0 && optionFiles.length > 0) {
+                this.hasImageErrors[opt.id] = true;
+              }
+              this.isImageLoadings[opt.id] = false;
+            });
+          }
+        }
+      });
+    }
+  }
+
+  private showAttachmentErrorMessage(id: number, type: 'question' | 'option'): void {
+    // Show error message but stay on the page
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: `Failed to load ${type} attachment. Please continue with the assessment.`,
+      life: 5000,
+    });
   }
 }

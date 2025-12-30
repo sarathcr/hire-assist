@@ -2,7 +2,7 @@ import { Validators } from '@angular/forms';
 import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
 
 export class ScheduleInterview extends FormEntity {
-  scheduleDate: Date | undefined;
+  scheduleDate: Date | null = null;
   metadata: Metadata = {
     validatorsMap: {
       scheduleDate: [Validators.required],

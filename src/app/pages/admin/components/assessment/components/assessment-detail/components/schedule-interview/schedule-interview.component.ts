@@ -43,7 +43,6 @@ export class ScheduleInterviewComponent
     this.fGroup = buildFormGroup(this.interviewModel);
   }
 
-  // Life Cycle hooks
   ngOnInit(): void {
     this.data = this.config.data;
     this.setConfigMap();
@@ -51,10 +50,10 @@ export class ScheduleInterviewComponent
     this.setupDateValidation();
   }
 
-  // Public methods
   public onClose() {
     this.ref.close();
   }
+
   public onSchedule() {
     this.fGroup.markAllAsTouched();
     const isFormValid = this.fGroup.valid;
@@ -64,7 +63,6 @@ export class ScheduleInterviewComponent
     }
   }
 
-  // Private Methods
   private setConfigMap() {
     const { metadata } = new ScheduleInterview();
     this.configMap = metadata.configMap || {};
@@ -77,13 +75,18 @@ export class ScheduleInterviewComponent
 
     const sub = scheduleDateControl?.valueChanges.subscribe(
       (newValue: Date) => {
-        if (newValue && !isValidStartDate(newValue)) {
-          scheduleDateControl?.setErrors({
-            errorMessage: 'Schedule Date must be today or later.',
-          });
-        } else {
-          scheduleDateControl?.setErrors(null);
-        }
+        setTimeout(() => {
+          if (newValue && !isValidStartDate(newValue)) {
+            scheduleDateControl?.setErrors({
+              errorMessage: 'Schedule Date must be today or later.',
+            });
+          } else {
+            const currentErrors = scheduleDateControl?.errors;
+            if (currentErrors && currentErrors['errorMessage']) {
+              scheduleDateControl?.setErrors(null, { emitEvent: false });
+            }
+          }
+        }, 0);
       },
     );
     if (sub) {

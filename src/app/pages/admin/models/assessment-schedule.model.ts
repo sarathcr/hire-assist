@@ -68,10 +68,11 @@ export class AssessmentScheduleModal extends FormEntity {
   metadata: Metadata = {
     validatorsMap: {
       round: [Validators.required],
+      description: [Validators.maxLength(150)],
     },
     configMap: {
       round: { id: 'round', labelKey: 'Select Rounds' },
-      name: { id: 'name', labelKey: 'Round Name' },
+      name: { id: 'name', labelKey: 'Name' },
       description: { id: 'description', labelKey: 'Description' },
     },
   };
@@ -105,7 +106,6 @@ export class RoundModal extends FormEntity {
   sequence = 0;
   metadata: Metadata = {
     validatorsMap: {
-      // round: [Validators.required],
       name: [Validators.required],
     },
     configMap: {

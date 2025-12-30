@@ -1,65 +1,349 @@
-::ng-deep .p-dialog {
-  display: flex;
-  flex-direction: column;
-  max-height: 900px;
-  .p-dialog-content {
-    overflow-y: visible !important;
-    background-color: var(--color-white);
+// Dialog global styles
+::ng-deep {
+  .schedule-interview-dialog {
+    .p-dialog-header {
+      display: none;
+    }
+
+    .p-dialog-content {
+      overflow-y: visible !important;
+      background-color: var(--color-white);
+      padding: 0;
+      border-radius: 12px;
+    }
+
+    .p-dialog {
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
   }
-  /* Prevent it from going off screen */
+
+  .p-dialog {
+    display: flex;
+    flex-direction: column;
+    max-height: 900px;
+
+    .p-dialog-content {
+      overflow-y: visible !important;
+      background-color: var(--color-white);
+    }
+  }
+
+  // Date picker z-index fix - ensure calendar popup appears above modal
+  .p-datepicker-panel {
+    z-index: 10000 !important;
+  }
+
+  .schedule-interview {
+    .p-chip {
+      background: var(--color-white) !important;
+    }
+  }
 }
 
-/* filepath: c:\Users\USER\source\hire-assist-fe\src\app\modules\admin\components\user-dialoge\user-dialoge.component.scss */
-
-.dialog__header {
-  text-align: center;
-}
-
-form {
+// Main container
+.schedule-interview {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  min-height: 100%;
+  background: var(--color-white);
+  border-radius: 12px;
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    flex: 1;
+  }
+
+  // Header Section
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--surface-border, #e9ecef);
+
+    &-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: var(--color-white);
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+      i {
+        font-size: 1.5rem;
+      }
+    }
+
+    &-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color, #212529);
+    line-height: 1.3;
+  }
+
+  &__subtitle {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-color-secondary, #6c757d);
+    line-height: 1.5;
+  }
+
+  // Candidates Section
+  &__candidates-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    background: var(--surface-50, #f8f9fa);
+    border-radius: 12px;
+    border: 1px solid var(--surface-border, #e9ecef);
+  }
+
+  &__candidates-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__candidates-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    color: var(--text-color, #212529);
+
+    i {
+      font-size: 1.25rem;
+      color: var(--primary-color, #667eea);
+    }
+  }
+
+  &__candidates-label {
+    font-size: 1rem;
+  }
+
+  &__candidates-count {
+    font-size: 0.875rem;
+    color: var(--text-color-secondary, #6c757d);
+    font-weight: 400;
+  }
+
+  &__candidates-list {
+    margin-top: 0.5rem;
+  }
+
+  &__chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  &__chip-wrapper {
+    display: inline-flex;
+  }
+
+  &__chip {
+    background: var(--color-white) !important;
+    border: 1px solid var(--surface-border, #e9ecef) !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 0.875rem !important;
+    font-size: 0.875rem !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+
+    &:hover {
+      border-color: var(--primary-color, #667eea) !important;
+      box-shadow: 0 2px 6px rgba(102, 126, 234, 0.15) !important;
+      transform: translateY(-1px);
+    }
+
+    .p-chip-icon {
+      color: var(--primary-color, #667eea);
+    }
+
+    .p-chip-remove-icon {
+      margin-left: 0.5rem;
+      color: var(--text-color-secondary, #6c757d);
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: var(--red-500, #ef4444);
+      }
+    }
+  }
+
+  &__empty-state {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    color: var(--text-color-secondary, #6c757d);
+    font-size: 0.875rem;
+    font-style: italic;
+
+    i {
+      font-size: 1rem;
+    }
+  }
+
+  // Date Section
+  &__date-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__date-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    color: var(--text-color, #212529);
+    font-size: 1rem;
+
+    i {
+      font-size: 1.25rem;
+      color: var(--primary-color, #667eea);
+    }
+  }
+
+  &__date-label {
+    font-size: 1rem;
+  }
+
+  &__date-picker {
+    margin-top: 0.5rem;
+    min-height: 3.5rem; // Ensure space for the date picker
+
+    // Hide only the float label text since we have a custom header, but keep the input visible
+    ::ng-deep {
+      .p-floatlabel {
+        display: block;
+        width: 100%;
+
+        label {
+          display: none !important;
+        }
+      }
+
+      .input-text-calender {
+        display: block !important;
+        width: 100% !important;
+        visibility: visible !important;
+        margin-bottom: 0; // Remove extra margin in modal
+      }
+
+      .p-datepicker {
+        width: 100% !important;
+        display: flex !important;
+        align-items: stretch;
+
+        .p-inputtext {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .p-datepicker-trigger {
+          flex-shrink: 0;
+        }
+      }
+
+      // Ensure the calendar popup is visible
+      .p-datepicker-panel {
+        z-index: 10000 !important;
+      }
+
+      // Ensure time picker shows correctly
+      .p-timepicker {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+
+        .p-hour-picker,
+        .p-minute-picker,
+        .p-second-picker {
+          input {
+            width: 3rem;
+            text-align: center;
+          }
+        }
+      }
+    }
+  }
+
+  // Footer Section
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--surface-border, #e9ecef);
+    background: var(--surface-0, #ffffff);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+  }
 }
 
-.candidate-list {
-  margin-top: 2rem;
-}
+// Date picker z-index fix - consolidated with main ::ng-deep block
 
-.candidate-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
+// Responsive design
+@media (max-width: 768px) {
+  .schedule-interview {
+    &__form {
+      padding: 1.5rem;
+      gap: 1.5rem;
+    }
 
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 2rem;
-}
+    &__header {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
 
-.dialog-footer__btn-wrapper {
-  margin-left: 1rem;
-}
+      &-icon {
+        width: 3rem;
+        height: 3rem;
 
-.p-datepicker {
-  z-index: 9999 !important;
-}
+        i {
+          font-size: 1.25rem;
+        }
+      }
+    }
 
-.card {
-  overflow: visible !important;
-}
+    &__title {
+      font-size: 1.25rem;
+    }
 
-.form-row {
-  display: flex;
-  gap: 10px;
-}
+    &__candidates-section {
+      padding: 1rem;
+    }
 
-.app-input-select {
-  flex: 1;
-  /* This makes both inputs take equal space */
-  min-width: 200px;
-  /* Adjust width as needed */
-}
+    &__footer {
+      flex-direction: column-reverse;
+      padding: 1rem 1.5rem;
 
-/* Adjust spacing as needed */
+      app-button {
+        width: 100%;
+      }
+    }
+  }
+}

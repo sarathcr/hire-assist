@@ -9,12 +9,13 @@ import { DialogComponent } from '../../shared/components/dialog/dialog.component
 import { StatusEnum } from '../../shared/enums/status.enum';
 import { DialogData } from '../../shared/models/dialog.models';
 import { CardComponent } from './components/card/card.component';
+import { CardSkeletonComponent } from './components/card/card-skeleton.component';
 import { CandidateAssessment } from './models/candidate.model';
 import { CandidateService } from './services/candidate.service';
 
 @Component({
   selector: 'app-candidate',
-  imports: [CardComponent, DatePipe],
+  imports: [CardComponent, CardSkeletonComponent, DatePipe],
   templateUrl: './candidate.component.html',
   styleUrl: './candidate.component.scss',
 })
@@ -23,6 +24,8 @@ export class CandidateComponent extends BaseComponent implements OnInit {
   public previousAssessments: CandidateAssessment[] = [];
   private ref: DynamicDialogRef | undefined;
   public statusEnum = StatusEnum;
+  public isLoading = true;
+  public skeletonCards = [1, 2, 3]; // For rendering skeleton cards
 
   constructor(
     public dialog: DialogService,
@@ -34,6 +37,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
 
   // LifeCycle Hooks
   ngOnInit(): void {
+    this.isLoading = true;
     this.candidateService.getCandidateAssessment().subscribe({
       next: (res: CandidateAssessment[]) => {
         const today = new Date();
@@ -50,6 +54,10 @@ export class CandidateComponent extends BaseComponent implements OnInit {
           assessmentDate.setHours(0, 0, 0, 0);
           return assessmentDate < today;
         });
+        this.isLoading = false;
+      },
+      error: () => {
+        this.isLoading = false;
       },
     });
   }

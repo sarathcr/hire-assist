@@ -14,5 +14,7 @@ export class QuestionComponent {
   @Input() question!: any;
   @Input() previewImageUrls: Record<number, string[]> = {};
   @Input() imageLoading = false;
+  @Input() hasImageError = false;
+  @Input() placeholderImageUrl = '';
   constructor(private readonly interviewService: InterviewService) {}
 }

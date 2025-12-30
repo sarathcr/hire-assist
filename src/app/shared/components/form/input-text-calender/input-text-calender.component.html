@@ -4,11 +4,13 @@
       [size]="'small'"
       id="over_label"
       [showIcon]="true"
-      [dateFormat]="showTime ? 'dd-mm-yy' : 'dd/mm/yy'"
+      [dateFormat]="'dd-mm-yy'"
       [showTime]="showTime"
+      [hourFormat]="'12'"
+      [showSeconds]="false"
       [maxDate]="maxDate"
       [formControlName]="inputTextCalendarConfig.id"
-      (input)="onInputChange($event)"
+      (onSelect)="onDateSelect($event)"
     >
     </p-datepicker>
     <label for="over_label">{{

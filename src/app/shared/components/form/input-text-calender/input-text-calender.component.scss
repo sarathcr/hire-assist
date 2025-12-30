@@ -1,6 +1,9 @@
 .input-text-calender {
   margin-bottom: 35px;
   position: relative;
+  display: block;
+  width: 100%;
+
   .p-inputtextcalender {
     width: 100%;
     height: 50px;
@@ -25,8 +28,50 @@
     }
   }
   ::ng-deep {
+    .p-floatlabel {
+      display: block;
+      width: 100%;
+    }
+
     .p-datepicker {
-      height: 43px;
+      width: 100%;
+      display: flex;
+      align-items: stretch;
+      // gap: 0.5rem;
+
+      .p-inputtext {
+        flex: 1;
+        min-width: 0;
+        min-height: 42px;
+      }
+
+      .p-datepicker-trigger {
+        flex-shrink: 0;
+      }
+    }
+
+    // Ensure calendar popup is visible above modal
+    .p-datepicker-panel {
+      z-index: 10000 !important;
+    }
+
+    // Time picker styling
+    .p-timepicker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+
+      .p-hour-picker,
+      .p-minute-picker,
+      .p-second-picker {
+        input {
+          width: 3rem;
+          text-align: center;
+          padding: 0.5rem;
+        }
+      }
     }
   }
 }

@@ -35,14 +35,23 @@ export class InputTextCalenderComponent
   @Input() maxDate!: Date;
   @Input() hasDateError!: string;
 
-  public formControl!: FormControl<string>;
+  public formControl!: FormControl<Date | string | null>;
   public inputTextCalendarConfig!: CustomInputTextCalenderConfig;
 
   ngOnInit(): void {
     this.inputTextCalendarConfig = this.config as CustomInputTextCalenderConfig;
 
-    this.formControl = this.formGroup.get(this.config.id) as FormControl;
+    this.formControl = this.formGroup.get(this.config.id) as FormControl<
+      Date | string | null
+    >;
   }
+
+  public onDateSelect(event: Date): void {
+    if (event && this.formControl) {
+      this.formControl.setValue(event, { emitEvent: true });
+    }
+  }
+
   public onInputChange(event: Event) {
     const inputElement = event.target as HTMLInputElement;
     const inputValue: string = inputElement.value;

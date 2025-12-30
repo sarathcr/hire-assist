@@ -81,6 +81,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public currentUser!: UserState;
   private ref: DynamicDialogRef | undefined;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
+  private previousFilterMap: any = {};
   private isManualRefresh = false;
 
   constructor(
@@ -344,16 +345,17 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   public onTablePayloadChange(payload: PaginatedPayload): void {
-    this.currentPayload = {
-      ...payload,
-      filterMap: { excludedRoles: ['5'], ...payload.filterMap },
-      pagination: {
-        ...payload.pagination,
-      },
-    };
-    if (!this.isManualRefresh) {
-      this.loadData(this.currentPayload);
+    const isSearch =
+      JSON.stringify(payload.filterMap) !==
+      JSON.stringify(this.previousFilterMap);
+
+    if (isSearch) {
+      payload.pagination.pageNumber = 1;
     }
+
+    this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
+    this.currentPayload = payload;
+    this.loadData(payload);
   }
 
   public getAllUsers(payload: PaginatedPayload) {

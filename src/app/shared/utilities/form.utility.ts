@@ -91,6 +91,9 @@ export abstract class FormEntity {
 /** Returns a map of object's property name and his type */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const getPropertyTypeMap = (obj: any): Record<string, string> => {
+  if (obj == null) {
+    return {};
+  }
   const propertyTypeMap: Record<string, string> = {};
   const properties = Object.getOwnPropertyNames(obj).filter(
     (x) => x !== 'metadata',
@@ -118,7 +121,7 @@ export const buildFormGroup = <T extends FormEntity>(myObj: T): FormGroup => {
     if (type === 'array') {
       const formArray = formBuilder.array([]);
       for (const arrayValue of value) {
-        if (typeof arrayValue === 'object') {
+        if (arrayValue != null && typeof arrayValue === 'object' && !Array.isArray(arrayValue)) {
           const formGroup = buildFormGroup(arrayValue);
           (formArray as FormArray).push(formGroup);
         } else {
@@ -128,7 +131,7 @@ export const buildFormGroup = <T extends FormEntity>(myObj: T): FormGroup => {
       }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (formControls as any)[prop] = formArray;
-    } else if (type === 'object') {
+    } else if (type === 'object' && value != null) {
       const innerFg = buildFormGroup(value);
       const formGroup: FormGroup = innerFg;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
