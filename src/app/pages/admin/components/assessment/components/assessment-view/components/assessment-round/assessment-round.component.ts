@@ -353,6 +353,8 @@ export class AssessmentRoundComponent
               detail: `Failed to create round: ${error.error?.type || 'Unknown error'}`,
             });
             this.isLoading = false;
+            // Reinitialize sortable to restore drag and drop functionality after error
+            setTimeout(() => this.reinitSortable(), 300);
           },
         });
       }
