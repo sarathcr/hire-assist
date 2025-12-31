@@ -1,34 +1,88 @@
-<app-table
-  [tableData]="panelData"
-  [columnsData]="panelColumn"
-  heading="Panel List"
-  [hasSearch]="true"
-  (edit)="editPanel($event)"
-  (pageChangeAndSort)="onPanelTablePayloadChange($event)"
-  (selectedIds)="getSelectedPanelId($event)"
-  [alreadySelected]="selectedPanel"
-></app-table>
-<footer class="dialog-footer">
-  <div class="dialog-footer__btn-wrapper">
-    <app-button
-      buttonLabel="Cancel"
-      [buttonVariant]="'outlined'"
-      (btnClick)="onClose()"
-    ></app-button>
+<div class="select-panel-dialog">
+  <!-- Header Section with Icon and Title -->
+  <div class="select-panel-dialog__header">
+    <div class="select-panel-dialog__header-content">
+      <div class="select-panel-dialog__header-icon">
+        <i class="pi pi-users"></i>
+      </div>
+      <div class="select-panel-dialog__header-text">
+        <h2 class="select-panel-dialog__title">
+          @if (existingPanel.length > 0) {
+            Update Panel Assignment
+          } @else {
+            Assign Candidate to Panel
+          }
+        </h2>
+        <p class="select-panel-dialog__description">
+          @if (existingPanel.length > 0) {
+            Select a panel to update the assignment for this candidate.
+          } @else {
+            Choose an interview panel from the list below to assign the selected candidate.
+          }
+        </p>
+      </div>
+    </div>
   </div>
-  <div class="dialog-footer__btn-wrapper">
-    @if (existingPanel.length > 0) {
-      <app-button
-        buttonLabel="Update"
-        (btnClick)="onSubmit()"
-        [disabled]="IsMultiplePanel"
-      ></app-button>
-    } @else {
-      <app-button
-        buttonLabel="Assign"
-        (btnClick)="onSubmit()"
-        [disabled]="IsMultiplePanel"
-      ></app-button>
-    }
+
+  <!-- Selection Info Card -->
+  @if (selectedPanelIds.length > 0) {
+    <div class="select-panel-dialog__selection-info">
+      <div class="select-panel-dialog__selection-icon">
+        <i class="pi pi-check-circle"></i>
+      </div>
+      <div class="select-panel-dialog__selection-content">
+        <span class="select-panel-dialog__selection-label">Selected Panel</span>
+        <span class="select-panel-dialog__selection-value">
+          {{ selectedPanelIds[0].panelName }}
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Panel Table Section -->
+  <div class="select-panel-dialog__table-section">
+    <app-table
+      [tableData]="panelData"
+      [columnsData]="panelColumn"
+      heading="Available Panels"
+      [hasSearch]="true"
+      [parentLoader]="isLoading"
+      (edit)="editPanel($event)"
+      (pageChangeAndSort)="onPanelTablePayloadChange($event)"
+      (selectedIds)="getSelectedPanelId($event)"
+      [alreadySelected]="selectedPanel"
+    ></app-table>
   </div>
-</footer>
+
+  <!-- Footer with Actions -->
+  <footer class="select-panel-dialog__footer">
+    <div class="select-panel-dialog__footer-content">
+      <app-button
+        buttonLabel="Cancel"
+        [buttonVariant]="'outlined'"
+        [buttonSize]="'medium'"
+        (btnClick)="onClose()"
+        class="select-panel-dialog__cancel-btn"
+      ></app-button>
+      @if (existingPanel.length > 0) {
+        <app-button
+          [buttonLabel]="isSubmitting ? 'Updating...' : 'Update Assignment'"
+          [buttonSize]="'medium'"
+          [icon]="'pi pi-check'"
+          (btnClick)="onSubmit()"
+          [disabled]="IsMultiplePanel || selectedPanelIds.length === 0 || isSubmitting"
+          class="select-panel-dialog__submit-btn"
+        ></app-button>
+      } @else {
+        <app-button
+          [buttonLabel]="isSubmitting ? 'Assigning...' : 'Assign Panel'"
+          [buttonSize]="'medium'"
+          [icon]="'pi pi-user-plus'"
+          (btnClick)="onSubmit()"
+          [disabled]="IsMultiplePanel || selectedPanelIds.length === 0 || isSubmitting"
+          class="select-panel-dialog__submit-btn"
+        ></app-button>
+      }
+    </div>
+  </footer>
+</div>

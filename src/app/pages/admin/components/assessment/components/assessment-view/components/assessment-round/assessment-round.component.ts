@@ -321,22 +321,20 @@ export class AssessmentRoundComponent
         this.isLoading = true;
         this.assessmentScheduleService.addRound(result).subscribe({
           next: (createdRound: RoundsInterface) => {
-            // Update collection with new round
             if (createdRound?.id) {
+              const newRoundId = createdRound.id.toString();
+
               this.collectionService.updateCollection('rounds', {
                 id: Number(createdRound.id),
                 title: createdRound.name,
               });
 
-              // Add to submitted data with actual ID
-              this.submittedData.push({
-                id: createdRound.id.toString(),
-                name: createdRound.name,
-              });
-
-              // Refresh rounds list
               this.refreshRoundsList();
-              setTimeout(() => this.reinitSortable(), 100);
+
+              const currentSelection = this.fGroup.get('round')?.value || [];
+              this.fGroup.patchValue({
+                round: [...currentSelection, newRoundId],
+              });
 
               this.messageService.add({
                 severity: 'success',
@@ -350,11 +348,11 @@ export class AssessmentRoundComponent
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: `Failed to create round: ${error.error?.type || 'Unknown error'}`,
+              detail: `Failed to create round: ${
+                error.error?.type || 'Unknown error'
+              }`,
             });
             this.isLoading = false;
-            // Reinitialize sortable to restore drag and drop functionality after error
-            setTimeout(() => this.reinitSortable(), 300);
           },
         });
       }

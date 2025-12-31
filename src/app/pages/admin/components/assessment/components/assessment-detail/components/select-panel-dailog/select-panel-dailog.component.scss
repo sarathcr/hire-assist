@@ -1,16 +1,406 @@
-.dialog-footer {
+// ============================================
+// Modern Panel Selection Dialog - Beautiful UI
+// ============================================
+
+.select-panel-dialog {
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding-top: var(--spacing-20);
-  box-shadow: 0px -15px 20px -26px #000;
-}
-.dialog-header {
-  box-shadow: 0px 15px 10px -20px #000;
-}
-::ng-deep {
-  .p-dialog-content {
+  flex-direction: column;
+  height: 100%;
+  background: #ffffff;
+  border-radius: 0;
+  overflow: hidden;
+
+  // ============================================
+  // Header Section
+  // ============================================
+  &__header {
+    background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
+    padding: 32px 40px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(
+        circle,
+        rgba(255, 255, 255, 0.1) 0%,
+        transparent 70%
+      );
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    &-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    &-icon {
+      width: 64px;
+      height: 64px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+      i {
+        font-size: 32px;
+        color: white;
+      }
+    }
+
+    &-text {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &__title {
+    margin: 0 0 12px 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+
+  &__description {
+    margin: 0;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  // ============================================
+  // Selection Info Card
+  // ============================================
+  &__selection-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    margin: 24px 40px 0;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border: 2px solid #4caf50;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
+    animation: slideIn 0.3s ease-out;
+
+    &-icon {
+      width: 48px;
+      height: 48px;
+      background: #4caf50;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+
+      i {
+        font-size: 24px;
+        color: white;
+      }
+    }
+
+    &-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    &-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #2e7d32;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    &-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1b5e20;
+      word-break: break-word;
+    }
+  }
+
+  // ============================================
+  // Table Section
+  // ============================================
+  &__table-section {
+    flex: 1;
+    padding: 24px 40px;
     overflow-y: auto;
+    min-height: 0;
+
+    // Custom scrollbar
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
+  }
+
+  // ============================================
+  // Footer Section
+  // ============================================
+  &__footer {
+    padding: 24px 40px;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+
+    &-content {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 16px;
+    }
+  }
+
+  &__cancel-btn {
+    min-width: 120px;
+
+    ::ng-deep .p-button {
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      height: 44px;
+      border: 2px solid #e5e7eb;
+      color: #6b7280;
+      background: white;
+
+      &:hover:not(:disabled) {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+        color: #374151;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
+  }
+
+  &__submit-btn {
+    min-width: 160px;
+
+    ::ng-deep .p-button {
+      background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.2s ease;
+      height: 44px;
+      color: white;
+      box-shadow: 0 2px 8px rgba(66, 165, 245, 0.3);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, #5a67d8 0%, #4c63d2 100%);
+        box-shadow: 0 4px 12px rgba(66, 165, 245, 0.4);
+        transform: translateY(-2px);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #9ca3af;
+      }
+
+      i {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  // ============================================
+  // Animations
+  // ============================================
+  @keyframes pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 0.3;
+    }
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  // ============================================
+  // Responsive Design
+  // ============================================
+  @media screen and (max-width: 768px) {
+    &__header {
+      padding: 24px 20px;
+
+      &-content {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      &-icon {
+        width: 56px;
+        height: 56px;
+
+        i {
+          font-size: 28px;
+        }
+      }
+    }
+
+    &__title {
+      font-size: 24px;
+    }
+
+    &__description {
+      font-size: 14px;
+    }
+
+    &__selection-info {
+      margin: 20px 20px 0;
+      padding: 16px 20px;
+
+      &-icon {
+        width: 40px;
+        height: 40px;
+
+        i {
+          font-size: 20px;
+        }
+      }
+    }
+
+    &__table-section {
+      padding: 20px;
+    }
+
+    &__footer {
+      padding: 20px;
+
+      &-content {
+        flex-direction: column-reverse;
+        width: 100%;
+      }
+    }
+
+    &__cancel-btn,
+    &__submit-btn {
+      width: 100%;
+      min-width: unset;
+    }
+  }
+}
+
+// ============================================
+// Global Dialog Styles
+// ============================================
+::ng-deep {
+  .select-panel-dialog-wrapper {
+    .p-dialog-content {
+      padding: 0;
+      overflow: hidden;
+      border-radius: 0;
+      background: white;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+    }
+    .p-dialog {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+      .p-dialog-header {
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .p-dialog-header-icons {
+        position: absolute;
+        top: 24px;
+        right: 24px;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 8px;
+        padding: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+
+        .p-dialog-header-close {
+          color: white;
+          background: transparent;
+          border: none;
+          width: 32px;
+          height: 32px;
+          border-radius: 6px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+          }
+
+          &:focus {
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+          }
+        }
+      }
+    }
+
+    // Overlay backdrop
+    .p-dialog-mask {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
   }
 }

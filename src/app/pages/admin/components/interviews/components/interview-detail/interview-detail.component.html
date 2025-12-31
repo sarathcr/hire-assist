@@ -2,289 +2,498 @@
   <app-interview-detail-skeleton />
 }
 
-@if (responseData) {
-  <div class="candidate">
-    <div>
-      <h2 class="candidate__card-Round">{{ responseData.roundName }}</h2>
-      <h2 class="candidate__card-heading">Candidate Details</h2>
-      <div class="candidate__details">
-        <div class="candidate__card">
-          <div class="candidate__card-content">
-            <div class="candidate__card-info-item">
-              <i class="pi pi-user candidate__card-icon"></i>
-              <span>{{ responseData.candidateName }}</span>
+@if (!isLoading) {
+  <div class="interview-detail">
+    @if (feedbackCriteriaError || interviewerError) {
+      <p-card class="interview-detail__error-card">
+        <div class="interview-detail__error-content">
+          <i
+            class="pi pi-exclamation-triangle interview-detail__error-icon"
+          ></i>
+          <div class="interview-detail__error-messages">
+            <h3 class="interview-detail__error-title">
+              Warning: Data Loading Issues
+            </h3>
+            <p class="interview-detail__error-text">
+              Some data could not be loaded completely. Please refresh the page
+              or contact support if the issue persists.
+            </p>
+            @if (feedbackCriteriaError) {
+              <p-message
+                severity="warn"
+                [text]="'Feedback Criteria: ' + feedbackCriteriaError"
+                class="interview-detail__error-message-item"
+              />
+            }
+            @if (interviewerError) {
+              <p-message
+                severity="warn"
+                [text]="'Interviewer Data: ' + interviewerError"
+                class="interview-detail__error-message-item"
+              />
+            }
+          </div>
+        </div>
+      </p-card>
+    }
+
+    @if (responseData) {
+      <!-- Hero Header Section -->
+      <p-card class="interview-detail__header-card">
+        <div class="interview-detail__header">
+          <div class="interview-detail__header-content">
+            <div class="interview-detail__header-icon">
+              <i class="pi pi-user"></i>
             </div>
-            <div class="candidate__card-info-item">
-              <i class="pi pi-envelope candidate__card-icon"></i>
-              <span>{{ responseData.candidateId }}</span>
+            <div class="interview-detail__header-text">
+              <h1 class="interview-detail__title">Interview Details</h1>
+              <p class="interview-detail__subtitle">
+                {{ responseData.roundName }}
+              </p>
             </div>
           </div>
         </div>
-        <div class="candidate__card-knob">
-          <p-knob [(ngModel)]="totalFeedbackScore" [readonly]="true" />
-          <div class="candidate__knob-label">Score</div>
-        </div>
-      </div>
-    </div>
+      </p-card>
 
-    <div class="candidate__accordion">
-      <h3>Previous Rounds Details</h3>
-      @if (responseData.previousInterviews) {
-        <p-accordion [value]="0">
-          @for (round of responseData.previousInterviews; track round.roundId) {
-            <p-accordion-panel [value]="round.sequence">
-              <p-accordion-header class="candidate__accordion-heading">{{
-                round.roundName
-              }}</p-accordion-header>
-              <p-accordion-content class="candidate__accordion-content">
-                <!-- aptitude round -->
-                @if (round.roundId === 1) {
-                  <div>
-                    <ul class="candidate__acoordion-details">
-                      <li>
-                        Question Set:
-                        <span class="extra-bold">{{
-                          round.assessmentDetails[0].questionSet
-                        }}</span>
-                      </li>
-                      <li>
-                        Batch:
-                        <span class="extra-bold">{{
-                          round.assessmentDetails[0].batch
-                        }}</span>
-                      </li>
-                      <li>
-                        Total Questions:
-                        <span class="extra-bold">{{
-                          round.assessmentDetails[0].totalQuestions
-                        }}</span>
-                      </li>
-                      <li>
-                        Number of attended Questions:
-                        <span class="extra-bold">{{
-                          round.assessmentDetails[0].attendedQuestions
-                        }}</span>
-                      </li>
-                      <li>
-                        Number of correct answers:
-                        <span class="extra-bold">{{
-                          round.assessmentDetails[0].correctAswers
-                        }}</span>
-                      </li>
-                      <li>
-                        Number of questions skipped:
-                        <span class="extra-bold">{{
-                          round.assessmentDetails[0].skipped
-                        }}</span>
-                      </li>
-                    </ul>
-                  </div>
-                } @else {
-                  @if (round.assessmentDetails.length > 0) {
-                    <p-accordion [value]="0">
-                      @for (
-                        interviewer of round.assessmentDetails;
-                        track interviewer.interviewerId
-                      ) {
-                        <p-accordion-panel [value]="interviewer.interviewerId">
-                          <p-accordion-header>
-                            {{ interviewer.interviewerName }}
-                            <span class="candidate__accordion-Interviewer">
-                              (Interviewer)</span
-                            >
-                            <span class="candidate__accordion-score">
-                              <span class="candidate__accordion-score-label"
-                                >Score:</span
-                              >
-                              <span class="candidate__accordion-score-value"
-                                >{{ interviewer.totalScore }}/{{
-                                  interviewer.outofScore
-                                }}</span
-                              >
-                            </span>
-                          </p-accordion-header>
-                          <p-accordion-content>
-                            @if (interviewer.feedbackListDto.length > 0) {
-                              <p-accordion [value]="0">
-                                @for (
-                                  feedback of interviewer.feedbackListDto;
-                                  track feedback.criteria
-                                ) {
-                                  <p-accordion-panel
-                                    [value]="feedback.criteria"
-                                  >
-                                    <p-accordion-header>
-                                      {{ feedback.criteria }}
-                                      <span class="candidate__accordion-score">
-                                        <span
-                                          class="candidate__Feedback-score-label"
-                                          >Score:</span
-                                        >
-                                        @if (
-                                          feedback.feedbackScore !== null &&
-                                          feedback.feedbackScore !== undefined
-                                        ) {
-                                          <span
-                                            class="candidate__accordion-score-value"
-                                            >{{ feedback.feedbackScore }}/{{
-                                              feedback.maxScore
-                                            }}</span
-                                          >
-                                        }
-                                      </span>
-                                    </p-accordion-header>
-                                    <p-accordion-content>
-                                      <h4 class="candidate__accordion-Comments">
-                                        Comments
-                                      </h4>
-                                      <div class="candidate__accordion-editor">
-                                        <p-editor
-                                          [(ngModel)]="feedback.feedbackDetails"
-                                          [readonly]="true"
-                                          [style]="{ height: '220px' }"
-                                        />
-                                      </div>
-                                    </p-accordion-content>
-                                  </p-accordion-panel>
-                                }
-                              </p-accordion>
-                            } @else {
-                              <p>No feedback available for this interviewer.</p>
-                            }
-                          </p-accordion-content>
-                        </p-accordion-panel>
-                      }
-                    </p-accordion>
-                  } @else {
-                    <p>No interviewers available for this round.</p>
-                  }
-                }
-              </p-accordion-content>
-            </p-accordion-panel>
-          }
-        </p-accordion>
-      } @else {
-        <p style="color: var(--color-danger)">No previous data available!</p>
-      }
-    </div>
-
-    <!--feedback-->
-    <div class="candidate__accordion">
-      <h3>Feedback</h3>
-      <p-accordion [value]="0">
-        @for (feedback of feedbackcriteria; track feedback.title) {
-          <p-accordion-panel
-            [value]="feedback.value"
-            [ngClass]="{ 'saved-panel': feedback.isSaved }"
-          >
-            <p-accordion-header>{{ feedback.title }} </p-accordion-header>
-            <p-accordion-content class="candidate__accordion-content">
-              @if (feedback.title === "Attachments") {
-                <p-toast></p-toast>
-
-                <p-fileupload
-                  name="feedbackFiles[]"
-                  [multiple]="true"
-                  accept="image/*"
-                  maxFileSize="1000000"
-                  (onSelect)="onFileChange($event)"
+      <!-- Candidate Info Card -->
+      <p-card class="interview-detail__candidate-card">
+        <div class="interview-detail__candidate-content">
+          <div class="interview-detail__candidate-info">
+            <div class="interview-detail__candidate-item">
+              <div class="interview-detail__candidate-icon">
+                <i class="pi pi-user"></i>
+              </div>
+              <div class="interview-detail__candidate-details">
+                <span class="interview-detail__candidate-label"
+                  >Candidate Name</span
                 >
-                  <ng-template #content let-files>
-                    @if (previewImageUrls.length) {
-                      <div
-                        class="candidate__accordion-content__preview-container"
-                      >
-                        @if (isImageLoading) {
-                          <app-image-skeleton></app-image-skeleton>
-                        } @else {
-                          @for (
-                            imgUrl of previewImageUrls;
-                            track i;
-                            let i = $index
-                          ) {
-                            <div
-                              class="candidate__accordion-content__preview-container__image"
+                <span class="interview-detail__candidate-value">{{
+                  responseData.candidateName
+                }}</span>
+              </div>
+            </div>
+            <div class="interview-detail__candidate-item">
+              <div class="interview-detail__candidate-icon">
+                <i class="pi pi-envelope"></i>
+              </div>
+              <div class="interview-detail__candidate-details">
+                <span class="interview-detail__candidate-label">Email</span>
+                <span class="interview-detail__candidate-value">{{
+                  responseData.candidateId
+                }}</span>
+              </div>
+            </div>
+          </div>
+          <p-divider layout="vertical" />
+          <div class="interview-detail__score-section">
+            <p-knob
+              [(ngModel)]="totalFeedbackScore"
+              [readonly]="true"
+              [min]="0"
+              [max]="100"
+              [strokeWidth]="8"
+              [size]="100"
+            />
+            <div class="interview-detail__score-label">Total Score</div>
+            <p-tag
+              [value]="totalFeedbackScore.toString()"
+              severity="info"
+              class="interview-detail__score-badge-tag"
+            />
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Previous Rounds Section -->
+      <p-card class="interview-detail__section-card">
+        <div class="interview-detail__section-header">
+          <div class="interview-detail__section-icon">
+            <i class="pi pi-history"></i>
+          </div>
+          <h2 class="interview-detail__section-title">
+            Previous Rounds Details
+          </h2>
+        </div>
+        <p-divider />
+        @if (
+          responseData.previousInterviews &&
+          responseData.previousInterviews.length > 0
+        ) {
+          <div class="interview-detail__accordion-wrapper">
+            <p-accordion [value]="0" [multiple]="true">
+              @for (
+                round of responseData.previousInterviews;
+                track round.roundId
+              ) {
+                <p-accordion-panel [value]="round.sequence">
+                  <p-accordion-header
+                    class="interview-detail__accordion-header"
+                  >
+                    <div class="interview-detail__accordion-header-content">
+                      <p-chip
+                        [label]="round.roundName"
+                        [styleClass]="'interview-detail__round-chip'"
+                      />
+                    </div>
+                  </p-accordion-header>
+                  <p-accordion-content
+                    class="interview-detail__accordion-content"
+                  >
+                    <!-- Aptitude Round -->
+                    @if (round.roundId === 1) {
+                      <div class="interview-detail__round-details">
+                        <div class="interview-detail__round-grid">
+                          <div class="interview-detail__round-item">
+                            <span class="interview-detail__round-label"
+                              >Question Set</span
                             >
-                              <app-image
-                                width="100"
-                                height="70"
-                                [imageUrl]="imgUrl"
-                                [paddingTop]="'0'"
-                                [forceCancelRequest]="[]"
-                                [isZoomable]="true"
-                                (closeImage)="removeImage(i)"
-                              >
-                              </app-image>
+                            <span class="interview-detail__round-value">{{
+                              round.assessmentDetails[0].questionSet
+                            }}</span>
+                          </div>
+                          <div class="interview-detail__round-item">
+                            <span class="interview-detail__round-label"
+                              >Batch</span
+                            >
+                            <span class="interview-detail__round-value">{{
+                              round.assessmentDetails[0].batch
+                            }}</span>
+                          </div>
+                          <div class="interview-detail__round-item">
+                            <span class="interview-detail__round-label"
+                              >Total Questions</span
+                            >
+                            <span class="interview-detail__round-value">{{
+                              round.assessmentDetails[0].totalQuestions
+                            }}</span>
+                          </div>
+                          <div class="interview-detail__round-item">
+                            <span class="interview-detail__round-label"
+                              >Attended Questions</span
+                            >
+                            <span class="interview-detail__round-value">{{
+                              round.assessmentDetails[0].attendedQuestions
+                            }}</span>
+                          </div>
+                          <div class="interview-detail__round-item">
+                            <span class="interview-detail__round-label"
+                              >Correct Answers</span
+                            >
+                            <span class="interview-detail__round-value">{{
+                              round.assessmentDetails[0].correctAswers
+                            }}</span>
+                          </div>
+                          <div class="interview-detail__round-item">
+                            <span class="interview-detail__round-label"
+                              >Skipped</span
+                            >
+                            <span class="interview-detail__round-value">{{
+                              round.assessmentDetails[0].skipped
+                            }}</span>
+                          </div>
+                        </div>
+                      </div>
+                    } @else {
+                      <!-- Interview Rounds -->
+                      @if (round.assessmentDetails.length > 0) {
+                        <p-accordion [value]="0" [multiple]="true">
+                          @for (
+                            interviewer of round.assessmentDetails;
+                            track interviewer.interviewerId
+                          ) {
+                            <p-accordion-panel
+                              [value]="interviewer.interviewerId"
+                            >
+                              <p-accordion-header>
+                                <div
+                                  class="interview-detail__interviewer-header"
+                                >
+                                  <div
+                                    class="interview-detail__interviewer-info"
+                                  >
+                                    <span
+                                      class="interview-detail__interviewer-name"
+                                      >{{ interviewer.interviewerName }}</span
+                                    >
+                                    <p-tag
+                                      value="Interviewer"
+                                      severity="secondary"
+                                      class="interview-detail__interviewer-tag"
+                                    />
+                                  </div>
+                                  <div
+                                    class="interview-detail__interviewer-score"
+                                  >
+                                    <span
+                                      class="interview-detail__feedback-score-label"
+                                      >Score:</span
+                                    >
+                                    <p-badge
+                                      [value]="
+                                        interviewer.totalScore +
+                                        '/' +
+                                        interviewer.outofScore
+                                      "
+                                      severity="success"
+                                    />
+                                  </div>
+                                </div>
+                              </p-accordion-header>
+                              <p-accordion-content>
+                                @if (interviewer.feedbackListDto.length > 0) {
+                                  <p-accordion [value]="0" [multiple]="true">
+                                    @for (
+                                      feedback of interviewer.feedbackListDto;
+                                      track feedback.criteria
+                                    ) {
+                                      <p-accordion-panel
+                                        [value]="feedback.criteria"
+                                      >
+                                        <p-accordion-header>
+                                          <div
+                                            class="interview-detail__feedback-header"
+                                          >
+                                            <p-chip
+                                              [label]="feedback.criteria"
+                                              [styleClass]="
+                                                'interview-detail__feedback-chip'
+                                              "
+                                            />
+                                            @if (
+                                              feedback.feedbackScore !== null &&
+                                              feedback.feedbackScore !==
+                                                undefined
+                                            ) {
+                                              <div
+                                                class="interview-detail__feedback-score"
+                                              >
+                                                <span
+                                                  class="interview-detail__feedback-score-label"
+                                                  >Score:</span
+                                                >
+                                                <p-badge
+                                                  [value]="
+                                                    feedback.feedbackScore +
+                                                    '/' +
+                                                    feedback.maxScore
+                                                  "
+                                                  severity="info"
+                                                />
+                                              </div>
+                                            }
+                                          </div>
+                                        </p-accordion-header>
+                                        <p-accordion-content>
+                                          <div
+                                            class="interview-detail__feedback-comments"
+                                          >
+                                            <h4
+                                              class="interview-detail__comments-title"
+                                            >
+                                              Comments
+                                            </h4>
+                                            <div
+                                              class="interview-detail__editor-wrapper"
+                                            >
+                                              <p-editor
+                                                [(ngModel)]="
+                                                  feedback.feedbackDetails
+                                                "
+                                                [readonly]="true"
+                                                [style]="{ height: '200px' }"
+                                              />
+                                            </div>
+                                          </div>
+                                        </p-accordion-content>
+                                      </p-accordion-panel>
+                                    }
+                                  </p-accordion>
+                                } @else {
+                                  <p class="interview-detail__empty-message">
+                                    No feedback available for this interviewer.
+                                  </p>
+                                }
+                              </p-accordion-content>
+                            </p-accordion-panel>
+                          }
+                        </p-accordion>
+                      } @else {
+                        <p class="interview-detail__empty-message">
+                          No interviewers available for this round.
+                        </p>
+                      }
+                    }
+                  </p-accordion-content>
+                </p-accordion-panel>
+              }
+            </p-accordion>
+          </div>
+        } @else {
+          <div class="interview-detail__empty-state">
+            <i class="pi pi-info-circle"></i>
+            <p>No previous data available!</p>
+          </div>
+        }
+      </p-card>
+
+      <!-- Feedback Section -->
+      <p-card class="interview-detail__section-card">
+        <div class="interview-detail__section-header">
+          <div class="interview-detail__section-icon">
+            <i class="pi pi-comments"></i>
+          </div>
+          <h2 class="interview-detail__section-title">Feedback</h2>
+        </div>
+        <p-divider />
+        <div class="interview-detail__accordion-wrapper">
+          <p-accordion [value]="0" [multiple]="true">
+            @for (feedback of feedbackcriteria; track feedback.title) {
+              <p-accordion-panel
+                [value]="feedback.value"
+                [ngClass]="{ 'saved-panel': feedback.isSaved }"
+              >
+                <p-accordion-header
+                  class="interview-detail__feedback-accordion-header"
+                >
+                  <div class="interview-detail__feedback-header-content">
+                    <p-chip
+                      [label]="feedback.title"
+                      [styleClass]="'interview-detail__feedback-chip'"
+                    />
+                    @if (feedback.isSaved) {
+                      <p-tag
+                        value="Saved"
+                        severity="success"
+                        icon="pi pi-check-circle"
+                      />
+                    }
+                  </div>
+                </p-accordion-header>
+                <p-accordion-content
+                  class="interview-detail__accordion-content"
+                >
+                  @if (feedback.title === "Attachments") {
+                    <p-toast></p-toast>
+                    <div class="interview-detail__file-upload-section">
+                      <p-fileupload
+                        name="feedbackFiles[]"
+                        [multiple]="true"
+                        accept="image/*"
+                        maxFileSize="1000000"
+                        (onSelect)="onFileChange($event)"
+                      >
+                        <ng-template #content let-files>
+                          @if (previewImageUrls.length) {
+                            <div class="interview-detail__image-preview-grid">
+                              @if (isImageLoading) {
+                                <app-image-skeleton></app-image-skeleton>
+                              } @else {
+                                @for (
+                                  imgUrl of previewImageUrls;
+                                  track i;
+                                  let i = $index
+                                ) {
+                                  <div
+                                    class="interview-detail__image-preview-item"
+                                  >
+                                    <app-image
+                                      width="100"
+                                      height="70"
+                                      [imageUrl]="imgUrl"
+                                      [paddingTop]="'0'"
+                                      [forceCancelRequest]="[]"
+                                      [isZoomable]="true"
+                                      (closeImage)="removeImage(i)"
+                                    >
+                                    </app-image>
+                                  </div>
+                                }
+                              }
                             </div>
                           }
+                        </ng-template>
+                      </p-fileupload>
+                    </div>
+                  }
+
+                  @if (feedback.title !== "Attachments") {
+                    <div class="interview-detail__feedback-form">
+                      <div class="interview-detail__editor-wrapper">
+                        <p-editor
+                          [(ngModel)]="feedback.content"
+                          [style]="{ height: '200px' }"
+                        />
+                      </div>
+                      <div class="interview-detail__score-input-wrapper">
+                        <p-floatLabel>
+                          <input
+                            type="number"
+                            [(ngModel)]="feedback.score"
+                            class="interview-detail__score-input"
+                            (ngModelChange)="validateScore(feedback)"
+                            [pTooltip]="'Max score is ' + feedback.maxScore"
+                            [tooltipPosition]="'bottom'"
+                            [max]="feedback.maxScore"
+                            [min]="0"
+                          />
+                          <label for="score"
+                            >Score (Max: {{ feedback.maxScore }})</label
+                          >
+                        </p-floatLabel>
+                        @if (feedback.isScoreInValid) {
+                          <p-message
+                            severity="error"
+                            variant="simple"
+                            size="small"
+                            class="interview-detail__error-message"
+                          >
+                            Maximum allowed score is {{ feedback.maxScore }}
+                          </p-message>
                         }
                       </div>
-                    }
-                  </ng-template>
-                </p-fileupload>
-              }
-
-              @if (feedback.title !== "Attachments") {
-                <div class="candidate__accordion-editor">
-                  <p-editor
-                    [(ngModel)]="feedback.content"
-                    [style]="{ height: '220px' }"
-                  />
-                </div>
-                <div class="candidate__accordion-score-input">
-                  <p-floatLabel>
-                    <input
-                      [(ngModel)]="feedback.score"
-                      class="simple-input"
-                      (ngModelChange)="validateScore(feedback)"
-                      [pTooltip]="'Max score is ' + feedback.maxScore"
-                      [tooltipPosition]="'bottom'"
-                    />
-                    <label for="score">Score</label>
-                  </p-floatLabel>
-                  @if (feedback.isScoreInValid) {
-                    <p-message
-                      severity="error"
-                      variant="simple"
-                      size="small"
-                      class="mt-1"
-                    >
-                      Maximum allowed score is {{ feedback.maxScore }}
-                    </p-message>
+                    </div>
                   }
-                </div>
-              }
-              <div class="candidate__savebutton">
-                @if (!feedback.isSaved) {
-                  <app-button
-                    [buttonLabel]="'Save'"
-                    (btnClick)="onsave(feedback)"
-                  ></app-button>
-                } @else {
-                  <app-button
-                    [buttonLabel]="'Edit'"
-                    (btnClick)="onEdit(feedback)"
-                  ></app-button>
-                }
-              </div>
-            </p-accordion-content>
-          </p-accordion-panel>
-        }
-      </p-accordion>
-      @if (!isSubmitted) {
-        <div class="candidate__accordion-upload">
-          <div class="savebutton">
+                  <div class="interview-detail__action-buttons">
+                    @if (!feedback.isSaved) {
+                      <app-button
+                        [buttonLabel]="'Save'"
+                        [icon]="'pi pi-save'"
+                        (btnClick)="onsave(feedback)"
+                      ></app-button>
+                    } @else {
+                      <app-button
+                        [buttonLabel]="'Edit'"
+                        [buttonVariant]="'outlined'"
+                        [icon]="'pi pi-pencil'"
+                        (btnClick)="onEdit(feedback)"
+                      ></app-button>
+                    }
+                  </div>
+                </p-accordion-content>
+              </p-accordion-panel>
+            }
+          </p-accordion>
+        </div>
+        @if (!isSubmitted) {
+          <div class="interview-detail__submit-section">
             <app-button
               [buttonLabel]="'Review & Submit'"
+              [icon]="'pi pi-check-circle'"
+              [buttonSize]="'large'"
               (btnClick)="onSubmit()"
             ></app-button>
           </div>
+        }
+      </p-card>
+    }
+
+    @if (!responseData && !interviewerError) {
+      <div class="interview-detail__no-records">
+        <div class="interview-detail__no-records-content">
+          <i class="pi pi-exclamation-triangle"></i>
+          <h3>Candidate details not found</h3>
         </div>
-      }
-    </div>
-  </div>
-} @else {
-  <div class="no-records">
-    <h3>Candidate details Not found</h3>
+      </div>
+    }
   </div>
 }

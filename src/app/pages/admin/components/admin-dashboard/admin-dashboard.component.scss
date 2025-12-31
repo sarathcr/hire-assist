@@ -1,24 +1,22 @@
 .dashboard-container {
   width: 100%;
-  max-height: 100vh;
+  height: 100%;
   background: var(--dashboard-main-background-color, #f5f6fa);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-25);
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
 
-  // For very large screens, ensure content is visible
-  @media screen and (min-width: 1600px) {
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
 
   @media screen and (max-width: 1024px) {
     padding: var(--spacing-15) var(--spacing-20);
     gap: var(--spacing-20);
+    height: auto;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   @media screen and (max-width: 768px) {
@@ -166,14 +164,14 @@
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 6px 16px rgba(0, 0, 0, 0.1);
     z-index: 1;
     @media screen and (max-width: 640px) {
-       transform: none;
+      transform: none;
     }
 
     &::before {
       opacity: 1;
     }
   }
-  
+
   .stat-card-background {
     position: absolute;
     top: 0;
@@ -819,9 +817,9 @@
     @media screen and (max-width: 768px) {
       min-height: 220px;
     }
-     @media screen and (max-width: 480px) {
-       max-height: 380px;
-      }
+    @media screen and (max-width: 480px) {
+      max-height: 380px;
+    }
   }
 
   ::ng-deep canvas {
@@ -1089,7 +1087,7 @@
     opacity: 0.5;
     background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%) !important;
     box-shadow: none !important;
-     width: 56px;
+    width: 56px;
     height: 56px;
     border-radius: 16px;
   }

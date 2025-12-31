@@ -407,18 +407,26 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         assessmentid: this.assessmentId,
         interviewId: this.selectedCandidates[0].id,
       },
-      header: 'Assign Candidate to panel',
+      header: '',
       maximizable: false,
-      width: '40vw',
+      width: '60vw',
       modal: true,
       focusOnShow: false,
+      closable: true,
+      dismissableMask: true,
+      styleClass: 'select-panel-dialog-wrapper',
       breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
+        '960px': '85vw',
+        '640px': '95vw',
       },
     });
     this.ref.onClose.subscribe((result) => {
-      this.Assign(result.selectedpanel, result.isadd);
+      // The modal now handles the API call internally
+      // If result is truthy, it means the API call was successful
+      if (result) {
+        // Refresh the candidate data to reflect the changes
+        this.getPaginatedCandidateData(this.filterMap);
+      }
     });
   }
 

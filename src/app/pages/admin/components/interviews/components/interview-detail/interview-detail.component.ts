@@ -4,14 +4,18 @@ import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { AccordionModule } from 'primeng/accordion';
 import { MessageService } from 'primeng/api';
+import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { ChipModule } from 'primeng/chip';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DividerModule } from 'primeng/divider';
 import { EditorModule } from 'primeng/editor';
 import { FileSelectEvent, FileUpload } from 'primeng/fileupload';
 import { FloatLabel } from 'primeng/floatlabel';
 import { Knob } from 'primeng/knob';
 import { Message } from 'primeng/message';
+import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { Tooltip } from 'primeng/tooltip';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
@@ -59,6 +63,10 @@ import { ImageSkeletonComponent } from '../../../../../../shared/components/imag
     Message,
     ImageComponent,
     ImageSkeletonComponent,
+    BadgeModule,
+    ChipModule,
+    TagModule,
+    DividerModule,
   ],
   templateUrl: './interview-detail.component.html',
   styleUrl: './interview-detail.component.scss',
@@ -72,6 +80,10 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
   public fGroup!: FormGroup;
   public scorevalue!: number;
   public isLoading = true;
+  public isFeedbackCriteriaLoaded = false;
+  public isInterviewerLoaded = false;
+  public feedbackCriteriaError: string | null = null;
+  public interviewerError: string | null = null;
   public requestData!: CandidateDetailRequest;
   public feedbackRequest!: InterviewerFeedback;
   public assessmentId!: string | null;
@@ -83,7 +95,7 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
   public hasfile = false;
   public isSubmitted = false;
   public responseData!: InterviewerCandidate;
-  public totalFeedbackScore!: number;
+  public totalFeedbackScore: number = 0;
   public uploadedFileName: string | undefined;
   public feedbackdetails!: Feedbackcriteria[];
   public feedbackcriteria: AccordionData[] = [];
@@ -116,7 +128,7 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
   public GetfeedbackCriteria() {
     const next = (res: Feedbackcriteria[]) => {
       this.feedbackdetails = res;
-      this.isLoading = false;
+      this.feedbackCriteriaError = null;
       this.feedbackcriteria = this.feedbackdetails.map((item) => ({
         title: item.criteria,
         value: item.id,
@@ -146,15 +158,18 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
           });
         }
       });
+      this.isFeedbackCriteriaLoaded = true;
+      this.checkAllApisLoaded();
     };
     const error = (error: CustomErrorResponse) => {
+      this.feedbackCriteriaError = error.error?.type || 'Failed to load feedback criteria';
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
         detail: `Error : ${error.error.type}`,
       });
-
-      this.isLoading = false;
+      this.isFeedbackCriteriaLoaded = true;
+      this.checkAllApisLoaded();
     };
     this.interviewService
       .GetFeedbackCriteria(Number(this.interviewId), this.interviewerId)
@@ -165,7 +180,6 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
     this.feedbackRequest = {
       assessmentId: Number(this.assessmentId),
       candidateId: this.candidateid ?? '',
-      //here if the feedback contains the files then criteria must be Attachments By default
       feedbackCriteriaId: feedback.title === 'Attachments' ? 6 : feedback.value,
       interviewerId: this.interviewerId ?? '',
       feedbackDetails: feedback.content ?? '',
@@ -229,9 +243,6 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
     const next = () => {
       if (feedback.fileDto && feedback.fileDto.length > 0) {
         this.isImageLoading = true;
-        // feedback.fileDto.forEach((file) => {
-        //   this.previewImage(file);
-        // });
         this.GetfeedbackCriteria();
       }
       this.messageService.add({
@@ -324,7 +335,6 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
           next: (uploadedFile: FileDto) => {
             this.uploadedFile.push(uploadedFile);
             this.feedbackRequest.fileDto?.push(uploadedFile);
-            //  this.previewImage(uploadedFile);
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
@@ -357,7 +367,6 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
         next: (blob: Blob) => {
           this.isImageLoading = false;
           const imageUrl = URL.createObjectURL(blob);
-          //this.previewImageUrls.push(imageUrl, ...this.previewImageUrls);
           this.previewImageUrls.push(imageUrl);
         },
         error: () => {
@@ -381,26 +390,34 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
   public onSelectedFiles(event: any): void {
     this.files = event.currentFiles;
   }
-  // Private methods
 
   private getAssessmentDetails(payload: CandidateDetailRequest): void {
     const next = (res: InterviewerCandidate) => {
       this.responseData = res;
-      this.isLoading = false;
-
+      this.interviewerError = null;
       this.isSubmitted = res.statusId == 7 ? true : false;
+      this.isInterviewerLoaded = true;
+      this.checkAllApisLoaded();
     };
-    const error = () => {
+    const error = (error?: CustomErrorResponse) => {
+      this.interviewerError = error?.error?.type || 'Failed to load interviewer data';
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
         detail: 'No data Found',
       });
-      this.isLoading = false;
+      this.isInterviewerLoaded = true;
+      this.checkAllApisLoaded();
     };
     this.interviewService
       .GetCandidateDetails(payload)
       .subscribe({ next, error });
+  }
+
+  private checkAllApisLoaded(): void {
+    if (this.isFeedbackCriteriaLoaded && this.isInterviewerLoaded) {
+      this.isLoading = false;
+    }
   }
   private setConfigMaps(): void {
     const { metadata } = new Score();

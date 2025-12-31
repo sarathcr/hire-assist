@@ -4,7 +4,15 @@
       <h1 class="assessment-summary__title">Assigned Interviews</h1>
     </div>
     <div class="assessment-summary__wrapper">
-      @if (!isLoading && assessmentDataSource.length > 0) {
+      @if (isInitialLoad || isLoading || (isLoading$ | async)) {
+        <div class="assessment-summary__list">
+          @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+            <app-assessment-card-skeleton
+              class="assessment-summary__card"
+            ></app-assessment-card-skeleton>
+          }
+        </div>
+      } @else {
         <div class="assessment-summary__list">
           @for (assessment of assessmentDataSource; track assessment) {
             <app-assessment-card
@@ -19,13 +27,11 @@
               "
             ></app-assessment-card>
           } @empty {
-            You have no interviews assigned at this time.
+            <p class="assessment-summary__empty">
+              You have no interviews assigned at this time.
+            </p>
           }
         </div>
-      } @else {
-        <app-assessment-card-skeleton
-          class="assessment-summary__card"
-        ></app-assessment-card-skeleton>
       }
     </div>
   </div>

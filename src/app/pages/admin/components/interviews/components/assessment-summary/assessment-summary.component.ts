@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs';
 import { AssessmentCardComponent } from '../../../../../../shared/components/assessment-card/assessment-card.component';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { GenericDataSource } from '../../../../../../shared/components/pagination/generic-data-source';
@@ -12,7 +14,7 @@ import { SkeletonComponent } from '../../../../../../shared/components/assessmen
 
 @Component({
   selector: 'app-assessment-summary',
-  imports: [AssessmentCardComponent, PaginationComponent, SkeletonComponent],
+  imports: [AssessmentCardComponent, PaginationComponent, SkeletonComponent, AsyncPipe],
   providers: [GenericDataSource],
   templateUrl: './assessment-summary.component.html',
   styleUrl: './assessment-summary.component.scss',
@@ -24,23 +26,24 @@ export class AssessmentSummaryComponent
   public filterMap!: KeyValueMap<string>;
   public assessmentDataSource: Assessment[] = [];
   public totalRecords = 0;
+  public isInitialLoad = true;
   public isLoading = false;
+  public isLoading$!: Observable<boolean>;
 
   constructor(
     public dataSource: GenericDataSource<AssessmentForm>,
     public router: Router,
   ) {
     super();
+    this.isLoading$ = this.dataSource.loading$;
   }
 
   // Life Cycle Hooks
   ngOnInit(): void {
-    this.isLoading = true;
     this.dataSource.init(`${ASSESSMENT_URL}/AssessmentSummaryInterviewer`);
     this.subscribeToPaginatedData();
     const sub = this.dataSource.totalRecords$.subscribe((records) => {
       this.totalRecords = records;
-      this.isLoading = false;
     });
     this.subscriptionList.push(sub);
   }
@@ -52,11 +55,25 @@ export class AssessmentSummaryComponent
 
   // Private Methods
   private subscribeToPaginatedData(): void {
-    this.isLoading = true;
+    let hasReceivedData = false;
+
     const sub = this.dataSource.connect().subscribe((data) => {
       this.assessmentDataSource = data;
+      hasReceivedData = true;
+      // Set isLoading to false when data arrives
       this.isLoading = false;
     });
     this.subscriptionList.push(sub);
+
+    // Track loading state to set isInitialLoad to false when loading completes
+    const loadingSub = this.dataSource.loading$.subscribe((isLoading) => {
+      // Update isLoading based on dataSource loading state
+      this.isLoading = isLoading;
+      // Set isInitialLoad to false when loading completes AND we have received data
+      if (!isLoading && this.isInitialLoad && hasReceivedData) {
+        this.isInitialLoad = false;
+      }
+    });
+    this.subscriptionList.push(loadingSub);
   }
 }

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormGroup, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import {
@@ -22,6 +23,7 @@ import {
 import { ConfigMap } from '../../../../../../../../shared/utilities/form.utility';
 import {
   GetInterviewPanelsResponse,
+  InterviewPanelsResponse,
   Interviewers,
   InterviewPanels,
 } from '../../../../../../../coordinator/models/interview-panels.model';
@@ -96,6 +98,9 @@ export class SelectPanelDailogComponent implements OnInit {
   public existingPanel: string[] = [];
   public intrviewid!: number;
   public IsMultiplePanel!: boolean;
+  public isLoading = false;
+  public isSubmitting = false;
+  public selectedPanelForAssignment: PanelSummary | null = null;
 
   constructor(
     private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
@@ -123,6 +128,7 @@ export class SelectPanelDailogComponent implements OnInit {
       },
     };
 
+    this.isLoading = true;
     this.coordinatorPanelBridgeService
       .paginationEntity<PanelSummary>('panel/activePanelSummary', payload)
       .subscribe({
@@ -136,8 +142,10 @@ export class SelectPanelDailogComponent implements OnInit {
             };
           });
           this.panelData = { ...res, data: resData };
+          this.isLoading = false;
         },
         error: () => {
+          this.isLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -269,13 +277,153 @@ export class SelectPanelDailogComponent implements OnInit {
     this.selectedPanelIds = selectedIds.map((item: PanelSummary) => item);
   }
   public onSubmit() {
-    if (this.selectedPanelIds) {
-      const response = {
-        selectedpanel: this.selectedPanelIds,
-        isAdd: this.existingPanel.length === 0,
-      };
-      this.ref.close(response);
+    if (!this.selectedPanelIds || this.selectedPanelIds.length === 0) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Please select a panel to assign.',
+      });
+      return;
     }
+
+    if (this.isSubmitting) {
+      return; // Prevent multiple submissions
+    }
+
+    const selectedPanel = this.selectedPanelIds[0];
+    this.selectedPanelForAssignment = selectedPanel;
+    const isAdd = this.existingPanel.length === 0;
+    const selectedInterviewerIds =
+      selectedPanel.interviewers?.map((i: any) => i.id) ?? [];
+
+    const payload: InterviewPanels = {
+      assessmentId: this.assessmentId,
+      interviewId: Number(this.intrviewid),
+      panelId: selectedPanel.id,
+      interviewers: selectedInterviewerIds,
+    };
+
+    this.isSubmitting = true;
+    this.isLoading = true; // Show skeleton loader
+
+    // First check if panel already exists
+    this.coordinatorPanelBridgeService
+      .getinterviewPanles(this.intrviewid.toString())
+      .subscribe({
+        next: (response: GetInterviewPanelsResponse) => {
+          this.interview = response ?? {};
+          const isInterviewIdSame =
+            payload.interviewId === this.interview.interviewId;
+          const isPanelIdSame = payload.panelId === this.interview.panelId;
+          const isInterviewerSame =
+            JSON.stringify(payload.interviewers.sort()) ===
+            JSON.stringify(this.interview.interviewer.sort());
+
+          const isAlreadyScheduled =
+            isInterviewIdSame && isPanelIdSame && isInterviewerSame;
+          if (isAlreadyScheduled) {
+            this.isSubmitting = false;
+            this.isLoading = false;
+            this.messageService.add({
+              severity: 'info',
+              summary: 'Already Exists',
+              detail: 'This panel is already scheduled for the candidate.',
+            });
+            return;
+          }
+          if (isAdd) {
+            this.addInterviewPanels(payload);
+          } else {
+            this.updateInterviewPanels(payload);
+          }
+        },
+        error: (error: HttpErrorResponse) => {
+          if (error?.status === 422 && error?.error?.businessError === 3102) {
+            // Panel doesn't exist, proceed with add
+            this.addInterviewPanels(payload);
+          } else {
+            this.isSubmitting = false;
+            this.isLoading = false;
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to get interview panels.',
+            });
+          }
+        },
+      });
+  }
+
+  private interview: GetInterviewPanelsResponse = {} as GetInterviewPanelsResponse;
+
+  private addInterviewPanels(payload: InterviewPanels): void {
+    this.interviewservice.addinterviewpanel(payload).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.isLoading = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Interview panel added successfully.',
+        });
+        // Close modal only on success
+        this.ref.close({
+          selectedpanel: this.selectedPanelIds,
+          isAdd: true,
+        });
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.isLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to add interview panel.',
+        });
+        // Keep modal open on error
+      },
+    });
+  }
+
+  private updateInterviewPanels(payload: InterviewPanels): void {
+    if (!this.selectedPanelForAssignment) {
+      this.isSubmitting = false;
+      this.isLoading = false;
+      return;
+    }
+
+    const payloaddata: InterviewPanelsResponse = {
+      assessmentId: this.assessmentId,
+      interviewId: Number(payload.interviewId),
+      panel: this.selectedPanelForAssignment.panelName,
+      interviewer: payload.interviewers,
+    };
+    this.interviewservice.updateinterviewpanel(payloaddata).subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.isLoading = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Interview panel updated successfully.',
+        });
+        // Close modal only on success
+        this.ref.close({
+          selectedpanel: this.selectedPanelIds,
+          isAdd: false,
+        });
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.isLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to update interview panel.',
+        });
+        // Keep modal open on error
+      },
+    });
   }
 
   public onClose() {

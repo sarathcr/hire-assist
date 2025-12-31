@@ -1,45 +1,173 @@
 <div class="interview-candidate">
-  <h1 class="interview-candidate__title app-title">Interview Schedules</h1>
-  <p-tabs value="0">
-    <p-tablist>
-      <p-tab value="0">Today's Interviews</p-tab>
-      <p-tab value="1">Upcoming Interviews</p-tab>
-      <p-tab value="2">Previous Interviews</p-tab>
-    </p-tablist>
-    <p-tabpanels>
-      <p-tabpanel value="0">
-        <app-table
-          [tableData]="todayTableData"
-          [parentLoader]="isLoading"
-          [columnsData]="columns"
-          [hasSearch]="true"
-          (btnClick)="onStartInterview($event)"
-          (buttonClick)="onButtonClick($event)"
-          (pageChangeAndSort)="onTablePayloadChange($event)"
-        ></app-table>
-      </p-tabpanel>
-      <p-tabpanel value="1">
-        <app-table
-          [tableData]="upComingTableData"
-          [parentLoader]="isLoading"
-          [columnsData]="columns"
-          [hasSearch]="true"
-          (btnClick)="onStartInterview($event)"
-          (buttonClick)="onButtonClick($event)"
-          (pageChangeAndSort)="onTablePayloadChange($event)"
-        ></app-table>
-      </p-tabpanel>
-      <p-tabpanel value="2">
-        <app-table
-          [tableData]="PreviousTableData"
-          [parentLoader]="isLoading"
-          [columnsData]="columns"
-          [hasSearch]="true"
-          (btnClick)="onStartInterview($event)"
-          (buttonClick)="onButtonClick($event)"
-          (pageChangeAndSort)="onTablePayloadChange($event)"
-        ></app-table>
-      </p-tabpanel>
-    </p-tabpanels>
-  </p-tabs>
+  <!-- Hero Header Section -->
+  <div class="interview-candidate__header">
+    <div class="interview-candidate__header-content">
+      <div class="interview-candidate__header-icon">
+        <i class="pi pi-calendar-times"></i>
+      </div>
+      <div class="interview-candidate__header-text">
+        <h1 class="interview-candidate__title">Interview Schedules</h1>
+        <p class="interview-candidate__subtitle">
+          @if (assessmentName && panelName) {
+            {{ assessmentName }} - {{ panelName }}
+          } @else {
+            Manage and track interview schedules
+          }
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Statistics Cards -->
+  <div class="interview-candidate__summary">
+    <p-card
+      class="interview-candidate__summary-card interview-candidate__summary-card--today"
+    >
+      <div class="interview-candidate__summary-content">
+        <div class="interview-candidate__summary-icon">
+          <i class="pi pi-clock"></i>
+        </div>
+        <div class="interview-candidate__summary-info">
+          <span class="interview-candidate__summary-label"
+            >Today's Interviews</span
+          >
+          <span class="interview-candidate__summary-value">{{
+            todayCount
+          }}</span>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card
+      class="interview-candidate__summary-card interview-candidate__summary-card--upcoming"
+    >
+      <div class="interview-candidate__summary-content">
+        <div class="interview-candidate__summary-icon">
+          <i class="pi pi-calendar-plus"></i>
+        </div>
+        <div class="interview-candidate__summary-info">
+          <span class="interview-candidate__summary-label">Upcoming</span>
+          <span class="interview-candidate__summary-value">{{
+            upcomingCount
+          }}</span>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card
+      class="interview-candidate__summary-card interview-candidate__summary-card--previous"
+    >
+      <div class="interview-candidate__summary-content">
+        <div class="interview-candidate__summary-icon">
+          <i class="pi pi-history"></i>
+        </div>
+        <div class="interview-candidate__summary-info">
+          <span class="interview-candidate__summary-label">Previous</span>
+          <span class="interview-candidate__summary-value">{{
+            previousCount
+          }}</span>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card
+      class="interview-candidate__summary-card interview-candidate__summary-card--total"
+    >
+      <div class="interview-candidate__summary-content">
+        <div class="interview-candidate__summary-icon">
+          <i class="pi pi-list"></i>
+        </div>
+        <div class="interview-candidate__summary-info">
+          <span class="interview-candidate__summary-label"
+            >Total Interviews</span
+          >
+          <span class="interview-candidate__summary-value">{{
+            totalCount
+          }}</span>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <!-- Tabs Section -->
+  <div class="interview-candidate__tabs-section">
+    <p-tabs value="0" class="interview-candidate__tabs">
+      <p-tablist class="interview-candidate__tablist">
+        <p-tab value="0" class="interview-candidate__tab">
+          <div class="interview-candidate__tab-content">
+            <i class="pi pi-clock interview-candidate__tab-icon"></i>
+            <span>Today's Interviews</span>
+            @if (todayCount > 0) {
+              <p-badge
+                [value]="todayCount"
+                severity="info"
+                class="interview-candidate__tab-badge"
+              ></p-badge>
+            }
+          </div>
+        </p-tab>
+        <p-tab value="1" class="interview-candidate__tab">
+          <div class="interview-candidate__tab-content">
+            <i class="pi pi-calendar-plus interview-candidate__tab-icon"></i>
+            <span>Upcoming Interviews</span>
+            @if (upcomingCount > 0) {
+              <p-badge
+                [value]="upcomingCount"
+                severity="success"
+                class="interview-candidate__tab-badge"
+              ></p-badge>
+            }
+          </div>
+        </p-tab>
+        <p-tab value="2" class="interview-candidate__tab">
+          <div class="interview-candidate__tab-content">
+            <i class="pi pi-history interview-candidate__tab-icon"></i>
+            <span>Previous Interviews</span>
+            @if (previousCount > 0) {
+              <p-badge
+                [value]="previousCount"
+                severity="secondary"
+                class="interview-candidate__tab-badge"
+              ></p-badge>
+            }
+          </div>
+        </p-tab>
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="0" class="interview-candidate__tabpanel">
+          <app-table
+            [tableData]="todayTableData"
+            [parentLoader]="isLoading"
+            [columnsData]="columns"
+            [hasSearch]="true"
+            (btnClick)="onStartInterview($event)"
+            (buttonClick)="onButtonClick($event)"
+            (pageChangeAndSort)="onTablePayloadChange($event)"
+          ></app-table>
+        </p-tabpanel>
+        <p-tabpanel value="1" class="interview-candidate__tabpanel">
+          <app-table
+            [tableData]="upComingTableData"
+            [parentLoader]="isLoading"
+            [columnsData]="columns"
+            [hasSearch]="true"
+            (btnClick)="onStartInterview($event)"
+            (buttonClick)="onButtonClick($event)"
+            (pageChangeAndSort)="onTablePayloadChange($event)"
+          ></app-table>
+        </p-tabpanel>
+        <p-tabpanel value="2" class="interview-candidate__tabpanel">
+          <app-table
+            [tableData]="PreviousTableData"
+            [parentLoader]="isLoading"
+            [columnsData]="columns"
+            [hasSearch]="true"
+            (btnClick)="onStartInterview($event)"
+            (buttonClick)="onButtonClick($event)"
+            (pageChangeAndSort)="onTablePayloadChange($event)"
+          ></app-table>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
 </div>
