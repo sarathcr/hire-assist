@@ -303,7 +303,21 @@
         </p-accordion>
       </div>
     </div>
-  } @else {
+  }
+  
+  <!-- Complete Step Button - Always Visible -->
+  <div class="QuestionSet__complete-section">
+    <app-button
+      class="QuestionSet__complete-button"
+      [buttonLabel]="'Complete Question Set Step'"
+      [icon]="'pi pi-check-circle'"
+      [buttonSize]="'large'"
+      (btnClick)="onCompleteQuestionSetStep()"
+      [disabled]="isLoading || !hasSubmittedQuestionSets()"
+    ></app-button>
+  </div>
+
+  @if (questionSets.length === 0) {
     <div class="QuestionSet__empty">
       <div class="QuestionSet__empty-icon">
         <i class="pi pi-inbox"></i>

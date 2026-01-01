@@ -973,6 +973,96 @@
   }
 
   // ============================================
+  // Complete Step Section
+  // ============================================
+  &__complete-section {
+    margin-top: var(--spacing-40);
+    margin-bottom: var(--spacing-30);
+    padding: var(--spacing-35);
+    background: linear-gradient(
+      135deg,
+      rgba(22, 163, 74, 0.08) 0%,
+      rgba(34, 197, 94, 0.05) 100%
+    );
+    border-radius: 20px;
+    border: 2px solid rgba(22, 163, 74, 0.2);
+    box-shadow:
+      0 8px 32px rgba(22, 163, 74, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-out;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(
+        90deg,
+        var(--color-success),
+        #43a047
+      );
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(
+        circle,
+        rgba(22, 163, 74, 0.1) 0%,
+        transparent 70%
+      );
+      border-radius: 50%;
+    }
+  }
+
+  &__complete-button {
+    position: relative;
+    z-index: 1;
+    ::ng-deep .p-button:not(.p-button-outlined):not(.p-button-text) {
+      font-size: var(--font-size-18);
+      padding: var(--spacing-18) var(--spacing-50);
+      font-weight: 700;
+      border-radius: 12px;
+      min-width: 280px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: linear-gradient(135deg, var(--color-success) 0%, #43a047 100%);
+      border: none;
+      box-shadow:
+        0 6px 20px rgba(22, 163, 74, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+      &:hover:not(:disabled) {
+        background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);
+        transform: translateY(-2px) scale(1.02);
+        box-shadow:
+          0 8px 28px rgba(22, 163, 74, 0.4),
+          inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0) scale(0.98);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+    }
+  }
+
+  // ============================================
   // Empty State
   // ============================================
   &__empty {
@@ -1389,6 +1479,21 @@
       }
     }
 
+    &__complete-section {
+      margin-top: 30px;
+      margin-bottom: 25px;
+      padding: 25px 20px;
+      border-radius: 16px;
+    }
+
+    &__complete-button {
+      ::ng-deep .p-button {
+        min-width: 240px;
+        padding: 14px 35px;
+        font-size: var(--font-size-16);
+      }
+    }
+
     &__empty {
       padding: 50px 30px;
     }
@@ -1696,6 +1801,23 @@
       }
     }
 
+    &__complete-section {
+      margin-top: 20px;
+      margin-bottom: 15px;
+      padding: 20px 15px;
+      border-radius: 12px;
+    }
+
+    &__complete-button {
+      width: 100%;
+      ::ng-deep .p-button {
+        width: 100%;
+        min-width: 100%;
+        padding: 12px 20px;
+        font-size: var(--font-size-15);
+      }
+    }
+
     &__empty {
       padding: 30px 15px;
       border-radius: 12px;
@@ -1911,6 +2033,23 @@
       ::ng-deep .p-button {
         padding: 8px 12px;
         font-size: var(--font-size-13);
+      }
+    }
+
+    &__complete-section {
+      margin-top: 15px;
+      margin-bottom: 12px;
+      padding: 15px 12px;
+      border-radius: 12px;
+    }
+
+    &__complete-button {
+      width: 100%;
+      ::ng-deep .p-button {
+        width: 100%;
+        min-width: 100%;
+        padding: 10px 15px;
+        font-size: var(--font-size-14);
       }
     }
 

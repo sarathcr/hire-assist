@@ -353,6 +353,9 @@ export class AssessmentRoundComponent
               }`,
             });
             this.isLoading = false;
+            setTimeout(() => {
+              this.reinitSortable();
+            }, 500);
           },
         });
       }

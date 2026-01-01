@@ -287,8 +287,7 @@ export class SelectQuesionsetStepComponent
       });
       accordionData.isUpdate = true;
       this.loadQuestionsForAccordion(questionSetId);
-      // Call step status API and move to next step
-      this.checkStepStatusAndMoveNext();
+      // Only save, don't move to next step
     };
 
     const error = () => {
@@ -747,19 +746,42 @@ export class SelectQuesionsetStepComponent
     }
   }
 
-  private checkStepStatusAndMoveNext(): void {
+  public onCompleteQuestionSetStep(): void {
     const assessmentId = Number(this.assessmentId());
     if (assessmentId) {
+      this.isLoading = true;
       this.stepsStatusService.getAssessmentStepsStatus(assessmentId).subscribe({
         next: () => {
+          this.isLoading = false;
           // Notify parent to move to next step
           this.stepsStatusService.notifyStepCompleted(assessmentId);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Question Set step completed successfully',
+          });
         },
         error: () => {
+          this.isLoading = false;
           // Even if step status API fails, try to move to next step
           this.stepsStatusService.notifyStepCompleted(assessmentId);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Question Set step completed successfully',
+          });
         },
       });
     }
+  }
+
+  public hasSubmittedQuestionSets(): boolean {
+    // Check if at least one question set has been submitted
+    for (const accordionData of this.questionSetAccordionData.values()) {
+      if (accordionData.isUpdate) {
+        return true;
+      }
+    }
+    return false;
   }
 }

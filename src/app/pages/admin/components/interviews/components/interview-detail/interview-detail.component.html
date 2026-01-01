@@ -376,43 +376,94 @@
                     <p-toast></p-toast>
                     <div class="interview-detail__file-upload-section">
                       <p-fileupload
+                        #fileUpload
                         name="feedbackFiles[]"
                         [multiple]="true"
                         accept="image/*"
                         maxFileSize="1000000"
+                        [auto]="false"
+                        [showUploadButton]="false"
+                        [showCancelButton]="false"
                         (onSelect)="onFileChange($event)"
+                        chooseLabel="Choose Images"
+                        chooseIcon="pi pi-images"
+                        mode="advanced"
                       >
-                        <ng-template #content let-files>
-                          @if (previewImageUrls.length) {
-                            <div class="interview-detail__image-preview-grid">
-                              @if (isImageLoading) {
-                                <app-image-skeleton></app-image-skeleton>
-                              } @else {
-                                @for (
-                                  imgUrl of previewImageUrls;
-                                  track i;
-                                  let i = $index
-                                ) {
-                                  <div
-                                    class="interview-detail__image-preview-item"
-                                  >
-                                    <app-image
-                                      width="100"
-                                      height="70"
-                                      [imageUrl]="imgUrl"
-                                      [paddingTop]="'0'"
-                                      [forceCancelRequest]="[]"
-                                      [isZoomable]="true"
-                                      (closeImage)="removeImage(i)"
-                                    >
-                                    </app-image>
-                                  </div>
-                                }
-                              }
-                            </div>
-                          }
-                        </ng-template>
                       </p-fileupload>
+
+                      @if (pendingFilePreviews.length > 0) {
+                        <div class="interview-detail__pending-files-section">
+                          <h4 class="interview-detail__pending-files-title">
+                            Pending Uploads ({{ pendingFilePreviews.length }})
+                          </h4>
+                          <div class="interview-detail__image-preview-grid">
+                            @for (
+                              preview of pendingFilePreviews;
+                              track i;
+                              let i = $index
+                            ) {
+                              <div
+                                class="interview-detail__image-preview-item interview-detail__image-preview-item--pending"
+                              >
+                                <div
+                                  class="interview-detail__image-preview-overlay"
+                                >
+                                  <button
+                                    type="button"
+                                    class="interview-detail__remove-pending-btn"
+                                    (click)="removePendingFile(i)"
+                                    [attr.aria-label]="'Remove file ' + (i + 1)"
+                                  >
+                                    <i class="pi pi-times"></i>
+                                  </button>
+                                  <span class="interview-detail__pending-badge"
+                                    >Pending</span
+                                  >
+                                </div>
+                                <img
+                                  [src]="preview"
+                                  [alt]="'Pending file ' + (i + 1)"
+                                  class="interview-detail__pending-preview-img"
+                                />
+                              </div>
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      @if (previewImageUrls.length > 0) {
+                        <div class="interview-detail__uploaded-files-section">
+                          <h4 class="interview-detail__uploaded-files-title">
+                            Uploaded Images ({{ previewImageUrls.length }})
+                          </h4>
+                          <div class="interview-detail__image-preview-grid">
+                            @if (isImageLoading) {
+                              <app-image-skeleton></app-image-skeleton>
+                            } @else {
+                              @for (
+                                imgUrl of previewImageUrls;
+                                track i;
+                                let i = $index
+                              ) {
+                                <div
+                                  class="interview-detail__image-preview-item"
+                                >
+                                  <app-image
+                                    width="100"
+                                    height="70"
+                                    [imageUrl]="imgUrl"
+                                    [paddingTop]="'0'"
+                                    [forceCancelRequest]="[]"
+                                    [isZoomable]="true"
+                                    (closeImage)="removeImage(i)"
+                                  >
+                                  </app-image>
+                                </div>
+                              }
+                            }
+                          </div>
+                        </div>
+                      }
                     </div>
                   }
 
@@ -425,9 +476,11 @@
                         />
                       </div>
                       <div class="interview-detail__score-input-wrapper">
-                        <p-floatLabel>
+                        <p-floatlabel variant="over">
                           <input
+                            id="score-input-{{ feedback.value }}"
                             type="number"
+                            pInputText
                             [(ngModel)]="feedback.score"
                             class="interview-detail__score-input"
                             (ngModelChange)="validateScore(feedback)"
@@ -436,10 +489,10 @@
                             [max]="feedback.maxScore"
                             [min]="0"
                           />
-                          <label for="score"
+                          <label for="score-input-{{ feedback.value }}"
                             >Score (Max: {{ feedback.maxScore }})</label
                           >
-                        </p-floatLabel>
+                        </p-floatlabel>
                         @if (feedback.isScoreInValid) {
                           <p-message
                             severity="error"

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { AccordionModule } from 'primeng/accordion';
@@ -12,7 +12,8 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { DividerModule } from 'primeng/divider';
 import { EditorModule } from 'primeng/editor';
 import { FileSelectEvent, FileUpload } from 'primeng/fileupload';
-import { FloatLabel } from 'primeng/floatlabel';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { InputText } from 'primeng/inputtext';
 import { Knob } from 'primeng/knob';
 import { Message } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
@@ -58,7 +59,8 @@ import { ImageSkeletonComponent } from '../../../../../../shared/components/imag
     ButtonModule,
     Knob,
     InterviewDetailSkeletonComponent,
-    FloatLabel,
+    FloatLabelModule,
+    InputText,
     Tooltip,
     Message,
     ImageComponent,
@@ -100,6 +102,9 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
   public feedbackdetails!: Feedbackcriteria[];
   public feedbackcriteria: AccordionData[] = [];
   public uploadedFile: FileDto[] = [];
+  public pendingFiles: File[] = [];
+  public pendingFilePreviews: string[] = [];
+  @ViewChild('fileUpload') fileUpload: any;
   private ref: DynamicDialogRef | undefined;
   public previewImageUrls: string[] = [];
   public isImageLoading = false;
@@ -148,6 +153,8 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
       this.calculateTotalFeedbackScore();
       this.uploadedFile = [];
       this.previewImageUrls = [];
+      this.pendingFiles = [];
+      this.pendingFilePreviews = [];
 
       this.feedbackcriteria.forEach((feedback) => {
         if (feedback.fileDto && feedback.fileDto.length > 0) {
@@ -176,7 +183,24 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
       .subscribe({ next, error });
   }
 
-  public onsave(feedback: AccordionData): void {
+  public async onsave(feedback: AccordionData): Promise<void> {
+    this.isLoading = true;
+
+    if (feedback.title === 'Attachments' && this.pendingFiles.length > 0) {
+      try {
+        const uploadedFiles = await this.uploadPendingFiles();
+        this.uploadedFile = [...this.uploadedFile, ...uploadedFiles];
+      } catch (error) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to upload some files',
+        });
+        this.isLoading = false;
+        return;
+      }
+    }
+
     this.feedbackRequest = {
       assessmentId: Number(this.assessmentId),
       candidateId: this.candidateid ?? '',
@@ -192,9 +216,10 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
           : [],
     };
     this.calculateTotalFeedbackScore();
-    if (this.feedbackRequest.fileDto != null) {
+    if (this.feedbackRequest.fileDto != null && this.feedbackRequest.fileDto.length > 0) {
+      this.isImageLoading = true;
+      this.previewImageUrls = [];
       this.feedbackRequest.fileDto.forEach((file) => {
-        this.isImageLoading = true;
         this.previewImage(file);
       });
     }
@@ -207,6 +232,9 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
       this.isLoading = false;
       feedback.isSaved = true;
       feedback.id = res.id ? res.id : 0;
+      if (feedback.fileDto) {
+        feedback.fileDto = [...this.uploadedFile];
+      }
     };
     const error = (error: CustomErrorResponse) => {
       const businerssErrorCode = error.error.businessError;
@@ -310,22 +338,57 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
 
   public onFileChange(event: FileSelectEvent): void {
     const files = event.currentFiles;
-    if (files.length) {
-      if (!this.feedbackRequest) {
-        this.feedbackRequest = {
-          assessmentId: Number(this.assessmentId),
-          candidateId: this.candidateid ?? '',
-          feedbackCriteriaId: 6, // Attachments
-          interviewerId: this.interviewerId ?? '',
-          feedbackDetails: '',
-          feedbackScore: 0,
-          assessmentRoundId: Number(this.assessmentRoundId),
-          interviewId: Number(this.interviewId),
-          fileDto: [],
-        };
+    if (files && files.length > 0) {
+      const newFiles: File[] = [];
+      
+      files.forEach((file) => {
+        if (file && file instanceof File) {
+          const isDuplicate = this.pendingFiles.some(
+            (pendingFile) =>
+              pendingFile.name === file.name &&
+              pendingFile.size === file.size &&
+              pendingFile.lastModified === file.lastModified
+          );
+          
+          if (!isDuplicate) {
+            newFiles.push(file);
+            this.pendingFiles.push(file);
+            const reader = new FileReader();
+            reader.onload = (e: any) => {
+              if (!this.pendingFilePreviews.includes(e.target.result)) {
+                this.pendingFilePreviews.push(e.target.result);
+              }
+            };
+            reader.readAsDataURL(file);
+          }
+        }
+      });
+
+      setTimeout(() => {
+        if (this.fileUpload && this.fileUpload.clear) {
+          this.fileUpload.clear();
+        }
+      }, 100);
+    }
+  }
+
+  public removePendingFile(index: number): void {
+    this.pendingFiles.splice(index, 1);
+    this.pendingFilePreviews.splice(index, 1);
+  }
+
+  private uploadPendingFiles(): Promise<FileDto[]> {
+    return new Promise((resolve, reject) => {
+      const uploadedFiles: FileDto[] = [];
+      let uploadCount = 0;
+      const totalFiles = this.pendingFiles.length;
+
+      if (totalFiles === 0) {
+        resolve(uploadedFiles);
+        return;
       }
 
-      files.forEach((file) => {
+      this.pendingFiles.forEach((file) => {
         const payload: FileRequest = {
           attachmentType: 9,
           file: file,
@@ -333,24 +396,20 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
 
         this.interviewService.uploadFiles(payload).subscribe({
           next: (uploadedFile: FileDto) => {
-            this.uploadedFile.push(uploadedFile);
-            this.feedbackRequest.fileDto?.push(uploadedFile);
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'Sucessfully uploaded the file',
-            });
+            uploadedFiles.push(uploadedFile);
+            uploadCount++;
+            if (uploadCount === totalFiles) {
+              this.pendingFiles = [];
+              this.pendingFilePreviews = [];
+              resolve(uploadedFiles);
+            }
           },
-          error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to load the file',
-            });
+          error: (error) => {
+            reject(error);
           },
         });
       });
-    }
+    });
   }
 
   public removeImage(index: number) {
