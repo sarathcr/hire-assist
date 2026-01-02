@@ -1,70 +1,106 @@
 <div class="schedule-interview">
-  <form [formGroup]="fGroup" class="schedule-interview__form">
-    <!-- Header Section -->
-    <div class="schedule-interview__header">
-      <div class="schedule-interview__header-icon">
-        <i class="pi pi-calendar-plus"></i>
-      </div>
-      <div class="schedule-interview__header-content">
-        <h3 class="schedule-interview__title">Schedule Interview</h3>
-        <p class="schedule-interview__subtitle">
-          Select a date and time for the interview
-        </p>
-      </div>
-    </div>
-
-    <!-- Candidates Section -->
-    <div class="schedule-interview__candidates-section">
-      <div class="schedule-interview__candidates-header">
-        <div class="schedule-interview__candidates-info">
-          <i class="pi pi-users"></i>
-          <span class="schedule-interview__candidates-label"
-            >Selected Candidates</span
-          >
-          <span class="schedule-interview__candidates-count"
-            >({{ selectedCandidateIds.length }})</span
-          >
+  @if (isLoadingPanelData) {
+    <!-- Skeleton Loader -->
+    <div class="schedule-interview__skeleton">
+      <div class="schedule-interview__header">
+        <div class="schedule-interview__header-icon">
+          <i class="pi pi-calendar-plus"></i>
+        </div>
+        <div class="schedule-interview__header-content">
+          <p-skeleton width="12rem" height="1.5rem" [style]="{ 'margin-bottom': '0.5rem' }" />
+          <p-skeleton width="20rem" height="1rem" />
         </div>
       </div>
-      <div class="schedule-interview__candidates-list">
-        @if (selectedCandidateIds.length > 0) {
-          <div class="schedule-interview__chips-container">
-            @for (id of selectedCandidateIds; track id; let i = $index) {
-              <div class="schedule-interview__chip-wrapper">
-                <p-chip
-                  [label]="id"
-                  [removable]="true"
-                  (onRemove)="removeCandidate(i)"
-                  styleClass="schedule-interview__chip"
-                  icon="pi pi-user"
-                ></p-chip>
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="schedule-interview__empty-state">
-            <i class="pi pi-info-circle"></i>
-            <span>No candidates selected</span>
-          </div>
-        }
+      <div class="schedule-interview__candidates-section">
+        <p-skeleton width="10rem" height="1.2rem" [style]="{ 'margin-bottom': '1rem' }" />
+        <div class="schedule-interview__skeleton-chips">
+          <p-skeleton width="8rem" height="2rem" [style]="{ 'margin-right': '0.5rem', 'margin-bottom': '0.5rem' }" />
+          <p-skeleton width="8rem" height="2rem" [style]="{ 'margin-right': '0.5rem', 'margin-bottom': '0.5rem' }" />
+          <p-skeleton width="8rem" height="2rem" />
+        </div>
+      </div>
+      <div class="schedule-interview__date-section">
+        <p-skeleton width="10rem" height="1.2rem" [style]="{ 'margin-bottom': '1rem' }" />
+        <p-skeleton width="100%" height="3rem" />
       </div>
     </div>
+  } @else {
+    <!-- Form Content -->
+    <form [formGroup]="fGroup" class="schedule-interview__form">
+      <!-- Header Section -->
+      <div class="schedule-interview__header">
+        <div class="schedule-interview__header-icon">
+          <i class="pi pi-calendar-plus"></i>
+        </div>
+        <div class="schedule-interview__header-content">
+          <h3 class="schedule-interview__title">Schedule Interview</h3>
+          <p class="schedule-interview__subtitle">
+            Select a date and time for the interview
+          </p>
+        </div>
+      </div>
 
-    <!-- Date Picker Section -->
-    <div class="schedule-interview__date-section">
-      <div class="schedule-interview__date-header">
-        <i class="pi pi-clock"></i>
-        <span class="schedule-interview__date-label">Interview Date & Time</span>
+      <!-- Panel Validation Error -->
+      @if (isPanelValidationError) {
+        <div class="schedule-interview__error">
+          <i class="pi pi-exclamation-triangle"></i>
+          <span>All selected candidates must be assigned to a panel before scheduling.</span>
+        </div>
+      }
+
+      <!-- Candidates Section -->
+      <div class="schedule-interview__candidates-section">
+        <div class="schedule-interview__candidates-header">
+          <div class="schedule-interview__candidates-info">
+            <i class="pi pi-users"></i>
+            <span class="schedule-interview__candidates-label"
+              >Selected Candidates</span
+            >
+            <span class="schedule-interview__candidates-count"
+              >({{ selectedCandidateIds.length }})</span
+            >
+          </div>
+        </div>
+        <div class="schedule-interview__candidates-list">
+          @if (selectedCandidateIds.length > 0) {
+            <div class="schedule-interview__chips-container">
+              @for (id of selectedCandidateIds; track id; let i = $index) {
+                <div class="schedule-interview__chip-wrapper">
+                  <p-chip
+                    [label]="id"
+                    [removable]="true"
+                    (onRemove)="removeCandidate(i)"
+                    styleClass="schedule-interview__chip"
+                    icon="pi pi-user"
+                  ></p-chip>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="schedule-interview__empty-state">
+              <i class="pi pi-info-circle"></i>
+              <span>No candidates selected</span>
+            </div>
+          }
+        </div>
       </div>
-      <div class="schedule-interview__date-picker">
-        <app-input-text-calender
-          [formGroup]="fGroup"
-          [config]="configMap['scheduleDate']"
-          [showTime]="true"
-        ></app-input-text-calender>
+
+      <!-- Date Picker Section -->
+      <div class="schedule-interview__date-section">
+        <div class="schedule-interview__date-header">
+          <i class="pi pi-clock"></i>
+          <span class="schedule-interview__date-label">Interview Date & Time</span>
+        </div>
+        <div class="schedule-interview__date-picker">
+          <app-input-text-calender
+            [formGroup]="fGroup"
+            [config]="configMap['scheduleDate']"
+            [showTime]="true"
+          ></app-input-text-calender>
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+  }
 
   <!-- Footer Section -->
   <footer class="schedule-interview__footer">
@@ -72,12 +108,15 @@
       buttonLabel="Cancel"
       [buttonVariant]="'outlined'"
       [buttonSize]="'medium'"
+      [disabled]="isLoading || isLoadingPanelData"
       (btnClick)="onClose()"
     ></app-button>
     <app-button
       buttonLabel="Schedule Interview"
       [buttonSize]="'medium'"
       [icon]="'pi pi-calendar-times'"
+      [isLoading]="isLoading"
+      [disabled]="isLoading || isLoadingPanelData || isPanelValidationError"
       (btnClick)="onSchedule()"
     ></app-button>
   </footer>

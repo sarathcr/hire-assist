@@ -186,19 +186,22 @@
           tooltipPosition="bottom"
           [outlined]="true"
           severity="info"
-          [disabled]="!isScheduleEnabled()"
+          [disabled]="!isScheduleEnabled() || isLoading"
+          [loading]="isLoading"
           (onClick)="schedule()"
         />
-        <p-button
-          icon="pi pi-user-plus"
-          label="Assign Panel"
-          pTooltip="Assign Candidate to Panel"
-          tooltipPosition="bottom"
-          severity="warn"
-          [outlined]="true"
-          [disabled]="!isAssignPanelEnabled()"
-          (onClick)="OnPanelClick()"
-        />
+        @if (!isAptitudeRound()) {
+          <p-button
+            icon="pi pi-user-plus"
+            label="Assign Panel"
+            pTooltip="Assign Candidate to Panel"
+            tooltipPosition="bottom"
+            severity="warn"
+            [outlined]="true"
+            [disabled]="!isAssignPanelEnabled()"
+            (onClick)="OnPanelClick()"
+          />
+        }
         <p-button
           icon="pi pi-check-square"
           label="Select"

@@ -48,7 +48,8 @@ import {
 } from '../../../../models/stepper.model';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { InterviewService } from '../../services/interview.service';
-import { finalize } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 import { PaginatedData } from './../../../../../../shared/models/pagination.models';
 import { ScheduleInterviewComponent } from './components/schedule-interview/schedule-interview.component';
 import { SelectPanelDailogComponent } from './components/select-panel-dailog/select-panel-dailog.component';
@@ -395,13 +396,29 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Checks if the current round is an aptitude round
+   * Returns true if the current round's name contains "aptitude" (case-insensitive)
+   */
+  public isAptitudeRound(): boolean {
+    if (!this.assessmentRoundList || !this.currentStep) {
+      return false;
+    }
+    const currentRound = this.assessmentRoundList.find(
+      (round) => round.id === this.currentStep,
+    );
+    if (!currentRound || !currentRound.round) {
+      return false;
+    }
+    return currentRound.round.toLowerCase().includes('aptitude');
+  }
+
+  /**
    * Checks if a candidate is assigned to a panel
    * Uses cached information if available, otherwise returns false
    */
   private isCandidateAssignedToPanel(candidateId: string): boolean {
     return this.candidatePanelAssignments.get(candidateId) ?? false;
   }
-
 
   public schedule(): void {
     const selected = this.selectedCandidates || [];
@@ -428,25 +445,80 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Check if all selected candidates are assigned to panels
-    const allHavePanels = selected.every((c: InterviewSummary) =>
-      this.isCandidateAssignedToPanel(c.id),
+    // STEP 1: Calculate minimal data (these are instant operations - no API calls)
+    const emails = selected.map((c: InterviewSummary) => c.email);
+    const candidateIds = selected.map((c: InterviewSummary) => c.id);
+    const needsPanelValidation = !this.isAptitudeRound();
+
+    // Store reference for later
+    let componentInstanceRef: ScheduleInterviewComponent | null = null;
+    const updateComponentInstance = (instance: ScheduleInterviewComponent) => {
+      componentInstanceRef = instance;
+    };
+
+    // STEP 2: OPEN MODAL IMMEDIATELY - this is synchronous, no API calls here!
+    // Show loader if panel validation is needed (we'll check cache after modal opens)
+    const modalRef = this.openScheduleCandidateModal(
+      emails,
+      candidateIds,
+      selected,
+      updateComponentInstance,
+      needsPanelValidation, // Show loader - we'll hide it if all data is cached
     );
 
-    if (!allHavePanels) {
+    // STEP 3: After modal is rendered, check cache and load data (non-blocking)
+    // Use setTimeout to ensure modal DOM is rendered first
+    setTimeout(() => {
+      if (needsPanelValidation) {
+        // Check cache (this is instant - just a Map lookup)
+        const uncachedIds = candidateIds.filter(
+          (id) => !this.candidatePanelAssignments.has(id),
+        );
+
+        const getInstance = () => {
+          return (
+            componentInstanceRef ||
+            ((modalRef as any).componentRef
+              ?.instance as ScheduleInterviewComponent)
+          );
+        };
+
+        // Process after component is ready
+        const processAfterReady = () => {
+          const instance = getInstance();
+          if (instance) {
+            if (uncachedIds.length > 0) {
+              // Need to fetch panel data - loader should already be showing
+              this.loadPanelAssignmentsInBackground(
+                uncachedIds,
+                selected,
+                getInstance,
+              );
+            } else {
+              // All data is cached - hide loader and enable form immediately
+              instance.handlePanelValidationSuccess();
+            }
+          } else {
+            // Component not ready yet, retry quickly
+            setTimeout(processAfterReady, 10);
+          }
+        };
+
+        processAfterReady();
+      }
+    }, 0);
+  }
+  public OnPanelClick(): void {
+    // Don't allow panel assignment for aptitude rounds
+    if (this.isAptitudeRound()) {
       this.messagesService.add({
         severity: 'warn',
-        summary: 'Invalid Selection',
-        detail:
-          'All selected candidates must be assigned to a panel before scheduling.',
+        summary: 'Warning',
+        detail: 'Panel assignment is not available for aptitude rounds.',
       });
       return;
     }
 
-    const emails = selected.map((c: InterviewSummary) => c.email);
-    this.openScheduleCandidateModal(emails);
-  }
-  public OnPanelClick(): void {
     if (this.selectedCandidates.length !== 1) {
       this.messagesService.add({
         severity: 'warn',
@@ -856,8 +928,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                 candidate.isScheduled === 'Not Scheduled',
             );
 
-          // Load panel assignments for all candidates in the current page
-          this.loadPanelAssignmentsForCandidates(resData);
+          // Note: Panel assignments are now loaded lazily only when needed
+          // (e.g., when checking if candidates can be scheduled)
+          // This avoids making unnecessary API calls for each candidate on page load
         },
         error: () => {
           this.isLoading = false;
@@ -871,14 +944,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Loads panel assignment status for all candidates in the current page
+   * Loads panel assignment status for specific candidates on-demand
    * Updates the cache asynchronously
+   * This is called only when needed (e.g., when checking if candidates can be scheduled)
    */
-  private loadPanelAssignmentsForCandidates(
-    candidates: CandidateData[],
-  ): void {
-    candidates.forEach((candidate: CandidateData) => {
-      const candidateId = String(candidate.id);
+  private loadPanelAssignmentsForCandidates(candidateIds: string[]): void {
+    candidateIds.forEach((candidateId: string) => {
       // Only check if not already in cache
       if (!this.candidatePanelAssignments.has(candidateId)) {
         this.coordinatorPanelBridgeService
@@ -900,13 +971,194 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  private openScheduleCandidateModal(selectedCandidateIds: string[]) {
+  /**
+   * Loads panel assignments in background and validates
+   */
+  private loadPanelAssignmentsInBackground(
+    candidateIds: string[],
+    selected: InterviewSummary[],
+    getComponentInstance: () => ScheduleInterviewComponent | null,
+  ): void {
+    const requests = candidateIds.map((candidateId: string) =>
+      this.coordinatorPanelBridgeService.getinterviewPanles(candidateId).pipe(
+        // Handle both success and error cases
+        catchError(() => {
+          // If API call fails (e.g., 404), candidate doesn't have a panel
+          this.candidatePanelAssignments.set(candidateId, false);
+          // Return a default response indicating no panel assigned
+          return of({
+            panel: '',
+            assessmentId: 0,
+            interviewId: 0,
+            panelId: 0,
+            interviewer: [],
+          } as GetInterviewPanelsResponse);
+        }),
+      ),
+    );
+
+    // Wait for all requests to complete
+    forkJoin(requests).subscribe({
+      next: (responses: GetInterviewPanelsResponse[]) => {
+        // Update cache for all responses
+        responses.forEach((response, index) => {
+          const candidateId = candidateIds[index];
+          this.candidatePanelAssignments.set(candidateId, !!response?.panelId);
+        });
+        // Validate and update modal
+        const componentInstance = getComponentInstance();
+        if (componentInstance) {
+          this.validatePanelAssignmentsAndUpdateModal(
+            selected,
+            componentInstance,
+          );
+        }
+      },
+      error: () => {
+        // Even if some requests fail, still validate with what we have
+        const componentInstance = getComponentInstance();
+        if (componentInstance) {
+          this.validatePanelAssignmentsAndUpdateModal(
+            selected,
+            componentInstance,
+          );
+        }
+      },
+    });
+  }
+
+  /**
+   * Validates panel assignments and updates modal state
+   */
+  private validatePanelAssignmentsAndUpdateModal(
+    selected: InterviewSummary[],
+    componentInstance: ScheduleInterviewComponent,
+  ): void {
+    // Check if all candidates have panels assigned
+    const allHavePanels = selected.every((c: InterviewSummary) =>
+      this.isCandidateAssignedToPanel(c.id),
+    );
+
+    if (!allHavePanels) {
+      // Stop loading and show error
+      componentInstance.handlePanelValidationError();
+      this.messagesService.add({
+        severity: 'warn',
+        summary: 'Invalid Selection',
+        detail:
+          'All selected candidates must be assigned to a panel before scheduling.',
+      });
+    } else {
+      // Stop loading and enable form
+      componentInstance.handlePanelValidationSuccess();
+    }
+  }
+
+  private openScheduleCandidateModal(
+    selectedCandidateIds: string[],
+    candidateIds?: string[],
+    selected?: InterviewSummary[],
+    updateComponentInstance?: (instance: ScheduleInterviewComponent) => void,
+    isLoadingPanelData: boolean = false,
+  ): DynamicDialogRef {
+    // Set filter map (lightweight operation)
     const filter: FilterMap = {
       AssessmentRoundId: this.currentStep,
     };
     this.filterMap = filter;
+
+    // Open modal IMMEDIATELY - no blocking operations before this
+
+    // Create callback functions to handle submit, success, and error
+    let componentInstance: ScheduleInterviewComponent | null = null;
+
+    const handleSubmit = (formValue: { scheduleDate: Date }) => {
+      if (selectedCandidateIds.length === 0 || !formValue.scheduleDate) {
+        if (componentInstance) {
+          componentInstance.handleError();
+        }
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Warning',
+          detail: 'No candidates selected',
+        });
+        return;
+      }
+
+      if (this.assessmentRoundList) {
+        const currentIndex = this.assessmentRoundList.findIndex(
+          (round) => round.id === this.currentStep,
+        );
+
+        if (
+          currentIndex !== -1 &&
+          currentIndex < this.assessmentRoundList.length - 1
+        ) {
+          this.nextRoundId = this.assessmentRoundList[currentIndex + 1].id;
+        }
+      }
+      const scheduleDate = new Date(formValue.scheduleDate).toISOString();
+      let payload = [];
+      payload = selectedCandidateIds.map((id: string) => {
+        const payloadData = {
+          candidateId: id,
+          assessmentRoundId: this.nextRoundId,
+          isActive: true,
+          statusId: 2,
+          assessmentId: this.assessmentId,
+          date: scheduleDate,
+        };
+
+        return payloadData;
+      });
+
+      const next = () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Interview Scheduled Successfully',
+        });
+        this.getPaginatedCandidateData(this.filterMap);
+        // Close modal only on success
+        if (componentInstance) {
+          componentInstance.closeOnSuccess();
+        }
+      };
+      const error = (error: CustomErrorResponse) => {
+        if (componentInstance) {
+          componentInstance.handleError();
+        }
+        const businerssErrorCode = error.error.businessError;
+        if (businerssErrorCode === 3109) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Interview Already Scheduled',
+          });
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to schedule interview. Please try again.',
+          });
+        }
+      };
+
+      this.interviewservice.createEntity(payload).subscribe({ next, error });
+    };
+
     this.ref = this.dialog.open(ScheduleInterviewComponent, {
-      data: selectedCandidateIds,
+      data: {
+        candidateIds: selectedCandidateIds,
+        onSubmit: handleSubmit,
+        isLoadingPanelData: isLoadingPanelData,
+        setComponentInstance: (instance: ScheduleInterviewComponent) => {
+          componentInstance = instance;
+          if (updateComponentInstance) {
+            updateComponentInstance(instance);
+          }
+        },
+      },
       header: '',
       width: '50vw',
       modal: true,
@@ -920,67 +1172,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       },
     });
 
+    // Handle modal close (when user clicks cancel or closes)
     this.ref.onClose.subscribe((result) => {
-      if (result) {
-        if (selectedCandidateIds.length === 0 || !result.scheduleDate) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Warning',
-            detail: 'No candidates selected',
-          });
-        } else {
-          if (this.assessmentRoundList) {
-            const currentIndex = this.assessmentRoundList.findIndex(
-              (round) => round.id === this.currentStep,
-            );
-
-            if (
-              currentIndex !== -1 &&
-              currentIndex < this.assessmentRoundList.length - 1
-            ) {
-              this.nextRoundId = this.assessmentRoundList[currentIndex + 1].id;
-            }
-          }
-          result.scheduleDate = new Date(result.scheduleDate).toISOString();
-          let payload = [];
-          payload = selectedCandidateIds.map((id: string) => {
-            const payloadData = {
-              candidateId: id,
-              assessmentRoundId: this.nextRoundId,
-              isActive: true,
-              statusId: 2,
-              assessmentId: this.assessmentId,
-              date: result.scheduleDate,
-            };
-
-            return payloadData;
-          });
-
-          const next = () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'Interview Scheduled Successfully',
-            });
-            this.getPaginatedCandidateData(this.filterMap);
-          };
-          const error = (error: CustomErrorResponse) => {
-            const businerssErrorCode = error.error.businessError;
-            if (businerssErrorCode === 3109) {
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Interview Already Scheduled',
-              });
-            }
-          };
-
-          this.interviewservice
-            .createEntity(payload)
-            .subscribe({ next, error });
-        }
-      }
+      // This will be called when modal is closed
+      // result will be undefined if closed via cancel, or formValue if closed via success
     });
+
+    return this.ref;
   }
 
   private loadData(payload: PaginatedPayload): void {
@@ -1003,8 +1201,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             candidate.isScheduled === 'Not Scheduled',
         );
 
-        // Load panel assignments for all candidates in the current page
-        this.loadPanelAssignmentsForCandidates(resData);
+        // Note: Panel assignments are now loaded lazily only when needed
+        // This avoids making unnecessary API calls for each candidate on page load
       });
   }
 

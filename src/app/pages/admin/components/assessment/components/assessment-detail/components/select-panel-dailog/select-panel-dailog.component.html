@@ -17,7 +17,8 @@
           @if (existingPanel.length > 0) {
             Select a panel to update the assignment for this candidate.
           } @else {
-            Choose an interview panel from the list below to assign the selected candidate.
+            Choose an interview panel from the list below to assign the selected
+            candidate.
           }
         </p>
       </div>
@@ -25,7 +26,7 @@
   </div>
 
   <!-- Selection Info Card -->
-  @if (selectedPanelIds.length > 0) {
+  <!-- @if (selectedPanelIds.length > 0) {
     <div class="select-panel-dialog__selection-info">
       <div class="select-panel-dialog__selection-icon">
         <i class="pi pi-check-circle"></i>
@@ -37,7 +38,7 @@
         </span>
       </div>
     </div>
-  }
+  } -->
 
   <!-- Panel Table Section -->
   <div class="select-panel-dialog__table-section">
@@ -70,7 +71,9 @@
           [buttonSize]="'medium'"
           [icon]="'pi pi-check'"
           (btnClick)="onSubmit()"
-          [disabled]="IsMultiplePanel || selectedPanelIds.length === 0 || isSubmitting"
+          [disabled]="
+            IsMultiplePanel || selectedPanelIds.length === 0 || isSubmitting
+          "
           class="select-panel-dialog__submit-btn"
         ></app-button>
       } @else {
@@ -79,7 +82,9 @@
           [buttonSize]="'medium'"
           [icon]="'pi pi-user-plus'"
           (btnClick)="onSubmit()"
-          [disabled]="IsMultiplePanel || selectedPanelIds.length === 0 || isSubmitting"
+          [disabled]="
+            IsMultiplePanel || selectedPanelIds.length === 0 || isSubmitting
+          "
           class="select-panel-dialog__submit-btn"
         ></app-button>
       }

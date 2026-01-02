@@ -1,4 +1,9 @@
-import { FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { Options } from '../../../shared/components/form/input-select/input-select.component';
 import { Option } from '../../../shared/models/option';
 import {
@@ -147,8 +152,14 @@ export class QuestionSetFormModal extends FormEntity {
 
   metadata: Metadata = {
     validatorsMap: {
-      title: [Validators.required],
-      description: [Validators.required],
+      title: [
+        Validators.required,
+        Validators.pattern('^[A-Za-z].*'),
+        Validators.minLength(3),
+        Validators.maxLength(25),
+        QuestionSetFormModal.noExtraSpacesValidator,
+      ],
+      description: [Validators.required, Validators.maxLength(150)],
     },
     configMap: {
       title: { id: 'title', labelKey: 'Title' },
@@ -156,6 +167,18 @@ export class QuestionSetFormModal extends FormEntity {
       questionSet: { id: 'questionSet', labelKey: 'Question Set' },
     },
   };
+
+  private static noExtraSpacesValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
+    const value = control.value?.trim();
+    if (!value) return null;
+
+    if (/\s{2,}/.test(value)) {
+      return { extraSpaces: true };
+    }
+    return null;
+  }
 }
 
 export interface BatchSummaryModel {

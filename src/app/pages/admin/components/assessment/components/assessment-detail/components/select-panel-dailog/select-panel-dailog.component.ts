@@ -84,7 +84,16 @@ const tableColumns: TableColumnsData = {
   providers: [TableDataSourceService],
 })
 export class SelectPanelDailogComponent implements OnInit {
-  public panelData!: PaginatedData<PanelSummary>;
+  public panelData: PaginatedData<PanelSummary> = {
+    pageNumber: 1,
+    pageSize: 5,
+    totalPages: 0,
+    totalRecords: 0,
+    data: [],
+    succeeded: true,
+    errors: [],
+    message: '',
+  };
   public panelColumn: TableColumnsData = tableColumns;
   public fGroup!: FormGroup;
   public configMap!: ConfigMap;
@@ -237,31 +246,31 @@ export class SelectPanelDailogComponent implements OnInit {
     });
   }
   public onPanelTablePayloadChange(payload: PaginatedPayload): void {
-    if (this.filterMap) {
-      this.filterMap = { AssessmentId: this.assessmentId };
-      payload.filterMap = {
-        ...this.filterMap,
-        ...payload.filterMap,
-      };
-    }
-    this.loadData(payload);
-  }
-  private loadData(payload: PaginatedPayload): void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.dataSourceService.getData(payload).subscribe((response: any) => {
-      const resData = response.data.map((item: InterviewSummary) => {
-        return {
-          ...item,
-          isScheduled: item.isScheduled ? 'Scheduled' : '',
-        };
+    this.isLoading = true;
+    this.coordinatorPanelBridgeService
+      .paginationEntity<PanelSummary>('panel/activePanelSummary', payload)
+      .subscribe({
+        next: (res: PaginatedData<PanelSummary>) => {
+          const resData = res.data.map((item: PanelSummary) => {
+            return {
+              ...item,
+              interviewerNames:
+                item.interviewers?.map((i) => i.name).join(', ') ?? '',
+              interviewers: item.interviewers ?? [],
+            };
+          });
+          this.panelData = { ...res, data: resData };
+          this.isLoading = false;
+        },
+        error: () => {
+          this.isLoading = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error in getting Panel Details.',
+          });
+        },
       });
-
-      this.data = { ...response, data: resData };
-      this.isCompleteDisabled = this.data.data.some(
-        (candidate: InterviewSummary) =>
-          candidate.status === 'Pending' || candidate.isScheduled === false,
-      );
-    });
   }
   public getSelectedPanelId(selectedIds: PanelSummary[]) {
     if (selectedIds.length > 1) {

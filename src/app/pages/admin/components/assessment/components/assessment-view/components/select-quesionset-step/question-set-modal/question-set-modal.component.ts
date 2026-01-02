@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -23,16 +24,15 @@ import {
 } from '../../../../../../../models/assessment-schedule.model';
 import { AssessmentService } from '../../../../../../../services/assessment.service';
 import { QuestionSetStateService } from '../../../../../services/question-set-state.service';
-import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-question-set-modal',
   imports: [
+    CommonModule,
     InputTextComponent,
     ButtonComponent,
     ReactiveFormsModule,
     InputTextareaComponent,
-    ToastModule,
   ],
   templateUrl: './question-set-modal.component.html',
   styleUrl: './question-set-modal.component.scss',

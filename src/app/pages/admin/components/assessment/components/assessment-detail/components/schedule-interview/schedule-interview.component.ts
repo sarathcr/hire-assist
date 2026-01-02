@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Chip } from 'primeng/chip';
+import { SkeletonModule } from 'primeng/skeleton';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
@@ -21,6 +22,7 @@ import { ScheduleInterview } from '../../../../../../models/schedule-interview.m
     ButtonComponent,
     CommonModule,
     Chip,
+    SkeletonModule,
   ],
   templateUrl: './schedule-interview.component.html',
   styleUrl: './schedule-interview.component.scss',
@@ -34,6 +36,11 @@ export class ScheduleInterviewComponent
   public configMap!: ConfigMap;
   public data!: string;
   public selectedCandidateIds: string[] = [];
+  public isLoading = false;
+  public isLoadingPanelData = false;
+  public isPanelValidationError = false;
+  public onSubmitCallback?: (formValue: { scheduleDate: Date }) => void;
+  public setComponentInstance?: (instance: ScheduleInterviewComponent) => void;
 
   constructor(
     private ref: DynamicDialogRef,
@@ -44,22 +51,63 @@ export class ScheduleInterviewComponent
   }
 
   ngOnInit(): void {
-    this.data = this.config.data;
+    this.data = this.config.data?.candidateIds || this.config.data;
     this.setConfigMap();
-    this.selectedCandidateIds = this.config.data || [];
+    this.selectedCandidateIds = this.config.data?.candidateIds || this.config.data || [];
+    this.onSubmitCallback = this.config.data?.onSubmit;
+    this.setComponentInstance = this.config.data?.setComponentInstance;
+    this.isLoadingPanelData = this.config.data?.isLoadingPanelData || false;
+    
+    // Register this component instance with parent
+    if (this.setComponentInstance) {
+      this.setComponentInstance(this);
+    }
+    
     this.setupDateValidation();
   }
 
   public onClose() {
-    this.ref.close();
+    if (!this.isLoading) {
+      this.ref.close();
+    }
   }
 
   public onSchedule() {
     this.fGroup.markAllAsTouched();
     const isFormValid = this.fGroup.valid;
 
-    if (isFormValid) {
-      this.ref.close(this.fGroup.value);
+    if (isFormValid && !this.isLoading && !this.isLoadingPanelData && !this.isPanelValidationError && this.onSubmitCallback) {
+      this.isLoading = true;
+      this.onSubmitCallback(this.fGroup.value);
+    }
+  }
+
+  public closeOnSuccess() {
+    this.isLoading = false;
+    this.ref.close(this.fGroup.value);
+  }
+
+  public handleError() {
+    this.isLoading = false;
+  }
+
+  public handlePanelValidationSuccess() {
+    this.isLoadingPanelData = false;
+    this.isPanelValidationError = false;
+    // Enable the form control
+    const scheduleDateControl = this.fGroup.get('scheduleDate');
+    if (scheduleDateControl) {
+      scheduleDateControl.enable();
+    }
+  }
+
+  public handlePanelValidationError() {
+    this.isLoadingPanelData = false;
+    this.isPanelValidationError = true;
+    // Disable the form control
+    const scheduleDateControl = this.fGroup.get('scheduleDate');
+    if (scheduleDateControl) {
+      scheduleDateControl.disable();
     }
   }
 

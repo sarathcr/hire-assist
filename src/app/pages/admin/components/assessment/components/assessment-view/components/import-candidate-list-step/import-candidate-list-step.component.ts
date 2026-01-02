@@ -256,6 +256,8 @@ export class ImportCandidateListStepComponent implements OnInit {
           } else {
             this.getAllCandidates(new PaginatedPayload(), true);
           }
+          // Refresh application questions after CSV import to get newly added columns
+          this.getAllCandidatesApplicationQuestions();
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -523,6 +525,8 @@ export class ImportCandidateListStepComponent implements OnInit {
     this.ref.onClose.subscribe((result) => {
       if (result?.refresh) {
         this.getAllCandidates(new PaginatedPayload(), true);
+        // Refresh application questions after resolving duplicates to get newly added columns
+        this.getAllCandidatesApplicationQuestions();
       } else {
         this.isLoading = false;
       }
