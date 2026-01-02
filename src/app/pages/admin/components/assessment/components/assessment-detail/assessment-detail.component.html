@@ -186,6 +186,7 @@
           tooltipPosition="bottom"
           [outlined]="true"
           severity="info"
+          [disabled]="!isScheduleEnabled()"
           (onClick)="schedule()"
         />
         <p-button
@@ -195,6 +196,7 @@
           tooltipPosition="bottom"
           severity="warn"
           [outlined]="true"
+          [disabled]="!isAssignPanelEnabled()"
           (onClick)="OnPanelClick()"
         />
         <p-button

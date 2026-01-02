@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { filter } from 'rxjs/operators';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { BaseComponent } from '../../shared/components/base/base.component';
 import { DialogFooterComponent } from '../../shared/components/dialog-footer/dialog-footer.component';
@@ -30,13 +31,51 @@ export class CandidateComponent extends BaseComponent implements OnInit {
   constructor(
     public dialog: DialogService,
     private router: Router,
+    private route: ActivatedRoute,
     private candidateService: CandidateService,
   ) {
     super();
+    
+    // Listen for navigation events to reload assessments when coming from thank-you page
+    this.subscriptionList.push(
+      this.router.events
+        .pipe(filter((event) => event instanceof NavigationEnd))
+        .subscribe((event: NavigationEnd) => {
+          // Check if we're on the candidate route (not thank-you) and URL has refresh param
+          if (event.url.includes('/candidate') && 
+              !event.url.includes('thank-you') && 
+              event.url.includes('refresh=true')) {
+            this.loadAssessments();
+            // Remove the query parameter after reloading
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: {},
+              replaceUrl: true
+            });
+          }
+        })
+    );
   }
 
   // LifeCycle Hooks
   ngOnInit(): void {
+    // Check query params on initial load
+    const refreshParam = this.route.snapshot.queryParams['refresh'];
+    if (refreshParam === 'true') {
+      this.loadAssessments();
+      // Remove the query parameter after reloading
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: {},
+        replaceUrl: true
+      });
+    } else {
+      this.loadAssessments();
+    }
+  }
+
+  // Private Methods
+  private loadAssessments(): void {
     this.isLoading = true;
     this.candidateService.getCandidateAssessment().subscribe({
       next: (res: CandidateAssessment[]) => {

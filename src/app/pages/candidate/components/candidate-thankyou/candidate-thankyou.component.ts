@@ -13,6 +13,9 @@ export class CandidateThankyouComponent {
 
   // Public Events
   public onGoBackClick() {
-    this.router.navigate(['/candidate']);
+    // Navigate with query parameter to trigger reload
+    this.router.navigate(['/candidate'], {
+      queryParams: { refresh: 'true' }
+    });
   }
 }

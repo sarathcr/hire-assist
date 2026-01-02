@@ -15,6 +15,7 @@ export class CardComponent implements OnInit, OnDestroy {
   public isPreviousAssessment = input<boolean>();
   public status = StatusEnum;
   public buttonLabel!: string;
+  public buttonLabelFromBackend = input<string | undefined>(); // Button label from backend
   public startTime = input<string>();
   public endTime = input<string>();
   public interviewDate = input<string>();
@@ -40,6 +41,19 @@ export class CardComponent implements OnInit, OnDestroy {
   }
 
   private assessmentStatus() {
+    // If button label is provided from backend, use it and skip time-based logic
+    if (this.buttonLabelFromBackend() && this.buttonLabelFromBackend()!.trim() !== '') {
+      this.buttonLabel = this.buttonLabelFromBackend()!;
+      this.showButton = true;
+      // Determine disable state based on status
+      if (this.statusId() == this.status.Completed || this.isPreviousAssessment()) {
+        this.disable = true;
+      } else {
+        this.disable = false;
+      }
+      return;
+    }
+    
     const today = new Date();
     
     // Reset showButton

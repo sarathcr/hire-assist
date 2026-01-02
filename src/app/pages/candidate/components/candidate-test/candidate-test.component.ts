@@ -611,6 +611,8 @@ export class CandidateTestComponent
       if (currentIndex >= 0 && currentIndex < this.data.questions.length - 1) {
         this.activeButtonId = this.data.questions[currentIndex + 1].id;
         this.activeQuestion = this.data.questions[currentIndex + 1];
+        // Load images for the next question and its options
+        this.loadQuestionAttachments(this.activeQuestion);
       }
     }
   }

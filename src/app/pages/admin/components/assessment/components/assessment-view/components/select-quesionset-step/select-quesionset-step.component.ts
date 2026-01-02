@@ -235,29 +235,34 @@ export class SelectQuesionsetStepComponent
         maxMark: q.maxMark || 0,
       }));
 
-    accordionData.allSelectedQuestions = [
+    const combinedQuestions = [
       ...accordionData.allSelectedQuestions,
       ...selectedOnPage,
     ];
+
+    const uniqueQuestionsMap = new Map<number, QuestionsSetQuesions>();
+    combinedQuestions.forEach((q) => {
+      uniqueQuestionsMap.set(q.questionId, q);
+    });
+
+    accordionData.allSelectedQuestions = Array.from(
+      uniqueQuestionsMap.values(),
+    );
 
     accordionData.selectedIds = accordionData.allSelectedQuestions.map((q) =>
       q.questionId.toString(),
     );
 
-    // Always recalculate grouped data when selections change
     const selectedQuestions: GetSelectedQuestionsForSet = {
       questionSetId: questionSetId,
       questions: accordionData.allSelectedQuestions,
     };
 
-    // Group the data immediately
     this.groupQuestionSetForAccordion(selectedQuestions, questionSetId);
 
-    // Get updated accordion data after grouping
     const updatedAccordionData =
       this.questionSetAccordionData.get(questionSetId);
     if (updatedAccordionData) {
-      // Force update to trigger change detection
       this.questionSetAccordionData.set(questionSetId, {
         ...updatedAccordionData,
       });
@@ -286,8 +291,9 @@ export class SelectQuesionsetStepComponent
         detail: 'Questions and set are saved Successfully',
       });
       accordionData.isUpdate = true;
+      accordionData.hasLoadedSelectedQuestions = false;
+      this.questionSetAccordionData.set(questionSetId, { ...accordionData });
       this.loadQuestionsForAccordion(questionSetId);
-      // Only save, don't move to next step
     };
 
     const error = () => {
@@ -321,6 +327,8 @@ export class SelectQuesionsetStepComponent
         detail: 'Questions and set are updated Successfully',
       });
       this.isLoading = false;
+      accordionData.hasLoadedSelectedQuestions = false;
+      this.questionSetAccordionData.set(questionSetId, { ...accordionData });
       this.loadQuestionsForAccordion(questionSetId);
     };
     const error = (error: CustomErrorResponse) => {
@@ -361,8 +369,6 @@ export class SelectQuesionsetStepComponent
     );
   }
 
-  //private Methods
-
   private setConfigMaps(): void {
     const { metadata } = new QuestionSetFormModal();
     this.configMap = metadata.configMap || {};
@@ -391,7 +397,6 @@ export class SelectQuesionsetStepComponent
 
     const next = (res: PaginatedData<QuestionSetModel>) => {
       this.questionSets = res.data;
-      // Initialize accordion data for each question set
       res.data.forEach((qs) => {
         if (!this.questionSetAccordionData.has(qs.id.toString())) {
           this.questionSetAccordionData.set(qs.id.toString(), {
@@ -406,8 +411,22 @@ export class SelectQuesionsetStepComponent
             hasLoadedSelectedQuestions: false,
             hasLoadedTableData: false,
           });
+        } else {
+          const existingData = this.questionSetAccordionData.get(
+            qs.id.toString(),
+          );
+          if (existingData) {
+            existingData.allSelectedQuestions = [];
+            existingData.selectedIds = [];
+            existingData.groupedSelectedData = [];
+            existingData.totalScore = 0;
+            existingData.hasLoadedSelectedQuestions = false;
+            existingData.hasLoadedTableData = false;
+            this.questionSetAccordionData.set(qs.id.toString(), {
+              ...existingData,
+            });
+          }
         }
-        // Load selected questions for each question set to show badge even when collapsed
         this.loadQuestionsForAccordion(qs.id.toString());
       });
       this.setOptions();
@@ -513,7 +532,6 @@ export class SelectQuesionsetStepComponent
       return;
     }
 
-    // Ensure we have questions to group
     if (!questionsset.questions || questionsset.questions.length === 0) {
       accordionData.groupedSelectedData = [];
       accordionData.totalScore = 0;
@@ -537,14 +555,12 @@ export class SelectQuesionsetStepComponent
       },
       {},
     );
-    // Create new arrays to ensure change detection
     const groupedArray = Object.values(grouped);
     const totalScore = groupedArray.reduce(
       (sum, group) => sum + group.totalMarks,
       0,
     );
 
-    // Create completely new object with new array references to trigger change detection
     const updatedData: QuestionSetAccordionData = {
       ...accordionData,
       groupedSelectedData: [...groupedArray],
@@ -553,19 +569,16 @@ export class SelectQuesionsetStepComponent
       selectedIds: [...accordionData.selectedIds],
     };
 
-    // Force update with new reference
     this.questionSetAccordionData.set(questionSetId, updatedData);
   }
 
   public onAccordionOpen(event: AccordionTabOpenEvent): void {
-    // event.index is the value (questionSet.id.toString()) from the accordion panel, not array index
     const questionSetId = event.index?.toString() || '';
 
     if (!questionSetId) {
       return;
     }
 
-    // Find the question set by ID
     const questionSet = this.questionSets.find(
       (qs) => qs.id.toString() === questionSetId,
     );
@@ -578,7 +591,6 @@ export class SelectQuesionsetStepComponent
         return;
       }
 
-      // Initialize empty table data structure if not exists so table can render
       if (!accordionData.tabledata) {
         accordionData.tabledata = {
           pageNumber: 1,
@@ -592,11 +604,8 @@ export class SelectQuesionsetStepComponent
         };
       }
 
-      // Load selected questions FIRST before loading table data
-      // This ensures questions are marked as selected when table loads
       if (!accordionData.hasLoadedSelectedQuestions) {
         this.loadQuestionsForAccordion(questionSetId, () => {
-          // After selected questions are loaded, load table data
           if (!accordionData.hasLoadedTableData) {
             const initialPayload = new PaginatedPayload();
             initialPayload.pagination.pageNumber = 1;
@@ -608,7 +617,6 @@ export class SelectQuesionsetStepComponent
           }
         });
       } else {
-        // Selected questions already loaded, just load table data if needed
         if (accordionData.hasLoadedTableData) {
           return;
         }
@@ -626,48 +634,49 @@ export class SelectQuesionsetStepComponent
   ): void {
     const accordionData = this.questionSetAccordionData.get(questionSetId);
     if (!accordionData || accordionData.hasLoadedSelectedQuestions) {
-      // If already loaded, call onComplete immediately
       if (onComplete) {
         onComplete();
       }
       return;
     }
 
-    // Set loading flag
     accordionData.isLoadingSelectedQuestions = true;
     this.questionSetAccordionData.set(questionSetId, { ...accordionData });
 
-    // Load selected questions from endpoint to mark them as checked
-    // The table will handle loading the questions data via lazy loading
     this.assessmentService.getQuestionsBySet(questionSetId).subscribe({
       next: (res: GetSelectedQuestionsForSet) => {
-        accordionData.allSelectedQuestions = res.questions || [];
-        // Create a new array to ensure change detection triggers
-        accordionData.selectedIds = (res.questions || []).map(
+        const serverQuestions = res.questions || [];
+        const uniqueQuestionsMap = new Map<number, QuestionsSetQuesions>();
+        serverQuestions.forEach((q) => {
+          uniqueQuestionsMap.set(q.questionId, q);
+        });
+        accordionData.allSelectedQuestions = Array.from(
+          uniqueQuestionsMap.values(),
+        );
+        accordionData.selectedIds = accordionData.allSelectedQuestions.map(
           (item: QuestionsSetQuesions) => item.questionId.toString(),
         );
 
-        // --- FIX: Force update of map value so template sees change ---
         this.questionSetAccordionData.set(questionSetId, { ...accordionData });
 
         if (accordionData.selectedIds.length > 0) {
           accordionData.isUpdate = true;
         }
-        // Group the data first
-        this.groupQuestionSetForAccordion(res, questionSetId);
+        const deduplicatedResponse: GetSelectedQuestionsForSet = {
+          questionSetId: res.questionSetId,
+          questions: accordionData.allSelectedQuestions,
+        };
+        this.groupQuestionSetForAccordion(deduplicatedResponse, questionSetId);
 
-        // Get the updated data after grouping
         const updatedAccordionData =
           this.questionSetAccordionData.get(questionSetId);
         if (updatedAccordionData) {
           updatedAccordionData.hasLoadedSelectedQuestions = true;
           updatedAccordionData.isLoadingSelectedQuestions = false;
-          // Force update with new reference
           this.questionSetAccordionData.set(questionSetId, {
             ...updatedAccordionData,
           });
         }
-        // Call onComplete callback after successful load
         if (onComplete) {
           onComplete();
         }
@@ -678,10 +687,9 @@ export class SelectQuesionsetStepComponent
           summary: 'Error',
           detail: error.error.type,
         });
-        accordionData.hasLoadedSelectedQuestions = true; // Mark as loaded even on error to prevent retries
+        accordionData.hasLoadedSelectedQuestions = true;
         accordionData.isLoadingSelectedQuestions = false;
         this.questionSetAccordionData.set(questionSetId, { ...accordionData });
-        // Call onComplete even on error so table can still load
         if (onComplete) {
           onComplete();
         }
@@ -723,7 +731,7 @@ export class SelectQuesionsetStepComponent
         detail: err.error.type,
       });
       accordionData.isLoadingQuestions = false;
-      accordionData.hasLoadedTableData = true; // Mark as attempted to prevent infinite retries
+      accordionData.hasLoadedTableData = true;
     };
 
     this.questionService
@@ -737,11 +745,9 @@ export class SelectQuesionsetStepComponent
   ): void {
     const accordionData = this.questionSetAccordionData.get(questionSetId);
 
-    // If data hasn't been loaded yet, load it now
     if (accordionData && !accordionData.hasLoadedTableData) {
       this.getAllPaginatedQuestionForAccordion(payload, questionSetId);
     } else if (accordionData && accordionData.hasLoadedTableData) {
-      // Data already loaded, just refresh/update
       this.getAllPaginatedQuestionForAccordion(payload, questionSetId);
     }
   }
@@ -753,7 +759,6 @@ export class SelectQuesionsetStepComponent
       this.stepsStatusService.getAssessmentStepsStatus(assessmentId).subscribe({
         next: () => {
           this.isLoading = false;
-          // Notify parent to move to next step
           this.stepsStatusService.notifyStepCompleted(assessmentId);
           this.messageService.add({
             severity: 'success',
@@ -763,7 +768,6 @@ export class SelectQuesionsetStepComponent
         },
         error: () => {
           this.isLoading = false;
-          // Even if step status API fails, try to move to next step
           this.stepsStatusService.notifyStepCompleted(assessmentId);
           this.messageService.add({
             severity: 'success',
@@ -776,7 +780,6 @@ export class SelectQuesionsetStepComponent
   }
 
   public hasSubmittedQuestionSets(): boolean {
-    // Check if at least one question set has been submitted
     for (const accordionData of this.questionSetAccordionData.values()) {
       if (accordionData.isUpdate) {
         return true;

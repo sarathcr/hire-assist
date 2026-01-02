@@ -151,7 +151,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public step!: AssessmentRound[];
   public stepperConfig!: recruitment[];
   public currentStep!: number;
-  public selectedCandidates!: InterviewSummary[];
+  public selectedCandidates: InterviewSummary[] = [];
   public isCompleteDisabled = false;
   public assessmentRoundList!: AssessmentRound[] | null;
   public filterMap!: FilterMap;
@@ -163,6 +163,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public isLoading = false;
 
   private nextRoundId!: number | null;
+  private candidatePanelAssignments = new Map<string, boolean>();
 
   private ref: DynamicDialogRef | undefined;
 
@@ -358,8 +359,49 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.currentStep = step;
     this.roundStatus = status === 'Completed';
     this.filterMap = { assessmentRoundId: step };
+    // Clear panel assignment cache when round changes
+    this.candidatePanelAssignments.clear();
     this.getPaginatedCandidateData(this.filterMap);
   }
+
+  /**
+   * Checks if the Assign Panel button should be enabled
+   * Enabled when at least one candidate is selected and all selected candidates have status "Selected" or "Rejected"
+   * Note: OnPanelClick only supports assigning one candidate at a time, but button enables for multiple
+   */
+  public isAssignPanelEnabled(): boolean {
+    // Must have at least one candidate selected
+    if (!this.selectedCandidates || this.selectedCandidates.length === 0) {
+      return false;
+    }
+
+    // Check if all selected candidates have status "Selected" or "Rejected" (case-insensitive)
+    return this.selectedCandidates.every((candidate) => {
+      if (!candidate || !candidate.status) {
+        return false;
+      }
+      const status = candidate.status.toLowerCase().trim();
+      return status === 'selected' || status === 'rejected';
+    });
+  }
+
+  /**
+   * Checks if the Schedule button should be enabled
+   * Enabled when the assign panel button is enabled (candidates have status "Selected" or "Rejected")
+   */
+  public isScheduleEnabled(): boolean {
+    // Use the same condition as assign panel button
+    return this.isAssignPanelEnabled();
+  }
+
+  /**
+   * Checks if a candidate is assigned to a panel
+   * Uses cached information if available, otherwise returns false
+   */
+  private isCandidateAssignedToPanel(candidateId: string): boolean {
+    return this.candidatePanelAssignments.get(candidateId) ?? false;
+  }
+
 
   public schedule(): void {
     const selected = this.selectedCandidates || [];
@@ -382,6 +424,21 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         severity: 'warn',
         summary: 'Invalid Selection',
         detail: 'Only candidates with status "Selected" can be scheduled.',
+      });
+      return;
+    }
+
+    // Check if all selected candidates are assigned to panels
+    const allHavePanels = selected.every((c: InterviewSummary) =>
+      this.isCandidateAssignedToPanel(c.id),
+    );
+
+    if (!allHavePanels) {
+      this.messagesService.add({
+        severity: 'warn',
+        summary: 'Invalid Selection',
+        detail:
+          'All selected candidates must be assigned to a panel before scheduling.',
       });
       return;
     }
@@ -424,6 +481,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       // The modal now handles the API call internally
       // If result is truthy, it means the API call was successful
       if (result) {
+        // Update panel assignment cache for the assigned candidate
+        if (this.selectedCandidates.length > 0) {
+          this.candidatePanelAssignments.set(
+            this.selectedCandidates[0].id,
+            true,
+          );
+        }
         // Refresh the candidate data to reflect the changes
         this.getPaginatedCandidateData(this.filterMap);
       }
@@ -791,6 +855,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                 candidate.status === 'Pending' ||
                 candidate.isScheduled === 'Not Scheduled',
             );
+
+          // Load panel assignments for all candidates in the current page
+          this.loadPanelAssignmentsForCandidates(resData);
         },
         error: () => {
           this.isLoading = false;
@@ -801,6 +868,36 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  /**
+   * Loads panel assignment status for all candidates in the current page
+   * Updates the cache asynchronously
+   */
+  private loadPanelAssignmentsForCandidates(
+    candidates: CandidateData[],
+  ): void {
+    candidates.forEach((candidate: CandidateData) => {
+      const candidateId = String(candidate.id);
+      // Only check if not already in cache
+      if (!this.candidatePanelAssignments.has(candidateId)) {
+        this.coordinatorPanelBridgeService
+          .getinterviewPanles(candidateId)
+          .subscribe({
+            next: (response: GetInterviewPanelsResponse) => {
+              // If we get a response with panelId, candidate has a panel assigned
+              this.candidatePanelAssignments.set(
+                candidateId,
+                !!response?.panelId,
+              );
+            },
+            error: () => {
+              // If API call fails (e.g., 404), candidate doesn't have a panel
+              this.candidatePanelAssignments.set(candidateId, false);
+            },
+          });
+      }
+    });
   }
 
   private openScheduleCandidateModal(selectedCandidateIds: string[]) {
@@ -905,6 +1002,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             candidate.status === 'Pending' ||
             candidate.isScheduled === 'Not Scheduled',
         );
+
+        // Load panel assignments for all candidates in the current page
+        this.loadPanelAssignmentsForCandidates(resData);
       });
   }
 

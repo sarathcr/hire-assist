@@ -263,12 +263,25 @@ export class ImportCandidateListStepComponent implements OnInit {
           });
           this.isUploading = false;
         },
-        error: () => {
+        error: (err) => {
+          let errorMessage = 'Something went wrong';
+
+          if (typeof err.error === 'string') {
+            try {
+              const parsed = JSON.parse(err.error);
+              errorMessage = parsed.type || parsed.detail;
+            } catch {
+              errorMessage = err.error;
+            }
+          } else {
+            errorMessage = err?.error?.type || err?.error?.detail;
+          }
+
           this.isLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Import failed',
+            detail: `Error : ${errorMessage}`,
           });
           this.isUploading = false;
         },
@@ -427,18 +440,12 @@ export class ImportCandidateListStepComponent implements OnInit {
             },
             error: (error: CustomErrorResponse) => {
               this.isLoading = false;
-              const businessErrorCode = error.error?.businessError;
-              if (businessErrorCode === 3111) {
+              if (error?.error?.type) {
                 this.messageService.add({
                   severity: 'error',
                   summary: 'Error',
                   detail: error?.error?.type,
-                });
-              } else {
-                this.messageService.add({
-                  severity: 'error',
-                  summary: 'Error',
-                  detail: 'Schedule failed',
+                  life: 30000,
                 });
               }
             },

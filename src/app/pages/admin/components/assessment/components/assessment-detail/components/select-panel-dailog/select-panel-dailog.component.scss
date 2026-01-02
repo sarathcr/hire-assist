@@ -6,6 +6,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  max-height: 100%;
   background: #ffffff;
   border-radius: 0;
   overflow: hidden;
@@ -14,6 +15,7 @@
   // Header Section
   // ============================================
   &__header {
+    flex: 0 0 auto;
     background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
     padding: 32px 40px;
     position: relative;
@@ -88,6 +90,7 @@
   // Selection Info Card
   // ============================================
   &__selection-info {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     gap: 16px;
@@ -144,27 +147,81 @@
   // Table Section
   // ============================================
   &__table-section {
-    flex: 1;
+    flex: 1 1 auto;
     padding: 24px 40px;
-    overflow-y: auto;
+    overflow: hidden;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+    height: 0; // Force flex item to respect parent constraints
 
-    // Custom scrollbar
-    &::-webkit-scrollbar {
-      width: 8px;
-    }
+    // Ensure table component takes full height
+    ::ng-deep {
+      .table {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        flex: 1 1 auto;
+        overflow: hidden;
+      }
 
-    &::-webkit-scrollbar-track {
-      background: #f1f1f1;
-      border-radius: 4px;
-    }
+      .p-datatable {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        flex: 1 1 auto;
+      }
 
-    &::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 4px;
+      // PrimeNG scrollable wrapper - this is the key container
+      .p-datatable-scrollable-wrapper {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-      &:hover {
-        background: #a8a8a8;
+      .p-datatable-scrollable {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      // The scrollable body that contains the table
+      .p-datatable-scrollable-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto !important;
+        overflow-x: auto !important;
+      }
+
+      // Table container
+      .p-datatable-table-container {
+        overflow: visible !important;
+      }
+
+      // Custom scrollbar styling
+      .p-datatable-scrollable-body::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      .p-datatable-scrollable-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+      }
+
+      .p-datatable-scrollable-body::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+
+        &:hover {
+          background: #a8a8a8;
+        }
       }
     }
   }
@@ -173,10 +230,14 @@
   // Footer Section
   // ============================================
   &__footer {
+    flex: 0 0 auto;
     padding: 24px 40px;
     background: #f9fafb;
     border-top: 1px solid #e5e7eb;
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
 
     &-content {
       display: flex;
@@ -351,6 +412,10 @@
       background: white;
       border-bottom-left-radius: 16px;
       border-bottom-right-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      max-height: 80vh;
+      height: 80vh;
     }
     .p-dialog {
       border-radius: 16px;
