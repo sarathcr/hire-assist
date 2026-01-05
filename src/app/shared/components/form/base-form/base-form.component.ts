@@ -32,7 +32,11 @@ export abstract class BaseFormComponent {
       return `Must be at least ${requiredLength} characters.`;
     }
     if (errors['pattern']) {
-      if (this.config.labelKey === 'Title' || this.config.labelKey === 'Name') {
+      if (
+        this.config.labelKey === 'Title' ||
+        this.config.labelKey === 'Name' ||
+        this.config.labelKey === 'Description'
+      ) {
         return `Must begin with an alphabetics`;
       } else if (
         this.config.labelKey === 'Question Text' ||

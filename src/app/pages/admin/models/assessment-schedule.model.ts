@@ -159,7 +159,12 @@ export class QuestionSetFormModal extends FormEntity {
         Validators.maxLength(25),
         QuestionSetFormModal.noExtraSpacesValidator,
       ],
-      description: [Validators.required, Validators.maxLength(150)],
+      description: [
+        Validators.required,
+        Validators.pattern('^[A-Za-z].*'),
+        Validators.maxLength(150),
+        QuestionSetFormModal.noExtraSpacesValidator,
+      ],
     },
     configMap: {
       title: { id: 'title', labelKey: 'Title' },
