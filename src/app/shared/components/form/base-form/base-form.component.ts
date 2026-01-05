@@ -37,7 +37,7 @@ export abstract class BaseFormComponent {
         this.config.labelKey === 'Name' ||
         this.config.labelKey === 'Description'
       ) {
-        return `Must begin with an alphabetics`;
+        return `Must begin with an alphabetic character.`;
       } else if (
         this.config.labelKey === 'Question Text' ||
         this.config.labelKey === 'Options'
