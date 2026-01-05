@@ -403,8 +403,13 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     this.currentUser = this.storeService.getUserData();
     this.isLoading = true;
 
+    const payloadData = {
+      ...payload,
+      filterMap: { excludedRoles: ['5'], ...payload.filterMap },
+    };
+
     this.dataSourceService
-      .getData(payload)
+      .getData(payloadData)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe((response: any) => {
         const formattedData = response.data.map((item: any) => ({

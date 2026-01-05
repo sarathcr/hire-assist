@@ -538,6 +538,37 @@
           </div>
         }
       </p-card>
+
+      <!-- Select and Reject Actions Section -->
+      @if (responseData) {
+        <p-card class="interview-detail__section-card">
+          <div class="interview-detail__section-header">
+            <div class="interview-detail__section-icon">
+              <i class="pi pi-check-circle"></i>
+            </div>
+            <h2 class="interview-detail__section-title">Candidate Decision</h2>
+          </div>
+          <p-divider />
+          <div class="interview-detail__action-buttons-group">
+            <app-button
+              [buttonLabel]="'Select Candidate'"
+              [icon]="'pi pi-check-square'"
+              [buttonSize]="'large'"
+              [buttonSeverity]="'success'"
+              [disabled]="!isCandidateStatusCompleted() || isCheckingCandidateStatus"
+              (btnClick)="onSelectCandidate()"
+            ></app-button>
+            <app-button
+              [buttonLabel]="'Reject Candidate'"
+              [icon]="'pi pi-ban'"
+              [buttonSize]="'large'"
+              [buttonSeverity]="'danger'"
+              [disabled]="!isCandidateStatusCompleted() || isCheckingCandidateStatus"
+              (btnClick)="onRejectCandidate()"
+            ></app-button>
+          </div>
+        </p-card>
+      }
     }
 
     @if (!responseData && !interviewerError) {

@@ -86,190 +86,162 @@
                   currentAccordionData &&
                   currentAccordionData.isLoadingSelectedQuestions;
 
-                @if (isLoadingContent || isLoadingSummary) {
+                @if (isLoadingSummary) {
                   <div class="QuestionSet__loading">
-                    @if (isLoadingSummary) {
-                      <div
-                        class="QuestionSet__summary QuestionSet__summary--loading"
-                      >
-                        <div class="QuestionSet__summary-header">
-                          <p-skeleton
-                            shape="circle"
-                            width="52px"
-                            height="52px"
-                          />
-                          <p-skeleton width="220px" height="22px" />
-                          <p-skeleton width="100px" height="16px" />
-                        </div>
-                        <div class="QuestionSet__summary-content">
-                          <div class="QuestionSet__summary-table">
-                            <p-skeleton
-                              width="100%"
-                              height="180px"
-                              class="skeleton-rounded"
-                            />
-                          </div>
-                          <div class="QuestionSet__summary-knob">
-                            <p-skeleton
-                              shape="circle"
-                              width="120px"
-                              height="120px"
-                            />
-                            <div class="QuestionSet__knob-label">
-                              <p-skeleton
-                                width="80px"
-                                height="13px"
-                                class="skeleton-mb-5"
-                              />
-                              <p-skeleton width="60px" height="32px" />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    }
-                    @if (isLoadingContent) {
-                      <div class="QuestionSet__table-loading">
-                        <div class="QuestionSet__table-skeleton">
-                          <p-skeleton
-                            width="100%"
-                            height="40px"
-                            class="skeleton-mb-10"
-                          />
-                          @for (item of [1, 2, 3, 4, 5]; track item) {
-                            <p-skeleton
-                              width="100%"
-                              height="50px"
-                              class="skeleton-mb-10"
-                            />
-                          }
-                        </div>
-                      </div>
-                    }
-                  </div>
-                } @else {
-                  @if (
-                    currentAccordionData &&
-                    currentAccordionData.selectedIds &&
-                    currentAccordionData.selectedIds.length > 0
-                  ) {
-                    <div class="QuestionSet__summary">
+                    <div
+                      class="QuestionSet__summary QuestionSet__summary--loading"
+                    >
                       <div class="QuestionSet__summary-header">
-                        <div class="QuestionSet__summary-icon">
-                          <i class="pi pi-check-circle"></i>
-                        </div>
-                        <h3 class="QuestionSet__summary-title">
-                          Selected Questions Summary
-                        </h3>
-                        <span class="QuestionSet__summary-count"
-                          >({{
-                            currentAccordionData.selectedIds.length
-                          }}
-                          questions)</span
-                        >
+                        <p-skeleton
+                          shape="circle"
+                          width="52px"
+                          height="52px"
+                        />
+                        <p-skeleton width="220px" height="22px" />
+                        <p-skeleton width="100px" height="16px" />
                       </div>
                       <div class="QuestionSet__summary-content">
                         <div class="QuestionSet__summary-table">
-                          @if (
-                            currentAccordionData.groupedSelectedData &&
-                            currentAccordionData.groupedSelectedData.length > 0
-                          ) {
-                            <p-table
-                              [value]="currentAccordionData.groupedSelectedData"
-                              [tableStyle]="{ 'min-width': '10rem' }"
-                            >
-                              <ng-template #header>
-                                <tr>
-                                  <th scope="col">Question Type</th>
-                                  <th scope="col">No. Questions</th>
-                                  <th scope="col">Total Marks</th>
-                                </tr>
-                              </ng-template>
-                              <ng-template #body let-group>
-                                <tr>
-                                  <td>
-                                    <span class="QuestionSet__type-badge">{{
-                                      group.type || "Unknown"
-                                    }}</span>
-                                  </td>
-                                  <td>
-                                    <span class="QuestionSet__count">{{
-                                      group.count || 0
-                                    }}</span>
-                                  </td>
-                                  <td>
-                                    <span class="QuestionSet__marks">{{
-                                      group.totalMarks || 0
-                                    }}</span>
-                                  </td>
-                                </tr>
-                              </ng-template>
-                            </p-table>
-                          } @else {
-                            <div class="QuestionSet__summary-empty">
-                              <i class="pi pi-info-circle"></i>
-                              <p>
-                                @if (
-                                  currentAccordionData.allSelectedQuestions &&
-                                  currentAccordionData.allSelectedQuestions
-                                    .length > 0
-                                ) {
-                                  Grouping questions...
-                                } @else {
-                                  No questions selected yet
-                                }
-                              </p>
-                            </div>
-                          }
+                          <p-skeleton
+                            width="100%"
+                            height="180px"
+                            class="skeleton-rounded"
+                          />
                         </div>
                         <div class="QuestionSet__summary-knob">
-                          <p-knob
-                            [ngModel]="currentAccordionData.totalScore || 0"
-                            [readonly]="true"
-                            [min]="0"
-                            [max]="
-                              (currentAccordionData.totalScore || 0) > 0
-                                ? (currentAccordionData.totalScore || 0) * 1.2 >
-                                  100
-                                  ? (currentAccordionData.totalScore || 0) * 1.2
-                                  : 100
-                                : 100
-                            "
-                          ></p-knob>
+                          <p-skeleton
+                            shape="circle"
+                            width="120px"
+                            height="120px"
+                          />
                           <div class="QuestionSet__knob-label">
-                            <span class="QuestionSet__knob-label-text"
-                              >Max Score</span
-                            >
-                            <span class="QuestionSet__knob-label-value">{{
-                              currentAccordionData.totalScore || 0
-                            }}</span>
+                            <p-skeleton
+                              width="80px"
+                              height="13px"
+                              class="skeleton-mb-5"
+                            />
+                            <p-skeleton width="60px" height="32px" />
                           </div>
                         </div>
                       </div>
                     </div>
-                  }
-                  <div class="QuestionSet__table-container">
-                    <app-table
-                      [tableData]="currentAccordionData?.tabledata"
-                      [columnsData]="columns"
-                      [hasSearch]="true"
-                      [parentLoader]="
-                        currentAccordionData?.isLoadingQuestions || false
-                      "
-                      (pageChangeAndSort)="
-                        onTablePayloadChangeForAccordion(
-                          $event,
-                          questionSet.id.toString()
-                        )
-                      "
-                      (selectedIds)="
-                        onSelectedIds($event, questionSet.id.toString())
-                      "
-                      [alreadySelected]="
-                        currentAccordionData?.selectedIds || []
-                      "
-                    ></app-table>
                   </div>
                 }
+                @if (
+                  !isLoadingSummary &&
+                  currentAccordionData &&
+                  currentAccordionData.selectedIds &&
+                  currentAccordionData.selectedIds.length > 0
+                ) {
+                  <div class="QuestionSet__summary">
+                    <div class="QuestionSet__summary-header">
+                      <div class="QuestionSet__summary-icon">
+                        <i class="pi pi-check-circle"></i>
+                      </div>
+                      <h3 class="QuestionSet__summary-title">
+                        Selected Questions Summary
+                      </h3>
+                      <span class="QuestionSet__summary-count"
+                        >({{ currentAccordionData.selectedIds.length }}
+                        questions)</span
+                      >
+                    </div>
+                    <div class="QuestionSet__summary-content">
+                      <div class="QuestionSet__summary-table">
+                        @if (
+                          currentAccordionData.groupedSelectedData &&
+                          currentAccordionData.groupedSelectedData.length > 0
+                        ) {
+                          <p-table
+                            [value]="currentAccordionData.groupedSelectedData"
+                            [tableStyle]="{ 'min-width': '10rem' }"
+                          >
+                            <ng-template #header>
+                              <tr>
+                                <th scope="col">Question Type</th>
+                                <th scope="col">No. Questions</th>
+                                <th scope="col">Total Marks</th>
+                              </tr>
+                            </ng-template>
+                            <ng-template #body let-group>
+                              <tr>
+                                <td>
+                                  <span class="QuestionSet__type-badge">{{
+                                    group.type || "Unknown"
+                                  }}</span>
+                                </td>
+                                <td>
+                                  <span class="QuestionSet__count">{{
+                                    group.count || 0
+                                  }}</span>
+                                </td>
+                                <td>
+                                  <span class="QuestionSet__marks">{{
+                                    group.totalMarks || 0
+                                  }}</span>
+                                </td>
+                              </tr>
+                            </ng-template>
+                          </p-table>
+                        } @else {
+                          <div class="QuestionSet__summary-empty">
+                            <i class="pi pi-info-circle"></i>
+                            <p>
+                              @if (
+                                currentAccordionData.allSelectedQuestions &&
+                                currentAccordionData.allSelectedQuestions
+                                  .length > 0
+                              ) {
+                                Grouping questions...
+                              } @else {
+                                No questions selected yet
+                              }
+                            </p>
+                          </div>
+                        }
+                      </div>
+                      <div class="QuestionSet__summary-knob">
+                        @let scoreValue = currentAccordionData.totalScore || 0;
+                        <p-knob
+                          [ngModel]="scoreValue"
+                          [readonly]="true"
+                          [min]="0"
+                          [max]="getKnobMaxValue()"
+                        ></p-knob>
+                        <div class="QuestionSet__knob-label">
+                          <span class="QuestionSet__knob-label-text"
+                            >Max Score</span
+                          >
+                          <span class="QuestionSet__knob-label-value">{{
+                            scoreValue
+                          }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
+                <!-- Always render table so its built-in skeleton can display -->
+                <div class="QuestionSet__table-container">
+                  <app-table
+                    [tableData]="currentAccordionData?.tabledata"
+                    [columnsData]="columns"
+                    [hasSearch]="true"
+                    [searchDebounceTime]="600"
+                    [parentLoader]="currentAccordionData?.isLoadingQuestions ?? false"
+                    (pageChangeAndSort)="
+                      onTablePayloadChangeForAccordion(
+                        $event,
+                        questionSet.id.toString()
+                      )
+                    "
+                    (selectedIds)="
+                      onSelectedIds($event, questionSet.id.toString())
+                    "
+                    [alreadySelected]="
+                      currentAccordionData?.selectedIds || []
+                    "
+                  ></app-table>
+                </div>
                 @if (!isLoadingContent && !isLoadingSummary) {
                   <div class="QuestionSet__actions">
                     @if (!currentAccordionData?.isUpdate) {

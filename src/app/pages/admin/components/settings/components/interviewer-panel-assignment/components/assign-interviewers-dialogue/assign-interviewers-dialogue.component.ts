@@ -25,6 +25,7 @@ import {
 } from '../../../../../../models/interviewers-model';
 import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
 import { InterviewService } from '../../../../../../services/interview.service';
+import { CoordinatorPanelBridgeService } from '../../../../../../../coordinator/services/coordinator-panel-bridge.service';
 @Component({
   selector: 'app-assign-interviewers-dialogue',
   imports: [
@@ -57,6 +58,7 @@ export class AssignInterviewersDialogueComponent implements OnInit {
     public dialog: DialogService,
     private readonly messageService: MessageService,
     private readonly interviewService: InterviewService,
+    private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
   ) {
     this.fGroup = buildFormGroup(this.interviewerSchedule);
   }
@@ -147,27 +149,55 @@ export class AssignInterviewersDialogueComponent implements OnInit {
         assessmentId: this.assessmentId,
       };
 
-      this.interviewService.createInterviewPanel(payload).subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Interview panel assigned successfully',
-          });
-          this.ref.close({ ...this.fGroup.value, submitted: true });
+      // First, call PanelAssignments API
+      const panelAssignmentPayload = [
+        {
+          panelId: panelId,
+          interviewers: interviewers,
         },
-        error: (error: CustomErrorResponse) => {
-          const errorMessage =
-            error?.error?.errorValue ||
-            error?.error?.message ||
-            'Failed to assign interview panel';
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: errorMessage,
-          });
-        },
-      });
+      ];
+
+      this.coordinatorPanelBridgeService
+        .addInterviewerPanels(panelAssignmentPayload)
+        .subscribe({
+          next: () => {
+            // After successful PanelAssignments, call InterviewPanel API
+            this.interviewService.createInterviewPanel(payload).subscribe({
+              next: () => {
+                this.messageService.add({
+                  severity: 'success',
+                  summary: 'Success',
+                  detail: 'Interview panel assigned successfully',
+                });
+                this.ref.close({ ...this.fGroup.value, submitted: true });
+              },
+              error: (error: CustomErrorResponse) => {
+                const errorMessage =
+                  error?.error?.type ||
+                  error?.error?.errorValue ||
+                  error?.error?.message ||
+                  'Failed to assign interview panel';
+                this.messageService.add({
+                  severity: 'error',
+                  summary: 'Error',
+                  detail: errorMessage,
+                });
+              },
+            });
+          },
+          error: (error: CustomErrorResponse) => {
+            const errorMessage =
+              error.error?.type ||
+              error.error?.errorValue ||
+              error.error?.message ||
+              'Failed to update interviewers into panels';
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: errorMessage,
+            });
+          },
+        });
       return;
     }
 

@@ -162,6 +162,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public interview!: GetInterviewPanelsResponse;
   public selectedPanels!: PanelSummary;
   public isLoading = false;
+  public isCompletingRound = false;
 
   private nextRoundId!: number | null;
   private candidatePanelAssignments = new Map<string, boolean>();
@@ -255,105 +256,178 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public rejectCandidate() {
     const assessmentRoundId = Number(this.currentStep);
 
-    const name = 'rejected';
-    if (this.selectedCandidates.length != 0) {
-      const modalData: DialogData = {
-        message: `Are you sure you want to reject the candidates?`,
-        isChoice: true,
-        cancelButtonText: 'Cancel',
-        acceptButtonText: 'Reject',
-      };
-      this.ref = this.dialog.open(DialogComponent, {
-        data: modalData,
-        header: 'Warning',
-        maximizable: false,
-        width: '25vw',
-        modal: true,
-        focusOnShow: false,
-        breakpoints: {
-          '960px': '75vw',
-          '640px': '90vw',
-        },
-        templates: {
-          footer: DialogFooterComponent,
-        },
-      });
-      this.ref.onClose.subscribe((result) => {
-        if (result) {
-          if (this.selectedCandidates.length) {
-            const payload: CandidatePayload[] = this.selectedCandidates.map(
-              (candidate: InterviewSummary): CandidatePayload => {
-                return {
-                  candidateId: String(candidate.email),
-                  assessmentRoundId: Number(assessmentRoundId),
-                  isActive: true,
-                  statusId: 9,
-                  assessmentId: this.assessmentId,
-                };
-              },
-            );
-            this.UpdateCandidateStatus(payload, name);
-          }
-        }
-      });
-    } else {
+    // Check if any candidates are selected
+    if (this.selectedCandidates.length === 0) {
       this.messagesService.add({
         severity: 'warn',
         summary: 'Warning',
         detail: 'No selected Candidate to reject.',
       });
+      return;
     }
+
+    // Validate that all selected candidates have "Completed" status
+    const nonCompletedCandidates = this.selectedCandidates.filter(
+      (candidate: InterviewSummary) => {
+        const status = candidate.status?.toLowerCase().trim();
+        return status !== 'completed';
+      },
+    );
+
+    if (nonCompletedCandidates.length > 0) {
+      this.messagesService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Only candidates with "Completed" status can be rejected.',
+      });
+      return;
+    }
+
+    // Check if any candidates are already rejected
+    const alreadyRejectedCandidates = this.selectedCandidates.filter(
+      (candidate: InterviewSummary) => {
+        const status = candidate.status?.toLowerCase().trim();
+        return status === 'rejected';
+      },
+    );
+
+    if (alreadyRejectedCandidates.length > 0) {
+      this.messagesService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'One or more selected candidates are already rejected.',
+      });
+      return;
+    }
+
+    const name = 'rejected';
+    const modalData: DialogData = {
+      message: `Are you sure you want to reject the candidates?`,
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Reject',
+    };
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Warning',
+      maximizable: false,
+      width: '25vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        if (this.selectedCandidates.length) {
+          const payload: CandidatePayload[] = this.selectedCandidates.map(
+            (candidate: InterviewSummary): CandidatePayload => {
+              return {
+                candidateId: String(candidate.email),
+                assessmentRoundId: Number(assessmentRoundId),
+                isActive: true,
+                statusId: 9,
+                assessmentId: this.assessmentId,
+              };
+            },
+          );
+          this.UpdateCandidateStatus(payload, name);
+        }
+      }
+    });
   }
 
   public selectCandidate() {
     const name = 'selected';
-    if (this.selectedCandidates.length != 0) {
-      const modalData: DialogData = {
-        message: `Are you sure you want to select the candidates?`,
-        isChoice: true,
-        cancelButtonText: 'Cancel',
-        acceptButtonText: 'Select',
-      };
-      this.ref = this.dialog.open(DialogComponent, {
-        data: modalData,
-        header: 'Warning',
-        maximizable: false,
-        width: '25vw',
-        modal: true,
-        focusOnShow: false,
-        breakpoints: {
-          '960px': '75vw',
-          '640px': '90vw',
-        },
-        templates: {
-          footer: DialogFooterComponent,
-        },
-      });
-      this.ref.onClose.subscribe((result) => {
-        if (result) {
-          if (this.selectedCandidates.length) {
-            const payload: CandidatePayload[] = this.selectedCandidates.map(
-              (candidate: InterviewSummary): CandidatePayload => {
-                return {
-                  candidateId: String(candidate.email),
-                  assessmentRoundId: this.currentStep,
-                  isActive: true,
-                  statusId: 8,
-                  assessmentId: this.assessmentId,
-                };
-              },
-            );
-            this.UpdateCandidateStatus(payload, name);
-          }
-        }
-      });
-    } else {
+
+    // Check if any candidates are selected
+    if (this.selectedCandidates.length === 0) {
       this.messagesService.add({
         severity: 'warn',
         summary: 'Warning',
         detail: 'No selected Candidate to mark as select.',
       });
+      return;
     }
+
+    // Validate that all selected candidates have "Completed" status
+    const nonCompletedCandidates = this.selectedCandidates.filter(
+      (candidate: InterviewSummary) => {
+        const status = candidate.status?.toLowerCase().trim();
+        return status !== 'completed';
+      },
+    );
+
+    if (nonCompletedCandidates.length > 0) {
+      this.messagesService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Only candidates with "Completed" status can be selected.',
+      });
+      return;
+    }
+
+    // Check if any candidates are already selected
+    const alreadySelectedCandidates = this.selectedCandidates.filter(
+      (candidate: InterviewSummary) => {
+        const status = candidate.status?.toLowerCase().trim();
+        return status === 'selected';
+      },
+    );
+
+    if (alreadySelectedCandidates.length > 0) {
+      this.messagesService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'One or more selected candidates are already selected.',
+      });
+      return;
+    }
+
+    const modalData: DialogData = {
+      message: `Are you sure you want to select the candidates?`,
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Select',
+    };
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Warning',
+      maximizable: false,
+      width: '25vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        if (this.selectedCandidates.length) {
+          const payload: CandidatePayload[] = this.selectedCandidates.map(
+            (candidate: InterviewSummary): CandidatePayload => {
+              return {
+                candidateId: String(candidate.email),
+                assessmentRoundId: this.currentStep,
+                isActive: true,
+                statusId: 8,
+                assessmentId: this.assessmentId,
+              };
+            },
+          );
+          this.UpdateCandidateStatus(payload, name);
+        }
+      }
+    });
   }
 
   public onStepChange(step: number, status?: string) {
@@ -363,6 +437,46 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     // Clear panel assignment cache when round changes
     this.candidatePanelAssignments.clear();
     this.getPaginatedCandidateData(this.filterMap);
+  }
+
+  /**
+   * Checks if the Select button should be enabled
+   * Enabled when at least one candidate is selected and all selected candidates have status "Completed"
+   */
+  public isSelectEnabled(): boolean {
+    // Must have at least one candidate selected
+    if (!this.selectedCandidates || this.selectedCandidates.length === 0) {
+      return false;
+    }
+
+    // Check if all selected candidates have status "Completed" (case-insensitive)
+    return this.selectedCandidates.every((candidate) => {
+      if (!candidate || !candidate.status) {
+        return false;
+      }
+      const status = candidate.status.toLowerCase().trim();
+      return status === 'completed';
+    });
+  }
+
+  /**
+   * Checks if the Reject button should be enabled
+   * Enabled when at least one candidate is selected and all selected candidates have status "Completed"
+   */
+  public isRejectEnabled(): boolean {
+    // Must have at least one candidate selected
+    if (!this.selectedCandidates || this.selectedCandidates.length === 0) {
+      return false;
+    }
+
+    // Check if all selected candidates have status "Completed" (case-insensitive)
+    return this.selectedCandidates.every((candidate) => {
+      if (!candidate || !candidate.status) {
+        return false;
+      }
+      const status = candidate.status.toLowerCase().trim();
+      return status === 'completed';
+    });
   }
 
   /**
@@ -828,6 +942,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const next = (res: AssessmentRound[]) => {
       this.isLoading = false;
+      // If we were completing a round, stop showing the skeleton now
+      if (this.isCompletingRound) {
+        this.isCompletingRound = false;
+      }
       this.step = res;
       this.assessmentRoundList = res;
       if (this.step.length > 0) {
@@ -839,6 +957,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     };
     const error = (error: string) => {
       this.isLoading = false;
+      // Stop showing skeleton on error too
+      if (this.isCompletingRound) {
+        this.isCompletingRound = false;
+      }
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -1059,7 +1181,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     candidateIds?: string[],
     selected?: InterviewSummary[],
     updateComponentInstance?: (instance: ScheduleInterviewComponent) => void,
-    isLoadingPanelData: boolean = false,
+    isLoadingPanelData = false,
   ): DynamicDialogRef {
     // Set filter map (lightweight operation)
     const filter: FilterMap = {
@@ -1173,7 +1295,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     });
 
     // Handle modal close (when user clicks cancel or closes)
-    this.ref.onClose.subscribe((result) => {
+    this.ref.onClose.subscribe(() => {
       // This will be called when modal is closed
       // result will be undefined if closed via cancel, or formValue if closed via success
     });
@@ -1259,6 +1381,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   private getAssementRoundComplete(data: FilterMap) {
+    // Set loading state
+    this.isCompletingRound = true;
+
     const payload = {
       multiSortedColumns: [],
       filterMap: data || {},
@@ -1279,15 +1404,19 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               assessmentId: this.assessmentId,
               assessmentRoundId: this.currentStep,
             };
-            const next = () => {
+            const nextComplete = () => {
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
                 detail: 'Completed Assessment Round Successfully',
               });
               this.roundStatus = true;
+              // Refetch assessment rounds to update the status
+              // Keep isCompletingRound true until refetch completes
+              this.getAssessmentRoundDetails(this.assessmentId);
             };
-            const error = () => {
+            const errorComplete = () => {
+              this.isCompletingRound = false;
               this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
@@ -1299,8 +1428,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                 'assessmentRound/assessmentRoundComplete',
                 payloadData,
               )
-              .subscribe({ next, error });
+              .subscribe({ next: nextComplete, error: errorComplete });
           } else {
+            this.isCompletingRound = false;
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
@@ -1309,10 +1439,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           }
         },
         error: () => {
+          this.isCompletingRound = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Error in candidates confirm.',
+            detail: 'Failed to check round completion status',
           });
         },
       });

@@ -7,7 +7,7 @@
   // Hero Section
   // ============================================
   &__hero {
-    background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+    background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
     border-radius: 16px;
     padding: 32px;
     margin-bottom: var(--spacing-30);
@@ -105,7 +105,11 @@
   // Accordion Section
   // ============================================
   &__accordion-section {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(102, 126, 234, 0.05) 0%,
+      rgba(118, 75, 162, 0.05) 100%
+    );
     border-radius: 16px;
     padding: var(--spacing-35);
     margin-bottom: var(--spacing-25);
@@ -136,7 +140,7 @@
     width: 56px;
     height: 56px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+    background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
     color: white;
     font-size: var(--font-size-22);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
@@ -188,7 +192,7 @@
             top: 0;
             bottom: 0;
             width: 4px;
-            background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+            background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
             opacity: 0;
             transition: opacity 0.3s ease;
             border-radius: 20px 0 0 20px;
@@ -213,7 +217,7 @@
 
           &[aria-expanded="true"] {
             background: #f9fafb;
-            border-color: #2196F3;
+            border-color: #2196f3;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 
             &::before {
@@ -222,12 +226,12 @@
 
             .p-accordion-header-icon {
               transform: translateY(-50%) rotate(90deg);
-              color: #1E88E5;
+              color: #1e88e5;
             }
           }
 
           .p-accordion-header-icon {
-            color: #2196F3;
+            color: #2196f3;
             transition: transform 0.3s ease;
             margin-left: var(--spacing-15);
             flex-shrink: 0;
@@ -638,7 +642,11 @@
   &__summary-table {
     flex: 1;
     min-width: 0;
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(102, 126, 234, 0.05) 0%,
+      rgba(118, 75, 162, 0.05) 100%
+    );
     border-radius: 20px;
     overflow: hidden;
     box-shadow:
@@ -868,7 +876,7 @@
   // Table Container
   // ============================================
   &__table-container {
-    margin-top: var(--spacing-30);
+    // margin-top: var(--spacing-30);
     margin-bottom: var(--spacing-20);
     background: linear-gradient(
       to bottom,
@@ -956,7 +964,7 @@
       border-radius: 8px;
       min-width: 160px;
       transition: all 0.2s ease;
-      background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+      background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
       border: none;
 
       &:hover:not(:disabled) {
@@ -1003,11 +1011,7 @@
       left: 0;
       right: 0;
       height: 4px;
-      background: linear-gradient(
-        90deg,
-        var(--color-success),
-        #43a047
-      );
+      background: linear-gradient(90deg, var(--color-success), #43a047);
     }
 
     &::after {
@@ -1036,7 +1040,11 @@
       border-radius: 12px;
       min-width: 280px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      background: linear-gradient(135deg, var(--color-success) 0%, #43a047 100%);
+      background: linear-gradient(
+        135deg,
+        var(--color-success) 0%,
+        #43a047 100%
+      );
       border: none;
       box-shadow:
         0 6px 20px rgba(22, 163, 74, 0.3),
@@ -1124,7 +1132,7 @@
       padding: var(--spacing-12) var(--spacing-30);
       font-weight: 600;
       border-radius: 8px;
-      background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+      background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
       border: none;
 
       &:hover:not(:disabled) {
@@ -1149,7 +1157,11 @@
 
   &__table-skeleton {
     padding: var(--spacing-25);
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(102, 126, 234, 0.05) 0%,
+      rgba(118, 75, 162, 0.05) 100%
+    );
     border-radius: 16px;
     border: 1px solid rgba(102, 126, 234, 0.2);
   }
@@ -1462,7 +1474,7 @@
 
     &__table-container {
       padding: 25px 20px;
-      margin-top: 25px;
+      // margin-top: 25px;
       margin-bottom: 18px;
     }
 
@@ -2080,7 +2092,7 @@
   .p-button:not(.p-button-outlined):not(.p-button-text) {
     // Exclude hero button which is styled separately
     &:not(.QuestionSet__hero-button *) {
-      background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%) !important;
+      background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%) !important;
       border: none !important;
 
       &:hover:not(:disabled) {

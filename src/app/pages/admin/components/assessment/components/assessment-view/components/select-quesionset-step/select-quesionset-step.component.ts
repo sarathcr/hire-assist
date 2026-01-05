@@ -1,4 +1,11 @@
-import { Component, input, OnInit } from '@angular/core';
+import {
+  Component,
+  input,
+  OnInit,
+  computed,
+  signal,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -86,6 +93,10 @@ interface QuestionSetAccordionData {
   isLoadingSelectedQuestions: boolean;
   hasLoadedSelectedQuestions: boolean;
   hasLoadedTableData: boolean;
+  searchValue?: string;
+  previousIsLoading?: boolean;
+  currentPayload?: PaginatedPayload;
+  previousFilterMap?: any;
 }
 @Component({
   selector: 'app-select-quesionset-step',
@@ -151,6 +162,7 @@ export class SelectQuesionsetStepComponent
     private readonly dataSourceService: TableDataSourceService<QuestionsModel>,
     private readonly questionService: QuestionService,
     private readonly stepsStatusService: StepsStatusService,
+    private readonly cdr: ChangeDetectorRef,
   ) {
     super();
     this.fGroup = buildFormGroup(this.questionSetModal);
@@ -266,6 +278,10 @@ export class SelectQuesionsetStepComponent
       this.questionSetAccordionData.set(questionSetId, {
         ...updatedAccordionData,
       });
+      this.cdr.markForCheck();
+      setTimeout(() => {
+        this.cdr.detectChanges();
+      }, 0);
     }
   }
 
@@ -410,6 +426,10 @@ export class SelectQuesionsetStepComponent
             isLoadingSelectedQuestions: false,
             hasLoadedSelectedQuestions: false,
             hasLoadedTableData: false,
+            searchValue: '',
+            previousIsLoading: false,
+            currentPayload: new PaginatedPayload(),
+            previousFilterMap: {},
           });
         } else {
           const existingData = this.questionSetAccordionData.get(
@@ -422,12 +442,19 @@ export class SelectQuesionsetStepComponent
             existingData.totalScore = 0;
             existingData.hasLoadedSelectedQuestions = false;
             existingData.hasLoadedTableData = false;
+            existingData.searchValue = existingData.searchValue || '';
+            existingData.previousIsLoading = false;
+            if (!existingData.currentPayload) {
+              existingData.currentPayload = new PaginatedPayload();
+            }
+            if (!existingData.previousFilterMap) {
+              existingData.previousFilterMap = {};
+            }
             this.questionSetAccordionData.set(qs.id.toString(), {
               ...existingData,
             });
           }
         }
-        this.loadQuestionsForAccordion(qs.id.toString());
       });
       this.setOptions();
       this.isLoading = false;
@@ -570,6 +597,10 @@ export class SelectQuesionsetStepComponent
     };
 
     this.questionSetAccordionData.set(questionSetId, updatedData);
+    this.cdr.markForCheck();
+    setTimeout(() => {
+      this.cdr.detectChanges();
+    }, 0);
   }
 
   public onAccordionOpen(event: AccordionTabOpenEvent): void {
@@ -722,6 +753,14 @@ export class SelectQuesionsetStepComponent
         accordionData.hasLoadedTableData = true;
       }
       accordionData.isLoadingQuestions = false;
+      accordionData.previousIsLoading = accordionData.isLoadingQuestions;
+      this.questionSetAccordionData.set(questionSetId, { ...accordionData });
+
+      if (accordionData.searchValue) {
+        setTimeout(() => {
+          this.restoreSearchValueOnly(questionSetId);
+        }, 200);
+      }
     };
 
     const error = (err: CustomErrorResponse) => {
@@ -732,6 +771,8 @@ export class SelectQuesionsetStepComponent
       });
       accordionData.isLoadingQuestions = false;
       accordionData.hasLoadedTableData = true;
+      accordionData.previousIsLoading = false;
+      this.questionSetAccordionData.set(questionSetId, { ...accordionData });
     };
 
     this.questionService
@@ -744,6 +785,30 @@ export class SelectQuesionsetStepComponent
     questionSetId: string,
   ): void {
     const accordionData = this.questionSetAccordionData.get(questionSetId);
+
+    if (accordionData) {
+      const isSearch =
+        JSON.stringify(payload.filterMap) !==
+        JSON.stringify(accordionData.previousFilterMap || {});
+
+      if (isSearch) {
+        payload.pagination.pageNumber = 1;
+      }
+
+      if (!payload.multiSortedColumns || !Array.isArray(payload.multiSortedColumns)) {
+        payload.multiSortedColumns = [];
+      }
+
+      accordionData.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap || {}));
+      accordionData.currentPayload = payload;
+      accordionData.searchValue = payload.filterMap?.['searchKey'] as string || '';
+      accordionData.previousIsLoading = accordionData.isLoadingQuestions;
+      this.questionSetAccordionData.set(questionSetId, { ...accordionData });
+    }
+
+    if (payload && (!payload.multiSortedColumns || !Array.isArray(payload.multiSortedColumns))) {
+      payload.multiSortedColumns = [];
+    }
 
     if (accordionData && !accordionData.hasLoadedTableData) {
       this.getAllPaginatedQuestionForAccordion(payload, questionSetId);
@@ -786,5 +851,51 @@ export class SelectQuesionsetStepComponent
       }
     }
     return false;
+  }
+
+  private restoreSearchValueOnly(questionSetId: string): void {
+    const accordionData = this.questionSetAccordionData.get(questionSetId);
+    if (!accordionData?.searchValue) {
+      return;
+    }
+
+    try {
+      const questionSetIndex = this.questionSets.findIndex(
+        (qs) => qs.id.toString() === questionSetId,
+      );
+      if (questionSetIndex === -1) {
+        return;
+      }
+
+      const accordionPanels = document.querySelectorAll('p-accordion-panel');
+      if (questionSetIndex >= accordionPanels.length) {
+        return;
+      }
+
+      const accordionPanel = accordionPanels[questionSetIndex];
+      const tableContainer = accordionPanel.querySelector(
+        '.QuestionSet__table-container',
+      ) as HTMLElement;
+      if (!tableContainer) {
+        return;
+      }
+
+      const searchInput = tableContainer.querySelector(
+        'input[type="text"][placeholder="Search keyword"]',
+      ) as HTMLInputElement;
+      if (searchInput && searchInput.value !== accordionData.searchValue) {
+        (searchInput as any).__isRestoring = true;
+        searchInput.value = accordionData.searchValue;
+        setTimeout(() => {
+          (searchInput as any).__isRestoring = false;
+        }, 100);
+      }
+    } catch (error) {
+      // Silently handle restore failure
+    }
+  }
+
+  public getKnobMaxValue(): number {
+    return 200;
   }
 }

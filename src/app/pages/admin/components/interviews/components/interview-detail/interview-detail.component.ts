@@ -43,6 +43,12 @@ import { InterviewService } from '../../../assessment/services/interview.service
 import { InterviewDetailSkeletonComponent } from './interview-detail-skeleton';
 import { ImageComponent } from '../../../../../../shared/components/image';
 import { ImageSkeletonComponent } from '../../../../../../shared/components/image/image-skeleton';
+import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
+import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
+import { DialogData } from '../../../../../../shared/models/dialog.models';
+import { CandidatePayload, CandidateData } from '../../../../models/stepper.model';
+import { PaginatedData } from '../../../../../../shared/models/pagination.models';
+import { FilterMap } from '../../../../../../shared/models/pagination.models';
 
 @Component({
   selector: 'app-interview-detail',
@@ -98,6 +104,8 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
   public isSubmitted = false;
   public responseData!: InterviewerCandidate;
   public totalFeedbackScore: number = 0;
+  public candidateStatus: string | null = null;
+  public isCheckingCandidateStatus = false;
   public uploadedFileName: string | undefined;
   public feedbackdetails!: Feedbackcriteria[];
   public feedbackcriteria: AccordionData[] = [];
@@ -457,6 +465,8 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
       this.isSubmitted = res.statusId == 7 ? true : false;
       this.isInterviewerLoaded = true;
       this.checkAllApisLoaded();
+      // Fetch candidate status from assessment round after getting interview details
+      this.fetchCandidateStatusFromAssessmentRound();
     };
     const error = (error?: CustomErrorResponse) => {
       this.interviewerError = error?.error?.type || 'Failed to load interviewer data';
@@ -471,6 +481,51 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
     this.interviewService
       .GetCandidateDetails(payload)
       .subscribe({ next, error });
+  }
+
+  /**
+   * Fetches the candidate's status from the assessment round table
+   */
+  private fetchCandidateStatusFromAssessmentRound(): void {
+    if (!this.assessmentRoundId || !this.candidateid || !this.assessmentId) {
+      return;
+    }
+
+    this.isCheckingCandidateStatus = true;
+    const filterMap: FilterMap = {
+      assessmentRoundId: Number(this.assessmentRoundId),
+      assessmentId: Number(this.assessmentId),
+    };
+
+    const payload = {
+      multiSortedColumns: [],
+      filterMap: filterMap,
+      pagination: {
+        pageNumber: 1,
+        pageSize: 100, // Get enough records to find the candidate
+      },
+    };
+
+    this.interviewService
+      .paginationEntity<CandidateData>('InterviewSummary', payload)
+      .subscribe({
+        next: (res: PaginatedData<CandidateData>) => {
+          this.isCheckingCandidateStatus = false;
+          // Find the candidate by email (candidateId)
+          const candidate = res.data.find(
+            (item: CandidateData) => item.email === this.candidateid,
+          );
+          if (candidate) {
+            this.candidateStatus = candidate.status || null;
+          } else {
+            this.candidateStatus = null;
+          }
+        },
+        error: () => {
+          this.isCheckingCandidateStatus = false;
+          this.candidateStatus = null;
+        },
+      });
   }
 
   private checkAllApisLoaded(): void {
@@ -513,5 +568,162 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
     this.totalFeedbackScore = this.feedbackcriteria
       .map((fb) => Number(fb.score) || 0) // Ensure numeric addition
       .reduce((acc, curr) => acc + curr, 0);
+  }
+
+  /**
+   * Checks if the candidate's status in the assessment round table is "Completed"
+   */
+  public isCandidateStatusCompleted(): boolean {
+    return this.candidateStatus?.toLowerCase() === 'completed';
+  }
+
+  /**
+   * Handles Select Candidate action
+   */
+  public onSelectCandidate(): void {
+    // Check if candidate status in assessment round table is "Completed"
+    if (!this.isCandidateStatusCompleted()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Candidate status must be "Completed" in the assessment round table before selecting the candidate.',
+      });
+      return;
+    }
+
+    const modalData: DialogData = {
+      message: `Are you sure you want to select this candidate?`,
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Select',
+    };
+
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Confirm Selection',
+      maximizable: false,
+      width: '25vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        this.updateCandidateStatus(8, 'selected');
+      }
+    });
+  }
+
+  /**
+   * Handles Reject Candidate action
+   */
+  public onRejectCandidate(): void {
+    // Check if candidate status in assessment round table is "Completed"
+    if (!this.isCandidateStatusCompleted()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Candidate status must be "Completed" in the assessment round table before rejecting the candidate.',
+      });
+      return;
+    }
+
+    const modalData: DialogData = {
+      message: `Are you sure you want to reject this candidate?`,
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Reject',
+    };
+
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Confirm Rejection',
+      maximizable: false,
+      width: '25vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        this.updateCandidateStatus(9, 'rejected');
+      }
+    });
+  }
+
+  /**
+   * Updates the candidate status
+   * @param statusId - 8 for Selected, 9 for Rejected
+   * @param actionName - 'selected' or 'rejected' for success messages
+   */
+  private updateCandidateStatus(statusId: number, actionName: string): void {
+    if (!this.responseData || !this.assessmentRoundId || !this.assessmentId) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Missing required data to update candidate status.',
+      });
+      return;
+    }
+
+    const payload: CandidatePayload[] = [
+      {
+        candidateId: this.responseData.candidateId,
+        assessmentRoundId: Number(this.assessmentRoundId),
+        isActive: true,
+        statusId: statusId,
+        assessmentId: Number(this.assessmentId),
+      },
+    ];
+
+    this.isLoading = true;
+
+    const next = () => {
+      this.isLoading = false;
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail:
+          actionName === 'selected'
+            ? 'Candidate selected successfully'
+            : 'Candidate rejected successfully',
+      });
+      // Refresh the candidate details and status to reflect the updated status
+      this.getAssessmentDetails(this.requestData);
+      // Refresh candidate status from assessment round table
+      setTimeout(() => {
+        this.fetchCandidateStatusFromAssessmentRound();
+      }, 500);
+    };
+
+    const error = (error?: CustomErrorResponse) => {
+      this.isLoading = false;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail:
+          actionName === 'selected'
+            ? 'Failed to select candidate. Please try again.'
+            : 'Failed to reject candidate. Please try again.',
+      });
+    };
+
+    this.interviewService
+      .updateEntity('InterviewStatus', payload)
+      .subscribe({ next, error });
   }
 }

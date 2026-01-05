@@ -651,6 +651,24 @@
   // ============================================
   // Submit Section
   // ============================================
+  &__action-buttons-group {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 0;
+    flex-wrap: wrap;
+
+    @media screen and (max-width: 768px) {
+      flex-direction: column;
+      width: 100%;
+
+      app-button {
+        width: 100%;
+      }
+    }
+  }
+
   &__submit-section {
     display: flex;
     justify-content: flex-end;

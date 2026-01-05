@@ -44,6 +44,7 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
   public questionSetFGroup!: FormGroup;
   public configMap!: ConfigMap;
   public questionSetModal = new QuestionSetFormModal();
+  public isLoading = false;
   constructor(
     private ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
@@ -87,8 +88,10 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
   }
 
   private CreateQuestionSet(payload: QuestionSetFormInterface) {
+    this.isLoading = true;
     payload.assessmentId = Number(this.data.assessmentId);
     const next = () => {
+      this.isLoading = false;
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
@@ -98,6 +101,7 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
       this.ref.close({ isCreateSuccess: true });
     };
     const error = (error: CustomErrorResponse) => {
+      this.isLoading = false;
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
@@ -110,9 +114,11 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
   }
 
   private updateQuestionSet(payload: QuestionSetFormInterface) {
+    this.isLoading = true;
     payload.assessmentId = Number(this.data.formData.assessmentId);
     payload.id = this.data.formData.id;
     const next = () => {
+      this.isLoading = false;
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
@@ -123,6 +129,7 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
     };
 
     const error = (err: CustomErrorResponse) => {
+      this.isLoading = false;
       this.messageService.add({
         severity: 'error',
         summary: 'Error',

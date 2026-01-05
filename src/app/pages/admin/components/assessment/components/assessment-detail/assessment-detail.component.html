@@ -94,7 +94,20 @@
       </p>
     </div>
     <div class="assessment-detail__rounds-selector">
-      @if (step && step.length > 0) {
+      @if (isCompletingRound || (!step || step.length === 0)) {
+        <!-- Show skeleton loader when completing round or when rounds are loading -->
+        <div class="rounds-tabs-wrapper">
+          <div class="rounds-tabs">
+            @for (item of [1, 2, 3, 4]; track item) {
+              <p-skeleton
+                width="140px"
+                height="4rem"
+                styleClass="rounds-tab-skeleton"
+              />
+            }
+          </div>
+        </div>
+      } @else if (step && step.length > 0) {
         <div class="rounds-tabs-wrapper">
           <div class="rounds-tabs">
             @for (stepHeader of step; track stepHeader.id; let i = $index) {
@@ -131,18 +144,6 @@
             }
           </div>
         </div>
-      } @else {
-        <div class="rounds-tabs-wrapper">
-          <div class="rounds-tabs">
-            @for (item of [1, 2, 3]; track item) {
-              <p-skeleton
-                width="140px"
-                height="4rem"
-                styleClass="rounds-tab-skeleton"
-              />
-            }
-          </div>
-        </div>
       }
     </div>
     <!-- Complete Round Button - Integrated with Rounds Section -->
@@ -154,11 +155,11 @@
             <span>Complete the current round to proceed to the next stage</span>
           </div>
           <app-button
-            [disabled]="roundStatus"
+            [disabled]="roundStatus || isCompletingRound"
             [buttonSize]="'medium'"
             [buttonLabel]="'Complete Round'"
             [icon]="'pi pi-check-circle'"
-            [isLoading]="!tableData"
+            [isLoading]="isCompletingRound"
             (btnClick)="CompleteAssessmentRound()"
           ></app-button>
         </div>
@@ -198,7 +199,6 @@
             tooltipPosition="bottom"
             severity="warn"
             [outlined]="true"
-            [disabled]="!isAssignPanelEnabled()"
             (onClick)="OnPanelClick()"
           />
         }
@@ -209,6 +209,7 @@
           severity="success"
           tooltipPosition="bottom"
           [outlined]="true"
+          [disabled]="!isSelectEnabled()"
           (onClick)="selectCandidate()"
         />
         <p-button
@@ -218,6 +219,7 @@
           pTooltip="Reject Candidate"
           tooltipPosition="bottom"
           [outlined]="true"
+          [disabled]="!isRejectEnabled()"
           (onClick)="rejectCandidate()"
         />
       </div>

@@ -272,6 +272,12 @@ export class TableComponent<
   }
 
   public onSearch(event: any): void {
+    const target = event.target as HTMLInputElement;
+    if (target && (target as any).__isRestoring) {
+      this.searchValue = event.target.value ?? '';
+      return;
+    }
+
     this.internalIsLoading.set(true);
     this.searchValue = event.target.value ?? '';
     const payload: PaginatedPayload = { ...this.globalPayload };
@@ -281,7 +287,6 @@ export class TableComponent<
       payload.filterMap['searchKey'] = this.searchValue;
     } else {
       delete payload.filterMap['searchKey'];
-
       this.isAnyFilterActive = this.activeFilters.size > 0;
     }
 
@@ -586,16 +591,47 @@ export class TableComponent<
     payload.pagination.pageSize =
       event.rows ?? this.tableData()?.pageSize ?? 10;
 
-    if (event.multiSortMeta) {
-      payload.multiSortedColumns = event.multiSortMeta.map((sort: any) => ({
-        active: sort.field,
-        direction: sort.order === 1 ? 'asc' : 'desc',
-      }));
+    payload.multiSortedColumns = [];
+
+    if (
+      event.multiSortMeta &&
+      Array.isArray(event.multiSortMeta) &&
+      event.multiSortMeta.length > 0
+    ) {
+      payload.multiSortedColumns = event.multiSortMeta
+        .filter(
+          (sort: any) =>
+            sort.field &&
+            sort.order !== 0 &&
+            sort.order !== null &&
+            sort.order !== undefined,
+        )
+        .map((sort: any) => ({
+          active: sort.field,
+          direction: sort.order === 1 ? 'asc' : 'desc',
+        }));
     } else if (event.sortField) {
-      payload.multiSortedColumns.push({
-        active: event.sortField,
-        direction: event.sortOrder === 1 ? 'asc' : 'desc',
-      });
+      const sortOrder = event.sortOrder;
+      if (
+        sortOrder !== 0 &&
+        sortOrder !== null &&
+        sortOrder !== undefined &&
+        sortOrder !== ''
+      ) {
+        let direction: 'asc' | 'desc' | '' = '';
+        if (sortOrder === 1 || sortOrder === '1') {
+          direction = 'asc';
+        } else if (sortOrder === -1 || sortOrder === '-1') {
+          direction = 'desc';
+        }
+
+        if (direction) {
+          payload.multiSortedColumns.push({
+            active: event.sortField,
+            direction,
+          });
+        }
+      }
     }
 
     if (this.hasAppliedFilters()) {
