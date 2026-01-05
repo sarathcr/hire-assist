@@ -421,6 +421,8 @@
     width: 100%;
     flex: 1;
     min-width: 0;
+    word-break: break-all;
+    margin-right: 10px;
   }
 
   &__accordion-item-title-row {
