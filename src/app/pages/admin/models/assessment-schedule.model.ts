@@ -155,14 +155,14 @@ export class QuestionSetFormModal extends FormEntity {
       title: [
         Validators.required,
         Validators.pattern('^[A-Za-z].*'),
-        Validators.minLength(3),
+        QuestionSetFormModal.minLengthTrimmedValidator(3),
         Validators.maxLength(25),
         QuestionSetFormModal.noExtraSpacesValidator,
       ],
       description: [
         Validators.required,
         Validators.pattern('^[A-Za-z].*'),
-        Validators.minLength(3),
+        QuestionSetFormModal.minLengthTrimmedValidator(3),
         Validators.maxLength(150),
         QuestionSetFormModal.noExtraSpacesValidator,
       ],
@@ -184,6 +184,24 @@ export class QuestionSetFormModal extends FormEntity {
       return { extraSpaces: true };
     }
     return null;
+  }
+
+  private static minLengthTrimmedValidator(
+    minLength: number,
+  ): (control: AbstractControl) => ValidationErrors | null {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+      const trimmedValue = control.value.trim();
+      if (trimmedValue.length < minLength) {
+        return {
+          minlength: {
+            requiredLength: minLength,
+            actualLength: trimmedValue.length,
+          },
+        };
+      }
+      return null;
+    };
   }
 }
 
