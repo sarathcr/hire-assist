@@ -521,7 +521,7 @@
                     {{ option.optionText }}
                   </li>
                 }
-                @if (option.hasAttachments && option.blobId) {
+                @if (option.hasAttachments) {
                   @if (isImageLoadings[option.id]) {
                     <app-image-skeleton></app-image-skeleton>
                   } @else if (

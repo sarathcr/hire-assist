@@ -574,7 +574,7 @@ export class SelectQuesionsetStepComponent
 
     this.opt = options.map((option: any) => ({
       optionText: option.optionText,
-      hasAttachments: option.hasAttachments || option.hasAttachment || false,
+      hasAttachments: option.hasAttachments || option.hasAttachment || option.optionHasAttachment || false,
       isCorrect: option.isCorrect,
       id: option.id || option.optionId,
       blobId: option.blobId || option.optionBlobId,
@@ -603,6 +603,8 @@ export class SelectQuesionsetStepComponent
             accordionData.optionFileData![opt.id] = file;
           }
         });
+        // Update the Map to ensure changes are persisted
+        this.questionSetAccordionData.set(questionSetId, { ...accordionData });
       }
     }
 
