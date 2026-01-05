@@ -50,6 +50,8 @@ import { QuestionSetStateService } from '../../../../services/question-set-state
 import { QuestionSetModalComponent } from './question-set-modal/question-set-modal.component';
 import { QuestionSetStepSkeletonComponent } from './questionSet-skeleton';
 import { StepsStatusService } from '../../../../services/steps-status.service';
+import { InterviewService } from '../../../../services/interview.service';
+import { FileDto } from '../../../../../../models/question.model';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -97,6 +99,10 @@ interface QuestionSetAccordionData {
   previousIsLoading?: boolean;
   currentPayload?: PaginatedPayload;
   previousFilterMap?: any;
+  previewImageUrls?: Record<number, string[]>;
+  isImageLoadings?: Record<number, boolean>;
+  questionFileData?: Record<number, FileDto>;
+  optionFileData?: Record<number, FileDto>;
 }
 @Component({
   selector: 'app-select-quesionset-step',
@@ -163,6 +169,7 @@ export class SelectQuesionsetStepComponent
     private readonly questionService: QuestionService,
     private readonly stepsStatusService: StepsStatusService,
     private readonly cdr: ChangeDetectorRef,
+    private readonly interviewService: InterviewService,
   ) {
     super();
     this.fGroup = buildFormGroup(this.questionSetModal);
@@ -430,6 +437,10 @@ export class SelectQuesionsetStepComponent
             previousIsLoading: false,
             currentPayload: new PaginatedPayload(),
             previousFilterMap: {},
+            previewImageUrls: {},
+            isImageLoadings: {},
+            questionFileData: {},
+            optionFileData: {},
           });
         } else {
           const existingData = this.questionSetAccordionData.get(
@@ -468,24 +479,54 @@ export class SelectQuesionsetStepComponent
         detail: 'error in getting question set details',
       });
     };
-
+    payload.pagination.pageSize = -1;
     this.assessmentService
       .paginationEntity<QuestionSetModel>('QuestionSetSummary', payload)
       .subscribe({ next, error });
   }
 
   private transformOptions(
-    options: OptionsForQuestionSetInterface[],
+    options: OptionsForQuestionSetInterface[] | any[],
+    questionSetId?: string,
   ): OptionsForQuestionSetInterface[] {
     if (!options || !Array.isArray(options)) {
       return [];
     }
 
-    this.opt = options.map((option: OptionsForQuestionSetInterface) => ({
+    this.opt = options.map((option: any) => ({
       optionText: option.optionText,
-      hasAttachments: option.hasAttachments,
+      hasAttachments: option.hasAttachments || option.hasAttachment || false,
       isCorrect: option.isCorrect,
+      id: option.id || option.optionId,
+      blobId: option.blobId || option.optionBlobId,
+      attachmentType: option.attachmentType || option.optionsAttachmentTypeId,
+      name: option.name || option.optionFileName,
+      path: option.path || option.optionPath,
+      url: option.url || option.optionFileUrl,
     }));
+
+    // Store option file data for lazy loading if questionSetId is provided
+    if (questionSetId) {
+      const accordionData = this.questionSetAccordionData.get(questionSetId);
+      if (accordionData) {
+        if (!accordionData.optionFileData) {
+          accordionData.optionFileData = {};
+        }
+        this.opt.forEach((opt: any) => {
+          if (opt.hasAttachments && opt.blobId) {
+            const file: FileDto = {
+              blobId: opt.blobId,
+              attachmentType: opt.attachmentType,
+              name: opt.name,
+              path: opt.path,
+              url: opt.url,
+            };
+            accordionData.optionFileData![opt.id] = file;
+          }
+        });
+      }
+    }
+
     return this.opt;
   }
 
@@ -741,9 +782,24 @@ export class SelectQuesionsetStepComponent
 
     const next = (res: PaginatedData<QuestionsModel>) => {
       if (res) {
+        // Clear previous image data when loading new data
+        accordionData.previewImageUrls = {};
+        accordionData.isImageLoadings = {};
+        accordionData.questionFileData = {};
+        accordionData.optionFileData = {};
+
+        // Store file data for lazy loading
+        res.data.forEach((response: any) => {
+          if (response.hasAttachment && response.files) {
+            // Store file data for lazy loading, don't load image yet
+            accordionData.questionFileData![Number(response.id)] =
+              response.files;
+          }
+        });
+
         const transformedData = res.data.map((item: QuestionsModel) => ({
           ...item,
-          options: this.transformOptions(item.options),
+          options: this.transformOptions(item.options, questionSetId),
           isExpanded: false,
         }));
         accordionData.tabledata = {
@@ -795,18 +851,28 @@ export class SelectQuesionsetStepComponent
         payload.pagination.pageNumber = 1;
       }
 
-      if (!payload.multiSortedColumns || !Array.isArray(payload.multiSortedColumns)) {
+      if (
+        !payload.multiSortedColumns ||
+        !Array.isArray(payload.multiSortedColumns)
+      ) {
         payload.multiSortedColumns = [];
       }
 
-      accordionData.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap || {}));
+      accordionData.previousFilterMap = JSON.parse(
+        JSON.stringify(payload.filterMap || {}),
+      );
       accordionData.currentPayload = payload;
-      accordionData.searchValue = payload.filterMap?.['searchKey'] as string || '';
+      accordionData.searchValue =
+        (payload.filterMap?.['searchKey'] as string) || '';
       accordionData.previousIsLoading = accordionData.isLoadingQuestions;
       this.questionSetAccordionData.set(questionSetId, { ...accordionData });
     }
 
-    if (payload && (!payload.multiSortedColumns || !Array.isArray(payload.multiSortedColumns))) {
+    if (
+      payload &&
+      (!payload.multiSortedColumns ||
+        !Array.isArray(payload.multiSortedColumns))
+    ) {
       payload.multiSortedColumns = [];
     }
 
@@ -897,5 +963,109 @@ export class SelectQuesionsetStepComponent
 
   public getKnobMaxValue(): number {
     return 200;
+  }
+
+  public previewImage(file: FileDto, id: number, questionSetId: string): void {
+    const accordionData = this.questionSetAccordionData.get(questionSetId);
+    if (!accordionData) {
+      return;
+    }
+
+    if (!accordionData.isImageLoadings) {
+      accordionData.isImageLoadings = {};
+    }
+    if (!accordionData.previewImageUrls) {
+      accordionData.previewImageUrls = {};
+    }
+
+    accordionData.isImageLoadings[id] = true;
+    this.questionSetAccordionData.set(questionSetId, { ...accordionData });
+
+    this.interviewService
+      .GetFiles({
+        blobId: file.blobId || file.id,
+        attachmentType: file.attachmentType,
+      })
+      .subscribe({
+        next: (blob: Blob) => {
+          const imageUrl = URL.createObjectURL(blob);
+          if (!accordionData.previewImageUrls![id]) {
+            accordionData.previewImageUrls![id] = [];
+          }
+          accordionData.previewImageUrls![id].push(imageUrl);
+          setTimeout(() => {
+            if (accordionData.isImageLoadings) {
+              accordionData.isImageLoadings[id] = false;
+            }
+            this.questionSetAccordionData.set(questionSetId, {
+              ...accordionData,
+            });
+            this.cdr.markForCheck();
+          }, 300);
+        },
+        error: () => {
+          if (accordionData.isImageLoadings) {
+            accordionData.isImageLoadings[id] = false;
+          }
+          this.questionSetAccordionData.set(questionSetId, {
+            ...accordionData,
+          });
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load image',
+          });
+        },
+      });
+  }
+
+  public loadQuestionImage(id: number, questionSetId: string): void {
+    const accordionData = this.questionSetAccordionData.get(questionSetId);
+    if (!accordionData) {
+      return;
+    }
+
+    if (
+      accordionData.questionFileData?.[id] &&
+      !accordionData.previewImageUrls?.[id]
+    ) {
+      if (!accordionData.isImageLoadings) {
+        accordionData.isImageLoadings = {};
+      }
+      accordionData.isImageLoadings[id] = true;
+      this.questionSetAccordionData.set(questionSetId, { ...accordionData });
+      this.previewImage(accordionData.questionFileData[id], id, questionSetId);
+    }
+  }
+
+  public loadOptionImage(id: number, questionSetId: string): void {
+    const accordionData = this.questionSetAccordionData.get(questionSetId);
+    if (!accordionData) {
+      return;
+    }
+
+    if (
+      accordionData.optionFileData?.[id] &&
+      !accordionData.previewImageUrls?.[id]
+    ) {
+      if (!accordionData.isImageLoadings) {
+        accordionData.isImageLoadings = {};
+      }
+      accordionData.isImageLoadings[id] = true;
+      this.questionSetAccordionData.set(questionSetId, { ...accordionData });
+      this.previewImage(accordionData.optionFileData[id], id, questionSetId);
+    }
+  }
+
+  public getLoadQuestionImageHandler(
+    questionSetId: string,
+  ): (id: number) => void {
+    return (id: number) => this.loadQuestionImage(id, questionSetId);
+  }
+
+  public getLoadOptionImageHandler(
+    questionSetId: string,
+  ): (id: number) => void {
+    return (id: number) => this.loadOptionImage(id, questionSetId);
   }
 }

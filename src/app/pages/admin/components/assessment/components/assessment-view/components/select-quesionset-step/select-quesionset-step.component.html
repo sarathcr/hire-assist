@@ -92,11 +92,7 @@
                       class="QuestionSet__summary QuestionSet__summary--loading"
                     >
                       <div class="QuestionSet__summary-header">
-                        <p-skeleton
-                          shape="circle"
-                          width="52px"
-                          height="52px"
-                        />
+                        <p-skeleton shape="circle" width="52px" height="52px" />
                         <p-skeleton width="220px" height="22px" />
                         <p-skeleton width="100px" height="16px" />
                       </div>
@@ -142,7 +138,9 @@
                         Selected Questions Summary
                       </h3>
                       <span class="QuestionSet__summary-count"
-                        >({{ currentAccordionData.selectedIds.length }}
+                        >({{
+                          currentAccordionData.selectedIds.length
+                        }}
                         questions)</span
                       >
                     </div>
@@ -227,7 +225,9 @@
                     [columnsData]="columns"
                     [hasSearch]="true"
                     [searchDebounceTime]="600"
-                    [parentLoader]="currentAccordionData?.isLoadingQuestions ?? false"
+                    [parentLoader]="
+                      currentAccordionData?.isLoadingQuestions ?? false
+                    "
                     (pageChangeAndSort)="
                       onTablePayloadChangeForAccordion(
                         $event,
@@ -237,8 +237,18 @@
                     (selectedIds)="
                       onSelectedIds($event, questionSet.id.toString())
                     "
-                    [alreadySelected]="
-                      currentAccordionData?.selectedIds || []
+                    [alreadySelected]="currentAccordionData?.selectedIds || []"
+                    [previewImageUrls]="
+                      currentAccordionData?.previewImageUrls || {}
+                    "
+                    [isImageLoadings]="
+                      currentAccordionData?.isImageLoadings || {}
+                    "
+                    [onLoadQuestionImage]="
+                      getLoadQuestionImageHandler(questionSet.id.toString())
+                    "
+                    [onLoadOptionImage]="
+                      getLoadOptionImageHandler(questionSet.id.toString())
                     "
                   ></app-table>
                 </div>
@@ -276,7 +286,7 @@
       </div>
     </div>
   }
-  
+
   <!-- Complete Step Button - Always Visible -->
   <div class="QuestionSet__complete-section">
     <app-button
@@ -307,4 +317,4 @@
 @if (isLoading) {
   <app-question-set-step-skeleton></app-question-set-step-skeleton>
 }
- <p-toast position="top-right" class="Toast"></p-toast>
+<p-toast position="top-right" class="Toast"></p-toast>

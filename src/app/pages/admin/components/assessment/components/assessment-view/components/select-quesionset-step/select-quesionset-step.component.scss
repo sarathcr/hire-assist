@@ -2057,11 +2057,25 @@
 
     &__complete-button {
       width: 100%;
-      ::ng-deep .p-button {
+      ::ng-deep p-button.btn-large {
+        height: auto !important;
+        min-height: unset !important;
+        display: block;
+      }
+      ::ng-deep
+        .btn-large
+        .p-button:not(.p-button-outlined):not(.p-button-text) {
         width: 100%;
         min-width: 100%;
         padding: 10px 15px;
-        font-size: var(--font-size-14);
+        font-size: var(--font-size-15);
+        line-height: normal;
+        height: auto !important;
+        min-height: auto !important;
+      }
+
+      ::ng-deep .p-button-label {
+        line-height: 1.2;
       }
     }
 
