@@ -103,6 +103,7 @@ interface QuestionSetAccordionData {
   isImageLoadings?: Record<number, boolean>;
   questionFileData?: Record<number, FileDto>;
   optionFileData?: Record<number, FileDto>;
+  selectionResetCounter?: number;
 }
 @Component({
   selector: 'app-select-quesionset-step',
@@ -235,12 +236,17 @@ export class SelectQuesionsetStepComponent
       return;
     }
 
+    // Store the original state before making changes
+    const originalAllSelectedQuestions = [...accordionData.allSelectedQuestions];
+    const originalSelectedIds = [...(accordionData.selectedIds || [])];
+
     const selectedIds = newIds.map((item) => item.id.toString());
     const currentPageIdsSet = new Set(
       (accordionData.tabledata?.data || []).map((q) => q.id.toString()),
     );
 
-    accordionData.allSelectedQuestions =
+    // Calculate new selection without modifying accordionData yet
+    const allSelectedQuestionsExcludingCurrentPage =
       accordionData.allSelectedQuestions.filter(
         (q) => !currentPageIdsSet.has(q.questionId.toString()),
       );
@@ -255,7 +261,7 @@ export class SelectQuesionsetStepComponent
       }));
 
     const combinedQuestions = [
-      ...accordionData.allSelectedQuestions,
+      ...allSelectedQuestionsExcludingCurrentPage,
       ...selectedOnPage,
     ];
 
@@ -264,9 +270,42 @@ export class SelectQuesionsetStepComponent
       uniqueQuestionsMap.set(q.questionId, q);
     });
 
-    accordionData.allSelectedQuestions = Array.from(
-      uniqueQuestionsMap.values(),
+    const newAllSelectedQuestions = Array.from(uniqueQuestionsMap.values());
+
+    // Calculate total score for the new selection
+    const newTotalScore = newAllSelectedQuestions.reduce(
+      (sum, q) => sum + (q.maxMark || 0),
+      0,
     );
+
+    // Validate total score doesn't exceed 200 BEFORE modifying accordionData
+    const maxScore = this.getKnobMaxValue();
+    if (newTotalScore > maxScore) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: `Total score cannot exceed ${maxScore}. Current selection would result in ${newTotalScore} marks.`,
+      });
+      // Restore original state
+      accordionData.allSelectedQuestions = [...originalAllSelectedQuestions];
+      accordionData.selectedIds = [];
+      
+      // Temporarily clear selectedIds to force table reset
+      this.questionSetAccordionData.set(questionSetId, { ...accordionData });
+      this.cdr.markForCheck();
+      
+      // Then restore the original selectedIds to sync the table
+      setTimeout(() => {
+        accordionData.selectedIds = [...originalSelectedIds];
+        this.questionSetAccordionData.set(questionSetId, { ...accordionData });
+        this.cdr.markForCheck();
+        this.cdr.detectChanges();
+      }, 0);
+      return;
+    }
+
+    // Only update accordionData if validation passes
+    accordionData.allSelectedQuestions = newAllSelectedQuestions;
 
     accordionData.selectedIds = accordionData.allSelectedQuestions.map((q) =>
       q.questionId.toString(),
@@ -282,6 +321,8 @@ export class SelectQuesionsetStepComponent
     const updatedAccordionData =
       this.questionSetAccordionData.get(questionSetId);
     if (updatedAccordionData) {
+      // Update disabled state of questions after selection change
+      this.updateQuestionDisabledStates(questionSetId);
       this.questionSetAccordionData.set(questionSetId, {
         ...updatedAccordionData,
       });
@@ -290,6 +331,44 @@ export class SelectQuesionsetStepComponent
         this.cdr.detectChanges();
       }, 0);
     }
+  }
+
+  private updateQuestionDisabledStates(questionSetId: string): void {
+    const accordionData = this.questionSetAccordionData.get(questionSetId);
+    if (!accordionData || !accordionData.tabledata) {
+      return;
+    }
+
+    // Calculate current total score
+    const currentTotalScore =
+      accordionData.allSelectedQuestions.reduce(
+        (sum, q) => sum + (q.maxMark || 0),
+        0,
+      ) || 0;
+    const maxScore = this.getKnobMaxValue();
+
+    // Update disabled state for each question in the table
+    const updatedData = accordionData.tabledata.data.map((item: any) => {
+      // Check if selecting this question would exceed the max score
+      const wouldExceedMax =
+        currentTotalScore + (item.maxMark || 0) > maxScore;
+      // Only disable if it's not already selected
+      const isAlreadySelected = accordionData.selectedIds?.includes(
+        item.id.toString(),
+      );
+      const isDisabled = wouldExceedMax && !isAlreadySelected;
+
+      return {
+        ...item,
+        isDisabled: isDisabled,
+      };
+    });
+
+    // Create new reference to trigger change detection
+    accordionData.tabledata = {
+      ...accordionData.tabledata,
+      data: updatedData,
+    };
   }
 
   public onTablePayloadChange(payload: PaginatedPayload): void {
@@ -797,11 +876,31 @@ export class SelectQuesionsetStepComponent
           }
         });
 
-        const transformedData = res.data.map((item: QuestionsModel) => ({
-          ...item,
-          options: this.transformOptions(item.options, questionSetId),
-          isExpanded: false,
-        }));
+        // Calculate current total score
+        const currentTotalScore =
+          accordionData.allSelectedQuestions.reduce(
+            (sum, q) => sum + (q.maxMark || 0),
+            0,
+          ) || 0;
+        const maxScore = this.getKnobMaxValue();
+
+        const transformedData = res.data.map((item: QuestionsModel) => {
+          // Check if selecting this question would exceed the max score
+          const wouldExceedMax =
+            currentTotalScore + (item.maxMark || 0) > maxScore;
+          // Only disable if it's not already selected
+          const isAlreadySelected = accordionData.selectedIds?.includes(
+            item.id.toString(),
+          );
+          const isDisabled = wouldExceedMax && !isAlreadySelected;
+
+          return {
+            ...item,
+            options: this.transformOptions(item.options, questionSetId),
+            isExpanded: false,
+            isDisabled: isDisabled,
+          };
+        });
         accordionData.tabledata = {
           ...res,
           data: transformedData,

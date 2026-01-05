@@ -261,7 +261,7 @@
           <td>
             <p-tableCheckbox
               [value]="product"
-              [disabled]="product.isSelf"
+              [disabled]="product.isSelf || product.isDisabled"
             ></p-tableCheckbox>
           </td>
         }
