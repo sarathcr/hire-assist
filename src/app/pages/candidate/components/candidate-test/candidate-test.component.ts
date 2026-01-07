@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationStart, Router } from '@angular/router';
+import { Observable, forkJoin, of, switchMap, catchError, throwError } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CarouselModule } from 'primeng/carousel';
@@ -95,6 +96,8 @@ export class CandidateTestComponent
   public selectOption = output();
   // Public
   public isLoading = true;
+  public isSaving = false;
+  public isSubmitting = false;
   public isFullScreen = false;
   public isNavigationIntercepted = false;
   public activeButtonId: number | null = null;
@@ -255,20 +258,52 @@ export class CandidateTestComponent
   }
 
   public onReviewBtnClick() {
-    this.handleAnswer(3);
+    if (this.isSaving) return;
+    this.handleAnswer(3).subscribe({
+      next: () => {
+        // Navigation happens in handleAnswer after save completes
+      },
+      error: () => {
+        this.isSaving = false;
+      },
+    });
   }
 
   public onSkipBtnClick() {
-    this.handleAnswer(5);
+    if (this.isSaving) return;
+    this.handleAnswer(5).subscribe({
+      next: () => {
+        // Navigation happens in handleAnswer after save completes
+      },
+      error: () => {
+        this.isSaving = false;
+      },
+    });
   }
 
   public onSaveBtnClick() {
-    this.handleAnswer(6);
+    if (this.isSaving) return;
+    this.handleAnswer(6).subscribe({
+      next: () => {
+        // Navigation happens in handleAnswer after save completes
+      },
+      error: () => {
+        this.isSaving = false;
+      },
+    });
   }
 
   public onFinishBtnClick() {
-    this.handleAnswer(6);
-    this.onTestSubmit();
+    if (this.isSaving || this.isSubmitting) return;
+    this.handleAnswer(6).subscribe({
+      next: () => {
+        // After save completes, submit the test
+        this.onTestSubmit();
+      },
+      error: () => {
+        this.isSaving = false;
+      },
+    });
   }
 
   public onCheckboxChange(event: CheckboxChangeEvent, questionId: number) {
@@ -312,12 +347,20 @@ export class CandidateTestComponent
     });
     this.ref.onClose.subscribe((result) => {
       if (result) {
+        this.isSubmitting = true;
         this.exitFullScreenMode();
         this.addCandidateScores(
           this.assessmentId,
           this.candidateInterview.assessment.assessmentRoundId,
-        );
-        this.router.navigate(['candidate/thank-you']);
+        ).subscribe({
+          next: () => {
+            this.isSubmitting = false;
+            this.router.navigate(['candidate/thank-you']);
+          },
+          error: () => {
+            this.isSubmitting = false;
+          },
+        });
       }
     });
   }
@@ -354,8 +397,10 @@ export class CandidateTestComponent
   }
 
   // Private
-  private handleAnswer(statusId: number) {
-    if (this.activeButtonId === null || !this.activeQuestion) return;
+  private handleAnswer(statusId: number): Observable<void> {
+    if (this.activeButtonId === null || !this.activeQuestion) {
+      return of(void 0);
+    }
 
     const selectedValue = this.selectedValues[this.activeButtonId] ?? null;
     this.activeQuestion.status = this.getStatusFromId(statusId);
@@ -372,9 +417,14 @@ export class CandidateTestComponent
       duration: this.timerComponent.getCurrentFormattedTime(),
     };
 
-    this.saveOrUpdateCandidateAnswer(payload);
-
-    this.handleQuestionNavigation();
+    this.isSaving = true;
+    return this.saveOrUpdateCandidateAnswer(payload).pipe(
+      switchMap(() => {
+        this.isSaving = false;
+        this.handleQuestionNavigation();
+        return of(void 0);
+      }),
+    );
   }
 
   private getStatusFromId(
@@ -419,26 +469,35 @@ export class CandidateTestComponent
     return answerOptionId;
   }
 
-  private saveOrUpdateCandidateAnswer(payload: Payload): void {
-    this.candidatetestservice
+  private saveOrUpdateCandidateAnswer(payload: Payload): Observable<void> {
+    return this.candidatetestservice
       .getCandidateAnswer(payload.assessmentId, payload.candidateId)
-      .subscribe({
-        next: (existingAnswer) => {
+      .pipe(
+        switchMap((existingAnswers: any) => {
+          // Handle both array and single object responses
+          const answersArray = Array.isArray(existingAnswers)
+            ? existingAnswers
+            : [existingAnswers];
+          const existingAnswer = answersArray.find(
+            (ans: any) => ans?.questionId === payload.questionId,
+          );
           if (existingAnswer?.id) {
             payload.id = existingAnswer.id;
-            this.updateCandidateAnswer(payload);
+            return this.updateCandidateAnswer(payload);
           } else {
-            this.createCandidateAnswer(payload);
+            return this.createCandidateAnswer(payload);
           }
-        },
-        error: (error) => {
+        }),
+        catchError((error) => {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: error.type,
+            detail: error?.type || 'Failed to save answer',
           });
-        },
-      });
+          this.isSaving = false;
+          return throwError(() => error);
+        }),
+      );
   }
 
   private handleQuestionNavigation(): void {
@@ -691,86 +750,83 @@ export class CandidateTestComponent
     this.candidatetestservice.getQuestionSet().subscribe({ next, error });
   }
 
-  private createCandidateAnswer(payload: Payload) {
-    const next = () => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Candidate answer created successfully.',
-      });
-    };
-    const error = (error: string) => {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Creation Failed',
-        detail: `Unable to create candidate answer: ${error}`,
-      });
-    };
-    this.candidatetestservice
-      .addcandidateAnswer(payload)
-      .subscribe({ next, error });
-  }
-
-  private updateCandidateAnswer(payload: Payload) {
-    const next = () => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Candidate answer updated successfully.',
-      });
-    };
-    const error = (error: string) => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Update Error',
-        detail: `Failed to update candidate answer: ${error}`,
-      });
-    };
-
-    this.candidatetestservice
-      .updateCandidateAnswer(payload)
-      .subscribe({ next, error });
-  }
-
-  private addCandidateScores(assessmentId: number, assessmentRoundId: number) {
-    const next = (res: number) => {
-      const score = res;
-      this.interview = {
-        id: this.candidateInterview.assessment.interviewId,
-        statusId: StatusEnum.Completed,
-        score: score,
-      };
-      const next = () => {
+  private createCandidateAnswer(payload: Payload): Observable<void> {
+    return this.candidatetestservice.addcandidateAnswer(payload).pipe(
+      switchMap(() => {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Successfully completed ',
+          detail: 'Candidate answer created successfully.',
         });
-      };
-      const error = (error: string) => {
+        return of(void 0);
+      }),
+      catchError((error) => {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Creation Failed',
+          detail: `Unable to create candidate answer: ${error?.type || error}`,
+        });
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  private updateCandidateAnswer(payload: Payload): Observable<void> {
+    return this.candidatetestservice.updateCandidateAnswer(payload).pipe(
+      switchMap(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Candidate answer updated successfully.',
+        });
+        return of(void 0);
+      }),
+      catchError((error) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: error,
+          summary: 'Update Error',
+          detail: `Failed to update candidate answer: ${error?.type || error}`,
         });
-      };
-      this.interviewService
-        .UpdateInterview(
-          this.candidateInterview.assessment.interviewId,
-          this.interview,
-        )
-        .subscribe({ next, error });
-    };
-    const error = (error: string) => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: error,
-      });
-    };
-    this.candidatetestservice
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  private addCandidateScores(
+    assessmentId: number,
+    assessmentRoundId: number,
+  ): Observable<void> {
+    return this.candidatetestservice
       .addCandidateScore(assessmentId, assessmentRoundId)
-      .subscribe({ next, error });
+      .pipe(
+        switchMap((score: number) => {
+          this.interview = {
+            id: this.candidateInterview.assessment.interviewId,
+            statusId: StatusEnum.Completed,
+            score: score,
+          };
+          return this.interviewService.UpdateInterview(
+            this.candidateInterview.assessment.interviewId,
+            this.interview,
+          );
+        }),
+        switchMap(() => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Successfully completed ',
+          });
+          return of(void 0);
+        }),
+        catchError((error) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error?.type || 'Failed to submit test',
+          });
+          return throwError(() => error);
+        }),
+      );
   }
 
   private setInitialActiveQuestion(data: CandidateTestQuestionSet) {

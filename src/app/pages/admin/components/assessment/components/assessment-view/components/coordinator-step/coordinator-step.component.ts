@@ -1,4 +1,4 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
   FormArray,
@@ -11,6 +11,7 @@ import {
 } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { Subscription } from 'rxjs';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
@@ -31,17 +32,15 @@ import {
 } from '../../../../../../models/assessment.model';
 import { AssessmentService } from '../../../../../../services/assessment.service';
 import { AssessmentScheduleService } from '../../../../services/assessment-schedule.service';
-import { CoordinatorSkeletonComponent } from './coordinator-step-skeleton.component';
-import { RoundModel } from '../../assessment-view.component';
 import { StepsStatusService } from '../../../../services/steps-status.service';
+import { RoundModel } from '../../assessment-view.component';
+import { CoordinatorSkeletonComponent } from './coordinator-step-skeleton.component';
 
-// --- Interface Definition ---
 interface RoundFormGroup {
   coordinator: FormControl<string[] | null>;
   assessmentRound: FormControl<string[] | null>;
 }
 
-// --- Custom Validator ---
 export const coordinatorRequiredWhenRoundSelectedValidator: ValidatorFn = (
   control: AbstractControl,
 ): ValidationErrors | null => {
@@ -119,16 +118,19 @@ export const uniqueRoundValidator: ValidatorFn = (
   templateUrl: './coordinator-step.component.html',
   styleUrl: './coordinator-step.component.scss',
 })
-export class CoordinatorStepComponent implements OnInit {
+export class CoordinatorStepComponent implements OnInit, OnDestroy {
   public fGroup!: FormGroup;
   public configMap!: ConfigMap;
   public cordinatorData!: CordinatorData;
   public isEdit = false;
+  public coordinatorData!: CordinatorData;
+  public assessmentRoundConfigs: CustomSelectConfig[] = [];
+
   private assessmentRounds!: RoundModel[];
   private cordinatorRoundData!: CoordinatorDto;
   private cordinators!: Option[];
-  public coordinatorData!: CordinatorData;
   private optionsMap!: OptionsMap;
+  private valueChangesSub?: Subscription;
 
   public assessmentId = input<number>();
 
@@ -152,6 +154,15 @@ export class CoordinatorStepComponent implements OnInit {
       assessmentRoundsDetails: this.fb.array([], [uniqueRoundValidator]),
     });
     this.getCordinators();
+
+    this.valueChangesSub =
+      this.assessmentRoundsDetailsFormArray.valueChanges.subscribe(() => {
+        this.updateAvailableOptions();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.valueChangesSub?.unsubscribe();
   }
 
   public onSubmit(): void {
@@ -189,7 +200,7 @@ export class CoordinatorStepComponent implements OnInit {
           summary: 'Success',
           detail: 'Removed Successfully',
         });
-        // Call step status API and move to next step
+        this.fGroup.markAsPristine();
         this.checkStepStatusAndMoveNext();
       };
 
@@ -214,7 +225,7 @@ export class CoordinatorStepComponent implements OnInit {
           summary: 'Success',
           detail: 'Round and coordinator assigned successfully',
         });
-        // Call step status API and move to next step
+        this.fGroup.markAsPristine();
         this.checkStepStatusAndMoveNext();
       };
 
@@ -233,14 +244,16 @@ export class CoordinatorStepComponent implements OnInit {
   }
 
   public addRound(): void {
+    this.assessmentRoundConfigs.push(this.createRoundConfig());
     this.assessmentRoundsDetailsFormArray.push(this.createRoundFormGroup());
+    this.updateAvailableOptions();
   }
 
   public removeRound(index: number): void {
+    this.assessmentRoundConfigs.splice(index, 1);
     this.assessmentRoundsDetailsFormArray.removeAt(index);
+    this.updateAvailableOptions();
   }
-
-  //private methods
 
   private GetAssessmentRoundbyAssessment() {
     this.assessmentScheduleService
@@ -250,6 +263,7 @@ export class CoordinatorStepComponent implements OnInit {
         this.getCordinatorRoundData();
       });
   }
+
   private onCoordinatorClick(): void {
     if (!this.assessmentRounds || this.assessmentRounds.length === 0) {
       this.messageService.add({
@@ -277,6 +291,7 @@ export class CoordinatorStepComponent implements OnInit {
     };
     this.getCordinatorData();
   }
+
   private getCordinatorRoundData() {
     const next = (res: CoordinatorDto) => {
       this.cordinatorRoundData = res;
@@ -292,6 +307,7 @@ export class CoordinatorStepComponent implements OnInit {
       .Getcoordinator(Number(this.assessmentId()))
       .subscribe({ next, error });
   }
+
   private getCordinators() {
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
@@ -338,10 +354,12 @@ export class CoordinatorStepComponent implements OnInit {
 
   private initializeFormRounds(): void {
     this.assessmentRoundsDetailsFormArray.clear();
+    this.assessmentRoundConfigs = [];
 
     if (this.isEdit) {
       const editData = this.cordinatorData.cordinatorRoundData.coordinatorRound;
       editData.forEach((item: CoordinatorRoundItemDto) => {
+        this.assessmentRoundConfigs.push(this.createRoundConfig());
         this.assessmentRoundsDetailsFormArray.push(
           this.createRoundFormGroup(
             [String(item.assessmentRoundId)],
@@ -352,6 +370,8 @@ export class CoordinatorStepComponent implements OnInit {
     } else {
       this.addRound();
     }
+    this.updateAvailableOptions();
+    this.fGroup.markAsPristine();
   }
 
   private createRoundFormGroup(
@@ -361,11 +381,40 @@ export class CoordinatorStepComponent implements OnInit {
     return this.fb.group(
       {
         coordinator: new FormControl<string[] | null>(coordinatorIds),
-
         assessmentRound: new FormControl<string[] | null>(roundIds),
       },
-      { validators: [coordinatorRequiredWhenRoundSelectedValidator]       },
+      { validators: [coordinatorRequiredWhenRoundSelectedValidator] },
     );
+  }
+
+  private createRoundConfig(): CustomSelectConfig {
+    // FIX: Cast to CustomSelectConfig to assure Typescript that 'options' exists
+    return { ...(this.configMap['assessmentRound'] as CustomSelectConfig) };
+  }
+
+  private updateAvailableOptions(): void {
+    const allSelectedValues = this.assessmentRoundsDetailsFormArray.controls
+      .map((ctrl) => ctrl.get('assessmentRound')?.value?.[0])
+      .filter((val) => val != null);
+
+    this.assessmentRoundConfigs.forEach((config, index) => {
+      const currentRowValue = this.assessmentRoundsDetailsFormArray
+        .at(index)
+        .get('assessmentRound')?.value?.[0];
+
+      const filteredOptions = this.cordinatorData.assessmentRounds.filter(
+        (option) => {
+          const isSelectedSomewhere = allSelectedValues.includes(option.value);
+          const isSelectedInThisRow = option.value === currentRowValue;
+          return !isSelectedSomewhere || isSelectedInThisRow;
+        },
+      );
+
+      this.assessmentRoundConfigs[index] = {
+        ...config,
+        options: filteredOptions,
+      };
+    });
   }
 
   private checkStepStatusAndMoveNext(): void {
@@ -373,11 +422,9 @@ export class CoordinatorStepComponent implements OnInit {
     if (assessmentId) {
       this.stepsStatusService.getAssessmentStepsStatus(assessmentId).subscribe({
         next: () => {
-          // Notify parent to move to next step
           this.stepsStatusService.notifyStepCompleted(assessmentId);
         },
         error: () => {
-          // Even if step status API fails, try to move to next step
           this.stepsStatusService.notifyStepCompleted(assessmentId);
         },
       });

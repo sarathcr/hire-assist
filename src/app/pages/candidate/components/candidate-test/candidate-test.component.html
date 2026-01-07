@@ -182,11 +182,15 @@
         <app-button
           [buttonLabel]="'Mark as Review'"
           [buttonVariant]="'outlined'"
+          [disabled]="isSaving"
+          [isLoading]="isSaving"
           (btnClick)="onReviewBtnClick()"
         ></app-button>
         <app-button
           [buttonLabel]="'Skip'"
           [buttonVariant]="'outlined'"
+          [disabled]="isSaving"
+          [isLoading]="isSaving"
           (btnClick)="onSkipBtnClick()"
         ></app-button>
       </div>
@@ -197,13 +201,15 @@
         ) {
           <app-button
             [buttonLabel]="'Finish'"
-            [disabled]="!selectedValues[activeQuestion?.id]"
+            [disabled]="!selectedValues[activeQuestion?.id] || isSaving || isSubmitting"
+            [isLoading]="isSaving || isSubmitting"
             (btnClick)="onFinishBtnClick()"
           ></app-button>
         } @else {
           <app-button
             [buttonLabel]="'Save & Next'"
-            [disabled]="!selectedValues[activeQuestion?.id]"
+            [disabled]="!selectedValues[activeQuestion?.id] || isSaving"
+            [isLoading]="isSaving"
             (btnClick)="onSaveBtnClick()"
           ></app-button>
         }

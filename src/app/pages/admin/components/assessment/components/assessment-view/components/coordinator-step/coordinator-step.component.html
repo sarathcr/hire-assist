@@ -5,7 +5,9 @@
         <i class="pi pi-users"></i>
       </div>
       <div class="coordinator__header-text">
-        <h2 class="coordinator__section__title app-title">Assign Coordinator</h2>
+        <h2 class="coordinator__section__title app-title">
+          Assign Coordinator
+        </h2>
         <p class="coordinator__section__description">
           Select the round and assign coordinators to handle the round
         </p>
@@ -14,7 +16,10 @@
   </div>
   @if (coordinatorData) {
     <form [formGroup]="fGroup" (ngSubmit)="onSubmit()">
-      <div formArrayName="assessmentRoundsDetails" class="coordinator__form-container">
+      <div
+        formArrayName="assessmentRoundsDetails"
+        class="coordinator__form-container"
+      >
         @for (
           roundGroup of assessmentRoundsDetailsFormArray.controls;
           track $index
@@ -24,11 +29,15 @@
               <div class="coordinator__card-number">
                 <span>{{ $index + 1 }}</span>
               </div>
-              <h3 class="coordinator__card-title">Assignment {{ $index + 1 }}</h3>
+              <h3 class="coordinator__card-title">
+                Assignment {{ $index + 1 }}
+              </h3>
             </div>
             <div class="coordinator__card-body">
               <div class="coordinator__form-row">
-                <div class="coordinator__form-field-wrapper coordinator__form-field--round">
+                <div
+                  class="coordinator__form-field-wrapper coordinator__form-field--round"
+                >
                   <label class="coordinator__field-label">
                     <i class="pi pi-list"></i>
                     Recruitment Round
@@ -36,11 +45,13 @@
                   <app-input-multiselect
                     class="coordinator__form-field"
                     [formGroup]="roundGroup"
-                    [config]="configMap['assessmentRound']"
+                    [config]="assessmentRoundConfigs[$index]"
                     [selectedItems]="[]"
                   />
                 </div>
-                <div class="coordinator__form-field-wrapper coordinator__form-field--coordinator">
+                <div
+                  class="coordinator__form-field-wrapper coordinator__form-field--coordinator"
+                >
                   <label class="coordinator__field-label">
                     <i class="pi pi-user"></i>
                     Coordinator
@@ -73,7 +84,8 @@
             </div>
             <h3 class="coordinator__empty-title">No Assignments Yet</h3>
             <p class="coordinator__empty-description">
-              Click "Add Assignment" below to start assigning coordinators to recruitment rounds.
+              Click "Add Assignment" below to start assigning coordinators to
+              recruitment rounds.
             </p>
           </div>
         }
@@ -98,11 +110,12 @@
           type="button"
           class="coordinator__add-btn"
         ></app-button>
-        <app-button 
-          buttonLabel="Submit" 
+        <app-button
+          buttonLabel="Submit"
           (btnClick)="onSubmit()"
           [icon]="'pi pi-check'"
           [buttonSize]="'small'"
+          [disabled]="fGroup.pristine || fGroup.invalid"
           class="coordinator__submit-btn"
         ></app-button>
       </footer>

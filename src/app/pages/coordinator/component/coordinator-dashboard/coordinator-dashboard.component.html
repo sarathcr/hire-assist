@@ -1,6 +1,6 @@
 <div class="coordinator-assessment">
   <div>
-    <h1 class="coordinator-assessment__title">Assessments</h1>
+    <h1 class="coordinator-assessment__title">Recruitments</h1>
   </div>
   <div class="coordinator-assessment__wrapper">
     @if (isLoading) {
@@ -18,7 +18,6 @@
             class="coordinator-assessment__card"
             [data]="assessment"
             [showToggleButton]="false"
-            [showContent]="false"
             (click)="onClickAssessment(assessment.id ?? 0)"
           ></app-assessment-card>
         } @empty {
