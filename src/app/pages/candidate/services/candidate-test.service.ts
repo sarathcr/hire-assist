@@ -55,7 +55,7 @@ export class CandidateTestService extends ApiService<any> {
   }
   public updateCandidateAnswer(payload: Payload) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return this.httpClient.put<any>(
+    return this.httpClient.post<any>(
       // `${this.getResourceUrl()}/api/assessment/candidateAnswer`,
       `${this.getResourceUrl()}/candidateAnswer`,
       payload,

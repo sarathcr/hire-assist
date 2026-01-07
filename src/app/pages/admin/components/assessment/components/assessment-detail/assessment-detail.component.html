@@ -94,7 +94,7 @@
       </p>
     </div>
     <div class="assessment-detail__rounds-selector">
-      @if (isCompletingRound || (!step || step.length === 0)) {
+      @if (isCompletingRound || !step || step.length === 0) {
         <!-- Show skeleton loader when completing round or when rounds are loading -->
         <div class="rounds-tabs-wrapper">
           <div class="rounds-tabs">

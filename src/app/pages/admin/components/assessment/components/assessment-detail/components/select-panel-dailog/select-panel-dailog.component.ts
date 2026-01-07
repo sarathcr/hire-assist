@@ -112,6 +112,9 @@ export class SelectPanelDailogComponent implements OnInit {
   public isLoading = false;
   public isSubmitting = false;
   public selectedPanelForAssignment: PanelSummary | null = null;
+  private currentInterviewers: string[] = [];
+  private interviewersEdited = false;
+  private editedPanelId: number | null = null;
 
   constructor(
     private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
@@ -173,6 +176,13 @@ export class SelectPanelDailogComponent implements OnInit {
         next: (res: GetInterviewPanelsResponse) => {
           this.selectedPanel = [String(res.panelId)];
           this.existingPanel = this.selectedPanel;
+          // Store current interviewers from the existing assignment
+          this.currentInterviewers =
+            res.interviewer?.map((i: Interviewers) => i.id) ?? [];
+        },
+        error: () => {
+          // If no panel is assigned, currentInterviewers will remain empty
+          this.currentInterviewers = [];
         },
       });
   }
@@ -223,6 +233,18 @@ export class SelectPanelDailogComponent implements OnInit {
 
           .subscribe({
             next: () => {
+              // Store which panel was edited
+              this.editedPanelId = formData.panels;
+              // Mark that interviewers have been edited for this panel
+              this.interviewersEdited = true;
+              // Update current interviewers if this is the selected panel
+              if (
+                this.selectedPanelIds.length > 0 &&
+                String(this.selectedPanelIds[0].id) === String(formData.panels)
+              ) {
+                this.currentInterviewers = formData.interviewers;
+              }
+              // Refresh panel data to get updated interviewers
               this.getPaginatedPanelData();
               this.messageService.add({
                 severity: 'success',
@@ -285,7 +307,20 @@ export class SelectPanelDailogComponent implements OnInit {
       return;
     }
     this.IsMultiplePanel = false;
+    const previousPanelId =
+      this.selectedPanelIds.length > 0 ? this.selectedPanelIds[0].id : null;
     this.selectedPanelIds = selectedIds.map((item: PanelSummary) => item);
+    
+    // Reset interviewersEdited flag when a different panel is selected
+    // This ensures we use current interviewers for newly selected unassigned panels
+    if (
+      previousPanelId &&
+      selectedIds.length > 0 &&
+      String(previousPanelId) !== String(selectedIds[0].id)
+    ) {
+      this.interviewersEdited = false;
+      this.editedPanelId = null;
+    }
   }
   public onSubmit() {
     if (!this.selectedPanelIds || this.selectedPanelIds.length === 0) {
@@ -304,8 +339,36 @@ export class SelectPanelDailogComponent implements OnInit {
     const selectedPanel = this.selectedPanelIds[0];
     this.selectedPanelForAssignment = selectedPanel;
     const isAdd = this.existingPanel.length === 0;
-    const selectedInterviewerIds =
-      selectedPanel.interviewers?.map((i: Interviewer) => i.id) ?? [];
+    
+    // Get the latest panel data from panelData to ensure we have the most up-to-date interviewers
+    const latestPanelData = this.panelData.data.find(
+      (p) => String(p.id) === String(selectedPanel.id),
+    );
+    const panelToUse = latestPanelData || selectedPanel;
+    
+    // Get interviewers from the panel
+    let selectedInterviewerIds =
+      panelToUse.interviewers?.map((i: Interviewer) => i.id) ?? [];
+    
+    // If interviewers were edited for this panel, use the stored currentInterviewers (which was updated during edit)
+    // Otherwise, if the selected panel has no interviewers (unassigned panel) and interviewers haven't been edited,
+    // use the current interviewers from the existing assignment
+    if (
+      this.interviewersEdited &&
+      this.editedPanelId &&
+      String(this.editedPanelId) === String(selectedPanel.id) &&
+      this.currentInterviewers.length > 0
+    ) {
+      // Interviewers were edited for this panel, use the updated interviewers
+      selectedInterviewerIds = [...this.currentInterviewers];
+    } else if (
+      selectedInterviewerIds.length === 0 &&
+      !this.interviewersEdited &&
+      this.currentInterviewers.length > 0
+    ) {
+      // Panel is unassigned and interviewers haven't been edited, use current interviewers
+      selectedInterviewerIds = [...this.currentInterviewers];
+    }
 
     const payload: InterviewPanels = {
       assessmentId: this.assessmentId,

@@ -8,14 +8,14 @@ export interface Users {
   total: number;
 }
 
-export interface QuestionSet {
+export interface Questions {
   total: number;
 }
 
 export interface DashboardSummary {
   assessment: Assessment;
   users: Users;
-  questionSet: QuestionSet;
+  questions: Questions;
 }
 
 export interface DashboardData {

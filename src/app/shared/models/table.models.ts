@@ -18,6 +18,7 @@ export interface ColumnField {
   buttonIcon?: string;
   buttonTooltips?: string[];
   buttonIcons?: string[];
+  buttonLabels?: string[];
   buttonClick?: (cell: unknown) => void;
   filterAlias?: string;
   hasTextFilter?: boolean;

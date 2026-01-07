@@ -7,25 +7,21 @@ import { StoreService } from '../../../../shared/services/store.service';
 import {
   Assessment,
   DashboardData,
-  QuestionSet,
+  Questions,
   Users,
 } from '../../models/dashboard.model';
 import { DashboardService } from '../../services/dashboard.service';
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [
-    RouterLink,
-    ChartModule,
-    CardModule,
-  ],
+  imports: [RouterLink, ChartModule, CardModule],
   templateUrl: './admin-dashboard.component.html',
   styleUrl: './admin-dashboard.component.scss',
 })
 export class AdminDashboardComponent implements OnInit {
   public assessmentData: Assessment = { total: 0, active: 0, inactive: 0 };
   public usersData: Users = { total: 0 };
-  public questionSetData: QuestionSet = { total: 0 };
+  public questionsData: Questions = { total: 0 };
   public todayDate: string = '';
   public isLoadingDashboard: boolean = true;
 
@@ -38,7 +34,9 @@ export class AdminDashboardComponent implements OnInit {
   // Computed properties
   get activePercentage(): number {
     if (this.assessmentData.total > 0) {
-      return Math.round((this.assessmentData.active / this.assessmentData.total) * 100);
+      return Math.round(
+        (this.assessmentData.active / this.assessmentData.total) * 100,
+      );
     }
     return 0;
   }
@@ -78,7 +76,7 @@ export class AdminDashboardComponent implements OnInit {
     const next = (res: DashboardData) => {
       this.assessmentData = res.data.assessment;
       this.usersData = res.data.users;
-      this.questionSetData = res.data.questionSet;
+      this.questionsData = res.data.questions;
       this.updateCharts();
       this.isLoadingDashboard = false;
     };
@@ -175,14 +173,14 @@ export class AdminDashboardComponent implements OnInit {
 
     // Overview Chart Data
     this.overviewChartData = {
-      labels: ['Recruitments', 'Users', 'Question Sets'],
+      labels: ['Recruitments', 'Users', 'Questions'],
       datasets: [
         {
           label: 'Total Count',
           data: [
             this.assessmentData?.total || 0,
             this.usersData?.total || 0,
-            this.questionSetData?.total || 0,
+            this.questionsData?.total || 0,
           ],
           backgroundColor: [
             primaryColor,
@@ -195,4 +193,3 @@ export class AdminDashboardComponent implements OnInit {
     };
   }
 }
-

@@ -47,6 +47,8 @@ export class FrontDeskComponent implements OnInit {
   public assessmentSchedule = new frontDeskModal();
   public selectedUsers: FrontDeskFormGroup[] = [];
   public frontDesk!: FrontDeskFormGroup[];
+  public initialUserIds: string[] = [];
+  public hasCoordinatorChanges = false;
 
   public assessmentId = input<number>();
 
@@ -92,6 +94,9 @@ export class FrontDeskComponent implements OnInit {
             detail: 'Assigned Frontdesk Users',
           });
           this.GetFrontDeskUsers();
+
+          this.hasCoordinatorChanges = false;
+
           // Call step status API and move to next step
           this.checkStepStatusAndMoveNext();
         },
@@ -111,12 +116,14 @@ export class FrontDeskComponent implements OnInit {
       .getFrontDeskUserByAssessment(Number(this.assessmentId()))
       .subscribe({
         next: (response: frontDeskResponse[]) => {
-          this.frontDesk = response.map((item: frontDeskResponse, index: number) => ({
-            id: item.id ?? index + 1,
-            name: item.name ?? '',
-            userId: item.userId ?? '',
-            assessmentId: item.assessmentId ?? 0,
-          }));
+          this.frontDesk = response.map(
+            (item: frontDeskResponse, index: number) => ({
+              id: item.id ?? index + 1,
+              name: item.name ?? '',
+              userId: item.userId ?? '',
+              assessmentId: item.assessmentId ?? 0,
+            }),
+          );
           this.setInitialFormValue();
         },
         error: () => {
@@ -145,7 +152,7 @@ export class FrontDeskComponent implements OnInit {
   private loadCollections() {
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
-    
+
     const frontDeskCoordinators =
       (this.optionsMap?.['frontdesks'] as unknown as Option[]) || [];
 
@@ -157,21 +164,53 @@ export class FrontDeskComponent implements OnInit {
     } else {
       const allUsers = (this.optionsMap['users'] as unknown as Option[]) || [];
       this.users = allUsers
-        .filter((user) => user.roles?.includes('FrontDesk') || user.roles?.includes('frontDesk'))
+        .filter(
+          (user) =>
+            user.roles?.includes('FrontDesk') ||
+            user.roles?.includes('frontDesk'),
+        )
         .map((item: Option) => ({
           label: item.label,
           value: item.value,
         }));
     }
-    
+
     if (!this.users) {
       this.users = [];
     }
   }
+  private watchCoordinatorChanges(): void {
+    this.fGroup
+      .get('users')
+      ?.valueChanges.subscribe((currentUsers: string[]) => {
+        this.hasCoordinatorChanges = !this.areArraysEqual(
+          this.initialUserIds,
+          currentUsers || [],
+        );
+      });
+  }
+
+  private areArraysEqual(a: string[], b: string[]): boolean {
+    if (a.length !== b.length) return false;
+
+    const sortedA = [...a].sort();
+    const sortedB = [...b].sort();
+
+    return sortedA.every((value, index) => value === sortedB[index]);
+  }
 
   private setInitialFormValue(): void {
     const selectedUserIds = this.frontDesk.map((u) => u.userId);
+
+    this.initialUserIds = [...selectedUserIds];
+
     this.fGroup.patchValue({ users: selectedUserIds });
+
+    this.fGroup.markAsPristine();
+    this.fGroup.markAsUntouched();
+
+    // Start listening for changes
+    this.watchCoordinatorChanges();
   }
 
   private checkStepStatusAndMoveNext(): void {

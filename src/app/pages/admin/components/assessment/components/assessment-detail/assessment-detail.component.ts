@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule, NgClass } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -180,6 +180,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     public dialog: DialogService,
     public interviewservice: InterviewService,
     private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   // LifeCycle Hooks
@@ -502,11 +503,72 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   /**
    * Checks if the Schedule button should be enabled
-   * Enabled when the assign panel button is enabled (candidates have status "Selected" or "Rejected")
+   * Enabled when:
+   * 1. At least one candidate is selected
+   * 2. All selected candidates have status "Selected" (matching schedule() method requirement)
+   * 3. For non-aptitude rounds: All selected candidates are assigned to a panel (checked from cache only)
+   * 
+   * Note: If panel data is not in cache, the button is enabled anyway and validation happens in the modal
    */
   public isScheduleEnabled(): boolean {
-    // Use the same condition as assign panel button
-    return this.isAssignPanelEnabled();
+    // Must have at least one candidate selected
+    if (!this.selectedCandidates || this.selectedCandidates.length === 0) {
+      return false;
+    }
+
+    // Check if all selected candidates have status "Selected" (case-insensitive)
+    // This matches the requirement in schedule() method
+    const hasValidStatus = this.selectedCandidates.every((candidate) => {
+      if (!candidate || !candidate.status) {
+        return false;
+      }
+      const status = candidate.status.toLowerCase().trim();
+      return status === 'selected';
+    });
+
+    if (!hasValidStatus) {
+      return false;
+    }
+
+    // For aptitude rounds, panel assignment is not required
+    if (this.isAptitudeRound()) {
+      return true;
+    }
+
+    // For non-aptitude rounds, check panel assignments from cache only
+    // If not in cache, enable button anyway - validation will happen in the modal
+    const allCandidatesInCache = this.selectedCandidates.every((candidate) => {
+      if (!candidate || !candidate.id) {
+        return false;
+      }
+      return this.candidatePanelAssignments.has(candidate.id);
+    });
+
+    // If all candidates are in cache, check if they have panels assigned
+    if (allCandidatesInCache) {
+      return this.selectedCandidates.every((candidate) => {
+        if (!candidate || !candidate.id) {
+          return false;
+        }
+        return this.isCandidateAssignedToPanel(candidate.id);
+      });
+    }
+
+    // If not all candidates are in cache, enable button anyway
+    // The schedule modal will validate and show appropriate messages
+    // Load panel data in background for future checks (non-blocking)
+    const candidateIdsToLoad = this.selectedCandidates
+      .filter((candidate) => candidate?.id && !this.candidatePanelAssignments.has(candidate.id))
+      .map((candidate) => candidate.id);
+    
+    if (candidateIdsToLoad.length > 0) {
+      // Load in background without blocking button enablement
+      setTimeout(() => {
+        this.loadPanelAssignmentsForCandidates(candidateIdsToLoad);
+      }, 0);
+    }
+
+    return true;
   }
 
   /**
@@ -1069,8 +1131,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
    * Loads panel assignment status for specific candidates on-demand
    * Updates the cache asynchronously
    * This is called only when needed (e.g., when checking if candidates can be scheduled)
+   * Does not make API calls for aptitude rounds
    */
   private loadPanelAssignmentsForCandidates(candidateIds: string[]): void {
+    // Don't load panel assignments for aptitude rounds
+    if (this.isAptitudeRound()) {
+      return;
+    }
+
     candidateIds.forEach((candidateId: string) => {
       // Only check if not already in cache
       if (!this.candidatePanelAssignments.has(candidateId)) {
@@ -1083,10 +1151,18 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                 candidateId,
                 !!response?.panelId,
               );
+              // Trigger change detection to update button state
+              if (this.cdr) {
+                this.cdr.detectChanges();
+              }
             },
             error: () => {
               // If API call fails (e.g., 404), candidate doesn't have a panel
               this.candidatePanelAssignments.set(candidateId, false);
+              // Trigger change detection to update button state
+              if (this.cdr) {
+                this.cdr.detectChanges();
+              }
             },
           });
       }
@@ -1095,12 +1171,23 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   /**
    * Loads panel assignments in background and validates
+   * Does not make API calls for aptitude rounds
    */
   private loadPanelAssignmentsInBackground(
     candidateIds: string[],
     selected: InterviewSummary[],
     getComponentInstance: () => ScheduleInterviewComponent | null,
   ): void {
+    // Don't load panel assignments for aptitude rounds
+    if (this.isAptitudeRound()) {
+      const componentInstance = getComponentInstance();
+      if (componentInstance) {
+        // For aptitude rounds, skip panel validation and enable form directly
+        componentInstance.handlePanelValidationSuccess();
+      }
+      return;
+    }
+
     const requests = candidateIds.map((candidateId: string) =>
       this.coordinatorPanelBridgeService.getinterviewPanles(candidateId).pipe(
         // Handle both success and error cases

@@ -80,6 +80,12 @@ const tableColumns: TableColumnsData = {
         'pi pi-arrows-v',
         'pi pi-id-card',
       ],
+      buttonLabels: [
+        'Mark as Present',
+        'Mark as Absent',
+        'Assign to Batch',
+        'Upload ID Proof',
+      ],
       sortedColumn: false,
       hasChip: false,
     },

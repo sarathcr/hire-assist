@@ -9,7 +9,8 @@
           Assign Front Desk Coordinators
         </h2>
         <p class="frontdesk__section__description">
-          Select Front Desk Coordinators who will manage the front desk operations for this assessment
+          Select Front Desk Coordinators who will manage the front desk
+          operations for this assessment
         </p>
       </div>
     </div>
@@ -38,7 +39,7 @@
                 [selectedItems]=""
               />
             </div>
-            
+
             @if (frontDesk && frontDesk.length > 0) {
               <div class="frontdesk__selected-section">
                 <div class="frontdesk__selected-header">
@@ -48,12 +49,17 @@
                   </span>
                 </div>
                 <div class="frontdesk__selected-list">
-                  @for (coordinator of frontDesk; track coordinator.userId || $index) {
+                  @for (
+                    coordinator of frontDesk;
+                    track coordinator.userId || $index
+                  ) {
                     <div class="frontdesk__selected-item">
                       <div class="frontdesk__selected-item-avatar">
                         <i class="pi pi-user"></i>
                       </div>
-                      <span class="frontdesk__selected-item-name">{{ coordinator.name }}</span>
+                      <span class="frontdesk__selected-item-name">{{
+                        coordinator.name
+                      }}</span>
                     </div>
                   }
                 </div>
@@ -66,12 +72,15 @@
       <footer class="frontdesk__footer">
         <div class="frontdesk__footer-info">
           <i class="pi pi-info-circle"></i>
-          <span>Selected coordinators will be notified and can manage front desk activities.</span>
+          <span
+            >Selected coordinators will be notified and can manage front desk
+            activities.</span
+          >
         </div>
         <app-button
           [icon]="'pi pi-check'"
           [buttonLabel]="'Save Assignment'"
-          [disabled]="!fGroup.valid"
+          [disabled]="!fGroup.valid || !hasCoordinatorChanges"
           (btnClick)="onSubmit()"
           class="frontdesk__submit-btn"
         ></app-button>

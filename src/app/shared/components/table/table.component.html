@@ -398,7 +398,8 @@
                   <p-button
                     [outlined]="true"
                     [raised]="true"
-                    [icon]="icon"
+                    [icon]="headerColumn.buttonLabels?.[i] ? icon : icon"
+                    [label]="headerColumn.buttonLabels?.[i] ?? ''"
                     [pTooltip]="headerColumn.buttonTooltips?.[i] ?? ''"
                     (onClick)="
                       onButtonClick(
