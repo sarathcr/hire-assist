@@ -132,7 +132,7 @@
         </p-tablist>
         <p-tabpanels>
           <p-tabpanel value="0" class="interview-candidate__tabpanel">
-            @if (todayTableData?.data?.length > 0) {
+            @if (todayTableData && todayTableData.data.length > 0) {
               <app-table
                 [tableData]="todayTableData"
                 [columnsData]="columns"
@@ -154,7 +154,7 @@
             }
           </p-tabpanel>
           <p-tabpanel value="1" class="interview-candidate__tabpanel">
-            @if (upComingTableData?.data?.length > 0) {
+            @if (upComingTableData && upComingTableData.data.length > 0) {
               <app-table
                 [tableData]="upComingTableData"
                 [columnsData]="columns"
@@ -176,7 +176,7 @@
             }
           </p-tabpanel>
           <p-tabpanel value="2" class="interview-candidate__tabpanel">
-            @if (PreviousTableData?.data?.length > 0) {
+            @if (PreviousTableData && PreviousTableData.data.length > 0) {
               <app-table
                 [tableData]="PreviousTableData"
                 [columnsData]="columns"

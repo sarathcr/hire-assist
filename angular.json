@@ -38,7 +38,12 @@
             "outputMode": "server",
             "ssr": {
               "entry": "src/server.ts"
-            }
+            },
+            "allowedCommonJsDependencies": [
+              "quill-delta",
+              "node-forge",
+              "lodash"
+            ]
           },
           "configurations": {
             "production": {
