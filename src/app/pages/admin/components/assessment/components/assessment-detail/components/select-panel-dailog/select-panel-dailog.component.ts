@@ -115,6 +115,8 @@ export class SelectPanelDailogComponent implements OnInit {
   private currentInterviewers: string[] = [];
   private interviewersEdited = false;
   private editedPanelId: number | null = null;
+  private isGettingInterviewPanel = false; // Guard to prevent infinite API calls
+  private hasInitializedInterviewPanel = false; // Track if initial call has been made
 
   constructor(
     private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
@@ -129,7 +131,11 @@ export class SelectPanelDailogComponent implements OnInit {
     this.assessmentId = this.config.data.assessmentid;
     this.intrviewid = this.config.data.interviewId;
     this.getPaginatedPanelData();
-    this.getInterviewPanel(this.intrviewid);
+    // Only call getInterviewPanel once during initialization
+    if (!this.hasInitializedInterviewPanel) {
+      this.hasInitializedInterviewPanel = true;
+      this.getInterviewPanel(this.intrviewid);
+    }
   }
 
   private getPaginatedPanelData() {
@@ -170,19 +176,35 @@ export class SelectPanelDailogComponent implements OnInit {
   }
 
   public getInterviewPanel(InterviewId: number) {
+    // Prevent multiple simultaneous calls
+    if (this.isGettingInterviewPanel) {
+      return;
+    }
+
+    this.isGettingInterviewPanel = true;
     this.coordinatorPanelBridgeService
       .getinterviewPanles(InterviewId.toString())
       .subscribe({
         next: (res: GetInterviewPanelsResponse) => {
-          this.selectedPanel = [String(res.panelId)];
-          this.existingPanel = this.selectedPanel;
+          this.isGettingInterviewPanel = false;
+          // Only update if we got a valid panelId
+          if (res?.panelId) {
+            this.selectedPanel = [String(res.panelId)];
+            this.existingPanel = this.selectedPanel;
+          } else {
+            this.selectedPanel = [];
+            this.existingPanel = [];
+          }
           // Store current interviewers from the existing assignment
           this.currentInterviewers =
             res.interviewer?.map((i: Interviewers) => i.id) ?? [];
         },
         error: () => {
+          this.isGettingInterviewPanel = false;
           // If no panel is assigned, currentInterviewers will remain empty
           this.currentInterviewers = [];
+          this.selectedPanel = [];
+          this.existingPanel = [];
         },
       });
   }
@@ -192,10 +214,9 @@ export class SelectPanelDailogComponent implements OnInit {
     this.fGroup?.get('panels')?.updateValueAndValidity();
 
     const normalizedFormData: interviewerInterface = {
-      id: panelData.id ? parseInt(panelData.id) : undefined,
-      panelId: panelData.id ? parseInt(panelData.id) : undefined,
-      interviewers:
-        panelData.interviewers?.map((i: Interviewers) => i.id) ?? [],
+      id: panelData.id ? Number.parseInt(panelData.id) : undefined,
+      panelId: panelData.id ? Number.parseInt(panelData.id) : undefined,
+      interviewers: panelData.interviewers ?? [],
       panelName: panelData.panelName,
     };
 
@@ -310,7 +331,7 @@ export class SelectPanelDailogComponent implements OnInit {
     const previousPanelId =
       this.selectedPanelIds.length > 0 ? this.selectedPanelIds[0].id : null;
     this.selectedPanelIds = selectedIds.map((item: PanelSummary) => item);
-    
+
     // Reset interviewersEdited flag when a different panel is selected
     // This ensures we use current interviewers for newly selected unassigned panels
     if (
@@ -339,17 +360,17 @@ export class SelectPanelDailogComponent implements OnInit {
     const selectedPanel = this.selectedPanelIds[0];
     this.selectedPanelForAssignment = selectedPanel;
     const isAdd = this.existingPanel.length === 0;
-    
+
     // Get the latest panel data from panelData to ensure we have the most up-to-date interviewers
     const latestPanelData = this.panelData.data.find(
       (p) => String(p.id) === String(selectedPanel.id),
     );
     const panelToUse = latestPanelData || selectedPanel;
-    
+
     // Get interviewers from the panel
     let selectedInterviewerIds =
       panelToUse.interviewers?.map((i: Interviewer) => i.id) ?? [];
-    
+
     // If interviewers were edited for this panel, use the stored currentInterviewers (which was updated during edit)
     // Otherwise, if the selected panel has no interviewers (unassigned panel) and interviewers haven't been edited,
     // use the current interviewers from the existing assignment
@@ -374,7 +395,7 @@ export class SelectPanelDailogComponent implements OnInit {
       assessmentId: this.assessmentId,
       interviewId: Number(this.intrviewid),
       panelId: selectedPanel.id,
-      interviewers: selectedInterviewerIds.map((id) => ({ id })),
+      interviewers: selectedInterviewerIds,
     };
 
     this.isSubmitting = true;
@@ -393,18 +414,34 @@ export class SelectPanelDailogComponent implements OnInit {
       .subscribe({
         next: () => {
           // After successful PanelAssignments, check if panel already exists and then call InterviewPanel API
+          // Prevent multiple simultaneous calls
+          if (this.isGettingInterviewPanel) {
+            return;
+          }
+
+          this.isGettingInterviewPanel = true;
           this.coordinatorPanelBridgeService
             .getinterviewPanles(this.intrviewid.toString())
             .subscribe({
               next: (response: GetInterviewPanelsResponse) => {
+                this.isGettingInterviewPanel = false;
                 this.interview = response ?? {};
                 const isInterviewIdSame =
                   payload.interviewId === this.interview.interviewId;
                 const isPanelIdSame =
                   payload.panelId === this.interview.panelId;
+                const existingInterviewerIds =
+                  this.interview.interviewer?.map((i: Interviewers) => i.id) ??
+                  [];
+                const sortedPayloadInterviewers = payload.interviewers
+                  .slice()
+                  .sort((a, b) => a.localeCompare(b));
+                const sortedExistingInterviewerIds = existingInterviewerIds
+                  .slice()
+                  .sort((a, b) => a.localeCompare(b));
                 const isInterviewerSame =
-                  JSON.stringify(payload.interviewers.sort()) ===
-                  JSON.stringify(this.interview.interviewer.sort());
+                  JSON.stringify(sortedPayloadInterviewers) ===
+                  JSON.stringify(sortedExistingInterviewerIds);
 
                 const isAlreadyScheduled =
                   isInterviewIdSame && isPanelIdSame && isInterviewerSame;
@@ -426,6 +463,7 @@ export class SelectPanelDailogComponent implements OnInit {
                 }
               },
               error: (error: HttpErrorResponse) => {
+                this.isGettingInterviewPanel = false;
                 if (
                   error?.status === 422 &&
                   error?.error?.businessError === 3102

@@ -501,7 +501,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
         payload.interviewId === this.interview.interviewId;
       const isPanelIdSame = payload.panelId === this.interview.panelId;
       const payloadInterviewerIds = payload.interviewers
-        .map((i) => i.id)
+        .slice()
         .sort((a, b) => a.localeCompare(b));
       const interviewInterviewerIds = this.interview.interviewer
         .map((i) => i.id)

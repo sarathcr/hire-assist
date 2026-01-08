@@ -7,7 +7,7 @@ export interface InterviewPanels {
   assessmentId: number;
   interviewId: number;
   panelId: string | number;
-  interviewers: Interviewers[];
+  interviewers: string[];
 }
 export interface GetInterviewPanelsResponse {
   id?: string;
@@ -22,7 +22,7 @@ export interface InterviewPanelsResponse {
   panel: string;
   assessmentId: number;
   interviewId: number;
-  interviewer: Interviewers[];
+  interviewer: string[];
 }
 export interface Interviewers {
   id: string;

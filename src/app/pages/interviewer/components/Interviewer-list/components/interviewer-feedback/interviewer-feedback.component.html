@@ -1,139 +1,665 @@
-<div class="candidate">
-  @if (responseData && feedbackdetails) {
-    <div>
-      <h2 class="candidate__card-Round">{{ responseData.roundName }}</h2>
-      <h2 class="candidate__card-heading">Candidate Details</h2>
-      <div class="candidate__details">
-        <div class="candidate__card">
-          <div class="candidate__card-content">
-            <div class="candidate__card-info-item">
-              <i class="pi pi-user candidate__card-icon"></i>
-              <span>{{ responseData.candidateName }}</span>
+@if (isLoading) {
+  <app-interviewer-feedback-skeleton></app-interviewer-feedback-skeleton>
+}
+
+@if (!isLoading && responseData && feedbackdetails) {
+  <div class="interview-feedback">
+    <p-toast></p-toast>
+    <!-- Hero Header Section -->
+    <p-card class="interview-feedback__header-card">
+      <div class="interview-feedback__header">
+        <div class="interview-feedback__header-content">
+          <div class="interview-feedback__header-icon">
+            <i class="pi pi-calendar-check"></i>
+          </div>
+          <div class="interview-feedback__header-text">
+            <h1 class="interview-feedback__title">
+              {{ responseData.assessmentName }}
+            </h1>
+            <p class="interview-feedback__subtitle">
+              {{ responseData.roundName }}
+            </p>
+          </div>
+        </div>
+        @if (responseData.statusId) {
+          <p-tag
+            [value]="getStatusText(responseData.statusId)"
+            [severity]="getStatusSeverity(responseData.statusId)"
+            class="interview-feedback__status-tag"
+          />
+        }
+      </div>
+    </p-card>
+
+    <!-- Candidate Info Card -->
+    <p-card class="interview-feedback__candidate-card">
+      <div class="interview-feedback__candidate-content">
+        <div class="interview-feedback__candidate-info">
+          <div class="interview-feedback__candidate-item">
+            <div class="interview-feedback__candidate-icon">
+              <i class="pi pi-user"></i>
             </div>
-            <div class="candidate__card-info-item">
-              <i class="pi pi-envelope candidate__card-icon"></i>
-              <span>{{ responseData.candidateId }}</span>
+            <div class="interview-feedback__candidate-details">
+              <span class="interview-feedback__candidate-label"
+                >Candidate Name</span
+              >
+              <span class="interview-feedback__candidate-value">{{
+                responseData.candidateName
+              }}</span>
+            </div>
+          </div>
+          <div class="interview-feedback__candidate-item">
+            <div class="interview-feedback__candidate-icon">
+              <i class="pi pi-envelope"></i>
+            </div>
+            <div class="interview-feedback__candidate-details">
+              <span class="interview-feedback__candidate-label">Email</span>
+              <span class="interview-feedback__candidate-value">{{
+                responseData.candidateId
+              }}</span>
+            </div>
+          </div>
+          <div class="interview-feedback__candidate-item">
+            <div class="interview-feedback__candidate-icon">
+              <i class="pi pi-briefcase"></i>
+            </div>
+            <div class="interview-feedback__candidate-details">
+              <span class="interview-feedback__candidate-label"
+                >Assessment ID</span
+              >
+              <span class="interview-feedback__candidate-value">{{
+                responseData.assessmentId
+              }}</span>
             </div>
           </div>
         </div>
-        <div class="candidate__card-knob">
-          <p-knob [(ngModel)]="totalFeedbackScore" [readonly]="true" />
-          <div class="candidate__knob-label">Score</div>
+        <p-divider layout="vertical" />
+        <div class="interview-feedback__score-section">
+          <p-knob
+            [(ngModel)]="totalFeedbackScore"
+            [readonly]="true"
+            [min]="0"
+            [max]="getMaxTotalScore()"
+            [strokeWidth]="10"
+            [size]="120"
+            valueColor="#2196F3"
+            rangeColor="#E0E0E0"
+          />
+          <div class="interview-feedback__score-info">
+            <div class="interview-feedback__score-label">Total Score</div>
+            <p-tag
+              [value]="totalFeedbackScore + '/' + getMaxTotalScore()"
+              severity="info"
+              class="interview-feedback__score-badge"
+            />
+          </div>
         </div>
       </div>
-    </div>
+    </p-card>
 
-    <!--feedback-->
-    <div class="candidate__accordion">
-      <h3>Feedback</h3>
-      <p-accordion [value]="0">
-        @for (feedback of feedbackcriteria; track feedback.title) {
+    <!-- Previous Rounds Section -->
+    @if (
+      responseData.previousInterviews &&
+      responseData.previousInterviews.length > 0
+    ) {
+      <p-card class="interview-feedback__section-card">
+        <div class="interview-feedback__section-header">
+          <div class="interview-feedback__section-icon">
+            <i class="pi pi-history"></i>
+          </div>
+          <h2 class="interview-feedback__section-title">
+            Previous Interview Rounds
+          </h2>
+        </div>
+        <p-divider />
+        <div class="interview-feedback__accordion-wrapper">
+          <p-accordion [value]="0" [multiple]="true">
+            @for (
+              round of responseData.previousInterviews;
+              track round.roundId
+            ) {
+              <p-accordion-panel [value]="round.sequence">
+                <p-accordion-header
+                  class="interview-feedback__accordion-header"
+                >
+                  <div class="interview-feedback__accordion-header-content">
+                    <div class="interview-feedback__round-info">
+                      <p-chip
+                        [label]="round.roundName"
+                        [styleClass]="'interview-feedback__round-chip'"
+                      />
+                      @if (round.status) {
+                        <p-tag
+                          [value]="round.status"
+                          [severity]="getStatusSeverityFromString(round.status)"
+                          class="interview-feedback__status-chip"
+                        />
+                      }
+                    </div>
+                  </div>
+                </p-accordion-header>
+                <p-accordion-content
+                  class="interview-feedback__accordion-content"
+                >
+                  @if (
+                    round.assessmentDetails &&
+                    round.assessmentDetails.length > 0
+                  ) {
+                    <div class="interview-feedback__round-details">
+                      @for (detail of round.assessmentDetails; track $index) {
+                        <div class="interview-feedback__detail-card">
+                          <div class="interview-feedback__detail-header">
+                            <h3 class="interview-feedback__detail-title">
+                              Assessment Details
+                            </h3>
+                            @if (getDetailDate(detail)) {
+                              <p-tag
+                                [value]="formatDate(getDetailDate(detail)!)"
+                                severity="info"
+                                class="interview-feedback__date-tag"
+                              />
+                            }
+                          </div>
+                          <div class="interview-feedback__detail-grid">
+                            <!-- Question Set - Only show for aptitude rounds -->
+                            @if (
+                              isAptitudeRound(round.roundName) &&
+                              hasValue(detail.questionSet)
+                            ) {
+                              <div class="interview-feedback__detail-item">
+                                <span class="interview-feedback__detail-label">
+                                  <i class="pi pi-file-edit"></i>
+                                  Question Set
+                                </span>
+                                <span
+                                  class="interview-feedback__detail-value"
+                                  >{{ detail.questionSet }}</span
+                                >
+                              </div>
+                            }
+                            <!-- Batch - Only show for aptitude rounds -->
+                            @if (
+                              isAptitudeRound(round.roundName) &&
+                              hasValue(detail.batch)
+                            ) {
+                              <div class="interview-feedback__detail-item">
+                                <span class="interview-feedback__detail-label">
+                                  <i class="pi pi-users"></i>
+                                  Batch
+                                </span>
+                                <span
+                                  class="interview-feedback__detail-value"
+                                  >{{ detail.batch }}</span
+                                >
+                              </div>
+                            }
+                            <!-- Panel Name - Show if available -->
+                            @if (hasValue(detail.panelName)) {
+                              <div class="interview-feedback__detail-item">
+                                <span class="interview-feedback__detail-label">
+                                  <i class="pi pi-users"></i>
+                                  Panel
+                                </span>
+                                <span
+                                  class="interview-feedback__detail-value"
+                                  >{{ detail.panelName }}</span
+                                >
+                              </div>
+                            }
+                            <!-- Interviewer Name - Show if available -->
+                            @if (hasValue(detail.interviewerName)) {
+                              <div class="interview-feedback__detail-item">
+                                <span class="interview-feedback__detail-label">
+                                  <i class="pi pi-user"></i>
+                                  Interviewer
+                                </span>
+                                <span
+                                  class="interview-feedback__detail-value"
+                                  >{{ detail.interviewerName }}</span
+                                >
+                              </div>
+                            }
+                            <!-- Total Questions - Only show for aptitude rounds or if value exists -->
+                            @if (
+                              (isAptitudeRound(round.roundName) ||
+                                hasValue(detail.totalQuestions)) &&
+                              detail.totalQuestions !== undefined
+                            ) {
+                              <div class="interview-feedback__detail-item">
+                                <span class="interview-feedback__detail-label">
+                                  <i class="pi pi-list"></i>
+                                  Total Questions
+                                </span>
+                                <span
+                                  class="interview-feedback__detail-value"
+                                  >{{ detail.totalQuestions || 0 }}</span
+                                >
+                              </div>
+                            }
+                            <!-- Attended Questions - Only show for aptitude rounds or if value exists -->
+                            @if (
+                              (isAptitudeRound(round.roundName) ||
+                                hasValue(detail.attendedQuestions)) &&
+                              detail.attendedQuestions !== undefined
+                            ) {
+                              <div class="interview-feedback__detail-item">
+                                <span class="interview-feedback__detail-label">
+                                  <i class="pi pi-check-circle"></i>
+                                  Attended Questions
+                                </span>
+                                <span
+                                  class="interview-feedback__detail-value"
+                                  >{{ detail.attendedQuestions || 0 }}</span
+                                >
+                              </div>
+                            }
+                            <!-- Correct Answers - Only show for aptitude rounds or if value exists -->
+                            @if (
+                              (isAptitudeRound(round.roundName) ||
+                                getCorrectAnswers(detail) > 0) &&
+                              detail.correctAswers !== undefined
+                            ) {
+                              <div class="interview-feedback__detail-item">
+                                <span class="interview-feedback__detail-label">
+                                  <i class="pi pi-check"></i>
+                                  Correct Answers
+                                </span>
+                                <span
+                                  class="interview-feedback__detail-value interview-feedback__detail-value--success"
+                                  >{{ getCorrectAnswers(detail) }}</span
+                                >
+                              </div>
+                            }
+                            <!-- Skipped - Only show for aptitude rounds or if value exists -->
+                            @if (
+                              (isAptitudeRound(round.roundName) ||
+                                hasValue(detail.skipped)) &&
+                              detail.skipped !== undefined
+                            ) {
+                              <div class="interview-feedback__detail-item">
+                                <span class="interview-feedback__detail-label">
+                                  <i class="pi pi-times-circle"></i>
+                                  Skipped
+                                </span>
+                                <span
+                                  class="interview-feedback__detail-value"
+                                  >{{ detail.skipped || 0 }}</span
+                                >
+                              </div>
+                            }
+                            <!-- Total Score - Show if available -->
+                            @if (
+                              hasValue(detail.totalScore) ||
+                              detail.totalScore === 0
+                            ) {
+                              <div
+                                class="interview-feedback__detail-item interview-feedback__detail-item--full"
+                              >
+                                <span class="interview-feedback__detail-label">
+                                  <i class="pi pi-star"></i>
+                                  Total Score
+                                </span>
+                                <span
+                                  class="interview-feedback__detail-value interview-feedback__detail-value--primary"
+                                  >{{ detail.totalScore || 0 }}</span
+                                >
+                              </div>
+                            }
+                            <!-- Score - Show if available and different from totalScore -->
+                            @if (
+                              hasValue(detail.score) &&
+                              detail.score !== detail.totalScore
+                            ) {
+                              <div class="interview-feedback__detail-item">
+                                <span class="interview-feedback__detail-label">
+                                  <i class="pi pi-star"></i>
+                                  Score
+                                </span>
+                                <span
+                                  class="interview-feedback__detail-value"
+                                  >{{ detail.score }}</span
+                                >
+                              </div>
+                            }
+                          </div>
+                          <!-- Feedback List DTO - Show for non-aptitude rounds -->
+                          @if (
+                            !isAptitudeRound(round.roundName) &&
+                            detail.feedbackListDto &&
+                            detail.feedbackListDto.length > 0
+                          ) {
+                            <div class="interview-feedback__feedback-list">
+                              <div class="interview-feedback__feedback-header">
+                                <h4 class="interview-feedback__feedback-title">
+                                  <i class="pi pi-comments"></i>
+                                  Feedback Details
+                                </h4>
+                              </div>
+                              <div class="interview-feedback__feedback-items">
+                                @for (
+                                  feedback of detail.feedbackListDto;
+                                  track $index
+                                ) {
+                                  <div
+                                    class="interview-feedback__feedback-item"
+                                  >
+                                    <div
+                                      class="interview-feedback__feedback-item-header"
+                                    >
+                                      <div
+                                        class="interview-feedback__feedback-criteria"
+                                      >
+                                        <i class="pi pi-tag"></i>
+                                        <span
+                                          class="interview-feedback__feedback-criteria-name"
+                                          >{{ feedback.criteria }}</span
+                                        >
+                                      </div>
+                                      <div
+                                        class="interview-feedback__feedback-score"
+                                      >
+                                        <span
+                                          class="interview-feedback__feedback-score-value"
+                                          >{{
+                                            feedback.feedbackScore || 0
+                                          }}</span
+                                        >
+                                        <span
+                                          class="interview-feedback__feedback-score-separator"
+                                          >/</span
+                                        >
+                                        <span
+                                          class="interview-feedback__feedback-score-max"
+                                          >{{ feedback.maxScore || 0 }}</span
+                                        >
+                                      </div>
+                                    </div>
+                                    @if (feedback.feedbackDetails) {
+                                      <div
+                                        class="interview-feedback__feedback-details-content"
+                                      >
+                                        <div
+                                          [innerHTML]="feedback.feedbackDetails"
+                                          class="interview-feedback__feedback-html"
+                                        ></div>
+                                      </div>
+                                    }
+                                  </div>
+                                }
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="interview-feedback__empty-state">
+                      <i class="pi pi-info-circle"></i>
+                      <p>No assessment details available for this round.</p>
+                    </div>
+                  }
+                </p-accordion-content>
+              </p-accordion-panel>
+            }
+          </p-accordion>
+        </div>
+      </p-card>
+    }
+
+    <!-- Feedback Criteria Section -->
+    <p-card class="interview-feedback__feedback-card">
+      <div class="interview-feedback__section-header">
+        <div class="interview-feedback__section-icon">
+          <i class="pi pi-comment"></i>
+        </div>
+        <h2 class="interview-feedback__section-title">Feedback Criteria</h2>
+      </div>
+      <p-divider />
+      <p-accordion [value]="0" [multiple]="true">
+        @for (feedback of feedbackcriteria; track feedback.id) {
           <p-accordion-panel
             [value]="feedback.value"
             [ngClass]="{ 'saved-panel': feedback.isSaved }"
           >
-            <p-accordion-header>{{ feedback.title }} </p-accordion-header>
-            <p-accordion-content class="candidate__accordion-content">
+            <p-accordion-header
+              class="interview-feedback__feedback-accordion-header"
+            >
+              <div class="interview-feedback__feedback-header-content">
+                <p-chip
+                  [label]="feedback.title"
+                  [styleClass]="'interview-feedback__feedback-chip'"
+                />
+                @if (feedback.isSaved) {
+                  <p-tag
+                    value="Saved"
+                    severity="success"
+                    icon="pi pi-check-circle"
+                  />
+                }
+              </div>
+            </p-accordion-header>
+            <p-accordion-content class="interview-feedback__feedback-content">
               @if (feedback.title === "Attachments") {
-                <p-toast></p-toast>
+                <div class="interview-feedback__file-upload-section">
+                  <p-fileupload
+                    #fileUpload
+                    name="feedbackFiles[]"
+                    [multiple]="true"
+                    accept="image/*"
+                    maxFileSize="10000000"
+                    [auto]="false"
+                    [showUploadButton]="false"
+                    [showCancelButton]="false"
+                    (onSelect)="onFileChange($event)"
+                    [disabled]="isSubmitted"
+                    chooseLabel="Choose Images"
+                    chooseIcon="pi pi-images"
+                    mode="advanced"
+                  >
+                  </p-fileupload>
 
-                <p-fileupload
-                  name="feedbackFiles[]"
-                  [multiple]="true"
-                  accept="image/*"
-                  maxFileSize="1000000"
-                  (onSelect)="onFileChange($event)"
-                >
-                  <ng-template #content let-files>
-                    @if (previewImageUrls.length) {
-                      <div
-                        class="candidate__accordion-content__preview-container"
-                      >
+                  @if (pendingFilePreviews.length > 0) {
+                    <div class="interview-feedback__uploaded-files-section">
+                      <h4 class="interview-feedback__uploaded-files-title">
+                        Pending Uploads ({{ pendingFilePreviews.length }})
+                      </h4>
+                      <div class="interview-feedback__image-preview-grid">
                         @for (
-                          imgUrl of previewImageUrls;
-                          track imgUrl;
+                          preview of pendingFilePreviews;
+                          track i;
                           let i = $index
                         ) {
                           <div
-                            class="candidate__accordion-content__preview-container__image"
+                            class="interview-feedback__image-preview-item interview-feedback__image-preview-item--pending"
                           >
-                            <app-image
-                              width="100"
-                              height="70"
-                              [imageUrl]="imgUrl"
-                              [paddingTop]="'0'"
-                              [forceCancelRequest]="[]"
-                              [isZoomable]="true"
-                              (closeImage)="removeImage(i)"
+                            <img
+                              [src]="preview"
+                              [alt]="'Pending file ' + (i + 1)"
+                              class="interview-feedback__pending-preview-img"
+                            />
+                            <div
+                              class="interview-feedback__image-preview-overlay"
                             >
-                            </app-image>
+                              <button
+                                type="button"
+                                class="interview-feedback__remove-pending-btn"
+                                (click)="removePendingFile(i)"
+                                [attr.aria-label]="'Remove file ' + (i + 1)"
+                              >
+                                <i class="pi pi-times"></i>
+                              </button>
+                              <span class="interview-feedback__pending-badge"
+                                >Pending</span
+                              >
+                            </div>
                           </div>
                         }
                       </div>
-                    }
-                  </ng-template>
-                </p-fileupload>
-              }
+                    </div>
+                  }
 
-              @if (feedback.title !== "Attachments") {
-                <div class="candidate__accordion-editor">
-                  <p-editor
-                    [(ngModel)]="feedback.content"
-                    [style]="{ height: '220px' }"
-                  />
-                </div>
-                <div class="candidate__accordion-score-input">
-                  <p-floatLabel>
-                    <input
-                      [(ngModel)]="feedback.score"
-                      class="simple-input"
-                      (ngModelChange)="validateScore(feedback)"
-                      [pTooltip]="'Max score is ' + feedback.maxScore"
-                      [tooltipPosition]="'bottom'"
-                    />
-                    <label for="score">Score</label>
-                  </p-floatLabel>
-                  @if (feedback.isScoreInValid) {
-                    <p-message
-                      severity="error"
-                      variant="simple"
-                      size="small"
-                      class="mt-1"
-                    >
-                      Maximum allowed score is {{ feedback.maxScore }}
-                    </p-message>
+                  @if (isUploadingFiles) {
+                    <div class="interview-feedback__uploaded-files-section">
+                      <h4 class="interview-feedback__uploaded-files-title">
+                        Uploading Files...
+                      </h4>
+                      <div class="interview-feedback__image-preview-grid">
+                        <div class="interview-feedback__skeleton-wrapper">
+                          <app-image-skeleton></app-image-skeleton>
+                        </div>
+                      </div>
+                    </div>
+                  }
+
+                  @if (feedback.fileDto && feedback.fileDto.length > 0) {
+                    <div class="interview-feedback__uploaded-files-section">
+                      <h4 class="interview-feedback__uploaded-files-title">
+                        Saved Images ({{ feedback.fileDto.length }})
+                      </h4>
+                      <div class="interview-feedback__image-preview-grid">
+                        @if (isImageLoading) {
+                          <div class="interview-feedback__skeleton-wrapper">
+                            <app-image-skeleton></app-image-skeleton>
+                          </div>
+                        } @else {
+                          @for (file of feedback.fileDto; track file.id) {
+                            <div class="interview-feedback__image-preview-item">
+                              <app-image
+                                width="100"
+                                height="70"
+                                [imageUrl]="getFileUrl(file)"
+                                [paddingTop]="'0'"
+                                [forceCancelRequest]="[]"
+                                [isZoomable]="true"
+                                (closeImage)="removeImage($index)"
+                              >
+                              </app-image>
+                            </div>
+                          }
+                        }
+                      </div>
+                    </div>
                   }
                 </div>
               }
-              <div class="candidate__savebutton">
-                @if (!feedback.isSaved) {
-                  <app-button
-                    [buttonLabel]="'Save'"
-                    (btnClick)="onsave(feedback)"
-                  ></app-button>
-                } @else {
-                  <app-button
-                    [buttonLabel]="'Edit'"
-                    (btnClick)="onEdit(feedback)"
-                  ></app-button>
-                }
-              </div>
+
+              @if (feedback.title !== "Attachments") {
+                <div class="interview-feedback__feedback-form">
+                  <div class="interview-feedback__editor-wrapper">
+                    <p-editor
+                      [(ngModel)]="feedback.content"
+                      [style]="{ height: '200px' }"
+                      [readonly]="isSubmitted"
+                      placeholder="Enter your feedback comments here..."
+                    />
+                  </div>
+                  <div class="interview-feedback__score-input-wrapper">
+                    <label
+                      for="score-input-{{ feedback.value }}"
+                      class="interview-feedback__score-input-label"
+                    >
+                      Score (Max: {{ feedback.maxScore }})
+                    </label>
+                    <input
+                      id="score-input-{{ feedback.value }}"
+                      type="number"
+                      pInputText
+                      [(ngModel)]="feedback.score"
+                      class="interview-feedback__score-input"
+                      (ngModelChange)="validateScore(feedback)"
+                      [pTooltip]="'Max score is ' + feedback.maxScore"
+                      [tooltipPosition]="'bottom'"
+                      [max]="feedback.maxScore"
+                      [min]="0"
+                      [disabled]="isSubmitted"
+                      placeholder="Enter score"
+                    />
+                    @if (feedback.isScoreInValid) {
+                      <p-message
+                        severity="error"
+                        variant="simple"
+                        size="small"
+                        class="interview-feedback__error-message"
+                      >
+                        Maximum allowed score is {{ feedback.maxScore }}
+                      </p-message>
+                    }
+                  </div>
+                  <div class="interview-feedback__action-buttons">
+                    @if (!feedback.isSaved && !isSubmitted) {
+                      <app-button
+                        [buttonLabel]="'Save'"
+                        [icon]="'pi pi-save'"
+                        (btnClick)="onsave(feedback)"
+                      ></app-button>
+                    } @else if (feedback.isSaved && !isSubmitted) {
+                      <app-button
+                        [buttonLabel]="'Edit'"
+                        [buttonVariant]="'outlined'"
+                        [icon]="'pi pi-pencil'"
+                        (btnClick)="onEdit(feedback)"
+                      ></app-button>
+                    } @else {
+                      <p-tag
+                        value="Submitted"
+                        severity="success"
+                        class="interview-feedback__submitted-tag"
+                      />
+                    }
+                  </div>
+                </div>
+              } @else {
+                <div class="interview-feedback__action-buttons">
+                  @if (!feedback.isSaved && !isSubmitted) {
+                    <app-button
+                      [buttonLabel]="'Save'"
+                      [icon]="'pi pi-save'"
+                      (btnClick)="onsave(feedback)"
+                    ></app-button>
+                  } @else if (feedback.isSaved && !isSubmitted) {
+                    <app-button
+                      [buttonLabel]="'Edit'"
+                      [buttonVariant]="'outlined'"
+                      [icon]="'pi pi-pencil'"
+                      (btnClick)="onEdit(feedback)"
+                    ></app-button>
+                  } @else {
+                    <p-tag
+                      value="Submitted"
+                      severity="success"
+                      class="interview-feedback__submitted-tag"
+                    />
+                  }
+                </div>
+              }
             </p-accordion-content>
           </p-accordion-panel>
         }
       </p-accordion>
       @if (!isSubmitted) {
-        <div class="candidate__accordion-upload">
-          <div class="savebutton">
-            <app-button
-              [buttonLabel]="'Review & Submit'"
-              (btnClick)="onSubmit()"
-            ></app-button>
-          </div>
+        <div class="interview-feedback__submit-section">
+          <app-button
+            [buttonLabel]="'Review & Submit'"
+            [icon]="'pi pi-check-circle'"
+            [buttonSize]="'large'"
+            (btnClick)="onSubmit()"
+          ></app-button>
         </div>
       }
-    </div>
-  } @else {
-    <app-interviewer-feedback-skeleton></app-interviewer-feedback-skeleton>
-  }
-</div>
+    </p-card>
+
+    @if (isSubmitted) {
+      <p-card class="interview-feedback__submitted-card">
+        <div class="interview-feedback__submitted-content">
+          <i class="pi pi-check-circle interview-feedback__submitted-icon"></i>
+          <h3 class="interview-feedback__submitted-title">
+            Interview Submitted Successfully
+          </h3>
+          <p class="interview-feedback__submitted-message">
+            Your feedback has been submitted and cannot be modified.
+          </p>
+        </div>
+      </p-card>
+    }
+  </div>
+}

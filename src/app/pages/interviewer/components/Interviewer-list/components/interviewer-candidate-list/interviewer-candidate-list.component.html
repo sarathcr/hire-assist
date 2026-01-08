@@ -1,52 +1,205 @@
 <div class="interview-candidate">
-  <h1 class="interview-candidate__title">Candidate List</h1>
-  @if (todayTableData || PreviousTableData || upComingTableData) {
-    <h2>Today's Interviews</h2>
-    @if (todayTableData?.data?.length > 0) {
-      <app-table
-        [tableData]="todayTableData"
-        [columnsData]="columns"
-        [hasSearch]="true"
-        (btnClick)="onStartInterview($event)"
-        (buttonClick)="onButtonClick($event)"
-        (pageChangeAndSort)="onTablePayloadChange($event)"
-      ></app-table>
-    } @else {
-      <div class="interview-candidate__message">
-        No interviews scheduled for today.
+  <!-- Hero Header Section -->
+  <div class="interview-candidate__header">
+    <div class="interview-candidate__header-content">
+      <div class="interview-candidate__header-icon">
+        <i class="pi pi-users"></i>
       </div>
-    }
-    <h2>Previous Interviews</h2>
-    @if (PreviousTableData?.data?.length > 0) {
-      <app-table
-        [tableData]="PreviousTableData"
-        [columnsData]="columns"
-        [hasSearch]="true"
-        (btnClick)="onStartInterview($event)"
-        (buttonClick)="onButtonClick($event)"
-        (pageChangeAndSort)="onTablePayloadChange($event)"
-      ></app-table>
-    } @else {
-      <div class="interview-candidate__message">
-        No previous interviews found.
+      <div class="interview-candidate__header-text">
+        <h1 class="interview-candidate__title">Candidate List</h1>
+        <p class="interview-candidate__subtitle">
+          Manage and track your interview candidates
+        </p>
       </div>
-    }
+    </div>
+  </div>
 
-    <h2>UpComing Interviews</h2>
-    @if (upComingTableData?.data?.length > 0) {
-      <app-table
-        [tableData]="upComingTableData"
-        [columnsData]="columns"
-        [hasSearch]="true"
-        (btnClick)="onStartInterview($event)"
-        (buttonClick)="onButtonClick($event)"
-        (pageChangeAndSort)="onTablePayloadChange($event)"
-      ></app-table>
-    } @else {
-      <div class="interview-candidate__message">
-        No upcoming interviews scheduled.
-      </div>
-    }
+  @if (todayTableData || PreviousTableData || upComingTableData) {
+    <!-- Summary Statistics Cards -->
+    <div class="interview-candidate__summary">
+      <p-card
+        class="interview-candidate__summary-card interview-candidate__summary-card--today"
+      >
+        <div class="interview-candidate__summary-content">
+          <div class="interview-candidate__summary-icon">
+            <i class="pi pi-clock"></i>
+          </div>
+          <div class="interview-candidate__summary-info">
+            <span class="interview-candidate__summary-label"
+              >Today's Interviews</span
+            >
+            <span class="interview-candidate__summary-value">{{
+              todayCount
+            }}</span>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card
+        class="interview-candidate__summary-card interview-candidate__summary-card--upcoming"
+      >
+        <div class="interview-candidate__summary-content">
+          <div class="interview-candidate__summary-icon">
+            <i class="pi pi-calendar-plus"></i>
+          </div>
+          <div class="interview-candidate__summary-info">
+            <span class="interview-candidate__summary-label">Upcoming</span>
+            <span class="interview-candidate__summary-value">{{
+              upcomingCount
+            }}</span>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card
+        class="interview-candidate__summary-card interview-candidate__summary-card--previous"
+      >
+        <div class="interview-candidate__summary-content">
+          <div class="interview-candidate__summary-icon">
+            <i class="pi pi-history"></i>
+          </div>
+          <div class="interview-candidate__summary-info">
+            <span class="interview-candidate__summary-label">Previous</span>
+            <span class="interview-candidate__summary-value">{{
+              previousCount
+            }}</span>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card
+        class="interview-candidate__summary-card interview-candidate__summary-card--total"
+      >
+        <div class="interview-candidate__summary-content">
+          <div class="interview-candidate__summary-icon">
+            <i class="pi pi-list"></i>
+          </div>
+          <div class="interview-candidate__summary-info">
+            <span class="interview-candidate__summary-label"
+              >Total Interviews</span
+            >
+            <span class="interview-candidate__summary-value">{{
+              totalCount
+            }}</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Tabs Section -->
+    <div class="interview-candidate__tabs-section">
+      <p-tabs value="0" class="interview-candidate__tabs">
+        <p-tablist class="interview-candidate__tablist">
+          <p-tab value="0" class="interview-candidate__tab">
+            <div class="interview-candidate__tab-content">
+              <i class="pi pi-clock interview-candidate__tab-icon"></i>
+              <span>Today's Interviews</span>
+              @if (todayCount > 0) {
+                <p-badge
+                  [value]="todayCount"
+                  severity="info"
+                  class="interview-candidate__tab-badge"
+                ></p-badge>
+              }
+            </div>
+          </p-tab>
+          <p-tab value="1" class="interview-candidate__tab">
+            <div class="interview-candidate__tab-content">
+              <i class="pi pi-calendar-plus interview-candidate__tab-icon"></i>
+              <span>Upcoming Interviews</span>
+              @if (upcomingCount > 0) {
+                <p-badge
+                  [value]="upcomingCount"
+                  severity="success"
+                  class="interview-candidate__tab-badge"
+                ></p-badge>
+              }
+            </div>
+          </p-tab>
+          <p-tab value="2" class="interview-candidate__tab">
+            <div class="interview-candidate__tab-content">
+              <i class="pi pi-history interview-candidate__tab-icon"></i>
+              <span>Previous Interviews</span>
+              @if (previousCount > 0) {
+                <p-badge
+                  [value]="previousCount"
+                  severity="secondary"
+                  class="interview-candidate__tab-badge"
+                ></p-badge>
+              }
+            </div>
+          </p-tab>
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel value="0" class="interview-candidate__tabpanel">
+            @if (todayTableData?.data?.length > 0) {
+              <app-table
+                [tableData]="todayTableData"
+                [columnsData]="columns"
+                [hasSearch]="true"
+                (btnClick)="onStartInterview($event)"
+                (buttonClick)="onButtonClick($event)"
+                (pageChangeAndSort)="onTablePayloadChange($event)"
+              ></app-table>
+            } @else {
+              <div class="interview-candidate__empty-state">
+                <i class="pi pi-inbox interview-candidate__empty-icon"></i>
+                <h3 class="interview-candidate__empty-title">
+                  No interviews scheduled for today
+                </h3>
+                <p class="interview-candidate__empty-message">
+                  There are no interviews scheduled for today.
+                </p>
+              </div>
+            }
+          </p-tabpanel>
+          <p-tabpanel value="1" class="interview-candidate__tabpanel">
+            @if (upComingTableData?.data?.length > 0) {
+              <app-table
+                [tableData]="upComingTableData"
+                [columnsData]="columns"
+                [hasSearch]="true"
+                (btnClick)="onStartInterview($event)"
+                (buttonClick)="onButtonClick($event)"
+                (pageChangeAndSort)="onTablePayloadChange($event)"
+              ></app-table>
+            } @else {
+              <div class="interview-candidate__empty-state">
+                <i class="pi pi-calendar interview-candidate__empty-icon"></i>
+                <h3 class="interview-candidate__empty-title">
+                  No upcoming interviews scheduled
+                </h3>
+                <p class="interview-candidate__empty-message">
+                  There are no upcoming interviews scheduled.
+                </p>
+              </div>
+            }
+          </p-tabpanel>
+          <p-tabpanel value="2" class="interview-candidate__tabpanel">
+            @if (PreviousTableData?.data?.length > 0) {
+              <app-table
+                [tableData]="PreviousTableData"
+                [columnsData]="columns"
+                [hasSearch]="true"
+                (btnClick)="onStartInterview($event)"
+                (buttonClick)="onButtonClick($event)"
+                (pageChangeAndSort)="onTablePayloadChange($event)"
+              ></app-table>
+            } @else {
+              <div class="interview-candidate__empty-state">
+                <i class="pi pi-history interview-candidate__empty-icon"></i>
+                <h3 class="interview-candidate__empty-title">
+                  No previous interviews found
+                </h3>
+                <p class="interview-candidate__empty-message">
+                  There are no previous interviews available.
+                </p>
+              </div>
+            }
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    </div>
   } @else {
     <app-interviewer-candidate-list-skeleton></app-interviewer-candidate-list-skeleton>
   }

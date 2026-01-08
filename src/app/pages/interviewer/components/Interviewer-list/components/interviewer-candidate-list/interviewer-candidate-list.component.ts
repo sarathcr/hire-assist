@@ -18,6 +18,9 @@ import {
 import { InterviewByPanel } from '../../../../../admin/models/assessment-schedule.model';
 import { InterviewService } from '../../../../../admin/services/interview.service';
 import { InterviewerCandidateListSkeletonComponent } from './interviewer-candidate-list.skeleton';
+import { TabPanel, TabPanels, Tab, TabList, Tabs } from 'primeng/tabs';
+import { CardModule } from 'primeng/card';
+import { BadgeModule } from 'primeng/badge';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -66,33 +69,90 @@ const tableColumns: TableColumnsData = {
   displayedColumns: [],
 };
 
+// Type for table data with string id (required by TableComponent)
+type TableDataItem = InterviewByPanel & { id: string };
+
 @Component({
   selector: 'app-interviewer-candidate-list',
-  imports: [TableComponent, InterviewerCandidateListSkeletonComponent],
+  imports: [
+    TableComponent,
+    InterviewerCandidateListSkeletonComponent,
+    TabPanel,
+    TabPanels,
+    Tab,
+    TabList,
+    Tabs,
+    CardModule,
+    BadgeModule,
+  ],
   providers: [TableDataSourceService],
   templateUrl: './interviewer-candidate-list.component.html',
   styleUrl: './interviewer-candidate-list.component.scss',
 })
 export class InterviewerCandidateListComponent implements OnInit {
-  public data!: any;
+  public data!: PaginatedData<InterviewByPanel>;
   public columns: TableColumnsData = tableColumns;
 
   private assessmentId!: number;
   private panelId!: number;
   public filterMap!: FilterMap;
-  public todayInterviews!: any;
-  public previousInterviews!: any;
-  public upcomingInterviews!: any;
-  public todayTableData!: any;
-  public PreviousTableData!: any;
-  public upComingTableData!: any;
+  public todayInterviews: InterviewByPanel[] = [];
+  public previousInterviews: InterviewByPanel[] = [];
+  public upcomingInterviews: InterviewByPanel[] = [];
+  public todayTableData: PaginatedData<TableDataItem> = {
+    pageNumber: 1,
+    pageSize: 5,
+    totalPages: 0,
+    totalRecords: 0,
+    data: [],
+    succeeded: true,
+    errors: [],
+    message: '',
+  };
+  public PreviousTableData: PaginatedData<TableDataItem> = {
+    pageNumber: 1,
+    pageSize: 5,
+    totalPages: 0,
+    totalRecords: 0,
+    data: [],
+    succeeded: true,
+    errors: [],
+    message: '',
+  };
+  public upComingTableData: PaginatedData<TableDataItem> = {
+    pageNumber: 1,
+    pageSize: 5,
+    totalPages: 0,
+    totalRecords: 0,
+    data: [],
+    succeeded: true,
+    errors: [],
+    message: '',
+  };
+
+  // Computed counts for summary cards
+  get todayCount(): number {
+    return this.todayInterviews?.length || 0;
+  }
+
+  get upcomingCount(): number {
+    return this.upcomingInterviews?.length || 0;
+  }
+
+  get previousCount(): number {
+    return this.previousInterviews?.length || 0;
+  }
+
+  get totalCount(): number {
+    return this.todayCount + this.upcomingCount + this.previousCount;
+  }
 
   constructor(
-    private interviewService: InterviewService,
-    private router: Router,
-    private activatedRoute: ActivatedRoute,
-    private messageService: MessageService,
-    private dataSourceService: TableDataSourceService<InterviewByPanel>,
+    private readonly interviewService: InterviewService,
+    private readonly router: Router,
+    private readonly activatedRoute: ActivatedRoute,
+    private readonly messageService: MessageService,
+    private readonly dataSourceService: TableDataSourceService<InterviewByPanel>,
   ) {}
 
   // Lifecycle Hooks
@@ -175,12 +235,22 @@ export class InterviewerCandidateListComponent implements OnInit {
               this.upcomingInterviews.push(item);
             }
           });
+          // Transform data to ensure id is always a string for table component
+          const transformForTable = (
+            items: InterviewByPanel[],
+          ): TableDataItem[] => {
+            return items.map((item) => ({
+              ...item,
+              id: item.id?.toString() ?? '',
+            })) as TableDataItem[];
+          };
+
           this.todayTableData = {
             pageNumber: 1,
             pageSize: 5,
             totalPages: 1,
             totalRecords: 5,
-            data: this.todayInterviews ?? [],
+            data: transformForTable(this.todayInterviews ?? []),
             succeeded: true,
             errors: [],
             message: '',
@@ -190,7 +260,7 @@ export class InterviewerCandidateListComponent implements OnInit {
             pageSize: 5,
             totalPages: 1,
             totalRecords: 5,
-            data: this.previousInterviews ?? [],
+            data: transformForTable(this.previousInterviews ?? []),
             succeeded: true,
             errors: [],
             message: '',
@@ -200,7 +270,7 @@ export class InterviewerCandidateListComponent implements OnInit {
             pageSize: 5,
             totalPages: 1,
             totalRecords: 5,
-            data: this.upcomingInterviews ?? [],
+            data: transformForTable(this.upcomingInterviews ?? []),
             succeeded: true,
             errors: [],
             message: '',
@@ -217,11 +287,10 @@ export class InterviewerCandidateListComponent implements OnInit {
   }
 
   private loadData(payload: PaginatedPayload): void {
-    this.dataSourceService.getData(payload).subscribe((response: any) => {
-      this.data = {
-        ...response,
-        status: response.status,
-      };
-    });
+    this.dataSourceService
+      .getData(payload)
+      .subscribe((response: PaginatedData<InterviewByPanel>) => {
+        this.data = response;
+      });
   }
 }

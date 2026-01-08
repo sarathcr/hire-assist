@@ -166,6 +166,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   private nextRoundId!: number | null;
   private candidatePanelAssignments = new Map<string, boolean>();
+  private candidatesBeingLoaded = new Set<string>(); // Track candidates currently being loaded to prevent duplicate API calls
 
   private ref: DynamicDialogRef | undefined;
 
@@ -558,14 +559,19 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     // The schedule modal will validate and show appropriate messages
     // Load panel data in background for future checks (non-blocking)
     const candidateIdsToLoad = this.selectedCandidates
-      .filter((candidate) => candidate?.id && !this.candidatePanelAssignments.has(candidate.id))
+      .filter((candidate) => 
+        candidate?.id && 
+        !this.candidatePanelAssignments.has(candidate.id) &&
+        !this.candidatesBeingLoaded.has(candidate.id) // Don't load if already being loaded
+      )
       .map((candidate) => candidate.id);
     
     if (candidateIdsToLoad.length > 0) {
       // Load in background without blocking button enablement
-      setTimeout(() => {
+      // Use requestAnimationFrame to avoid triggering during change detection
+      requestAnimationFrame(() => {
         this.loadPanelAssignmentsForCandidates(candidateIdsToLoad);
-      }, 0);
+      });
     }
 
     return true;
@@ -792,9 +798,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       const isInterviewIdSame =
         payload.interviewId === this.interview.interviewId;
       const isPanelIdSame = payload.panelId === this.interview.panelId;
+      const existingInterviewerIds = this.interview.interviewer?.map((i: any) => i.id) ?? [];
       const isInterviewerSame =
-        JSON.stringify(payload.interviewers.sort()) ===
-        JSON.stringify(this.interview.interviewer.sort());
+        JSON.stringify(payload.interviewers.slice().sort((a, b) => a.localeCompare(b))) ===
+        JSON.stringify(existingInterviewerIds.slice().sort((a, b) => a.localeCompare(b)));
 
       const isAlreadyScheduled =
         isInterviewIdSame && isPanelIdSame && isInterviewerSame;
@@ -1140,8 +1147,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
 
     candidateIds.forEach((candidateId: string) => {
-      // Only check if not already in cache
-      if (!this.candidatePanelAssignments.has(candidateId)) {
+      // Only check if not already in cache and not currently being loaded
+      if (!this.candidatePanelAssignments.has(candidateId) && !this.candidatesBeingLoaded.has(candidateId)) {
+        // Mark as being loaded to prevent duplicate calls
+        this.candidatesBeingLoaded.add(candidateId);
+        
         this.coordinatorPanelBridgeService
           .getinterviewPanles(candidateId)
           .subscribe({
@@ -1151,17 +1161,21 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                 candidateId,
                 !!response?.panelId,
               );
-              // Trigger change detection to update button state
+              // Remove from loading set
+              this.candidatesBeingLoaded.delete(candidateId);
+              // Use markForCheck instead of detectChanges to avoid triggering during change detection
               if (this.cdr) {
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
               }
             },
             error: () => {
               // If API call fails (e.g., 404), candidate doesn't have a panel
               this.candidatePanelAssignments.set(candidateId, false);
-              // Trigger change detection to update button state
+              // Remove from loading set
+              this.candidatesBeingLoaded.delete(candidateId);
+              // Use markForCheck instead of detectChanges to avoid triggering during change detection
               if (this.cdr) {
-                this.cdr.detectChanges();
+                this.cdr.markForCheck();
               }
             },
           });
@@ -1188,12 +1202,25 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const requests = candidateIds.map((candidateId: string) =>
+    // Filter out candidates that are already being loaded or are in cache
+    const candidatesToLoad = candidateIds.filter(
+      (candidateId) =>
+        !this.candidatePanelAssignments.has(candidateId) &&
+        !this.candidatesBeingLoaded.has(candidateId),
+    );
+
+    // Mark candidates as being loaded
+    candidatesToLoad.forEach((candidateId) => {
+      this.candidatesBeingLoaded.add(candidateId);
+    });
+
+    const requests = candidatesToLoad.map((candidateId: string) =>
       this.coordinatorPanelBridgeService.getinterviewPanles(candidateId).pipe(
         // Handle both success and error cases
         catchError(() => {
           // If API call fails (e.g., 404), candidate doesn't have a panel
           this.candidatePanelAssignments.set(candidateId, false);
+          this.candidatesBeingLoaded.delete(candidateId);
           // Return a default response indicating no panel assigned
           return of({
             panel: '',
@@ -1206,13 +1233,26 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       ),
     );
 
+    // If no candidates to load, validate immediately
+    if (requests.length === 0) {
+      const componentInstance = getComponentInstance();
+      if (componentInstance) {
+        this.validatePanelAssignmentsAndUpdateModal(
+          selected,
+          componentInstance,
+        );
+      }
+      return;
+    }
+
     // Wait for all requests to complete
     forkJoin(requests).subscribe({
       next: (responses: GetInterviewPanelsResponse[]) => {
         // Update cache for all responses
         responses.forEach((response, index) => {
-          const candidateId = candidateIds[index];
+          const candidateId = candidatesToLoad[index];
           this.candidatePanelAssignments.set(candidateId, !!response?.panelId);
+          this.candidatesBeingLoaded.delete(candidateId);
         });
         // Validate and update modal
         const componentInstance = getComponentInstance();
@@ -1224,6 +1264,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         }
       },
       error: () => {
+        // Remove all candidates from loading set on error
+        candidatesToLoad.forEach((candidateId) => {
+          this.candidatesBeingLoaded.delete(candidateId);
+        });
         // Even if some requests fail, still validate with what we have
         const componentInstance = getComponentInstance();
         if (componentInstance) {
