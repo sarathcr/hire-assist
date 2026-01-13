@@ -1,17 +1,38 @@
 <div class="input-select" [formGroup]="formGroup">
-  <p-floatlabel variant="on">
-    <p-select
-      id="over_label"
-      appendTo="body"
-      [options]="options"
-      [checkmark]="true"
-      optionLabel="label"
-      optionValue="value"
-      [showClear]="showClear"
-      class="w-full md:w-56"
-      [formControlName]="selectConfig.id"
-    /><label for="over_label">{{ selectConfig.labelKey }}</label></p-floatlabel
-  >
+  @if (floatLabel) {
+    <p-floatlabel variant="on">
+      <p-select
+        id="over_label"
+        appendTo="body"
+        [options]="options"
+        [checkmark]="true"
+        optionLabel="label"
+        optionValue="value"
+        [showClear]="showClear"
+        class="w-full md:w-56"
+        [formControlName]="selectConfig.id"
+      />
+      <label for="over_label">{{ selectConfig.labelKey }}</label>
+    </p-floatlabel>
+  } @else {
+    <div class="input-select__basic">
+      <label class="input-select__label" [for]="selectConfig.id">
+        {{ selectConfig.labelKey }}
+      </label>
+
+      <p-select
+        [id]="selectConfig.id"
+        appendTo="body"
+        [options]="options"
+        [checkmark]="true"
+        optionLabel="label"
+        optionValue="value"
+        [showClear]="showClear"
+        class="w-full md:w-56"
+        [formControlName]="selectConfig.id"
+      />
+    </div>
+  }
 
   @if (selectConfig.matSuffix) {
     <span class="input-suffix">{{ selectConfig.matSuffix }}</span>
@@ -20,6 +41,7 @@
   } @else if (dynamicSuffix) {
     <span class="input-dynamicSuffix">{{ dynamicSuffix }}</span>
   }
+
   @if (formControl.touched && formControl.invalid) {
     <span class="input-select__validation-label"> {{ errorMsg }}</span>
   }

@@ -27,8 +27,10 @@ export interface Options {
   name: string;
   code: string;
 }
+
 @Component({
   selector: 'app-input-select',
+  standalone: true, // Assuming standalone based on imports
   imports: [
     Select,
     InputTextModule,
@@ -39,9 +41,6 @@ export interface Options {
   templateUrl: './input-select.component.html',
   styleUrl: './input-select.component.scss',
 })
-
-//extends BaseFormComponent
-//, OnChanges
 export class InputSelectComponent
   extends BaseFormComponent
   implements OnInit, OnChanges, OnDestroy
@@ -52,6 +51,9 @@ export class InputSelectComponent
   @Input() selectOptions: Options[] | undefined;
   @Input() selectedData: string | undefined;
   @Input() showClear = true;
+
+  // Added to support the toggle, defaults to true to maintain existing behavior
+  @Input() floatLabel = true;
 
   public formControl!: FormControl<string>;
   public selectConfig!: CustomSelectConfig;
@@ -66,10 +68,6 @@ export class InputSelectComponent
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    // if (changes && changes['config'] && changes['config'].currentValue ) {
-    //   this.options = changes['config'].currentValue.options;
-    // }
-
     if (changes['config']?.currentValue) {
       const newConfig = changes['config'].currentValue as CustomSelectConfig;
       this.options = newConfig.options || [];
@@ -79,10 +77,4 @@ export class InputSelectComponent
   ngOnDestroy(): void {
     this.subs?.unsubscribe();
   }
-
-  // PUBLIC
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // public onSelectionChange(event: ) {
-  //   // this.change.emit(event.value);
-  // }
 }

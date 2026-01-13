@@ -1,18 +1,44 @@
 <div class="input-text" [formGroup]="formGroup">
-  <p-floatlabel variant="on">
-    <input
-      [id]="inputTextConfig.id"
-      [type]="type"
-      pInputText
-      [formControlName]="inputTextConfig.id"
-      [readOnly]="inputTextConfig.readonly"
-      (input)="onInputChange($event)"
-      [value]="values"
-    />
-    <label for="over_label">{{ inputTextConfig.labelKey }}</label>
-  </p-floatlabel>
+  <!-- FLOAT LABEL (DEFAULT) -->
+  @if (floatLabel) {
+    <p-floatlabel variant="on">
+      <input
+        [id]="inputTextConfig.id"
+        pInputText
+        [type]="type"
+        [formControlName]="inputTextConfig.id"
+        [readOnly]="inputTextConfig.readonly"
+        (input)="onInputChange($event)"
+        [value]="values"
+      />
+      <label [for]="inputTextConfig.id">
+        {{ inputTextConfig.labelKey }}
+      </label>
+    </p-floatlabel>
+  }
+
+  <!-- BASIC VARIANT -->
+  @else {
+    <div class="input-text__basic">
+      <label class="input-text__label" [for]="inputTextConfig.id">
+        {{ inputTextConfig.labelKey }}
+      </label>
+
+      <input
+        [id]="inputTextConfig.id"
+        pInputText
+        [type]="type"
+        [formControlName]="inputTextConfig.id"
+        [readOnly]="inputTextConfig.readonly"
+        (input)="onInputChange($event)"
+        [value]="values"
+      />
+    </div>
+  }
 
   @if (formControl.touched && formControl.invalid) {
-    <span class="input-text__validation-label"> {{ errorMsg }}</span>
+    <span class="input-text__validation-label">
+      {{ errorMsg }}
+    </span>
   }
 </div>

@@ -15,6 +15,7 @@ import { BaseFormComponent } from '../base-form/base-form.component';
 
 @Component({
   selector: 'app-input-text-calender',
+  standalone: true,
   imports: [
     FormsModule,
     ReactiveFormsModule,
@@ -31,6 +32,9 @@ export class InputTextCalenderComponent
   @Input() formGroup!: FormGroup;
   @Input() config!: CustomFormControlConfig;
   @Input() dynamicSuffix!: string;
+
+  @Input() floatLabel = true;
+
   @Input() showTime = false;
   @Input() maxDate!: Date;
   @Input() hasDateError!: string;
@@ -39,6 +43,10 @@ export class InputTextCalenderComponent
   public inputTextCalendarConfig!: CustomInputTextCalenderConfig;
 
   ngOnInit(): void {
+    if (!this.formGroup || !this.config) {
+      return;
+    }
+
     this.inputTextCalendarConfig = this.config as CustomInputTextCalenderConfig;
 
     this.formControl = this.formGroup.get(this.config.id) as FormControl<
@@ -47,14 +55,8 @@ export class InputTextCalenderComponent
   }
 
   public onDateSelect(event: Date): void {
-    if (event && this.formControl) {
+    if (event) {
       this.formControl.setValue(event, { emitEvent: true });
     }
-  }
-
-  public onInputChange(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    const inputValue: string = inputElement.value;
-    this.formControl.setValue(inputValue);
   }
 }

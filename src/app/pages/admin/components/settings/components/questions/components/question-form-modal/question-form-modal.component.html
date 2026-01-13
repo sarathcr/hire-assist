@@ -174,10 +174,10 @@
                       questionForm.hasError("attachmentRequired") &&
                       questionForm.touched
                     ) {
-                      <div class="question-form__validation-toggle">
-                        Attachment is required when attachment toggle is
-                        enabled.
-                      </div>
+                      <p-message severity="error" size="small">
+                        Attachment is required when question attachment toggle
+                        is enabled.</p-message
+                      >
                     }
                   </div>
                 }
@@ -210,6 +210,20 @@
               >
               </app-toggle-switch>
             </div>
+            @if (
+              questionForm &&
+              questionForm.hasError("optionAttachmentsRequired") &&
+              questionForm.touched
+            ) {
+              <div
+                class="question-form__validation-toggle question-form__validation-toggle_options"
+              >
+                <p-message severity="error" size="small"
+                  >At least one option attachment is required when option
+                  attachment toggle is enabled.</p-message
+                >
+              </div>
+            }
             <div formArrayName="options" class="question-form__options">
               @for (
                 optionCtrl of optionsArray.controls;

@@ -2,30 +2,38 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import {
+  AbstractControl,
   FormArray,
   FormBuilder,
   FormGroup,
   FormsModule,
   ReactiveFormsModule,
+  ValidationErrors,
   Validators,
 } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { Tooltip } from 'primeng/tooltip';
 import {
   DialogService,
   DynamicDialogConfig,
   DynamicDialogRef,
 } from 'primeng/dynamicdialog';
 import { FileUploadModule } from 'primeng/fileupload';
+import { Message } from 'primeng/message';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SkeletonModule } from 'primeng/skeleton';
+import { Tooltip } from 'primeng/tooltip';
 import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
+import { DialogFooterComponent } from '../../../../../../../../shared/components/dialog-footer/dialog-footer.component';
+import { DialogComponent } from '../../../../../../../../shared/components/dialog/dialog.component';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
 import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
 import { InputTextComponent } from '../../../../../../../../shared/components/form/input-text/input-text.component';
 import { InputTextareaComponent } from '../../../../../../../../shared/components/form/input-textarea/input-textarea.component';
 import { ToggleSwitchComponent } from '../../../../../../../../shared/components/form/toggle-switch/toggle-switch.component';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
+import { DialogData } from '../../../../../../../../shared/models/dialog.models';
 import { Option } from '../../../../../../../../shared/models/option';
 import { StoreService } from '../../../../../../../../shared/services/store.service';
 import {
@@ -42,12 +50,6 @@ import {
 } from '../../../../../../models/question.model';
 import { QuestionService } from '../../../../../../services/question.service';
 import { FileUploadDialogComponentComponent } from '../file-upload-dialog-component/file-upload-dialog-component.component';
-import { DialogComponent } from '../../../../../../../../shared/components/dialog/dialog.component';
-import { DialogFooterComponent } from '../../../../../../../../shared/components/dialog-footer/dialog-footer.component';
-import { DialogData } from '../../../../../../../../shared/models/dialog.models';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { SkeletonModule } from 'primeng/skeleton';
-import { AbstractControl, ValidationErrors } from '@angular/forms';
 
 function attachmentRequiredValidator(
   control: AbstractControl,
@@ -61,6 +63,70 @@ function attachmentRequiredValidator(
 
   if (!fileDto || (!fileDto.id && !fileDto.blobId)) {
     return { attachmentRequired: true };
+  }
+
+  return null;
+}
+
+function optionAttachmentRequiredValidator(
+  control: AbstractControl,
+): ValidationErrors | null {
+  const optionHasAttachments = control.get('optionHasAttachments')?.value;
+  const optionsArray = control.get('options') as any;
+
+  if (!optionHasAttachments) {
+    return null; // toggle OFF
+  }
+
+  if (!optionsArray || !Array.isArray(optionsArray.controls)) {
+    return { optionAttachmentsRequired: true };
+  }
+
+  // Check if at least one option has an attachment
+  let hasAtLeastOneAttachment = false;
+  optionsArray.controls.forEach((optionCtrl: AbstractControl) => {
+    const fileDtoControl = optionCtrl.get('fileDto');
+    if (!fileDtoControl) {
+      return;
+    }
+
+    // fileDto can be FormArray or FormGroup
+    let hasAttachment = false;
+    if (fileDtoControl instanceof FormArray) {
+      hasAttachment = fileDtoControl.length > 0 && fileDtoControl.at(0)?.value;
+      if (hasAttachment) {
+        const fileValue = fileDtoControl.at(0)?.value;
+        hasAttachment = !!(fileValue?.id || fileValue?.blobId);
+      }
+    } else if (fileDtoControl.value) {
+      const fileValue = fileDtoControl.value;
+      hasAttachment = !!(fileValue?.id || fileValue?.blobId);
+    }
+
+    if (hasAttachment) {
+      hasAtLeastOneAttachment = true;
+    }
+  });
+
+  if (!hasAtLeastOneAttachment) {
+    return { optionAttachmentsRequired: true };
+  }
+
+  return null;
+}
+
+function compositeAttachmentValidator(
+  control: AbstractControl,
+): ValidationErrors | null {
+  const questionError = attachmentRequiredValidator(control);
+  const optionError = optionAttachmentRequiredValidator(control);
+
+  if (questionError && optionError) {
+    return { ...questionError, ...optionError };
+  } else if (questionError) {
+    return questionError;
+  } else if (optionError) {
+    return optionError;
   }
 
   return null;
@@ -102,6 +168,7 @@ const KEYBOARD_KEYS = {
     Tooltip,
     ProgressSpinnerModule,
     SkeletonModule,
+    Message,
   ],
   templateUrl: './question-form-modal.component.html',
   styleUrl: './question-form-modal.component.scss',
@@ -240,11 +307,10 @@ export class QuestionFormModalComponent
   private setupForm(): void {
     this.questionForm = this.data.fGroup;
 
-    this.questionForm.setValidators(attachmentRequiredValidator);
+    this.questionForm.setValidators(compositeAttachmentValidator);
 
-    this.questionForm.get('hasAttachments')?.valueChanges.subscribe(() => {
-      this.questionForm?.updateValueAndValidity();
-    });
+    this.setupQuestionAttachmentToggle();
+    this.setupOptionAttachmentToggle();
 
     this.questionForm.get('fileDto')?.valueChanges.subscribe(() => {
       this.questionForm?.updateValueAndValidity();
@@ -252,6 +318,88 @@ export class QuestionFormModalComponent
 
     this.initializeOptionsArray();
     this.subscribeToOptionArray();
+  }
+
+  private setupQuestionAttachmentToggle(): void {
+    const hasAttachmentsControl = this.questionForm?.get('hasAttachments');
+    if (!hasAttachmentsControl) return;
+
+    hasAttachmentsControl.valueChanges.subscribe((newValue: boolean) => {
+      // If trying to disable the toggle
+      if (!newValue) {
+        const fileDto = this.questionForm?.get('fileDto')?.value;
+        if (this.hasQuestionAttachment(fileDto)) {
+          // Prevent disabling by reverting the value
+          hasAttachmentsControl.setValue(true, { emitEvent: false });
+          // Show warning toast only
+          this.showWarningMessage(
+            'Validation',
+            'Please remove the question attachment before disabling the toggle.',
+          );
+          this.questionForm?.updateValueAndValidity();
+          return;
+        }
+      }
+      this.questionForm?.updateValueAndValidity();
+    });
+  }
+
+  private setupOptionAttachmentToggle(): void {
+    const optionHasAttachmentsControl = this.questionForm?.get(
+      'optionHasAttachments',
+    );
+    if (!optionHasAttachmentsControl) return;
+
+    optionHasAttachmentsControl.valueChanges.subscribe((newValue: boolean) => {
+      // If trying to disable the toggle
+      if (!newValue) {
+        if (this.hasAnyOptionAttachment()) {
+          // Prevent disabling by reverting the value
+          optionHasAttachmentsControl.setValue(true, { emitEvent: false });
+          // Show warning toast only
+          this.showWarningMessage(
+            'Validation',
+            'Please remove all option attachments before disabling the toggle.',
+          );
+          this.questionForm?.updateValueAndValidity();
+          return;
+        }
+      }
+      this.questionForm?.updateValueAndValidity();
+    });
+  }
+
+  private hasQuestionAttachment(fileDto: any): boolean {
+    if (!fileDto) return false;
+    return !!(fileDto.id || fileDto.blobId);
+  }
+
+  private hasAnyOptionAttachment(): boolean {
+    const optionsArray = this.optionsArray;
+    if (!optionsArray?.length) return false;
+
+    for (let i = 0; i < optionsArray.length; i++) {
+      const optionCtrl = optionsArray.at(i);
+      const fileDtoControl = optionCtrl.get('fileDto');
+      if (!fileDtoControl) continue;
+
+      let hasAttachment = false;
+      if (fileDtoControl instanceof FormArray) {
+        if (fileDtoControl.length > 0) {
+          const fileValue = fileDtoControl.at(0)?.value;
+          hasAttachment = !!(fileValue?.id || fileValue?.blobId);
+        }
+      } else if (fileDtoControl.value) {
+        const fileValue = fileDtoControl.value;
+        hasAttachment = !!(fileValue?.id || fileValue?.blobId);
+      }
+
+      if (hasAttachment) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private initializeOptionsArray(): void {
@@ -454,7 +602,7 @@ export class QuestionFormModalComponent
     const confirmRef = this.openDeleteConfirmationDialog(modalData);
 
     confirmRef?.onClose.subscribe((confirmed: boolean) => {
-      this.restoreFormValidationState(formTouchedState);
+      this.restoreFormValidationStateWithoutBlur(formTouchedState);
 
       if (confirmed) {
         this.performOptionDelete(fileDto, optionIndex);
@@ -465,6 +613,11 @@ export class QuestionFormModalComponent
   private performOptionDelete(fileDto: FileDto, optionIndex: number): void {
     this.deletingOptionAttachments.set(optionIndex, true);
 
+    // Store scroll position and prevent auto-focus
+    const scrollContainer = document.querySelector('.question-form__container');
+    const scrollPosition = scrollContainer?.scrollTop || 0;
+    const activeElementBeforeDelete = document.activeElement as HTMLElement;
+
     const deletePayload: FileDto = {
       ...fileDto,
       blobId: fileDto.blobId || fileDto.id,
@@ -473,17 +626,43 @@ export class QuestionFormModalComponent
     this.questionService.deleteFiles(deletePayload).subscribe({
       next: () => {
         this.clearOptionAttachment(optionIndex);
-        this.showSuccessMessage(
-          'Success',
-          'Option attachment deleted successfully',
-        );
         this.deletingOptionAttachments.set(optionIndex, false);
         this.cdr.detectChanges();
+        // Restore scroll position and prevent auto-focus
+        setTimeout(() => {
+          if (scrollContainer) {
+            scrollContainer.scrollTop = scrollPosition;
+          }
+          // Prevent auto-focus to first element
+          if (
+            activeElementBeforeDelete &&
+            document.body.contains(activeElementBeforeDelete)
+          ) {
+            activeElementBeforeDelete.blur();
+          }
+          this.showSuccessMessage(
+            'Success',
+            'Option attachment deleted successfully',
+          );
+        }, 0);
       },
       error: () => {
-        this.showErrorMessage('Error', 'Failed to delete option attachment');
         this.deletingOptionAttachments.set(optionIndex, false);
         this.cdr.detectChanges();
+        // Restore scroll position and prevent auto-focus
+        setTimeout(() => {
+          if (scrollContainer) {
+            scrollContainer.scrollTop = scrollPosition;
+          }
+          // Prevent auto-focus to first element
+          if (
+            activeElementBeforeDelete &&
+            document.body.contains(activeElementBeforeDelete)
+          ) {
+            activeElementBeforeDelete.blur();
+          }
+          this.showErrorMessage('Error', 'Failed to delete option attachment');
+        }, 0);
       },
     });
   }
@@ -510,7 +689,8 @@ export class QuestionFormModalComponent
       header: 'Upload file',
       width: '50vw',
       modal: true,
-      focusOnShow: false,
+      focusOnShow: false, // Prevents autofocusing first input in the submodal
+      focusTrap: false, // Prevents the submodal from "stealing" focus context
       closable: false,
       dismissableMask: false,
       styleClass: 'fileUpload__dialog',
@@ -519,6 +699,9 @@ export class QuestionFormModalComponent
 
     uploadRef.onClose.subscribe((result: FileDto) => {
       document.body.style.overflow = 'auto';
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
       this.restoreFormValidationStateWithoutBlur(formTouchedState);
 
       if (result) {
@@ -640,7 +823,7 @@ export class QuestionFormModalComponent
     const confirmRef = this.openDeleteConfirmationDialog(modalData);
 
     confirmRef?.onClose.subscribe((confirmed: boolean) => {
-      this.restoreFormValidationState(formTouchedState);
+      this.restoreFormValidationStateWithoutBlur(formTouchedState);
 
       if (confirmed) {
         this.performQuestionDelete(fileDto);
@@ -655,6 +838,7 @@ export class QuestionFormModalComponent
       width: '35vw',
       modal: true,
       focusOnShow: false,
+      focusTrap: false,
       breakpoints: DIALOG_BREAKPOINTS,
       templates: {
         footer: DialogFooterComponent,
@@ -721,6 +905,11 @@ export class QuestionFormModalComponent
   private performQuestionDelete(fileDto: FileDto): void {
     this.isDeletingAttachment = true;
 
+    // Store scroll position and prevent auto-focus
+    const scrollContainer = document.querySelector('.question-form__container');
+    const scrollPosition = scrollContainer?.scrollTop || 0;
+    const activeElementBeforeDelete = document.activeElement as HTMLElement;
+
     const deletePayload: FileDto = {
       ...fileDto,
       blobId: fileDto.blobId || fileDto.id,
@@ -729,17 +918,43 @@ export class QuestionFormModalComponent
     this.questionService.deleteFiles(deletePayload).subscribe({
       next: () => {
         this.data.fGroup.patchValue({ fileDto: null });
-        this.showSuccessMessage(
-          'Success',
-          'Question image deleted successfully',
-        );
         this.isDeletingAttachment = false;
         this.cdr.detectChanges();
+        // Restore scroll position and prevent auto-focus
+        setTimeout(() => {
+          if (scrollContainer) {
+            scrollContainer.scrollTop = scrollPosition;
+          }
+          // Prevent auto-focus to first element
+          if (
+            activeElementBeforeDelete &&
+            document.body.contains(activeElementBeforeDelete)
+          ) {
+            activeElementBeforeDelete.blur();
+          }
+          this.showSuccessMessage(
+            'Success',
+            'Question image deleted successfully',
+          );
+        }, 0);
       },
       error: () => {
-        this.showErrorMessage('Error', 'Failed to delete question image');
         this.isDeletingAttachment = false;
         this.cdr.detectChanges();
+        // Restore scroll position and prevent auto-focus
+        setTimeout(() => {
+          if (scrollContainer) {
+            scrollContainer.scrollTop = scrollPosition;
+          }
+          // Prevent auto-focus to first element
+          if (
+            activeElementBeforeDelete &&
+            document.body.contains(activeElementBeforeDelete)
+          ) {
+            activeElementBeforeDelete.blur();
+          }
+          this.showErrorMessage('Error', 'Failed to delete question image');
+        }, 0);
       },
     });
   }

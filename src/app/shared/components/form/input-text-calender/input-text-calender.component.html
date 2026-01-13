@@ -1,23 +1,53 @@
 <div class="input-text-calender" [formGroup]="formGroup">
-  <p-floatlabel variant="on">
-    <p-datepicker
-      [size]="'small'"
-      id="over_label"
-      [showIcon]="true"
-      [dateFormat]="'dd-mm-yy'"
-      [showTime]="showTime"
-      [hourFormat]="'12'"
-      [showSeconds]="false"
-      [maxDate]="maxDate"
-      [formControlName]="inputTextCalendarConfig.id"
-      (onSelect)="onDateSelect($event)"
-    >
-    </p-datepicker>
-    <label for="over_label">{{
-      inputTextCalendarConfig.labelKey
-    }}</label></p-floatlabel
-  >
 
+  <!-- FLOAT LABEL (DEFAULT) -->
+  @if (floatLabel) {
+    <p-floatlabel variant="on">
+      <p-datepicker
+        [id]="inputTextCalendarConfig.id"
+        size="small"
+        [showIcon]="true"
+        dateFormat="dd-mm-yy"
+        [showTime]="showTime"
+        hourFormat="12"
+        [showSeconds]="false"
+        [maxDate]="maxDate"
+        [formControlName]="inputTextCalendarConfig.id"
+        (onSelect)="onDateSelect($event)"
+      ></p-datepicker>
+
+      <label [for]="inputTextCalendarConfig.id">
+        {{ inputTextCalendarConfig.labelKey }}
+      </label>
+    </p-floatlabel>
+  }
+
+  <!-- BASIC VARIANT -->
+  @else {
+    <div class="input-text-calender__basic">
+      <label
+        class="input-text-calender__label"
+        [for]="inputTextCalendarConfig.id"
+      >
+        {{ inputTextCalendarConfig.labelKey }}
+      </label>
+
+      <p-datepicker
+        [id]="inputTextCalendarConfig.id"
+        size="small"
+        [showIcon]="true"
+        dateFormat="dd-mm-yy"
+        [showTime]="showTime"
+        hourFormat="12"
+        [showSeconds]="false"
+        [maxDate]="maxDate"
+        [formControlName]="inputTextCalendarConfig.id"
+        (onSelect)="onDateSelect($event)"
+      ></p-datepicker>
+    </div>
+  }
+
+  <!-- suffix / prefix -->
   @if (inputTextCalendarConfig.matSuffix) {
     <span class="input-suffix">{{ inputTextCalendarConfig.matSuffix }}</span>
   } @else if (inputTextCalendarConfig.matPrefix) {
@@ -25,11 +55,16 @@
   } @else if (dynamicSuffix) {
     <span class="input-dynamicSuffix">{{ dynamicSuffix }}</span>
   }
+
+  <!-- validation -->
   @if (formControl.touched && formControl.invalid) {
-    <span class="input-text-calender__validation-label"> {{ errorMsg }}</span>
+    <span class="input-text-calender__validation-label">
+      {{ errorMsg }}
+    </span>
   } @else if (hasDateError) {
     <span
-      class="input-text-calender__validation-label input-text-calender__validation-label_warning"
+      class="input-text-calender__validation-label
+             input-text-calender__validation-label_warning"
     >
       {{ hasDateError }}
     </span>

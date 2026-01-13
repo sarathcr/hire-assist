@@ -6,31 +6,32 @@
     <form [formGroup]="fGroup">
       <app-input-text
         [formGroup]="fGroup"
-        type="text"
         [config]="configMap['name']"
-        [ariaMultiSelectable]=""
+        [floatLabel]="false"
       ></app-input-text>
 
       <app-input-text
         [formGroup]="fGroup"
-        type="text"
         [config]="configMap['email']"
+        [floatLabel]="false"
       ></app-input-text>
       <app-input-text-calender
         [formGroup]="fGroup"
         [config]="configMap['dob']"
         [showTime]="false"
         [maxDate]="maxDate"
-      ></app-input-text-calender>
+        [floatLabel]="false"
+      />
       <app-input-select
         [formGroup]="fGroup"
         [config]="configMap['gender']"
         [showClear]="false"
+        [floatLabel]="false"
       />
       <app-input-text
         [formGroup]="fGroup"
-        type="text"
         [config]="configMap['phone']"
+        [floatLabel]="false"
       ></app-input-text>
       <!-- <app-input-select [formGroup]="fGroup" [config]="configMap['batch']" />
     @if (fGroup.get("batch")?.value) {
@@ -66,8 +67,8 @@
       @for (q of applicationQuestions; track q.id) {
         <app-input-text
           [formGroup]="fGroup"
-          type="text"
           [config]="{ id: q.id.toString(), labelKey: q.question }"
+          [floatLabel]="false"
         />
       }
     </form>
@@ -82,6 +83,10 @@
     ></app-button>
   </div>
   <div class="dialog-footer__btn-wrapper">
-    <app-button buttonLabel="Submit" (btnClick)="onSubmit()" [disabled]="fGroup.invalid && (fGroup.touched || fGroup.dirty)"></app-button>
+    <app-button
+      buttonLabel="Submit"
+      (btnClick)="onSubmit()"
+      [disabled]="fGroup.invalid && (fGroup.touched || fGroup.dirty)"
+    ></app-button>
   </div>
 </footer>

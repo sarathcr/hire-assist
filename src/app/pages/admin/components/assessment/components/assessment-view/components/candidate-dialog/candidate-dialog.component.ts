@@ -2,24 +2,20 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { debounceTime } from 'rxjs';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
 import { InputTextCalenderComponent } from '../../../../../../../../shared/components/form/input-text-calender/input-text-calender.component';
 import { InputTextComponent } from '../../../../../../../../shared/components/form/input-text/input-text.component';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
 import { Option } from '../../../../../../../../shared/models/option';
-import { isValidStartDate } from '../../../../../../../../shared/utilities/date.utility';
 import {
   buildFormGroup,
   ConfigMap,
-  CustomSelectConfig,
 } from '../../../../../../../../shared/utilities/form.utility';
-import { Candidate } from '../../../../../../models/assessment-schedule.model';
+
 import {
   CandidateApplicationQuestions,
   CandidateDataModel,
-  CandidateModel,
 } from '../../../../../../models/candidate-data.model';
 @Component({
   selector: 'app-candidate-dialog',
@@ -148,8 +144,6 @@ export class CandidateDialogComponent implements OnInit {
   //   return result;
   // }
   public onSubmit() {
-
-
     // const batchControl = this.fGroup.get('batch');
     // const questionSetControl = this.fGroup.get('questionSet');
 
