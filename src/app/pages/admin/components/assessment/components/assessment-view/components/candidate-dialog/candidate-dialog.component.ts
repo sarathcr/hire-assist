@@ -148,10 +148,7 @@ export class CandidateDialogComponent implements OnInit {
   //   return result;
   // }
   public onSubmit() {
-    console.log('11111111111111');
 
-    this.fGroup.markAllAsTouched();
-    console.log('2222222222222');
 
     // const batchControl = this.fGroup.get('batch');
     // const questionSetControl = this.fGroup.get('questionSet');
@@ -200,7 +197,6 @@ export class CandidateDialogComponent implements OnInit {
     candidatePayload.answers = answers;
     // candidatePayload.startDateTime = formValue['startDate'];
     // candidatePayload.endDateTime = formValue['endDate'];
-    console.log(candidatePayload);
 
     this.ref.close(candidatePayload);
   }

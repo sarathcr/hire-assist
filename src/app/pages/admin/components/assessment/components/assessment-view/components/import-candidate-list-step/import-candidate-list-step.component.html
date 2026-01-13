@@ -18,7 +18,7 @@
           tooltipPosition="top"
           [buttonLabel]="'Schedule Assessment'"
           [icon]="'pi pi-calendar-times'"
-          [disabled]="!selectedUsers || selectedUsers.length === 0"
+          [disabled]="disableScheduleButton"
           (btnClick)="scheduleAssessment()"
         ></app-button>
       </div>

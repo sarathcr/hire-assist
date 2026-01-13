@@ -508,7 +508,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
    * 1. At least one candidate is selected
    * 2. All selected candidates have status "Selected" (matching schedule() method requirement)
    * 3. For non-aptitude rounds: All selected candidates are assigned to a panel (checked from cache only)
-   * 
+   *
    * Note: If panel data is not in cache, the button is enabled anyway and validation happens in the modal
    */
   public isScheduleEnabled(): boolean {
@@ -559,13 +559,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     // The schedule modal will validate and show appropriate messages
     // Load panel data in background for future checks (non-blocking)
     const candidateIdsToLoad = this.selectedCandidates
-      .filter((candidate) => 
-        candidate?.id && 
-        !this.candidatePanelAssignments.has(candidate.id) &&
-        !this.candidatesBeingLoaded.has(candidate.id) // Don't load if already being loaded
+      .filter(
+        (candidate) =>
+          candidate?.id &&
+          !this.candidatePanelAssignments.has(candidate.id) &&
+          !this.candidatesBeingLoaded.has(candidate.id), // Don't load if already being loaded
       )
       .map((candidate) => candidate.id);
-    
+
     if (candidateIdsToLoad.length > 0) {
       // Load in background without blocking button enablement
       // Use requestAnimationFrame to avoid triggering during change detection
@@ -798,10 +799,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       const isInterviewIdSame =
         payload.interviewId === this.interview.interviewId;
       const isPanelIdSame = payload.panelId === this.interview.panelId;
-      const existingInterviewerIds = this.interview.interviewer?.map((i: any) => i.id) ?? [];
+      const existingInterviewerIds =
+        this.interview.interviewer?.map((i: any) => i.id) ?? [];
       const isInterviewerSame =
-        JSON.stringify(payload.interviewers.slice().sort((a, b) => a.localeCompare(b))) ===
-        JSON.stringify(existingInterviewerIds.slice().sort((a, b) => a.localeCompare(b)));
+        JSON.stringify(
+          payload.interviewers.slice().sort((a, b) => a.localeCompare(b)),
+        ) ===
+        JSON.stringify(
+          existingInterviewerIds.slice().sort((a, b) => a.localeCompare(b)),
+        );
 
       const isAlreadyScheduled =
         isInterviewIdSame && isPanelIdSame && isInterviewerSame;
@@ -992,18 +998,30 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   private parseDate(date: string): string | null {
     if (!date) return null;
+
+    const parts = date.split('-');
+
+    if (parts.length === 3 && parts[2].length === 4) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+
+      const customDate = new Date(year, month, day);
+
+      if (
+        customDate.getFullYear() === year &&
+        customDate.getMonth() === month &&
+        customDate.getDate() === day
+      ) {
+        return customDate.toISOString();
+      }
+    }
+
     const isoDate = new Date(date);
     if (!isNaN(isoDate.getTime())) {
       return isoDate.toISOString();
     }
 
-    const parts = date.split('-');
-    if (parts.length === 3) {
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      const year = parseInt(parts[2], 10);
-      return new Date(year, month, day).toISOString();
-    }
     return null;
   }
 
@@ -1148,10 +1166,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     candidateIds.forEach((candidateId: string) => {
       // Only check if not already in cache and not currently being loaded
-      if (!this.candidatePanelAssignments.has(candidateId) && !this.candidatesBeingLoaded.has(candidateId)) {
+      if (
+        !this.candidatePanelAssignments.has(candidateId) &&
+        !this.candidatesBeingLoaded.has(candidateId)
+      ) {
         // Mark as being loaded to prevent duplicate calls
         this.candidatesBeingLoaded.add(candidateId);
-        
+
         this.coordinatorPanelBridgeService
           .getinterviewPanles(candidateId)
           .subscribe({

@@ -53,17 +53,19 @@ export class ScheduleInterviewComponent
   ngOnInit(): void {
     this.data = this.config.data?.candidateIds || this.config.data;
     this.setConfigMap();
-    this.selectedCandidateIds = this.config.data?.candidateIds || this.config.data || [];
+    this.selectedCandidateIds =
+      this.config.data?.candidateIds || this.config.data || [];
     this.onSubmitCallback = this.config.data?.onSubmit;
     this.setComponentInstance = this.config.data?.setComponentInstance;
     this.isLoadingPanelData = this.config.data?.isLoadingPanelData || false;
-    
-    // Register this component instance with parent
+
     if (this.setComponentInstance) {
       this.setComponentInstance(this);
     }
-    
-    this.setupDateValidation();
+
+    this.fGroup.get('scheduleDate')?.valueChanges.subscribe(() => {
+      this.validateScheduleDate(this.fGroup, 'scheduleDate');
+    });
   }
 
   public onClose() {
@@ -76,7 +78,13 @@ export class ScheduleInterviewComponent
     this.fGroup.markAllAsTouched();
     const isFormValid = this.fGroup.valid;
 
-    if (isFormValid && !this.isLoading && !this.isLoadingPanelData && !this.isPanelValidationError && this.onSubmitCallback) {
+    if (
+      isFormValid &&
+      !this.isLoading &&
+      !this.isLoadingPanelData &&
+      !this.isPanelValidationError &&
+      this.onSubmitCallback
+    ) {
       this.isLoading = true;
       this.onSubmitCallback(this.fGroup.value);
     }
@@ -115,30 +123,28 @@ export class ScheduleInterviewComponent
     const { metadata } = new ScheduleInterview();
     this.configMap = metadata.configMap || {};
   }
+
   public removeCandidate(index: number): void {
     this.selectedCandidateIds.splice(index, 1);
   }
-  private setupDateValidation(): void {
-    const scheduleDateControl = this.fGroup.get('scheduleDate');
 
-    const sub = scheduleDateControl?.valueChanges.subscribe(
-      (newValue: Date) => {
-        setTimeout(() => {
-          if (newValue && !isValidStartDate(newValue)) {
-            scheduleDateControl?.setErrors({
-              errorMessage: 'Schedule Date must be today or later.',
-            });
-          } else {
-            const currentErrors = scheduleDateControl?.errors;
-            if (currentErrors && currentErrors['errorMessage']) {
-              scheduleDateControl?.setErrors(null, { emitEvent: false });
-            }
-          }
-        }, 0);
-      },
-    );
-    if (sub) {
-      this.subscriptionList.push(sub);
+  private validateScheduleDate(form: FormGroup, dateField: string): void {
+    const dateControl = form.get(dateField);
+    const dateValue = dateControl?.value;
+
+    dateControl?.setErrors(null);
+
+    if (dateControl) {
+      if (!dateValue) {
+        dateControl.setErrors({ required: true });
+      } else {
+        const dateTime = new Date(dateValue);
+        if (!isValidStartDate(dateTime)) {
+          dateControl.setErrors({
+            errorMessage: 'Schedule Date must be today or later.',
+          });
+        }
+      }
     }
   }
 }

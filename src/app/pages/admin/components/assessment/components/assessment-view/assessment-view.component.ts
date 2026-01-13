@@ -336,18 +336,31 @@ export class AssessmentViewComponent
     }
   }
   private parseDate(date: string): string | null {
+    if (!date) return null;
+
+    const parts = date.split('-');
+
+    if (parts.length === 3 && parts[2].length === 4) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+
+      const customDate = new Date(year, month, day);
+
+      if (
+        customDate.getFullYear() === year &&
+        customDate.getMonth() === month &&
+        customDate.getDate() === day
+      ) {
+        return customDate.toISOString();
+      }
+    }
+
     const isoDate = new Date(date);
     if (!isNaN(isoDate.getTime())) {
       return isoDate.toISOString();
     }
 
-    const parts = date.split('-');
-    if (parts.length === 3) {
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      const year = parseInt(parts[2], 10);
-      return new Date(year, month, day).toISOString();
-    }
     return null;
   }
 

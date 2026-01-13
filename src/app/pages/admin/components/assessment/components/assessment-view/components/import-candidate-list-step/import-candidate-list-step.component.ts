@@ -107,6 +107,8 @@ export class ImportCandidateListStepComponent implements OnInit {
   public isUploading = false;
   public assessmentId = input<number>();
   public selectedUsers: (string | undefined)[] = [];
+  public selectedCandidates: CandidateModel[] = [];
+  public disableScheduleButton = true;
   public importStatus = false;
   public newStatus = false;
   public isAllCandidatesAssigned = false;
@@ -221,10 +223,10 @@ export class ImportCandidateListStepComponent implements OnInit {
       .subscribe({ next, error });
   }
   public getSelectedItems(selectedUsersIds: AssessmentViewModel[]): void {
-    this.selectedUsers = selectedUsersIds.map(
-      (item: AssessmentViewModel) => item.id,
-    );
+    this.selectedUsers = selectedUsersIds.map((item) => item.id);
+    this.updateScheduleButtonState();
   }
+
   public onTablePayloadChange(payload: PaginatedPayload): void {
     this.loadData(payload);
   }
@@ -543,9 +545,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe((response: PaginatedData<CandidateModel>) => {
         this.data = response;
-        if (!this.skipAutoSelection) {
-          this.updateAlreadySelectedCandidates();
-        }
+        this.alreadySelectedCandidates = [...(this.selectedUsers as string[])];
       });
   }
   private getAllCandidatesApplicationQuestions() {
@@ -596,6 +596,7 @@ export class ImportCandidateListStepComponent implements OnInit {
     payload.filterMap = {
       assessmentId: Number(this.assessmentId()),
     };
+    payload.pagination.pageSize = -1;
 
     const next = (res: any) => {
       this.questionSets = res.data;
@@ -673,5 +674,19 @@ export class ImportCandidateListStepComponent implements OnInit {
         },
       });
     }
+  }
+
+  private updateScheduleButtonState(): void {
+    if (!this.selectedUsers?.length || !this.data?.data) {
+      this.disableScheduleButton = true;
+      return;
+    }
+
+    const hasUnassignedCandidate = this.data.data.some(
+      (candidate: CandidateModel) =>
+        this.selectedUsers.includes(candidate.id) && candidate.batchId === 0,
+    );
+
+    this.disableScheduleButton = hasUnassignedCandidate;
   }
 }

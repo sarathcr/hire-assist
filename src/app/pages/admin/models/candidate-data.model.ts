@@ -1,4 +1,4 @@
-import { Validators } from '@angular/forms';
+import { AbstractControl, ValidationErrors, Validators } from '@angular/forms';
 import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
 import { Candidate } from './assessment-schedule.model';
 import { minAgeValidator } from '../../../shared/utilities/dob.utility';
@@ -16,7 +16,13 @@ export class CandidateDataModel extends FormEntity {
   // startDate = '';
   metadata: Metadata = {
     validatorsMap: {
-      name: [Validators.required],
+      name: [
+        Validators.required,
+        Validators.pattern('^[A-Za-z].*'),
+        Validators.minLength(3),
+        Validators.maxLength(50),
+        CandidateDataModel.noExtraSpacesValidator,
+      ],
       email: [
         Validators.required,
         Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/),
@@ -49,6 +55,18 @@ export class CandidateDataModel extends FormEntity {
       // endDate: { id: 'endDate', labelKey: 'EndDate' },
     },
   };
+
+  private static noExtraSpacesValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
+    const value = control.value?.trim();
+    if (!value) return null;
+
+    if (/\s{2,}/.test(value)) {
+      return { extraSpaces: true };
+    }
+    return null;
+  }
 }
 
 export interface DeleteAction {
