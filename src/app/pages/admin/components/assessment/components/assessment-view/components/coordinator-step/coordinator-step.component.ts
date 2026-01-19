@@ -394,18 +394,18 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
 
   private updateAvailableOptions(): void {
     const allSelectedValues = this.assessmentRoundsDetailsFormArray.controls
-      .map((ctrl) => ctrl.get('assessmentRound')?.value?.[0])
+      .flatMap((ctrl) => ctrl.get('assessmentRound')?.value || [])
       .filter((val) => val != null);
 
     this.assessmentRoundConfigs.forEach((config, index) => {
-      const currentRowValue = this.assessmentRoundsDetailsFormArray
-        .at(index)
-        .get('assessmentRound')?.value?.[0];
+      const currentRowValues =
+        this.assessmentRoundsDetailsFormArray.at(index).get('assessmentRound')
+          ?.value || [];
 
       const filteredOptions = this.cordinatorData.assessmentRounds.filter(
         (option) => {
           const isSelectedSomewhere = allSelectedValues.includes(option.value);
-          const isSelectedInThisRow = option.value === currentRowValue;
+          const isSelectedInThisRow = currentRowValues.includes(option.value);
           return !isSelectedSomewhere || isSelectedInThisRow;
         },
       );

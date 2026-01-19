@@ -57,44 +57,45 @@ export const isValidEndDate = (
 
 export function validateStartAndEndDates(
   form: FormGroup,
-  startDate: string,
-  endDate: string,
+  startDateKey: string,
+  endDateKey: string,
 ): void {
-  const startDateControl = form.get(startDate);
-  const endDateControl = form.get(endDate);
+  const startDateControl = form.get(startDateKey);
+  const endDateControl = form.get(endDateKey);
 
-  const startValue = startDateControl?.value;
-  const endValue = endDateControl?.value;
+  if (!startDateControl || !endDateControl) return;
 
-  startDateControl?.setErrors(null);
-  endDateControl?.setErrors(null);
+  const startValue = startDateControl.value;
+  const endValue = endDateControl.value;
+
+  if (startDateControl.hasError('errorMessage')) {
+    startDateControl.setErrors(null);
+    if (!startValue) startDateControl.setErrors({ required: true });
+  }
+  if (endDateControl.hasError('errorMessage')) {
+    endDateControl.setErrors(null);
+    if (!endValue) endDateControl.setErrors({ required: true });
+  }
 
   let hasStartError = false;
-  let hasEndError = false;
 
-  if (!startValue) {
-    startDateControl?.setErrors({ required: true });
-    hasStartError = true;
-  }
-
-  if (!endValue) {
-    endDateControl?.setErrors({ required: true });
-    hasEndError = true;
-  }
-
-  const startDateTime = new Date(startValue);
-  const endDateTime = new Date(endValue);
-
-  if (!hasStartError) {
+  if (startValue) {
+    const startDateTime = new Date(startValue);
     if (!isValidStartDate(startDateTime)) {
-      startDateControl?.setErrors({
+      startDateControl.setErrors({
         errorMessage: 'Start date must be today or later.',
       });
       hasStartError = true;
     }
+  } else {
+    startDateControl.setErrors({ required: true });
+    hasStartError = true;
   }
 
-  if (!hasStartError && !hasEndError) {
+  if (endValue && startValue && !hasStartError) {
+    const startDateTime = new Date(startValue);
+    const endDateTime = new Date(endValue);
+
     const endDateValidation = isValidEndDate(startDateTime, endDateTime);
 
     if (!endDateValidation.valid) {
@@ -103,7 +104,10 @@ export function validateStartAndEndDates(
           ? 'Start and End dates must be different.'
           : 'End date must follow start date.';
 
-      endDateControl?.setErrors({ errorMessage: error });
+      endDateControl.setErrors({ errorMessage: error });
+      endDateControl.markAsTouched();
     }
+  } else if (!endValue) {
+    endDateControl.setErrors({ required: true });
   }
 }

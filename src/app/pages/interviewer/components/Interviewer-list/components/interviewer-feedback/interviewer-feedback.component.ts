@@ -368,7 +368,7 @@ export class InterviewerFeedbackComponent
       this.isInterviewerLoaded = true;
       this.updateLoadingState();
 
-      this.isSubmitted = res.statusId == 7 ? true : false;
+      this.isSubmitted = res.isActive == false ? true : false;
     };
     const error = () => {
       this.messageService.add({
@@ -625,7 +625,7 @@ export class InterviewerFeedbackComponent
         summary: 'success',
         detail: 'Submitted Successfully',
       });
-      this.isSubmitted = res.statusId == 7 ? true : false;
+      this.isSubmitted = res.isActive == false ? true : false;
       this.getAssessmentDetails(this.requestData);
       const assessmentId = Number(this.assessmentId);
       if (assessmentId && this.stepsStatusService) {

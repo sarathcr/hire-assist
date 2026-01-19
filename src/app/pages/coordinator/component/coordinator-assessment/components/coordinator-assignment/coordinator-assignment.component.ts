@@ -375,6 +375,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       selectedPanel.interviewers?.map((i: any) => i.id) ?? [];
 
     const payload: InterviewPanels = {
+      panel: selectedPanel.panelName,
       assessmentId: this.assessmentId,
       interviewId: Number(selectedCandidate.id),
       panelId: selectedPanel.id,
@@ -393,7 +394,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
         ? Number.parseInt(panelData.panelId.toString(), 10)
         : undefined,
       interviewers: panelData.interviewers?.map((i: any) => i.id) ?? [],
-      panelName: panelData.panelName,
+      panelName: panelData.panel,
     };
     const data = {
       fGroup: this.fGroup,

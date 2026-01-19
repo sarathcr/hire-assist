@@ -1824,11 +1824,17 @@
 
     &__complete-button {
       width: 100%;
-      ::ng-deep .p-button {
+      ::ng-deep p-button.btn-large {
+        height: auto !important;
+        min-height: unset !important;
+        display: block;
+      }
+      ::ng-deep
+        .btn-large
+        .p-button:not(.p-button-outlined):not(.p-button-text) {
         width: 100%;
         min-width: 100%;
-        padding: 12px 20px;
-        font-size: var(--font-size-15);
+        padding: 20px;
       }
     }
 
@@ -2070,7 +2076,7 @@
         width: 100%;
         min-width: 100%;
         padding: 10px 15px;
-        font-size: var(--font-size-15);
+        font-size: var(--font-size-small);
         line-height: normal;
         height: auto !important;
         min-height: auto !important;

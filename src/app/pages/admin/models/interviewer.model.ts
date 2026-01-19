@@ -8,6 +8,7 @@ export interface InterviewerCandidate {
   panelName: string;
   statusId: number; // Using the enum
   previousInterviews: PreviousInterview[];
+  isActive: boolean;
 }
 
 export interface PreviousInterview {

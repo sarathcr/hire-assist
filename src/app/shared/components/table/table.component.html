@@ -243,7 +243,7 @@
               product.batchId === 0 ||
               product.batchId === null),
         }"
-        tooltipPosition="left"
+        tooltipPosition="bottom"
         [pTooltip]="
           enableCandidateStyling()
             ? product.isAlreadyExist
@@ -251,7 +251,7 @@
               : product.isDuplicate
                 ? 'Duplicate records were discovered in the sheet.'
                 : product.batchId && product.batchId > 0
-                  ? `Scheduled - Assigned to batch: ${product.batchName || 'Batch ' + product.batchId}`
+                  ? `Scheduled - Assigned to : ${product.batchName || 'Batch ' + product.batchId}`
                   : !product.isAlreadyExist && !product.isDuplicate && (!product.batchId || product.batchId === 0 || product.batchId === null)
                     ? 'Not scheduled - Candidate has not been scheduled for assessment'
                     : ''

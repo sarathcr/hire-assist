@@ -20,7 +20,7 @@ import { CreateBatchDataModel } from '../../../../../../models/CreateBatchDataMo
 import { InputTextCalenderComponent } from '../../../../../../../../shared/components/form/input-text-calender/input-text-calender.component';
 import { CandidateModel } from '../../../../../../models/candidate-data.model';
 import { debounceTime } from 'rxjs';
-import { isValidStartDate } from '../../../../../../../../shared/utilities/date.utility';
+import { validateStartAndEndDates } from '../../../../../../../../shared/utilities/date.utility';
 
 @Component({
   selector: 'app-create-batch-dialog',
@@ -42,11 +42,10 @@ export class CreateBatchDialogComponent implements OnInit {
   public candidateDataModel = new CreateBatchDataModel();
   public configMap!: ConfigMap;
   public optionsMap!: OptionsMap;
-  public startDateChanged = false;
-  public endDateChanged = false;
   public batches!: Option[];
   public questionSets!: Option[];
   private originalDates: Record<string, Date> = {};
+
   constructor(
     private ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
@@ -81,26 +80,19 @@ export class CreateBatchDialogComponent implements OnInit {
         } else {
           this.fGroup.get('endDate')?.reset({ emitEvent: false });
         }
+
+        validateStartAndEndDates(this.fGroup, 'startDate', 'endDate');
       });
 
-    this.fGroup.get('startDate')?.valueChanges.subscribe((val) => {
-      const original = this.originalDates['startDate'];
-      this.startDateChanged = original
-        ? new Date(original).getTime() !== new Date(val).getTime()
-        : false;
-      this.validateStartAndEndDates(this.fGroup, 'startDate', '');
+    this.fGroup.get('startDate')?.valueChanges.subscribe(() => {
+      validateStartAndEndDates(this.fGroup, 'startDate', 'endDate');
     });
 
-    this.fGroup.get('endDate')?.valueChanges.subscribe((val) => {
-      const original = this.originalDates['endDate'];
-      this.endDateChanged = original
-        ? new Date(original).getTime() !== new Date(val).getTime()
-        : false;
-      this.validateStartAndEndDates(this.fGroup, '', 'endDate');
+    this.fGroup.get('endDate')?.valueChanges.subscribe(() => {
+      validateStartAndEndDates(this.fGroup, 'startDate', 'endDate');
     });
   }
 
-  // Private
   private setConfigMaps(): void {
     const { metadata } = new CreateBatchDataModel();
     this.configMap = metadata.configMap || {};
@@ -108,6 +100,8 @@ export class CreateBatchDialogComponent implements OnInit {
 
   public onSubmit() {
     this.fGroup.markAllAsTouched();
+    validateStartAndEndDates(this.fGroup, 'startDate', 'endDate');
+
     const isFormValid = this.fGroup.valid;
     if (isFormValid) {
       this.ref.close(this.fGroup.value);
@@ -133,37 +127,37 @@ export class CreateBatchDialogComponent implements OnInit {
       questionSet: updatedQuestionSet,
     };
   }
+
   public isDateChanged(key: 'startDate' | 'endDate'): boolean {
     const original = this.originalDates[key];
     const current = this.fGroup.get(key)?.value;
-    const result =
-      original && current
-        ? new Date(original).getTime() !== new Date(current).getTime()
-        : false;
-    if (result) {
-      this.validateStartAndEndDates(this.fGroup, 'startDate', 'endDate');
-    }
-    return result;
+
+    return original && current
+      ? new Date(original).getTime() !== new Date(current).getTime()
+      : false;
   }
+
   private setOptions() {
-    // Handle batches - could be PaginatedData object or array
     let batches: any[] = [];
     if (this.candidateData?.batches) {
       if (Array.isArray(this.candidateData.batches)) {
         batches = this.candidateData.batches;
-      } else if (this.candidateData.batches.data && Array.isArray(this.candidateData.batches.data)) {
-        // Handle PaginatedData object
+      } else if (
+        this.candidateData.batches.data &&
+        Array.isArray(this.candidateData.batches.data)
+      ) {
         batches = this.candidateData.batches.data;
       }
     }
 
-    // Handle questionSets - could be array or PaginatedData object
     let questionSets: any[] = [];
     if (this.candidateData?.questionSets) {
       if (Array.isArray(this.candidateData.questionSets)) {
         questionSets = this.candidateData.questionSets;
-      } else if (this.candidateData.questionSets.data && Array.isArray(this.candidateData.questionSets.data)) {
-        // Handle PaginatedData object
+      } else if (
+        this.candidateData.questionSets.data &&
+        Array.isArray(this.candidateData.questionSets.data)
+      ) {
         questionSets = this.candidateData.questionSets.data;
       }
     }
@@ -207,74 +201,4 @@ export class CreateBatchDialogComponent implements OnInit {
       endDate: new Date(first.endDateTime!),
     };
   }
-  private validateStartAndEndDates(
-    form: FormGroup,
-    startDate?: string,
-    endDate?: string,
-  ): void {
-    const startDateControl = startDate ? form.get(startDate) : null;
-    const endDateControl = endDate ? form.get(endDate) : null;
-
-    const startValue = startDateControl?.value;
-    const endValue = endDateControl?.value;
-
-    startDateControl?.setErrors(null);
-    endDateControl?.setErrors(null);
-
-    let hasStartError = false;
-    let hasEndError = false;
-
-    if (startDateControl) {
-      if (!startValue) {
-        startDateControl.setErrors({ required: true });
-        hasStartError = true;
-      } else {
-        const startDateTime = new Date(startValue);
-        if (!isValidStartDate(startDateTime)) {
-          startDateControl.setErrors({
-            errorMessage: 'Start date must be today or later.',
-          });
-          hasStartError = true;
-        }
-      }
-    }
-
-    if (endDateControl) {
-      if (!endValue) {
-        endDateControl.setErrors({ required: true });
-        hasEndError = true;
-      }
-    }
-
-    if (
-      startDateControl &&
-      endDateControl &&
-      !hasStartError &&
-      !hasEndError &&
-      startValue &&
-      endValue
-    ) {
-      const startDateTime = new Date(startValue);
-      const endDateTime = new Date(endValue);
-
-      const endDateValidation = this.isValidEndDates(
-        startDateTime,
-        endDateTime,
-      );
-      if (!endDateValidation.valid) {
-        const error = 'End date must follow start date.';
-        endDateControl.setErrors({ errorMessage: error });
-      }
-    }
-  }
-  private isValidEndDates = (
-    startDate: Date,
-    endDate: Date,
-  ): { valid: boolean; error?: 'beforeStart' } => {
-    if (endDate < startDate) {
-      return { valid: false, error: 'beforeStart' };
-    }
-
-    return { valid: true };
-  };
 }

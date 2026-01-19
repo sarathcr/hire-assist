@@ -217,7 +217,7 @@ export class SelectPanelDailogComponent implements OnInit {
       id: panelData.id ? Number.parseInt(panelData.id) : undefined,
       panelId: panelData.id ? Number.parseInt(panelData.id) : undefined,
       interviewers: panelData.interviewers ?? [],
-      panelName: panelData.panelName,
+      panelName: panelData.panel,
     };
 
     const data = {

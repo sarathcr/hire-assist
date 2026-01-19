@@ -3,7 +3,7 @@ import { ConfigMap } from '../../../shared/utilities/form.utility';
 
 export interface InterviewPanels {
   id?: string;
-  panelName?: string;
+  panel?: string;
   assessmentId: number;
   interviewId: number;
   panelId: string | number;

@@ -126,17 +126,18 @@
   }
   &__row--batch-assigned {
     background-color: #e8f5e9 !important;
-    border-left: 4px solid #4caf50;
+    box-shadow: inset 4px 0 0 #4caf50;
     &:hover {
       background-color: #c8e6c9 !important;
     }
   }
   &__row--not-scheduled {
     background-color: #fff3e0 !important;
-    border-left: 4px solid #ff9800;
+    box-shadow: inset 4px 0 0 #ff9800;
     &:hover {
       background-color: #ffe0b2 !important;
     }
+
   }
   &__custom-paginator {
     display: flex;
@@ -188,8 +189,9 @@
       &_clear {
         justify-content: space-between;
         ::ng-deep {
-          .pi {
-            font-size: unset !important;
+          .p-inputtext {
+            width: 100%;
+            min-width: 0;
           }
         }
       }
