@@ -186,7 +186,7 @@
   &__attachment-actions {
     display: flex;
     gap: var(--spacing-10);
-    flex-direction: column;
+    flex-flow: row wrap;
     opacity: 1;
     transition: opacity 0.2s ease;
     animation: fadeIn 0.2s ease;
@@ -199,6 +199,9 @@
     ::ng-deep {
       p-button {
         width: max-content;
+        @media screen and (max-width: 768px) {
+          width: 100%;
+        }
       }
     }
   }
@@ -265,6 +268,7 @@
     display: flex;
     gap: var(--spacing-10);
     margin-top: var(--spacing-5);
+    flex-flow: row wrap;
   }
 
   &__option-remove {

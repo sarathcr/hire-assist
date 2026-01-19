@@ -17,8 +17,8 @@ export class CreateBatchDataModel extends FormEntity {
     configMap: {
       batch: { id: 'batch', labelKey: 'Batch' },
       questionSet: { id: 'questionSet', labelKey: 'Question Set' },
-      startDate: { id: 'startDate', labelKey: 'StartDate' },
-      endDate: { id: 'endDate', labelKey: 'EndDate' },
+      startDate: { id: 'startDate', labelKey: 'Start Date' },
+      endDate: { id: 'endDate', labelKey: 'End Date' },
     },
   };
 }

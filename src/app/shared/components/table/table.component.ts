@@ -428,7 +428,10 @@ export class TableComponent<
     const eventFilters = structuredClone(event.filters || {});
 
     if (!this.hasValidFilters(eventFilters)) {
-      this.appliedFilters = {};
+      if (Object.keys(this.appliedFilters).length > 0) {
+        this.appliedFilters = {};
+        this.triggerFilterApplication();
+      }
       return;
     }
 

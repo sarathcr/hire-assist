@@ -185,6 +185,7 @@ export class QuestionFormModalComponent
   public isDeletingAttachment = false;
   public deletingOptionAttachments = new Map<number, boolean>();
   public isLoadingData = false;
+  public isSubmitting = false;
 
   // Private Properties
   private configMap!: ConfigMap;
@@ -193,6 +194,7 @@ export class QuestionFormModalComponent
   private previewCallback?: (blodId: string, attachmentType: number) => void;
   private selectedOptionIndex: number | 'question' | null = null;
   private questionId?: number;
+  private isDestroyed = false;
 
   // Getters
   public get optionsArray(): FormArray<FormGroup> {
@@ -227,6 +229,8 @@ export class QuestionFormModalComponent
   }
 
   override ngOnDestroy(): void {
+    this.isDestroyed = true;
+    this.messageService.clear();
     if (this.ref) {
       this.ref.close();
     }
@@ -324,24 +328,27 @@ export class QuestionFormModalComponent
     const hasAttachmentsControl = this.questionForm?.get('hasAttachments');
     if (!hasAttachmentsControl) return;
 
-    hasAttachmentsControl.valueChanges.subscribe((newValue: boolean) => {
-      // If trying to disable the toggle
-      if (!newValue) {
-        const fileDto = this.questionForm?.get('fileDto')?.value;
-        if (this.hasQuestionAttachment(fileDto)) {
-          // Prevent disabling by reverting the value
-          hasAttachmentsControl.setValue(true, { emitEvent: false });
-          // Show warning toast only
-          this.showWarningMessage(
-            'Validation',
-            'Please remove the question attachment before disabling the toggle.',
-          );
-          this.questionForm?.updateValueAndValidity();
-          return;
+    // Assign the subscription to a variable and push to your cleanup list
+    const sub = hasAttachmentsControl.valueChanges.subscribe(
+      (newValue: boolean) => {
+        if (newValue === false) {
+          const fileDto = this.questionForm?.get('fileDto')?.value;
+          if (this.hasQuestionAttachment(fileDto)) {
+            hasAttachmentsControl.setValue(true, { emitEvent: false });
+
+            // Use the fix from the previous step: Clear before adding
+            this.messageService.clear();
+            this.showWarningMessage(
+              'Validation',
+              'Please remove the question attachment before disabling the toggle.',
+            );
+          }
         }
-      }
-      this.questionForm?.updateValueAndValidity();
-    });
+      },
+    );
+
+    // Assuming BaseComponent uses subscriptionList
+    this.subscriptionList.push(sub);
   }
 
   private setupOptionAttachmentToggle(): void {
@@ -350,23 +357,26 @@ export class QuestionFormModalComponent
     );
     if (!optionHasAttachmentsControl) return;
 
-    optionHasAttachmentsControl.valueChanges.subscribe((newValue: boolean) => {
-      // If trying to disable the toggle
-      if (!newValue) {
-        if (this.hasAnyOptionAttachment()) {
-          // Prevent disabling by reverting the value
-          optionHasAttachmentsControl.setValue(true, { emitEvent: false });
-          // Show warning toast only
-          this.showWarningMessage(
-            'Validation',
-            'Please remove all option attachments before disabling the toggle.',
-          );
-          this.questionForm?.updateValueAndValidity();
-          return;
+    const sub = optionHasAttachmentsControl.valueChanges.subscribe(
+      (newValue: boolean) => {
+        // If trying to disable the toggle
+        if (!newValue) {
+          if (this.hasAnyOptionAttachment()) {
+            // Prevent disabling by reverting the value
+            optionHasAttachmentsControl.setValue(true, { emitEvent: false });
+            // Show warning toast only
+            this.showWarningMessage(
+              'Validation',
+              'Please remove all option attachments before disabling the toggle.',
+            );
+            this.questionForm?.updateValueAndValidity();
+            return;
+          }
         }
-      }
-      this.questionForm?.updateValueAndValidity();
-    });
+        this.questionForm?.updateValueAndValidity();
+      },
+    );
+    this.subscriptionList.push(sub);
   }
 
   private hasQuestionAttachment(fileDto: any): boolean {
@@ -556,6 +566,7 @@ export class QuestionFormModalComponent
 
   public deleteOptionAttachment(optionIndex: number): void {
     const optionCtrl = this.optionsArray.at(optionIndex);
+    this.isSubmitting = true;
     if (!optionCtrl) {
       this.showWarningMessage('Warning', 'Option not found');
       return;
@@ -606,6 +617,8 @@ export class QuestionFormModalComponent
 
       if (confirmed) {
         this.performOptionDelete(fileDto, optionIndex);
+      } else {
+        this.isSubmitting = false;
       }
     });
   }
@@ -628,6 +641,7 @@ export class QuestionFormModalComponent
         this.clearOptionAttachment(optionIndex);
         this.deletingOptionAttachments.set(optionIndex, false);
         this.cdr.detectChanges();
+        this.isSubmitting = false;
         // Restore scroll position and prevent auto-focus
         setTimeout(() => {
           if (scrollContainer) {
@@ -649,6 +663,7 @@ export class QuestionFormModalComponent
       error: () => {
         this.deletingOptionAttachments.set(optionIndex, false);
         this.cdr.detectChanges();
+        this.isSubmitting = false;
         // Restore scroll position and prevent auto-focus
         setTimeout(() => {
           if (scrollContainer) {
@@ -663,6 +678,9 @@ export class QuestionFormModalComponent
           }
           this.showErrorMessage('Error', 'Failed to delete option attachment');
         }, 0);
+      },
+      complete: () => {
+        this.isSubmitting = false;
       },
     });
   }
@@ -800,7 +818,7 @@ export class QuestionFormModalComponent
 
   public deleteQuestionAttachment(): void {
     const fileDto = this.data.fGroup.get('fileDto')?.value;
-
+    this.isSubmitting = true;
     if (!this.isValidFileDto(fileDto)) {
       this.showWarningMessage('Warning', 'No attachment found to delete');
       return;
@@ -827,6 +845,8 @@ export class QuestionFormModalComponent
 
       if (confirmed) {
         this.performQuestionDelete(fileDto);
+      } else {
+        this.isSubmitting = false;
       }
     });
   }
@@ -859,17 +879,6 @@ export class QuestionFormModalComponent
     return formTouchedState;
   }
 
-  private restoreFormValidationState(
-    formTouchedState: Map<string, boolean>,
-  ): void {
-    this.restoreTouchedStates(formTouchedState);
-    this.data.fGroup.updateValueAndValidity({
-      onlySelf: true,
-      emitEvent: false,
-    });
-    this.blurActiveFormField();
-  }
-
   private restoreFormValidationStateWithoutBlur(
     formTouchedState: Map<string, boolean>,
   ): void {
@@ -887,19 +896,6 @@ export class QuestionFormModalComponent
         }
       }
     });
-  }
-
-  private blurActiveFormField(): void {
-    setTimeout(() => {
-      const activeElement = document.activeElement as HTMLElement;
-      if (
-        activeElement &&
-        (activeElement.tagName === 'TEXTAREA' ||
-          activeElement.tagName === 'INPUT')
-      ) {
-        activeElement.blur();
-      }
-    }, 100);
   }
 
   private performQuestionDelete(fileDto: FileDto): void {
@@ -956,6 +952,9 @@ export class QuestionFormModalComponent
           this.showErrorMessage('Error', 'Failed to delete question image');
         }, 0);
       },
+      complete: () => {
+        this.isSubmitting = false;
+      },
     });
   }
   // ==================== Form Submission ====================
@@ -991,13 +990,34 @@ export class QuestionFormModalComponent
   }
 
   private prepareFormValue(): any {
-    if (this.isEdit && this.ref) {
-      return {
-        ...this.data.fGroup.value,
-        id: this.data.formData.id,
+    const rawValue = this.data.fGroup.getRawValue();
+
+    const formattedOptions = rawValue.options.map((opt: any) => {
+      const file = Array.isArray(opt.fileDto) ? opt.fileDto[0] : opt.fileDto;
+      const hasActualFile = !!(file && (file.id || file.blobId));
+
+      const optionPayload: any = {
+        optionText: opt.options,
+        isCorrect: Array.isArray(rawValue.answer)
+          ? rawValue.answer.includes(opt.options)
+          : rawValue.answer === opt.options,
+        hasAttachment: hasActualFile,
+        fileDto: hasActualFile ? file : null,
       };
-    }
-    return this.data.fGroup.value;
+      return optionPayload;
+    });
+
+    const finalPayload = {
+      ...rawValue,
+      options: formattedOptions,
+      hasAttachment: !!(
+        rawValue.fileDto &&
+        (rawValue.fileDto.id || rawValue.fileDto.blobId)
+      ),
+      id: this.isEdit ? this.data.formData?.id : undefined,
+    };
+
+    return finalPayload;
   }
 
   private resetAnswerIfOptionRemoved(removedOption: string): void {
@@ -1150,10 +1170,15 @@ export class QuestionFormModalComponent
   // ==================== Utility Methods ====================
 
   private showWarningMessage(summary: string, detail: string): void {
+    if (this.isDestroyed) return;
+
+    this.messageService.clear();
     this.messageService.add({
       severity: 'warn',
       summary,
       detail,
+      sticky: false,
+      life: 3000,
     });
   }
 

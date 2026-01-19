@@ -22,6 +22,7 @@ export class CandidateDataModel extends FormEntity {
         Validators.minLength(3),
         Validators.maxLength(50),
         CandidateDataModel.noExtraSpacesValidator,
+        CandidateDataModel.noSpecialCharsOrNumbersValidator,
       ],
       email: [
         Validators.required,
@@ -64,6 +65,18 @@ export class CandidateDataModel extends FormEntity {
 
     if (/\s{2,}/.test(value)) {
       return { extraSpaces: true };
+    }
+    return null;
+  }
+  private static noSpecialCharsOrNumbersValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+    const hasForbiddenChars = /[^a-zA-Z\s]/.test(value);
+
+    if (hasForbiddenChars) {
+      return { hasSpecialCharsOrNumbers: true };
     }
     return null;
   }

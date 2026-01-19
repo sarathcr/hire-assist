@@ -179,18 +179,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         const transformed = {
           questionText: formValue.questionText,
           maxMark: formValue.maxmark,
-          options: formValue.options.map((o: any) => {
-            const fileDtoArray = o.fileDto;
-            return {
-              optionText: o.options,
-              hasAttachment: formValue.optionHasAttachments || false,
-              isCorrect: o.options === formValue.answer,
-              fileDto:
-                Array.isArray(fileDtoArray) && fileDtoArray.length > 0
-                  ? fileDtoArray[0]
-                  : null,
-            };
-          }),
+          options: res.options,
           answer: (() => {
             if (Array.isArray(formValue.answer)) {
               return formValue.answer;
@@ -359,21 +348,11 @@ export class QuestionsComponent implements OnInit, OnDestroy {
           )?.label || 'default';
         const isMultipleChoice = raw.isMultipleChoice ?? false;
         const questionId = question?.id || this.questionId;
-        const optionAttachmentsEnabled = raw.optionHasAttachments;
         const transformed = {
           id: questionId,
           questionText: raw.questionText,
           maxMark: raw.maxmark,
-          options: raw.options.map((o: any) => {
-            const hasFile = Array.isArray(o.fileDto) && o.fileDto.length > 0;
-            const shouldSaveAttachment = optionAttachmentsEnabled && hasFile;
-            return {
-              optionText: o.options,
-              hasAttachment: shouldSaveAttachment,
-              isCorrect: o.options === raw.answer,
-              fileDto: shouldSaveAttachment ? o.fileDto[0] : null,
-            };
-          }),
+          options: res.options,
           answer: (() => {
             if (Array.isArray(raw.answer)) {
               return raw.answer;
