@@ -10,7 +10,6 @@
   -webkit-overflow-scrolling: touch;
 
   @media screen and (max-width: 1024px) {
-    padding: var(--spacing-15) var(--spacing-20);
     gap: var(--spacing-20);
     height: auto;
     min-height: 100vh;
@@ -25,7 +24,6 @@
   }
 
   @media screen and (max-width: 640px) {
-    padding: var(--spacing-10) var(--spacing-15);
     gap: var(--spacing-15);
   }
 }

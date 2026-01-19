@@ -7,12 +7,6 @@
   flex-direction: column;
   gap: var(--spacing-25);
   min-height: 100vh;
-  background: linear-gradient(
-    135deg,
-    rgba(33, 150, 243, 0.03) 0%,
-    rgba(21, 101, 192, 0.03) 100%
-  );
-  padding: var(--spacing-25);
   position: relative;
   width: 100%;
   max-width: 100%;
@@ -112,7 +106,6 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--spacing-20);
-    margin-top: var(--spacing-8);
 
     @media (max-width: 768px) {
       grid-template-columns: 1fr;
@@ -622,8 +615,6 @@
   // Responsive Design
   // ============================================
   @media screen and (max-width: 1024px) {
-    padding: var(--spacing-20);
-
     &__hero {
       padding: var(--spacing-25) var(--spacing-30);
     }
@@ -634,7 +625,6 @@
   }
 
   @media screen and (max-width: 768px) {
-    padding: var(--spacing-15);
     gap: var(--spacing-20);
     min-height: auto;
     overflow-x: hidden;
@@ -642,7 +632,6 @@
     &__hero {
       padding: var(--spacing-20);
       border-radius: 16px;
-      margin-bottom: var(--spacing-15);
 
       &-content {
         flex-direction: column;
@@ -730,8 +719,6 @@
       max-width: 180px;
       width: 100%;
       padding: var(--spacing-12) var(--spacing-15);
-      flex-direction: column;
-      align-items: flex-start;
       gap: var(--spacing-8);
     }
 
@@ -824,7 +811,6 @@
   }
 
   @media screen and (max-width: 480px) {
-    padding: var(--spacing-10);
     gap: var(--spacing-15);
     overflow-x: hidden;
 

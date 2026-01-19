@@ -188,10 +188,16 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
         detail.coordinator.length > 0,
     );
 
-    const apiPayload = filteredData.map((detail) => ({
-      assessmentRoundId: Number(detail.assessmentRound[0]),
-      coordinatorId: detail.coordinator || [],
-    }));
+
+    const apiPayload = filteredData.flatMap((detail) => {
+
+      const rounds = (detail.assessmentRound as unknown as string[]) || [];
+      const coordinators = (detail.coordinator as unknown as string[]) || [];
+      return rounds.map((roundId) => ({
+        assessmentRoundId: Number(roundId),
+        coordinatorId: coordinators,
+      }));
+    });
 
     if (apiPayload.length == 0) {
       const next = () => {
