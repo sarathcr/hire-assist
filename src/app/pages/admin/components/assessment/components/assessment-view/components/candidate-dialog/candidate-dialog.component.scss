@@ -10,6 +10,8 @@
   gap: 1rem;
   padding-top: var(--spacing-20);
   box-shadow: 0px -15px 20px -26px #000;
+  position: relative;
+  z-index: 1;
 }
 .dialog__header {
   box-shadow: 0px 15px 10px -20px #000;
@@ -22,7 +24,10 @@
   }
 }
 
-.ng-untouched.ng-pristine.ng-invalid {
-  padding: 0 10px;
+// Ensure datepicker appears above modal footer
+::ng-deep {
+  .p-datepicker-panel {
+    z-index: 10001 !important;
+  }
 }
 

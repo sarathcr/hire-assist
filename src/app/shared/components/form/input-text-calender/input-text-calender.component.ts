@@ -38,6 +38,7 @@ export class InputTextCalenderComponent
   @Input() showTime = false;
   @Input() maxDate!: Date;
   @Input() hasDateError!: string;
+  @Input() appendTo?: string | HTMLElement;
 
   public formControl!: FormControl<Date | string | null>;
   public inputTextCalendarConfig!: CustomInputTextCalenderConfig;

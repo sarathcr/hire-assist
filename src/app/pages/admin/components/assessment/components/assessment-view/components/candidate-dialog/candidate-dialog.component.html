@@ -16,6 +16,7 @@
         [floatLabel]="false"
       ></app-input-text>
       <app-input-text-calender
+        appendTo="body"
         [formGroup]="fGroup"
         [config]="configMap['dob']"
         [showTime]="false"
@@ -86,7 +87,7 @@
     <app-button
       buttonLabel="Submit"
       (btnClick)="onSubmit()"
-      [disabled]="fGroup.invalid && (fGroup.touched || fGroup.dirty)"
+      [disabled]="fGroup.invalid "
     ></app-button>
   </div>
 </footer>
