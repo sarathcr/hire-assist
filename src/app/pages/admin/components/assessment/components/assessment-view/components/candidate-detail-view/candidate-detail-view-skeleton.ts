@@ -43,7 +43,7 @@ import { TabsModule } from 'primeng/tabs';
               <!-- Basic Details Section -->
               <div class="candidate-skeleton__section">
                 <div class="candidate-skeleton__section-title">
-                  <i class="pi pi-info-circle"></i>
+                 
                   <p-skeleton width="180px" height="24px" />
                 </div>
                 <div class="candidate-skeleton__card">
@@ -72,7 +72,7 @@ import { TabsModule } from 'primeng/tabs';
               <!-- Application Details Section -->
               <div class="candidate-skeleton__section">
                 <div class="candidate-skeleton__section-title">
-                  <i class="pi pi-file-edit"></i>
+                  
                   <p-skeleton width="200px" height="24px" />
                 </div>
                 <div class="candidate-skeleton__card">

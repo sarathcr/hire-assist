@@ -20,7 +20,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 @Component({
   selector: 'app-pagination',
   standalone: true,
-  imports: [PaginatorModule,SkeletonModule],
+  imports: [PaginatorModule, SkeletonModule],
   templateUrl: './pagination.component.html',
   styleUrl: './pagination.component.scss',
 })
@@ -36,7 +36,7 @@ export class PaginationComponent
     { active: '', direction: '' };
   @Input() isLoading = false;
   @Input() dataSource!: GenericDataSource<any>;
- 
+
   @Output() filterChange = new EventEmitter<PaginatedDataPayload>();
 
   public filterState: KeyValueMap<string> = {};
@@ -122,6 +122,7 @@ export class PaginationComponent
   public onSearch(searchFilterMap: KeyValueMap<string>) {
     if ((searchFilterMap as unknown as Event)?.type === 'change') return;
     this.filterState = { ...this.filterState, ...searchFilterMap };
+    this.first = 0;
     this.search.next();
   }
 }

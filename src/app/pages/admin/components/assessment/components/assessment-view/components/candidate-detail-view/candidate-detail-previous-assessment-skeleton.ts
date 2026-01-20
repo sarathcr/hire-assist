@@ -52,6 +52,9 @@ import { TabsModule } from 'primeng/tabs';
         margin-bottom: var(--spacing-30);
         padding-bottom: var(--spacing-15);
         border-bottom: 1px solid var(--color-seperator);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
       }
 
       &__content {

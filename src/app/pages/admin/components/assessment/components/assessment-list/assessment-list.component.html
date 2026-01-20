@@ -2,12 +2,20 @@
   <div>
     <div class="assessment-list__header">
       <h1 class="assessment-list__title">Recruitments</h1>
-      <app-button
-        class="assessment-list__button"
-        [icon]="'pi pi-plus'"
-        [buttonLabel]="'Create'"
-        (btnClick)="onCreateAssessment()"
-      ></app-button>
+      <div class="assessment-list__actions">
+        <app-search-bar
+          [placeholder]="'Search Recruitments...'"
+          (search)="onSearch($event)"
+          class="assessment-list__search-bar"
+        >
+        </app-search-bar>
+        <app-button
+          class="assessment-list__button"
+          [icon]="'pi pi-plus'"
+          [buttonLabel]="'Create'"
+          (btnClick)="onCreateAssessment()"
+        ></app-button>
+      </div>
     </div>
 
     <div class="assessment-list__wrapper">

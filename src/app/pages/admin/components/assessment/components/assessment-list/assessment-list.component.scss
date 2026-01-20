@@ -9,6 +9,11 @@
     font-weight: 700;
     color: var(--color-grey);
   }
+  &__actions{
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
   &__card {
     display: block;
     max-height: 200px;
@@ -45,6 +50,10 @@
     padding-bottom: 10px;
   }
   @media screen and (max-width: 768px) {
+      &__header {
+    flex-direction: column;
+
+  }
     &__list {
       grid-template-columns: 1fr;
     }

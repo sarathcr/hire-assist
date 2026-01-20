@@ -28,6 +28,7 @@ import { Assessment } from '../../../../models/assessment.model';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { CreateUpdateAssessmentModalComponent } from '../create-update-assessment-modal/create-update-assessment-modal.component';
 import { SkeletonComponent } from '../../../../../../shared/components/assessment-card/assessment-card-skeleton';
+import { SearchBarComponent } from '../../../../../../shared/components/search-bar/search-bar/search-bar.component';
 
 @Component({
   selector: 'app-assessment-list',
@@ -39,6 +40,7 @@ import { SkeletonComponent } from '../../../../../../shared/components/assessmen
     NgClass,
     SkeletonComponent,
     AsyncPipe,
+    SearchBarComponent,
   ],
   providers: [GenericDataSource],
   templateUrl: './assessment-list.component.html',
@@ -55,6 +57,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   public isInitialLoad = true;
   public isLoading = false;
   public isLoading$!: Observable<boolean>;
+  public paginationFirst = 0;
 
   constructor(
     public dataSource: GenericDataSource<AssessmentForm>,
@@ -100,6 +103,23 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
 
   public onDeleteAssessment(assessmentId: number): void {
     this.openConfirmDeleteDialog(assessmentId);
+  }
+  public onSearch(searchTerm: string): void {
+    const newFilterMap = { ...this.filterMap };
+
+    if (searchTerm && searchTerm.trim().length > 0) {
+      newFilterMap['searchKey'] = searchTerm.trim();
+    } else {
+      delete newFilterMap['searchKey'];
+    }
+
+    this.filterMap = newFilterMap;
+    this.paginationFirst = 0;
+
+    const payload = this.dataSource.getPayloadData();
+    payload.pagination.pageNumber = 1;
+    payload.filterMap = this.filterMap;
+    this.dataSource.loadPaginatedData(payload);
   }
 
   public onScheduleAssessment(assessment: Assessment): void {
