@@ -1,14 +1,13 @@
 <header class="header">
   <div class="header__left">
-    <div
+    <button
       class="header__nav header__nav--mobile"
-      tabindex="0"
+      type="button"
       (click)="onMenuClick()"
-      (keydown.enter)="onMenuClick()"
-      (keydown.space)="onMenuClick()"
+      aria-label="Open menu"
     >
       <span class="pi pi-bars"></span>
-    </div>
+    </button>
     <figure class="header__logo"><img src="logo.png" alt="logo" /></figure>
   </div>
   <div class="header__right">
@@ -30,7 +29,7 @@
           ><img
             [src]="profileImageUrl || 'avatar.png'"
             alt="avatar"
-            (error)="onImageError($event)"
+            (error)="onImageError()"
         /></app-drop-down>
       }
     </div>

@@ -114,6 +114,7 @@
   }
   &_isAlready {
     background-color: rgb(255, 255, 237);
+    box-shadow: inset 4px 0 0 #ff9800;
     &:hover {
       background-color: rgb(255, 255, 237) !important;
     }
@@ -137,7 +138,6 @@
     &:hover {
       background-color: #ffe0b2 !important;
     }
-
   }
   &__custom-paginator {
     display: flex;

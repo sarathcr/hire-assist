@@ -1,5 +1,110 @@
 .p-toast {
   max-width: calc(100% - 40px);
+  z-index: 1000 !important; // Higher than header z-index: 9
+
+  .p-toast-message {
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+
+    .p-toast-summary,
+    .p-toast-detail {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+      line-height: 1.4;
+    }
+
+    .p-toast-summary {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .p-toast-detail {
+      word-break: break-word;
+    }
+  }
+}
+
+// Mobile and tablet styles
+@media screen and (max-width: 1024px) {
+  .p-toast {
+    max-width: calc(100vw - 32px) !important;
+    width: calc(100vw - 32px) !important;
+    left: 16px !important;
+    right: 16px !important;
+    z-index: 1000 !important; // Higher than header z-index: 9
+    top: 80px !important; // Position below header (66px min-height + 14px spacing)
+
+    // For top-right position
+    &.p-toast-top-right {
+      top: 80px !important;
+      right: 16px !important;
+    }
+
+    // For top-center position
+    &.p-toast-top-center {
+      top: 80px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+    }
+
+    // For top-left position
+    &.p-toast-top-left {
+      top: 80px !important;
+      left: 16px !important;
+    }
+
+    .p-toast-message {
+      max-width: 100% !important;
+      width: 100% !important;
+      margin: 0 0 12px 0 !important;
+
+      .p-toast-summary,
+      .p-toast-detail {
+        max-width: 100% !important;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal !important;
+        display: block;
+      }
+
+      .p-toast-summary {
+        padding-right: 24px; // Space for close button
+      }
+
+      .p-toast-detail {
+        padding-right: 24px; // Space for close button
+      }
+    }
+  }
+
+  // iOS specific adjustments
+  @supports (-webkit-touch-callout: none) {
+    .p-toast {
+      max-width: calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+      width: calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+      left: calc(16px + env(safe-area-inset-left)) !important;
+      right: calc(16px + env(safe-area-inset-right)) !important;
+      top: calc(80px + env(safe-area-inset-top)) !important; // Account for iOS notch
+
+      &.p-toast-top-right {
+        top: calc(80px + env(safe-area-inset-top)) !important;
+        right: calc(16px + env(safe-area-inset-right)) !important;
+      }
+
+      &.p-toast-top-center {
+        top: calc(80px + env(safe-area-inset-top)) !important;
+        left: calc(50% + env(safe-area-inset-left) / 2 - env(safe-area-inset-right) / 2) !important;
+        transform: translateX(-50%) !important;
+      }
+
+      &.p-toast-top-left {
+        top: calc(80px + env(safe-area-inset-top)) !important;
+        left: calc(16px + env(safe-area-inset-left)) !important;
+      }
+    }
+  }
 }
 
 @media screen and (max-width: 425px) {
@@ -12,5 +117,75 @@
   }
   .p-inputtext {
     width: 100% !important;
+  }
+
+  .p-toast {
+    max-width: calc(100vw - 24px) !important;
+    width: calc(100vw - 24px) !important;
+    left: 12px !important;
+    right: 12px !important;
+    z-index: 1000 !important; // Higher than header z-index: 9
+    top: 80px !important; // Position below header (66px min-height + 14px spacing)
+
+    // For top-right position
+    &.p-toast-top-right {
+      top: 80px !important;
+      right: 12px !important;
+    }
+
+    // For top-center position
+    &.p-toast-top-center {
+      top: 80px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+    }
+
+    // For top-left position
+    &.p-toast-top-left {
+      top: 80px !important;
+      left: 12px !important;
+    }
+
+    .p-toast-message {
+      padding: 12px 16px !important;
+
+      .p-toast-summary {
+        font-size: 14px;
+        padding-right: 28px;
+      }
+
+      .p-toast-detail {
+        font-size: 13px;
+        padding-right: 28px;
+        margin-top: 4px;
+      }
+    }
+  }
+
+  // iOS specific adjustments for small screens
+  @supports (-webkit-touch-callout: none) {
+    .p-toast {
+      max-width: calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+      width: calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+      left: calc(12px + env(safe-area-inset-left)) !important;
+      right: calc(12px + env(safe-area-inset-right)) !important;
+      top: calc(80px + env(safe-area-inset-top)) !important; // Account for iOS notch
+
+      &.p-toast-top-right {
+        top: calc(80px + env(safe-area-inset-top)) !important;
+        right: calc(12px + env(safe-area-inset-right)) !important;
+      }
+
+      &.p-toast-top-center {
+        top: calc(80px + env(safe-area-inset-top)) !important;
+        left: calc(50% + env(safe-area-inset-left) / 2 - env(safe-area-inset-right) / 2) !important;
+        transform: translateX(-50%) !important;
+      }
+
+      &.p-toast-top-left {
+        top: calc(80px + env(safe-area-inset-top)) !important;
+        left: calc(12px + env(safe-area-inset-left)) !important;
+      }
+    }
   }
 }

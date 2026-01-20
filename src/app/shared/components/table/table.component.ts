@@ -1,18 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CommonModule, DatePipe } from '@angular/common';
+import {
+  CommonModule,
+  DatePipe,
+  isPlatformBrowser,
+} from '@angular/common';
 import {
   Component,
   computed,
   effect,
   HostBinding,
+  Inject,
   Input,
   input,
   output,
+  PLATFORM_ID,
   signal,
   ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { FilterMatchMode, MessageService, SelectItem } from 'primeng/api';
+import { FilterMatchMode, SelectItem } from 'primeng/api';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { ChipModule } from 'primeng/chip';
@@ -23,7 +29,7 @@ import { InputText, InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule } from 'primeng/paginator';
 import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
-import { Table, TableModule, TableRowCollapseEvent } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
@@ -154,7 +160,20 @@ export class TableComponent<
   public buttonClick = output<any>();
   public PaginatedDataActions: any = PaginatedDataActions;
 
-  constructor(private readonly messagesService: MessageService) {
+  public tooltipEvent = computed(() => {
+    if (isPlatformBrowser(this.platformId)) {
+      // Check if device supports touch - most reliable method
+      const isTouchDevice =
+        navigator.maxTouchPoints > 0 ||
+        (navigator as any).msMaxTouchPoints > 0 ||
+        'ontouchstart' in (globalThis as any);
+      // Use 'click' for touch devices, 'hover' for desktop
+      return isTouchDevice ? 'click' : 'hover';
+    }
+    return 'hover';
+  });
+
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: object) {
     super();
     effect(() => {
       const currentTableData = this.tableData();
@@ -364,13 +383,9 @@ export class TableComponent<
     }
   }
 
-  public onRowCollapse(event: TableRowCollapseEvent): void {
-    this.messagesService.add({
-      severity: 'success',
-      summary: 'Row Collapsed',
-      detail: event.data.name,
-      life: 3000,
-    });
+  public onRowCollapse(): void {
+    // Intentionally no toast here; collapsing rows is a common interaction and
+    // we avoid requiring a DI dependency (MessageService) in this shared component.
   }
   public getSeverity(
     status: string,

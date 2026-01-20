@@ -46,8 +46,8 @@ export class SideNavComponent implements OnChanges, OnInit {
   private cdr = inject(ChangeDetectorRef);
   public isMobile = false;
 
-  @HostListener('window:resize', ['$event'])
-  onResize() {
+  @HostListener('window:resize')
+  onResize(): void {
     this.checkMobileView();
   }
 

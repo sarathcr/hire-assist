@@ -244,6 +244,7 @@
               product.batchId === null),
         }"
         tooltipPosition="bottom"
+        [tooltipEvent]="tooltipEvent()"
         [pTooltip]="
           enableCandidateStyling()
             ? product.isAlreadyExist

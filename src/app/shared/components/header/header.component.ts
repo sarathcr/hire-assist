@@ -20,13 +20,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   toggleMenu = inject(ToggleMenuService);
   sidebarCollapse = inject(SidebarCollapseService);
   storeService = inject(StoreService);
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
   public isMobile = false;
   public profileImageUrl: string | undefined;
   public isLoadingProfileImage = false;
 
-  @HostListener('window:resize', ['$event'])
-  onResize() {
+  @HostListener('window:resize')
+  onResize(): void {
     this.checkMobileView();
   }
 
@@ -52,11 +52,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.isLoadingProfileImage = this.storeService.getIsLoadingProfileImage();
   }
 
-  public onImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    if (img) {
-      img.src = 'avatar.png';
-    }
+  public onImageError(): void {
+    // Force fallback image via template `[src]="profileImageUrl || 'avatar.png'"`
+    this.profileImageUrl = undefined;
   }
 
   private checkMobileView(): void {
@@ -64,14 +62,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   public onMenuClick() {
-    // On mobile/tablet, only toggle the menu overlay
-    // On desktop, also toggle collapse
-    if (this.isMobile) {
-      this.toggleMenu.setToggleMenu(true);
-    } else {
-      this.toggleMenu.setToggleMenu(true);
-      // Desktop collapse is handled separately via the collapse button
-    }
+    // Toggle menu overlay (desktop collapse handled separately)
+    this.toggleMenu.setToggleMenu(true);
   }
 
   public closeMenu() {
