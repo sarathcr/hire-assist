@@ -243,6 +243,7 @@
               product.batchId === 0 ||
               product.batchId === null),
         }"
+        [attr.tabindex]="enableCandidateStyling() ? 0 : null"
         tooltipPosition="bottom"
         [tooltipEvent]="tooltipEvent()"
         [pTooltip]="

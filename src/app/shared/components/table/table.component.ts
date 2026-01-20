@@ -167,8 +167,9 @@ export class TableComponent<
         navigator.maxTouchPoints > 0 ||
         (navigator as any).msMaxTouchPoints > 0 ||
         'ontouchstart' in (globalThis as any);
-      // Use 'click' for touch devices, 'hover' for desktop
-      return isTouchDevice ? 'click' : 'hover';
+      // PrimeNG Tooltip supports: 'hover' | 'focus' | 'both'
+      // On touch devices there is no hover; use focus (with tabindex) so tap shows the tooltip.
+      return isTouchDevice ? 'focus' : 'hover';
     }
     return 'hover';
   });
