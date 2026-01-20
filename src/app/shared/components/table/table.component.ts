@@ -168,11 +168,46 @@ export class TableComponent<
         (navigator as any).msMaxTouchPoints > 0 ||
         'ontouchstart' in (globalThis as any);
       // PrimeNG Tooltip supports: 'hover' | 'focus' | 'both'
-      // On touch devices there is no hover; use focus (with tabindex) so tap shows the tooltip.
-      return isTouchDevice ? 'focus' : 'hover';
+      // Use 'both' to support both hover (desktop) and focus (mobile via click handler)
+      return isTouchDevice ? 'both' : 'hover';
     }
     return 'hover';
   });
+
+  public isTouchDevice = computed(() => {
+    if (isPlatformBrowser(this.platformId)) {
+      return (
+        navigator.maxTouchPoints > 0 ||
+        (navigator as any).msMaxTouchPoints > 0 ||
+        'ontouchstart' in (globalThis as any)
+      );
+    }
+    return false;
+  });
+
+  public onRowClick(event: Event, rowElement: HTMLElement): void {
+    // On touch devices, focus the row to trigger tooltip via focus event
+    if (this.isTouchDevice() && this.enableCandidateStyling()) {
+      const target = event.target as HTMLElement;
+      // Don't trigger if clicking on interactive elements (buttons, checkboxes, etc.)
+      if (
+        target.tagName === 'BUTTON' ||
+        target.tagName === 'INPUT' ||
+        target.closest('button') ||
+        target.closest('p-button') ||
+        target.closest('p-tableCheckbox')
+      ) {
+        return;
+      }
+
+      // Focus the row element to trigger tooltip via focus event
+      // With tooltipEvent="both", focus will trigger the tooltip
+      rowElement.focus();
+
+      // Prevent the click from bubbling if needed
+      // The tooltip will auto-hide after 3 seconds due to [life] property
+    }
+  }
 
   constructor(@Inject(PLATFORM_ID) private readonly platformId: object) {
     super();
