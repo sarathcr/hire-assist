@@ -246,6 +246,7 @@
         }"
         [attr.tabindex]="enableCandidateStyling() ? 0 : null"
         tooltipPosition="bottom"
+        tooltipStyleClass="table-row-tooltip"
         [tooltipEvent]="tooltipEvent()"
         [life]="isTouchDevice() && enableCandidateStyling() ? 3000 : undefined"
         [showDelay]="isTouchDevice() && enableCandidateStyling() ? 0 : undefined"
@@ -262,8 +263,10 @@
                     : ''
             : ''
         "
-        (click)="onRowClick($event, rowElement)"
-        (touchstart)="onRowClick($event, rowElement)"
+        (click)="onRowClick()"
+        (touchstart)="onTouchStart($event)"
+        (touchmove)="onTouchMove($event)"
+        (touchend)="onTouchEnd($event, rowElement, product)"
       >
         @if (hasCheckbox) {
           <td>
@@ -333,6 +336,8 @@
                     [outlined]="true"
                     [disabled]="product.isSelf"
                     (click)="onEdit(product)"
+                    (keydown.enter)="onEdit(product); $event.preventDefault()"
+                    (keydown.space)="onEdit(product); $event.preventDefault()"
                   />
                 }
                 @if (
@@ -345,6 +350,8 @@
                     [outlined]="true"
                     [disabled]="product.isSelf"
                     (click)="onDelete(product.id)"
+                    (keydown.enter)="onDelete(product.id); $event.preventDefault()"
+                    (keydown.space)="onDelete(product.id); $event.preventDefault()"
                   />
                 }
               </div>
@@ -483,19 +490,12 @@
                       </div>
                     }
                   } @else {
-                    <div
+                    <button
+                      type="button"
                       class="table__previewImage table__previewImage--placeholder"
                       (click)="
                         onLoadQuestionImage && onLoadQuestionImage(product.id)
                       "
-                      (keydown.enter)="
-                        onLoadQuestionImage && onLoadQuestionImage(product.id)
-                      "
-                      (keydown.space)="
-                        onLoadQuestionImage && onLoadQuestionImage(product.id)
-                      "
-                      tabindex="0"
-                      role="button"
                       title="Click to load image"
                     >
                       <i
@@ -505,7 +505,7 @@
                       <span style="font-size: 0.75rem; color: #999"
                         >Click to view</span
                       >
-                    </div>
+                    </button>
                   }
                 }
               }
@@ -556,19 +556,12 @@
                       </div>
                     }
                   } @else {
-                    <div
+                    <button
+                      type="button"
                       class="table__previewImage table__previewImage--placeholder"
                       (click)="
                         onLoadOptionImage && onLoadOptionImage(option.id)
                       "
-                      (keydown.enter)="
-                        onLoadOptionImage && onLoadOptionImage(option.id)
-                      "
-                      (keydown.space)="
-                        onLoadOptionImage && onLoadOptionImage(option.id)
-                      "
-                      tabindex="0"
-                      role="button"
                       title="Click to load image"
                     >
                       <i
@@ -578,7 +571,7 @@
                       <span style="font-size: 0.75rem; color: #999"
                         >Click to view</span
                       >
-                    </div>
+                    </button>
                   }
                 }
               }

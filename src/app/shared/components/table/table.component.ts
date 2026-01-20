@@ -185,10 +185,60 @@ export class TableComponent<
     return false;
   });
 
-  public onRowClick(event: Event, rowElement: HTMLElement): void {
-    // On touch devices, focus the row to trigger tooltip via focus event
+  private currentTooltipElement: HTMLElement | null = null;
+  private tooltipTimeout: any = null;
+  private clickTimeout: any = null;
+  private lastClickTime = 0;
+
+  public onRowClick(): void {
+    // Only handle clicks on mobile devices
+    // On desktop, we use PrimeNG's hover tooltip only
+    // This function is kept for template compatibility but doesn't need parameters
+    // as mobile uses touchend and desktop uses hover tooltip
+  }
+
+  private touchMoved = false;
+  private touchStartX = 0;
+  private touchStartY = 0;
+
+  public onTouchStart(event: TouchEvent): void {
+    // Reset touch moved flag and track position when touch starts
+    if (this.isTouchDevice() && this.enableCandidateStyling()) {
+      this.touchMoved = false;
+      if (event.touches && event.touches.length > 0) {
+        this.touchStartX = event.touches[0].clientX;
+        this.touchStartY = event.touches[0].clientY;
+      }
+    }
+  }
+
+  public onTouchMove(event: TouchEvent): void {
+    // Mark that touch moved (user is scrolling)
+    if (this.isTouchDevice() && this.enableCandidateStyling()) {
+      if (event.touches && event.touches.length > 0) {
+        const deltaX = Math.abs(event.touches[0].clientX - this.touchStartX);
+        const deltaY = Math.abs(event.touches[0].clientY - this.touchStartY);
+
+        // If moved more than 10px, consider it a scroll
+        if (deltaX > 10 || deltaY > 10) {
+          this.touchMoved = true;
+          // Cancel any pending tooltip
+          if (this.clickTimeout) {
+            clearTimeout(this.clickTimeout);
+            this.clickTimeout = null;
+          }
+          // Also hide any visible tooltip
+          this.hideCustomTooltip();
+        }
+      }
+    }
+  }
+
+  public onTouchEnd(event: TouchEvent, rowElement: HTMLElement, product: any): void {
+    // On touch end, show tooltip directly if it was a tap (not scroll)
     if (this.isTouchDevice() && this.enableCandidateStyling()) {
       const target = event.target as HTMLElement;
+
       // Don't trigger if clicking on interactive elements (buttons, checkboxes, etc.)
       if (
         target.tagName === 'BUTTON' ||
@@ -200,12 +250,206 @@ export class TableComponent<
         return;
       }
 
-      // Focus the row element to trigger tooltip via focus event
-      // With tooltipEvent="both", focus will trigger the tooltip
-      rowElement.focus();
+      // If touch moved, don't show tooltip
+      if (this.touchMoved) {
+        this.touchMoved = false;
+        return;
+      }
 
-      // Prevent the click from bubbling if needed
-      // The tooltip will auto-hide after 3 seconds due to [life] property
+      // Check final position to ensure it was a tap
+      if (event.changedTouches && event.changedTouches.length > 0) {
+        const touch = event.changedTouches[0];
+        const deltaX = Math.abs(touch.clientX - this.touchStartX);
+        const deltaY = Math.abs(touch.clientY - this.touchStartY);
+
+        // Only show if it was a tap (small movement) - increased threshold
+        if (deltaX < 15 && deltaY < 15) {
+          // Get tooltip text
+          const tooltipText = this.getTooltipText(product);
+          if (!tooltipText) {
+            return;
+          }
+
+          // Prevent default only when we're showing tooltip (to avoid click event)
+          event.preventDefault();
+          event.stopPropagation();
+
+          // Hide any existing tooltip
+          this.hideCustomTooltip();
+
+          // Show custom tooltip immediately
+          this.showCustomTooltip(rowElement, tooltipText);
+        }
+      }
+    }
+  }
+
+  private getTooltipText(product: any): string {
+    if (!this.enableCandidateStyling()) {
+      return '';
+    }
+
+    if (product.isAlreadyExist) {
+      return 'We already have this record in our records.';
+    }
+    if (product.isDuplicate) {
+      return 'Duplicate records were discovered in the sheet.';
+    }
+    if (product.batchId && product.batchId > 0) {
+      return `Scheduled - Assigned to : ${product.batchName || 'Batch ' + product.batchId}`;
+    }
+    if (
+      !product.isAlreadyExist &&
+      !product.isDuplicate &&
+      (!product.batchId || product.batchId === 0 || product.batchId === null)
+    ) {
+      return 'Not scheduled - Candidate has not been scheduled for assessment';
+    }
+    return '';
+  }
+
+  private showCustomTooltip(targetElement: HTMLElement, text: string): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    // Hide any existing tooltip first
+    this.hideCustomTooltip();
+
+    // Create tooltip element
+    const tooltip = document.createElement('div');
+    tooltip.setAttribute('id', 'table-custom-tooltip');
+    tooltip.className = 'p-tooltip p-component p-tooltip-bottom';
+    tooltip.style.cssText = `
+      position: fixed !important;
+      z-index: 999999 !important;
+      max-width: 300px;
+      min-width: 150px;
+      word-wrap: break-word;
+      pointer-events: none;
+      opacity: 1 !important;
+      display: block !important;
+      visibility: visible !important;
+    `;
+
+    const arrow = document.createElement('div');
+    arrow.className = 'p-tooltip-arrow';
+    arrow.style.cssText = `
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid #ffffff;
+      margin-bottom: -1px;
+    `;
+
+    const textDiv = document.createElement('div');
+    textDiv.className = 'p-tooltip-text';
+    textDiv.textContent = text;
+    textDiv.style.cssText = `
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      font-size: 12px !important;
+      padding: 8px 12px !important;
+      border-radius: 4px !important;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2) !important;
+      white-space: normal !important;
+      line-height: 1.4 !important;
+      display: block !important;
+      visibility: visible !important;
+    `;
+
+    tooltip.appendChild(arrow);
+    tooltip.appendChild(textDiv);
+    document.body.appendChild(tooltip);
+    this.currentTooltipElement = tooltip;
+
+    // Position tooltip immediately
+    requestAnimationFrame(() => {
+      this.positionTooltip(tooltip, targetElement);
+    });
+
+    // Auto-hide after 3 seconds
+    this.tooltipTimeout = setTimeout(() => {
+      this.hideCustomTooltip();
+    }, 3000);
+
+    // Hide on click outside or scroll
+    const hideHandler = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (!tooltip.contains(target) && !targetElement.contains(target)) {
+        this.hideCustomTooltip();
+        document.removeEventListener('click', hideHandler, true);
+        document.removeEventListener('touchstart', hideHandler, true);
+        window.removeEventListener('scroll', hideHandler, true);
+      }
+    };
+
+    setTimeout(() => {
+      document.addEventListener('click', hideHandler, true);
+      document.addEventListener('touchstart', hideHandler, true);
+      window.addEventListener('scroll', hideHandler, true);
+    }, 100);
+  }
+
+  private positionTooltip(tooltip: HTMLElement, targetElement: HTMLElement): void {
+    const rect = targetElement.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const padding = 10;
+
+    // Position below the row (bottom) by default
+    let top = rect.bottom + scrollTop + 8; // 8px gap
+    let left = rect.left + scrollLeft + rect.width / 2 - tooltipRect.width / 2;
+    let showAbove = false;
+
+    // Check if tooltip would go off bottom
+    if (rect.bottom + tooltipRect.height + 8 > viewportHeight + scrollTop - padding) {
+      showAbove = true;
+      top = rect.top + scrollTop - tooltipRect.height - 8;
+    }
+
+    // Ensure tooltip stays within viewport horizontally
+    left = Math.max(padding, Math.min(left, viewportWidth - tooltipRect.width - padding));
+
+    // Update arrow position if showing above
+    const arrow = tooltip.querySelector('.p-tooltip-arrow') as HTMLElement;
+    if (arrow && showAbove) {
+      arrow.style.bottom = 'auto';
+      arrow.style.top = '100%';
+      arrow.style.borderBottom = 'none';
+      arrow.style.borderTop = '8px solid #ffffff';
+    }
+
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+  }
+
+  private hideCustomTooltip(): void {
+    if (this.currentTooltipElement) {
+      this.currentTooltipElement.remove();
+      this.currentTooltipElement = null;
+    }
+    if (this.tooltipTimeout) {
+      clearTimeout(this.tooltipTimeout);
+      this.tooltipTimeout = null;
+    }
+  }
+
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
+    // Clean up custom tooltip on component destroy
+    this.hideCustomTooltip();
+    if (this.clickTimeout) {
+      clearTimeout(this.clickTimeout);
+      this.clickTimeout = null;
     }
   }
 

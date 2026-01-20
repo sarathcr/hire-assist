@@ -158,9 +158,15 @@
     width: 100%;
     gap: 1rem;
     flex-wrap: nowrap;
+
     &_filters {
       display: flex;
       gap: 1rem;
+
+      @media (max-width: 350px) {
+        flex-direction: column;
+        width: 100%;
+      }
     }
     &_search {
       display: flex;
@@ -169,6 +175,17 @@
     &_clear {
       display: flex;
       justify-content: flex-start;
+
+      p-button {
+        width: auto;
+
+        @media (max-width: 350px) {
+          width: 100%;
+          ::ng-deep button {
+            width: 100% !important;
+          }
+        }
+      }
     }
   }
   &__buttonColumn {
@@ -303,4 +320,135 @@
 :host ::ng-deep th.table__header-no-pointer {
   z-index: 5 !important;
   pointer-events: auto !important;
+}
+
+// Tooltip styles for desktop (PrimeNG tooltip) to match mobile custom tooltip exactly
+:host ::ng-deep {
+  // Style PrimeNG tooltips on table rows - target with highest specificity
+  .table-row-tooltip.p-tooltip,
+  .p-tooltip.table-row-tooltip,
+  .table-row-tooltip {
+    max-width: 300px !important;
+    min-width: 150px !important;
+    word-wrap: break-word !important;
+
+    .p-tooltip-text {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      font-size: 12px !important;
+      padding: 8px 12px !important;
+      border-radius: 4px !important;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2) !important;
+      white-space: normal !important;
+      line-height: 1.4 !important;
+      display: block !important;
+      visibility: visible !important;
+      border: none !important;
+      margin: 0 !important;
+    }
+
+    &.p-tooltip-bottom {
+      .p-tooltip-arrow {
+        position: absolute !important;
+        bottom: 100% !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 0 !important;
+        height: 0 !important;
+        border-left: 8px solid transparent !important;
+        border-right: 8px solid transparent !important;
+        border-bottom: 8px solid #ffffff !important;
+        border-top: none !important;
+        margin-bottom: -1px !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        margin-top: 0 !important;
+      }
+    }
+
+    &.p-tooltip-top {
+      .p-tooltip-arrow {
+        position: absolute !important;
+        top: 100% !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 0 !important;
+        height: 0 !important;
+        border-left: 8px solid transparent !important;
+        border-right: 8px solid transparent !important;
+        border-top: 8px solid #ffffff !important;
+        border-bottom: none !important;
+        margin-top: -1px !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        margin-bottom: 0 !important;
+      }
+    }
+
+    &.p-tooltip-left .p-tooltip-arrow {
+      border-left-color: #ffffff !important;
+      border-top-color: transparent !important;
+      border-bottom-color: transparent !important;
+      border-right-color: transparent !important;
+    }
+
+    &.p-tooltip-right .p-tooltip-arrow {
+      border-right-color: #ffffff !important;
+      border-top-color: transparent !important;
+      border-bottom-color: transparent !important;
+      border-left-color: transparent !important;
+    }
+  }
+
+  // Fallback: target all tooltips that appear near table rows with tabindex
+  .p-datatable-tbody tr[tabindex="0"] ~ .p-tooltip,
+  .p-datatable-tbody tr[tabindex="0"] + .p-tooltip,
+  .p-tooltip {
+    max-width: 300px !important;
+    min-width: 150px !important;
+    word-wrap: break-word !important;
+
+    .p-tooltip-text {
+      background-color: #ffffff !important;
+      color: #000000 !important;
+      font-size: 12px !important;
+      padding: 8px 12px !important;
+      border-radius: 4px !important;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2) !important;
+      white-space: normal !important;
+      line-height: 1.4 !important;
+      display: block !important;
+      visibility: visible !important;
+      border: none !important;
+      margin: 0 !important;
+    }
+
+    &.p-tooltip-bottom .p-tooltip-arrow {
+      border-bottom-color: #ffffff !important;
+      border-top-color: transparent !important;
+      border-left-color: transparent !important;
+      border-right-color: transparent !important;
+    }
+
+    &.p-tooltip-top .p-tooltip-arrow {
+      border-top-color: #ffffff !important;
+      border-bottom-color: transparent !important;
+      border-left-color: transparent !important;
+      border-right-color: transparent !important;
+    }
+
+    &.p-tooltip-left .p-tooltip-arrow {
+      border-left-color: #ffffff !important;
+      border-top-color: transparent !important;
+      border-bottom-color: transparent !important;
+      border-right-color: transparent !important;
+    }
+
+    &.p-tooltip-right .p-tooltip-arrow {
+      border-right-color: #ffffff !important;
+      border-top-color: transparent !important;
+      border-bottom-color: transparent !important;
+      border-left-color: transparent !important;
+    }
+  }
 }

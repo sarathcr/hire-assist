@@ -44,3 +44,55 @@
   display: none !important;
   visibility: hidden !important;
 }
+
+// Table row tooltip styles to match mobile custom tooltip
+.table-row-tooltip,
+.table-row-tooltip.p-tooltip,
+.p-tooltip.table-row-tooltip {
+  max-width: 300px !important;
+  min-width: 150px !important;
+  word-wrap: break-word !important;
+
+  .p-tooltip-text {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2) !important;
+    white-space: normal !important;
+    line-height: 1.4 !important;
+    display: block !important;
+    visibility: visible !important;
+    border: none !important;
+    margin: 0 !important;
+  }
+
+  &.p-tooltip-bottom .p-tooltip-arrow {
+    position: absolute !important;
+    bottom: 100% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 0 !important;
+    height: 0 !important;
+    border-left: 8px solid transparent !important;
+    border-right: 8px solid transparent !important;
+    border-bottom: 8px solid #ffffff !important;
+    border-top: none !important;
+    margin-bottom: -1px !important;
+  }
+
+  &.p-tooltip-top .p-tooltip-arrow {
+    position: absolute !important;
+    top: 100% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 0 !important;
+    height: 0 !important;
+    border-left: 8px solid transparent !important;
+    border-right: 8px solid transparent !important;
+    border-top: 8px solid #ffffff !important;
+    border-bottom: none !important;
+    margin-top: -1px !important;
+  }
+}
