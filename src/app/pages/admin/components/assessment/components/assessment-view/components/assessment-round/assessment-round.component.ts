@@ -340,6 +340,7 @@ export class AssessmentRoundComponent
                 severity: 'success',
                 summary: 'Success',
                 detail: 'Round created successfully!',
+                life: 10000,
               });
             }
             this.isLoading = false;
