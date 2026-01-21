@@ -188,9 +188,15 @@
     border: 1px solid rgba(33, 150, 243, 0.1);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #42a5f5 #f1f5f9;
 
+    // Custom scrollbar for WebKit browsers (Chrome, Safari desktop, Edge, Android)
+    // Note: iOS Safari doesn't support -webkit-scrollbar pseudo-elements
+    // and will automatically use the native scrollbar instead
     &::-webkit-scrollbar {
       height: 6px;
+      -webkit-appearance: none;
     }
 
     &::-webkit-scrollbar-track {
