@@ -10,7 +10,7 @@
   position: relative;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  // overflow-x: hidden;
   box-sizing: border-box;
 
   // ============================================
@@ -627,7 +627,7 @@
   @media screen and (max-width: 768px) {
     gap: var(--spacing-20);
     min-height: auto;
-    overflow-x: hidden;
+    // overflow-x: hidden;
 
     &__hero {
       padding: var(--spacing-20);
@@ -812,7 +812,7 @@
 
   @media screen and (max-width: 480px) {
     gap: var(--spacing-15);
-    overflow-x: hidden;
+    // overflow-x: hidden;
 
     &__hero {
       padding: var(--spacing-15);
