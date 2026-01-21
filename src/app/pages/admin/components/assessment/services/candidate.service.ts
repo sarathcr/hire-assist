@@ -20,4 +20,13 @@ export class CandidateService extends ApiService<any> {
   override getResourceUrl(): string {
     return `${ASSESSMENT_URL}/candidates`;
   }
+  public activateTerminatedCandidate(
+    candidateId: string,
+    assessmentId: number,
+  ) {
+    return this.http.put(
+      `${ASSESSMENT_URL}/terminatedCandidateActivation/${candidateId}/${assessmentId}`,
+      {},
+    );
+  }
 }

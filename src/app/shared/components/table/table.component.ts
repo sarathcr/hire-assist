@@ -1,9 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  CommonModule,
-  DatePipe,
-  isPlatformBrowser,
-} from '@angular/common';
+import { CommonModule, DatePipe, isPlatformBrowser } from '@angular/common';
 import {
   Component,
   computed,
@@ -152,6 +148,7 @@ export class TableComponent<
   public view = output<any>();
   public btnClick = output<any>();
   public delete = output<any>();
+  public unlock = output<any>();
   public selectedIds = output<any>();
   public select = output<string[]>();
   public reject = output<string[]>();
@@ -612,6 +609,9 @@ export class TableComponent<
 
   public onView(data: any): void {
     this.view.emit(data);
+  }
+  public onUnlock(data: any): void {
+    this.unlock.emit(data);
   }
   public onStartInterview(data: any): void {
     this.btnClick.emit(data);

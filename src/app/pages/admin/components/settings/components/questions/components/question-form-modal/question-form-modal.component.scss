@@ -475,6 +475,70 @@
         font-size: var(--font-size-small);
       }
     }
+
+    // Fix text overflow in select and multiselect components for answer selection
+    .question-form__field {
+      .p-select,
+      .p-multiselect {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+
+        // Target the selected value display - ensure it truncates
+        .p-select-trigger,
+        .p-multiselect-trigger {
+          max-width: 100%;
+          min-width: 0;
+          overflow: hidden;
+          width: 100%;
+
+          .p-select-label,
+          .p-multiselect-label,
+          span,
+          div {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+            display: block;
+            width: 100%;
+            min-width: 0;
+          }
+        }
+
+        // Also target label directly if it exists outside trigger
+        .p-select-label,
+        .p-multiselect-label,
+        span[class*="label"] {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 100%;
+          display: block;
+        }
+      }
+    }
+
+    // Fix multiselect panel width to match trigger
+    .p-multiselect-panel {
+      // Ensure panel width matches the trigger width
+      // PrimeNG sets this via inline styles, but we need to override min-content
+      box-sizing: border-box !important;
+      
+      // If PrimeNG doesn't set width, ensure it doesn't expand beyond trigger
+      max-width: 100vw !important;
+    }
+
+    // Ensure multiselect panel in answer selection field matches trigger width
+    .question-form__field {
+      .p-multiselect {
+        // When panel is open, ensure it matches trigger width
+        ~ .p-multiselect-panel,
+        + * .p-multiselect-panel {
+          // Width will be set by PrimeNG inline style, we just prevent expansion
+        }
+      }
+    }
   }
 
   @media screen and (max-width: 768px) {

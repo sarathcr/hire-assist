@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import {
   AbstractControl,
   FormArray,
@@ -133,6 +138,40 @@ function compositeAttachmentValidator(
 }
 
 // Constants
+// Custom validator to check for duplicate option values
+function duplicateOptionValidator(
+  optionsArray: FormArray,
+  currentIndex: number,
+): (control: AbstractControl) => ValidationErrors | null {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value || !optionsArray) {
+      return null;
+    }
+
+    const currentValue = control.value.trim().toLowerCase();
+    if (!currentValue) {
+      return null; // Let required validator handle empty values
+    }
+
+    // Check if this value exists in any other option
+    for (let i = 0; i < optionsArray.length; i++) {
+      if (i === currentIndex) {
+        continue; // Skip the current option
+      }
+
+      const otherOptionControl = optionsArray.at(i)?.get('options');
+      if (otherOptionControl) {
+        const otherValue = otherOptionControl.value?.trim().toLowerCase();
+        if (otherValue && otherValue === currentValue) {
+          return { duplicateOption: true };
+        }
+      }
+    }
+
+    return null;
+  };
+}
+
 const OPTION_VALIDATORS = [
   Validators.required,
   Validators.pattern(/^(?!\s)(?=.*\S).+$/),
@@ -228,15 +267,18 @@ export class QuestionFormModalComponent
     }
   }
 
+
   override ngOnDestroy(): void {
     this.isDestroyed = true;
     this.messageService.clear();
+    
     if (this.ref) {
       this.ref.close();
     }
     this.data.fGroup.reset();
     super.ngOnDestroy();
   }
+
 
   // ==================== Initialization Methods ====================
 
@@ -426,16 +468,17 @@ export class QuestionFormModalComponent
   }
 
   private addDefaultOptions(options: FormArray<FormGroup>): void {
-    const createOptionGroup = () =>
-      this.fb.group({
-        options: ['', OPTION_VALIDATORS],
-      });
-
-    const defaultOptions = [createOptionGroup(), createOptionGroup()];
+    const defaultOptions = [
+      this.createOptionFormGroup(0),
+      this.createOptionFormGroup(1),
+    ];
     // Use setControl to add multiple options at once
     defaultOptions.forEach((option, index) => {
       options.insert(index, option);
     });
+    
+    // Validate all options after adding defaults
+    this.validateAllOptionsForDuplicates();
   }
 
   private setupMultipleChoiceToggle(): void {
@@ -485,8 +528,13 @@ export class QuestionFormModalComponent
       return;
     }
 
-    const optionGroup = this.createOptionFormGroup();
+    const newIndex = this.optionsArray.length;
+    const optionGroup = this.createOptionFormGroup(newIndex);
     this.optionsArray.push(optionGroup);
+    
+    // Re-validate all options after adding a new one
+    this.validateAllOptionsForDuplicates();
+    
     this.cdr.detectChanges();
   }
 
@@ -504,11 +552,14 @@ export class QuestionFormModalComponent
 
     this.resetAnswerIfOptionRemoved(removedOptionValue);
 
+    // Re-validate all options after removing one
+    this.validateAllOptionsForDuplicates();
+
     this.cdr.detectChanges();
   }
 
-  private createOptionFormGroup(): FormGroup {
-    return this.fb.group({
+  private createOptionFormGroup(index?: number): FormGroup {
+    const optionGroup = this.fb.group({
       options: ['', OPTION_VALIDATORS],
       isCorrect: [false],
       optionHasAttachments: [false],
@@ -516,6 +567,42 @@ export class QuestionFormModalComponent
         name: [''],
         attachmentType: [''],
       }),
+    });
+
+    // Add duplicate validator if we have the index
+    if (index !== undefined) {
+      this.addDuplicateValidator(optionGroup, index);
+    }
+
+    return optionGroup;
+  }
+
+  private addDuplicateValidator(optionGroup: FormGroup, index: number): void {
+    const optionsControl = optionGroup.get('options');
+    if (optionsControl) {
+      // Add the duplicate validator
+      optionsControl.setValidators([
+        ...OPTION_VALIDATORS,
+        duplicateOptionValidator(this.optionsArray, index),
+      ]);
+    }
+  }
+
+  private validateAllOptionsForDuplicates(): void {
+    const optionsArray = this.optionsArray;
+    if (!optionsArray) return;
+
+    // Re-validate all options to catch duplicates
+    optionsArray.controls.forEach((optionGroup, index) => {
+      const optionsControl = optionGroup.get('options');
+      if (optionsControl) {
+        // Update validators with current index
+        optionsControl.setValidators([
+          ...OPTION_VALIDATORS,
+          duplicateOptionValidator(optionsArray, index),
+        ]);
+        optionsControl.updateValueAndValidity({ emitEvent: false });
+      }
     });
   }
 
@@ -1048,6 +1135,8 @@ export class QuestionFormModalComponent
     const sub = this.data.fGroup.controls['options'].valueChanges.subscribe(
       (value) => {
         this.updateAnswerFieldOptions(value);
+        // Re-validate all options when any option changes
+        this.validateAllOptionsForDuplicates();
       },
     );
     this.subscriptionList.push(sub);
@@ -1141,9 +1230,15 @@ export class QuestionFormModalComponent
     const optionsArray = this.optionsArray;
     optionsArray.clear();
 
-    formData.options.forEach((option: any) => {
-      optionsArray.push(this.createOptionFormGroupFromData(option, formData));
+    formData.options?.forEach((option: any, index: number) => {
+      const optionGroup = this.createOptionFormGroupFromData(option, formData);
+      // Add duplicate validator for loaded options
+      this.addDuplicateValidator(optionGroup, index);
+      optionsArray.push(optionGroup);
     });
+    
+    // Validate all options after loading
+    this.validateAllOptionsForDuplicates();
   }
 
   private createOptionFormGroupFromData(option: any, formData: any): FormGroup {

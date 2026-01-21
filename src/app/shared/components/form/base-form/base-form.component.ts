@@ -31,6 +31,9 @@ export abstract class BaseFormComponent {
       const requiredLength = errors['minlength'].requiredLength;
       return `Must be at least ${requiredLength} characters.`;
     }
+    if (errors['duplicateOption']) {
+      return 'This option already exists. Please enter a unique option.';
+    }
     if (errors['pattern']) {
       if (
         this.config.labelKey === 'Title' ||

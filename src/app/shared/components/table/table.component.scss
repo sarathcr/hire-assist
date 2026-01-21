@@ -319,7 +319,7 @@
 
 :host ::ng-deep th.table__header-no-pointer {
   z-index: 5 !important;
-  pointer-events: auto !important;
+  pointer-events: none !important;
 }
 
 // Tooltip styles for desktop (PrimeNG tooltip) to match mobile custom tooltip exactly
@@ -450,5 +450,9 @@
       border-bottom-color: transparent !important;
       border-left-color: transparent !important;
     }
+  }
+  .p-datatable-thead > tr > th p-columnfilter{
+    pointer-events: all;
+    cursor: pointer;
   }
 }

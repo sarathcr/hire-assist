@@ -53,6 +53,7 @@ import { catchError, finalize } from 'rxjs/operators';
 import { PaginatedData } from './../../../../../../shared/models/pagination.models';
 import { ScheduleInterviewComponent } from './components/schedule-interview/schedule-interview.component';
 import { SelectPanelDailogComponent } from './components/select-panel-dailog/select-panel-dailog.component';
+import { CandidateService } from '../../services/candidate.service';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -109,7 +110,11 @@ const tableColumns: TableColumnsData = {
       field: 'actions',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.View, PaginatedDataActions.Delete],
+      actions: [
+        PaginatedDataActions.View,
+        PaginatedDataActions.Delete,
+        PaginatedDataActions.Unlock,
+      ],
       sortedColumn: false,
       hasChip: false,
     },
@@ -182,6 +187,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     public interviewservice: InterviewService,
     private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
     private readonly cdr: ChangeDetectorRef,
+    private readonly candidateService: CandidateService,
   ) {}
 
   // LifeCycle Hooks
@@ -745,6 +751,57 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         }
         // Refresh the candidate data to reflect the changes
         this.getPaginatedCandidateData(this.filterMap);
+      }
+    });
+  }
+
+  public unlockCandidate(data: CandidateData) {
+    const modalData: DialogData = {
+      message: `Are you sure you want to unlock the assessment for ${data.name}?`,
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Unlock',
+    };
+
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Confirm Unlock',
+      maximizable: false,
+      width: '45vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        this.isLoading = true;
+        this.candidateService
+          .activateTerminatedCandidate(String(data.email), this.assessmentId)
+          .pipe(finalize(() => (this.isLoading = false)))
+          .subscribe({
+            next: () => {
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Candidate assessment unlocked successfully.',
+              });
+              this.getPaginatedCandidateData(this.filterMap);
+            },
+            error: () => {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Failed to unlock candidate.',
+              });
+            },
+          });
       }
     });
   }

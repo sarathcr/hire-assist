@@ -55,6 +55,7 @@ export enum PaginatedDataActions {
   Manage = 'manage',
   Preview = 'visibility',
   StartInterview = 'StartInterview',
+  Unlock = 'unlock'
 }
 
 export type ActionConfig = Record<string, BaseActionConfig>;

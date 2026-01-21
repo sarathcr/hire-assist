@@ -7,6 +7,36 @@
   max-width: 100%;
 }
 
+// Override for select and multiselect overlays to match trigger width instead of min-content
+.p-select-overlay {
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+// Multiselect overlay - same as select overlay
+.p-multiselect-overlay {
+  /* Force the overlay to match the width of the dropdown trigger */
+  width: var(--p-multiselect-overlay-width, 100%) !important;
+  min-width: 0 !important; /* Removes the 596px min-width */
+  max-width: 100vw;       /* Prevents screen overflow */
+}
+
+// // Override .p-overlay min-width when it contains multiselect
+// .p-overlay:has(.p-multiselect-overlay) {
+//   min-width: 0 !important;
+// }
+
+// // Multiselect panel - PrimeNG sets width via inline style, we just prevent min-content expansion
+// // Override the .p-overlay wrapper that contains the multiselect overlay (this has min-width: 596px issue)
+// .p-overlay:has(.p-multiselect-overlay) {
+//   width: auto !important;
+//   min-width: 0 !important;
+//   max-width: 100vw !important;
+//   // Prevent left: 0px from being applied - JavaScript will set the correct position
+//   // But we can't override left here as it needs to be dynamic based on trigger position
+// }
+
+
 // Ensure all chips are displayed in multiselect when ≤3 items selected
 // Target the label container that holds all chips
 .p-multiselect .p-multiselect-label-container,
@@ -73,3 +103,45 @@
 .p-multiselect-label-container {
   color: inherit !important; // Allow both chips and text to be visible
 }
+
+
+// Select styles
+/* Target the overlay container */
+.p-select-overlay {
+  /* Force the overlay to match the width of the dropdown trigger */
+  width: var(--p-select-overlay-width, 100%) !important;
+  min-width: 0 !important; /* Removes the 596px you saw in your logs */
+  max-width: 100vw;       /* Prevents screen overflow */
+}
+
+/* Force text to wrap inside the list item */
+.p-select-option {
+  white-space: normal !important;
+  word-break: break-word !important;
+  display: flex !important;
+  align-items: flex-start !important;
+}
+
+/* Ensure the text span inside the option takes full width */
+.p-select-option > span {
+  flex: 1;
+}
+
+// Multiselect item styles - same as select option
+/* Force text to wrap inside the multiselect item */
+.p-multiselect-item,
+.p-multiselect-option {
+  white-space: normal !important;
+  word-break: break-word !important;
+  display: flex !important;
+  align-items: flex-start !important;
+}
+
+/* Ensure the text label inside the multiselect item takes full width */
+.p-multiselect-item-label,
+.p-multiselect-option > span:not(.p-checkbox):not(.p-multiselect-item-icon) {
+  flex: 1;
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+}
+

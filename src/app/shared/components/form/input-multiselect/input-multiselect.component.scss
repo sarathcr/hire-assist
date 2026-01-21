@@ -1,9 +1,35 @@
 .input-multiselect {
   margin-bottom: 25px;
   position: relative;
+  
   .p-multiselect {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+
+    // Ensure trigger respects width
+    .p-multiselect-trigger {
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      width: 100%;
+
+      // Multiselect label container can have chips, so handle carefully
+      .p-multiselect-label-container {
+        max-width: 100%;
+        overflow: hidden;
+      }
+
+      // If label text is too long (not chips), truncate it
+      .p-multiselect-label:not(:has(.p-multiselect-token)) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+      }
+    }
   }
+  
   .p-floatlabel-on:not(input.p-filled) label {
     font-weight: 300;
     font-size: var(--font-size-base);
