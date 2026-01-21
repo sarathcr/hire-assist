@@ -1,11 +1,14 @@
 .p-toast {
   max-width: calc(100% - 40px);
-  z-index: 1000 !important; // Higher than header z-index: 9
+  z-index: 10000 !important; // Much higher than header z-index: 9
+  position: fixed !important; // Ensure fixed positioning
+  pointer-events: none !important; // Allow clicks through container
 
   .p-toast-message {
     max-width: 100%;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    pointer-events: auto !important; // Restore clicks on messages
 
     .p-toast-summary,
     .p-toast-detail {
@@ -33,26 +36,35 @@
     width: calc(100vw - 32px) !important;
     left: 16px !important;
     right: 16px !important;
-    z-index: 1000 !important; // Higher than header z-index: 9
-    top: 80px !important; // Position below header (66px min-height + 14px spacing)
+    z-index: 10000 !important; // Much higher than header z-index: 9
+    position: fixed !important; // Ensure fixed positioning
+    top: 90px !important; // Position below header with extra margin (66px header + 24px spacing)
+    transform: none !important; // Reset any transforms that might interfere
 
     // For top-right position
     &.p-toast-top-right {
-      top: 80px !important;
+      top: 90px !important;
       right: 16px !important;
+      left: auto !important; // Explicit override
+      transform: none !important;
     }
 
     // For top-center position
     &.p-toast-top-center {
-      top: 80px !important;
+      top: 90px !important;
       left: 50% !important;
-      transform: translateX(-50%) !important;
+      right: auto !important;
+      transform: translateX(-50%) !important; // Only transform for centering
+      max-width: calc(100vw - 32px) !important;
+      width: calc(100vw - 32px) !important;
     }
 
     // For top-left position
     &.p-toast-top-left {
-      top: 80px !important;
+      top: 90px !important;
       left: 16px !important;
+      right: auto !important;
+      transform: none !important;
     }
 
     .p-toast-message {
@@ -84,24 +96,43 @@
     .p-toast {
       max-width: calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
       width: calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+      position: fixed !important; // Critical for iOS
+      z-index: 10000 !important; // Ensure highest z-index
+      // Calculate top position: header height (66px) + safe area top + spacing (24px)
+      top: calc(66px + env(safe-area-inset-top) + 24px) !important;
       left: calc(16px + env(safe-area-inset-left)) !important;
       right: calc(16px + env(safe-area-inset-right)) !important;
-      top: calc(80px + env(safe-area-inset-top)) !important; // Account for iOS notch
+      transform: none !important; // Reset transforms
+      -webkit-transform: translateZ(0) !important; // Force hardware acceleration on iOS
+      will-change: transform, opacity; // Optimize for animations
+      backface-visibility: hidden; // Prevent rendering issues on iOS
 
+      // For top-right position on iOS
       &.p-toast-top-right {
-        top: calc(80px + env(safe-area-inset-top)) !important;
+        top: calc(66px + env(safe-area-inset-top) + 24px) !important;
         right: calc(16px + env(safe-area-inset-right)) !important;
+        left: auto !important;
+        transform: none !important;
       }
 
+      // For top-center position on iOS
       &.p-toast-top-center {
-        top: calc(80px + env(safe-area-inset-top)) !important;
-        left: calc(50% + env(safe-area-inset-left) / 2 - env(safe-area-inset-right) / 2) !important;
-        transform: translateX(-50%) !important;
+        top: calc(66px + env(safe-area-inset-top) + 24px) !important;
+        // Center calculation with safe area support
+        left: calc(50% + (env(safe-area-inset-left) - env(safe-area-inset-right)) / 2) !important;
+        right: auto !important;
+        transform: translateX(-50%) translateZ(0) !important; // Only transform for centering + hardware acceleration
+        -webkit-transform: translateX(-50%) translateZ(0) !important; // iOS transform
+        max-width: calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+        width: calc(100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
       }
 
+      // For top-left position on iOS
       &.p-toast-top-left {
-        top: calc(80px + env(safe-area-inset-top)) !important;
+        top: calc(66px + env(safe-area-inset-top) + 24px) !important;
         left: calc(16px + env(safe-area-inset-left)) !important;
+        right: auto !important;
+        transform: none !important;
       }
     }
   }
@@ -124,26 +155,35 @@
     width: calc(100vw - 24px) !important;
     left: 12px !important;
     right: 12px !important;
-    z-index: 1000 !important; // Higher than header z-index: 9
-    top: 80px !important; // Position below header (66px min-height + 14px spacing)
+    z-index: 10000 !important; // Much higher than header z-index: 9
+    position: fixed !important; // Ensure fixed positioning
+    top: 90px !important; // Position below header with extra margin
+    transform: none !important; // Reset transforms
 
     // For top-right position
     &.p-toast-top-right {
-      top: 80px !important;
+      top: 90px !important;
       right: 12px !important;
+      left: auto !important;
+      transform: none !important;
     }
 
     // For top-center position
     &.p-toast-top-center {
-      top: 80px !important;
+      top: 90px !important;
       left: 50% !important;
-      transform: translateX(-50%) !important;
+      right: auto !important;
+      transform: translateX(-50%) !important; // Only transform for centering
+      max-width: calc(100vw - 24px) !important;
+      width: calc(100vw - 24px) !important;
     }
 
     // For top-left position
     &.p-toast-top-left {
-      top: 80px !important;
+      top: 90px !important;
       left: 12px !important;
+      right: auto !important;
+      transform: none !important;
     }
 
     .p-toast-message {
@@ -167,24 +207,43 @@
     .p-toast {
       max-width: calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
       width: calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+      position: fixed !important; // Critical for iOS
+      z-index: 10000 !important; // Ensure highest z-index
+      // Calculate top position: header height (66px) + safe area top + spacing (24px)
+      top: calc(66px + env(safe-area-inset-top) + 24px) !important;
       left: calc(12px + env(safe-area-inset-left)) !important;
       right: calc(12px + env(safe-area-inset-right)) !important;
-      top: calc(80px + env(safe-area-inset-top)) !important; // Account for iOS notch
+      transform: none !important; // Reset transforms
+      -webkit-transform: translateZ(0) !important; // Force hardware acceleration on iOS
+      will-change: transform, opacity; // Optimize for animations
+      backface-visibility: hidden; // Prevent rendering issues on iOS
 
+      // For top-right position on iOS small screens
       &.p-toast-top-right {
-        top: calc(80px + env(safe-area-inset-top)) !important;
+        top: calc(66px + env(safe-area-inset-top) + 24px) !important;
         right: calc(12px + env(safe-area-inset-right)) !important;
+        left: auto !important;
+        transform: none !important;
       }
 
+      // For top-center position on iOS small screens
       &.p-toast-top-center {
-        top: calc(80px + env(safe-area-inset-top)) !important;
-        left: calc(50% + env(safe-area-inset-left) / 2 - env(safe-area-inset-right) / 2) !important;
-        transform: translateX(-50%) !important;
+        top: calc(66px + env(safe-area-inset-top) + 24px) !important;
+        // Center calculation with safe area support
+        left: calc(50% + (env(safe-area-inset-left) - env(safe-area-inset-right)) / 2) !important;
+        right: auto !important;
+        transform: translateX(-50%) translateZ(0) !important; // Only transform for centering + hardware acceleration
+        -webkit-transform: translateX(-50%) translateZ(0) !important; // iOS transform
+        max-width: calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
+        width: calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)) !important;
       }
 
+      // For top-left position on iOS small screens
       &.p-toast-top-left {
-        top: calc(80px + env(safe-area-inset-top)) !important;
+        top: calc(66px + env(safe-area-inset-top) + 24px) !important;
         left: calc(12px + env(safe-area-inset-left)) !important;
+        right: auto !important;
+        transform: none !important;
       }
     }
   }
