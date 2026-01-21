@@ -163,13 +163,13 @@
       display: flex;
       gap: 1rem;
 
-      @media (max-width: 350px) {
+      @media (max-width: 470px) {
         flex-direction: column;
         width: 100%;
       }
     }
     &_search {
-      display: flex;
+      // display: flex;
       justify-content: flex-end;
     }
     &_clear {
@@ -179,7 +179,7 @@
       p-button {
         width: auto;
 
-        @media (max-width: 350px) {
+        @media (max-width: 470px) {
           width: 100%;
           ::ng-deep button {
             width: 100% !important;
@@ -192,6 +192,11 @@
     display: flex;
     flex-direction: row;
   }
+  @media screen and (max-width: 450px) {
+    &__globalFilters > div {
+      width: 100%;
+    }
+  }
   @media screen and (max-width: 768px) {
     ::ng-deep {
       .hideOnMobile {
@@ -201,7 +206,7 @@
     &__globalFilters {
       flex-direction: column;
       align-items: flex-start;
-      gap: 0.5rem;
+      gap: 1rem;
       &_search,
       &_clear {
         justify-content: space-between;

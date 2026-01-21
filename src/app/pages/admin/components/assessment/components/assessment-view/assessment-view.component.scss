@@ -244,8 +244,8 @@
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: 180px;
-    max-width: 220px;
+    min-width: min-content;
+    max-width: max-content;
     text-align: left;
     position: relative;
     font-family: inherit;
@@ -626,7 +626,7 @@
     }
 
     &__stepper-button {
-      min-width: 180px;
+      min-width: min-content;
     }
   }
 
@@ -709,20 +709,20 @@
     &__stepper {
       flex-direction: row;
       align-items: flex-start;
-      gap: var(--spacing-10);
+      gap: inherit;
       min-width: max-content;
       padding-bottom: var(--spacing-5);
     }
 
     &__stepper-item {
       flex-shrink: 0;
-      min-width: 160px;
-      max-width: 180px;
+      min-width: min-content;
+      max-width: max-content;
     }
 
     &__stepper-button {
-      min-width: 160px;
-      max-width: 180px;
+      min-width: min-content;
+      max-width: max-content;
       width: 100%;
       padding: var(--spacing-12) var(--spacing-15);
       gap: var(--spacing-8);
@@ -740,7 +740,7 @@
 
     &__stepper-label {
       font-size: clamp(13px, 2.5vw, 14px);
-      white-space: normal;
+      white-space: nowrap;
       word-break: break-word;
     }
 
@@ -893,14 +893,14 @@
     }
 
     &__stepper-item {
-      min-width: 130px;
-      max-width: 150px;
+      min-width: min-content;
+      max-width: max-content;
       flex-shrink: 0;
     }
 
     &__stepper-button {
-      min-width: 130px;
-      max-width: 150px;
+      min-width: min-content;
+      max-width: max-content;
       padding: var(--spacing-10) var(--spacing-12);
       gap: var(--spacing-6);
     }

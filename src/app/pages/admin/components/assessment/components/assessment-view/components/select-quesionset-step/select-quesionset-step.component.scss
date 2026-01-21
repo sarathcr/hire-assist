@@ -1090,8 +1090,8 @@
   }
 
   &__empty-icon {
-    width: 140px;
-    height: 140px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     background: linear-gradient(
       135deg,
@@ -1103,7 +1103,7 @@
     justify-content: center;
     color: var(--primary-color);
     font-size: 56px;
-    margin: 0 auto var(--spacing-20);
+    margin: var(--spacing-20) auto var(--spacing-20);
     box-shadow:
       0 8px 32px rgba(21, 101, 192, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.8);
