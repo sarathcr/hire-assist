@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, input, output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+export type ButtonSize = 'small' | 'medium' | 'large';
 export type ButtonVariant = 'outlined' | 'text';
 export type Severity =
   | 'success'
@@ -28,7 +29,7 @@ export class ButtonComponent {
   public btnClick = output<number | null>();
   public buttonLabel = input<string>();
   public icon = input<string>();
-  public buttonSize = input();
+  public buttonSize = input<ButtonSize>('large');
   public buttonWidth = input();
   public isLoading = input();
   public buttonVariant = input<ButtonVariant>();

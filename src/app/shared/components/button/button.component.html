@@ -3,6 +3,7 @@
   [icon]="icon() ? `${icon()}` : undefined"
   [loading]="isLoading()"
   [variant]="buttonVariant()"
+  [size]="buttonSize() === 'small' ? 'small' : undefined"
   [ngClass]="{
     'btn-large': buttonSize() === 'large',
     'btn-full': buttonWidth() === 'full',

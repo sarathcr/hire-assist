@@ -9,7 +9,7 @@
     font-weight: 700;
     color: var(--color-grey);
   }
-  &__actions{
+  &__actions {
     display: flex;
     gap: 15px;
     align-items: center;
@@ -50,16 +50,17 @@
     padding-bottom: 10px;
   }
   @media screen and (max-width: 768px) {
-      &__header {
-    flex-direction: column;
-
-  }
+    &__header {
+      flex-direction: column;
+      gap: 20px;
+      align-items: flex-start;
+    }
     &__list {
       grid-template-columns: 1fr;
     }
     &__title {
       margin: 0;
-      font-size: var(--font-size-18);
+      font-size: var(--font-size-24);
     }
     &__wrapper {
       height: calc(100vh - 201px);
