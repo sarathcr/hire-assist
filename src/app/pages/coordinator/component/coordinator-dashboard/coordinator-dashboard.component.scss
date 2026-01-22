@@ -20,13 +20,13 @@
     overflow-y: auto;
     margin-right: -25px;
     padding-right: 25px;
+    margin-bottom: 20px;
   }
   &__list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 400px));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     column-gap: var(--spacing-15);
     row-gap: var(--spacing-15);
     width: 100%;
-    justify-content: flex-start;
   }
 }

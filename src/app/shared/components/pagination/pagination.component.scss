@@ -11,7 +11,8 @@
     border-radius: var(--p-paginator-border-radius);
     gap: var(--p-paginator-gap);
   }
-  @media screen and (max-width: 768px) {
+
+  @media screen and (max-width: 1024px) {
     margin: 0 -20px;
   }
 }

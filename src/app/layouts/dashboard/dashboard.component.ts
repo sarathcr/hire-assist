@@ -53,7 +53,7 @@ export class DashboardComponent implements OnInit {
 
   private loadProfileImageIfNeeded(): void {
     const isOnProfilePage = this.router.url.includes('/profile');
-    
+
     if (!this.storeService.getProfileImageUrl() && !this.storeService.isProfileDetailsLoading && !isOnProfilePage) {
       this.storeService.setIsLoadingProfileImage(true);
       this.storeService.setIsProfileDetailsLoading(true);
@@ -230,7 +230,7 @@ export class DashboardComponent implements OnInit {
         label: 'Recruitments',
         icon: 'pi pi-sitemap',
         routerLink: ['/coordinator'],
-        routerLinkActiveOptions: { exact: true },
+        routerLinkActiveOptions: { exact: false },
         tooltip: 'Recruitments',
       },
     ];
