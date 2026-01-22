@@ -71,6 +71,9 @@ export abstract class BaseFormComponent {
     if (errors['onlyNumbers']) {
       return 'Only numeric values are allowed.';
     }
+    if (errors['endDateTimeInvalid']) {
+      return 'End date must be at least 1 hour after start date';
+    }
     return 'This field has an invalid value.';
   }
 }

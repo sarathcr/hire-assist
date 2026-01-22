@@ -28,6 +28,7 @@ import { Assessment } from '../../../../models/assessment.model';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { CreateUpdateAssessmentModalComponent } from '../create-update-assessment-modal/create-update-assessment-modal.component';
 import { SkeletonComponent } from '../../../../../../shared/components/assessment-card/assessment-card-skeleton';
+import { EmptyStateComponent } from "../../../../../../shared/components/empty-state/empty-state/empty-state.component";
 import { SearchBarComponent } from '../../../../../../shared/components/search-bar/search-bar/search-bar.component';
 
 @Component({
@@ -40,6 +41,7 @@ import { SearchBarComponent } from '../../../../../../shared/components/search-b
     NgClass,
     SkeletonComponent,
     AsyncPipe,
+    EmptyStateComponent,
     SearchBarComponent,
   ],
   providers: [GenericDataSource],

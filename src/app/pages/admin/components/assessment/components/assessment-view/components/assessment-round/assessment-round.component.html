@@ -43,40 +43,53 @@
           You can reorder the rounds by dragging and dropping them.
         </p>
         <!-- Selected Rounds Display -->
-        @if (submittedData && submittedData.length > 0) {
-          <div class="assessment-round__rounds-section">
-            <div #roundsList class="assessment-round__rounds-list">
-              @for (data of submittedData; let idx = $index; track data.id) {
-                <div class="assessment-round__round-item">
-                  <div class="assessment-round__round-item-content">
-                    <span class="assessment-round__round-number">{{
-                      idx + 1
-                    }}</span>
-                    <span class="assessment-round__round-name">{{
-                      data.name
-                    }}</span>
-                  </div>
-                  <div class="assessment-round__drag-handle">
-                    <button
-                      type="button"
-                      class="assessment-round__remove-button"
-                      (click)="onRemoveRound(data.id); $event.stopPropagation()"
-                      tabindex="0"
-                      aria-label="Remove round"
-                    >
-                      <i class="pi pi-times"></i>
-                    </button>
-                  </div>
+        <!-- Always render rounds section to prevent DOM structure changes that close multiselect panel -->
+        <!-- Use opacity and pointer-events to prevent layout shifts while hiding -->
+        <div
+          class="assessment-round__rounds-section"
+          [style.opacity]="(submittedData && submittedData.length > 0) ? '1' : '0'"
+          [style.pointer-events]="(submittedData && submittedData.length > 0) ? 'auto' : 'none'"
+          [style.max-height]="(submittedData && submittedData.length > 0) ? 'none' : '0'"
+          [style.overflow]="(submittedData && submittedData.length > 0) ? 'visible' : 'hidden'"
+        >
+          <div #roundsList class="assessment-round__rounds-list">
+            @for (data of submittedData; let idx = $index; track data.id) {
+              <div class="assessment-round__round-item">
+                <div class="assessment-round__round-item-content">
+                  <span class="assessment-round__round-number">{{
+                    idx + 1
+                  }}</span>
+                  <span class="assessment-round__round-name">{{
+                    data.name
+                  }}</span>
                 </div>
-              }
-            </div>
+                <div class="assessment-round__drag-handle">
+                  <button
+                    type="button"
+                    class="assessment-round__remove-button"
+                    (click)="onRemoveRound(data.id); $event.stopPropagation()"
+                    tabindex="0"
+                    aria-label="Remove round"
+                  >
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+              </div>
+            }
           </div>
-        } @else {
-          <div class="assessment-round__empty-state">
-            <i class="pi pi-inbox assessment-round__empty-icon"></i>
-            <p class="assessment-round__empty-text">No rounds selected</p>
-          </div>
-        }
+        </div>
+        <!-- Always render empty state to prevent DOM structure changes -->
+        <!-- Use opacity and pointer-events to prevent layout shifts while hiding -->
+        <div
+          class="assessment-round__empty-state"
+          [style.opacity]="(!submittedData || submittedData.length === 0) ? '1' : '0'"
+          [style.pointer-events]="(!submittedData || submittedData.length === 0) ? 'auto' : 'none'"
+          [style.max-height]="(!submittedData || submittedData.length === 0) ? 'none' : '0'"
+          [style.overflow]="(!submittedData || submittedData.length === 0) ? 'visible' : 'hidden'"
+        >
+          <i class="pi pi-inbox assessment-round__empty-icon"></i>
+          <p class="assessment-round__empty-text">No rounds selected</p>
+        </div>
       </div>
 
       <!-- Footer Submit Button -->

@@ -16,6 +16,7 @@ import { InterviewService } from '../../../../services/interview.service';
 import { CandidateDetailPreviousAssessmentSkeletonComponent } from './candidate-detail-previous-assessment-skeleton';
 import { CandidateDetailViewSkeletonComponent } from './candidate-detail-view-skeleton';
 import { CandidateDetailHeaderSkeletonComponent } from './candidate-detail-header-skeleton';
+import { EmptyStateComponent } from "../../../../../../../../shared/components/empty-state/empty-state/empty-state.component";
 
 @Component({
   selector: 'app-candidate-detail-view',
@@ -28,7 +29,8 @@ import { CandidateDetailHeaderSkeletonComponent } from './candidate-detail-heade
     CandidateDetailViewSkeletonComponent,
     CandidateDetailPreviousAssessmentSkeletonComponent,
     CandidateDetailHeaderSkeletonComponent,
-  ],
+    EmptyStateComponent
+],
   templateUrl: './candidate-detail-view.component.html',
   styleUrl: './candidate-detail-view.component.scss',
 })

@@ -48,6 +48,10 @@ export class InputMultiselectComponent
     return count > this.maxSelectedLabels ? 'comma' : 'chip';
   }
 
+  constructor() {
+    super();
+  }
+
   ngOnInit() {
     this.inputTextConfig = this.config as CustomSelectConfig;
     this.options = (this.config as CustomSelectConfig).options || [];

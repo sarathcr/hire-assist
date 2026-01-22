@@ -46,3 +46,10 @@
     padding: 0 var(--spacing-10);
   }
 }
+
+// Ensure multiselect panel is always on top with very high z-index
+::ng-deep .p-multiselect-panel {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+}

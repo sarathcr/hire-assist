@@ -48,7 +48,7 @@
           }
 
           @if (assessmentDataSource.length === 0 && totalRecords === 0) {
-            <p class="assessment-list__empty">No recruitments found</p>
+            <app-empty-state message="No recruitments found"> </app-empty-state>
           }
         </div>
       }

@@ -1,0 +1,22 @@
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: #929caa; /* Slate-500 or your theme's muted color *//* Optional: light background */
+  border-radius: 6px;
+}
+
+.empty-state__icon {
+  font-size: 4rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.7;
+}
+
+.empty-state__message {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}

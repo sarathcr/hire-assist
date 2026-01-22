@@ -139,7 +139,7 @@ export class AssessmentRoundComponent
     this.fGroup
       .get('round')
       ?.valueChanges.subscribe((selectedRoundIds: string[]) => {
-        this.syncSelectedRounds(selectedRoundIds || []);
+        this.syncSelectedRounds(selectedRoundIds);
       });
   }
 
@@ -172,7 +172,7 @@ export class AssessmentRoundComponent
     );
 
     this.submittedData = [...existingData, ...newRounds];
-    setTimeout(() => this.reinitSortable(), 300);
+    this.reinitSortable();
   }
 
   private initSortable(): void {
