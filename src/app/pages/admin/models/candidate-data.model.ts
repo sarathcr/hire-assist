@@ -60,9 +60,10 @@ export class CandidateDataModel extends FormEntity {
   private static noExtraSpacesValidator(
     control: AbstractControl,
   ): ValidationErrors | null {
-    const value = control.value?.trim();
+    const value = control.value;
     if (!value) return null;
 
+    // Reject multiple consecutive spaces (allow single spaces for first/last name)
     if (/\s{2,}/.test(value)) {
       return { extraSpaces: true };
     }
@@ -73,7 +74,8 @@ export class CandidateDataModel extends FormEntity {
   ): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
-    const hasForbiddenChars = /[^a-zA-Z\s]/.test(value);
+    // Allow letters and single spaces (for first and last name), reject special chars and numbers
+    const hasForbiddenChars = /[^a-zA-Z ]/.test(value);
 
     if (hasForbiddenChars) {
       return { hasSpecialCharsOrNumbers: true };

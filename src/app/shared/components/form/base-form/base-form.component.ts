@@ -68,6 +68,9 @@ export abstract class BaseFormComponent {
     if (errors['extraSpaces']) {
       return 'No consecutive spaces allowed.';
     }
+    if (errors['hasSpecialCharsOrNumbers']) {
+      return 'Special characters and numbers are not allowed.';
+    }
     if (errors['onlyNumbers']) {
       return 'Only numeric values are allowed.';
     }
