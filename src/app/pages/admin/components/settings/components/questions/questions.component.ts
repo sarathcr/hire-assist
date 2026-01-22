@@ -154,7 +154,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(QuestionFormModalComponent, {
       data: data,
-      header: 'Create question',
+      header: 'Create Question',
       width: '50vw',
       modal: true,
       focusOnShow: false,
