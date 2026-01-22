@@ -8,7 +8,7 @@ import { FormEntity, Metadata } from '../../../shared/utilities/form.utility';
 
 export class CreateBatchDataModel extends FormEntity {
   batch = undefined;
-  questionSet = '';
+  questionSet = null;
   endDate = '';
   startDate = '';
 

@@ -1,7 +1,28 @@
 <div class="dialog">
   <div class="dialog__header">
+    @if (data.candidateNames && data.candidateNames.length > 0) {
+      <div class="dialog__header-icon-wrapper">
+        <i class="pi pi-exclamation-triangle dialog__header-icon"></i>
+      </div>
+    }
     <h2>{{ data.title }}</h2>
   </div>
 
   <p class="dialog__description">{{ data.message }}</p>
+
+  @if (data.candidateNames && data.candidateNames.length > 0) {
+    <div class="dialog__candidates-list">
+      <div class="dialog__candidates-header">
+        <span class="dialog__candidates-count">
+          {{ data.candidateNames.length }} candidate{{ data.candidateNames.length > 1 ? 's' : '' }}
+        </span>
+      </div>
+      @for (name of data.candidateNames; track name) {
+        <div class="dialog__candidate-item">
+          <i class="pi pi-user dialog__candidate-icon"></i>
+          <span class="dialog__candidate-name">{{ name }}</span>
+        </div>
+      }
+    </div>
+  }
 </div>

@@ -5,7 +5,6 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
-import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
 import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
 import { Option } from '../../../../../../../../shared/models/option';
@@ -30,7 +29,6 @@ import { validateStartAndEndDates } from '../../../../../../../../shared/utiliti
     CommonModule,
     InputSelectComponent,
     ButtonComponent,
-    InputMultiselectComponent,
     InputTextCalenderComponent,
   ],
   templateUrl: './create-batch-dialog.component.html',

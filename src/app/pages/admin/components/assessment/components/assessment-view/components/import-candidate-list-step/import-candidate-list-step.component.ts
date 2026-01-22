@@ -477,34 +477,87 @@ export class ImportCandidateListStepComponent implements OnInit {
     });
     this.ref.onClose.subscribe((result) => {
       if (result) {
-        const payload = {
-          candidatesIds: this.selectedUsers,
-          questionSetIds: result.questionSet,
-          batchId: result.batch,
-          StartDateTime: result.startDate,
-          EndDateTime: result.endDate,
-          AssessmentId: Number(this.assessmentId()),
-        };
+        // Check which candidates are already assigned to a batch
+        const alreadyAssignedCandidates = this.data.data.filter(
+          (candidate) =>
+            this.selectedUsers.includes(candidate.id) &&
+            candidate.batchId > 0,
+        );
 
-        const next = () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Added the Candidates Successfully',
+        if (alreadyAssignedCandidates.length > 0) {
+          // Show warning modal with list of already assigned candidates
+          const candidateNames = alreadyAssignedCandidates.map((c) => c.name);
+          const modalData: DialogData = {
+            message: `The following candidate(s) are already assigned to a batch. By clicking Submit, the existing batch assignment will be replaced with the currently selected batch.`,
+            candidateNames: candidateNames,
+            isChoice: true,
+            cancelButtonText: 'Cancel',
+            acceptButtonText: 'Submit',
+          };
+
+          const warningRef = this.dialog.open(DialogComponent, {
+            data: modalData,
+            header: 'Warning',
+            maximizable: false,
+            width: '50vw',
+            modal: true,
+            focusOnShow: false,
+            breakpoints: {
+              '960px': '75vw',
+              '640px': '90vw',
+            },
+            templates: {
+              footer: DialogFooterComponent,
+            },
           });
 
-          this.getAllCandidates(new PaginatedPayload());
-          this.checkIsAllCandidatesAssigned();
-        };
-        const error = (error: CustomErrorResponse) => {
-          this.errorMessage(error);
-        };
-        this.candidateService
-          .createEntity(payload, 'add-batch')
-          .subscribe({ next, error });
+          warningRef.onClose.subscribe((proceed) => {
+            if (proceed === true) {
+              // User clicked Submit, proceed with batch assignment
+              this.submitBatchAssignment(result);
+            }
+            // If user clicked Cancel or closed dialog, do nothing
+          });
+        } else {
+          // No candidates are already assigned, proceed directly
+          this.submitBatchAssignment(result);
+        }
       }
     });
   }
+
+  private submitBatchAssignment(result: any): void {
+    this.isLoading = true;
+    const payload = {
+      candidatesIds: this.selectedUsers,
+      questionSetIds: Array.isArray(result.questionSet)
+        ? result.questionSet
+        : [result.questionSet],
+      batchId: result.batch,
+      StartDateTime: result.startDate,
+      EndDateTime: result.endDate,
+      AssessmentId: Number(this.assessmentId()),
+    };
+
+    const next = () => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Added the Candidates Successfully',
+      });
+
+      this.getAllCandidates(new PaginatedPayload());
+      this.checkIsAllCandidatesAssigned();
+    };
+    const error = (error: CustomErrorResponse) => {
+      this.isLoading = false;
+      this.errorMessage(error);
+    };
+    this.candidateService
+      .createEntity(payload, 'add-batch')
+      .subscribe({ next, error });
+  }
+
   private manageDuplicateRecords(duplicateRecords: unknown[]): void {
     this.ref = this.dialog.open(ManageDuplicateRecordsComponent, {
       data: {

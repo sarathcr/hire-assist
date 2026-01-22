@@ -3,7 +3,10 @@
 
   &__header {
     margin-bottom: var(--spacing-15);
-    
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-12);
+
     h2 {
       margin: 0;
       font-size: var(--font-size-18);
@@ -12,12 +15,86 @@
     }
   }
 
+  &__header-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--yellow-50, #fff3cd);
+    flex-shrink: 0;
+  }
+
+  &__header-icon {
+    color: var(--yellow-600, #ffc107);
+    font-size: 1.5rem;
+  }
+
   &__description {
     margin: 0;
     font-size: var(--font-size-base);
     color: var(--color-davy-grey);
     line-height: 1.5;
     white-space: pre-line;
+    margin-bottom: var(--spacing-15);
+  }
+
+  &__candidates-list {
+    margin-top: var(--spacing-20);
+    padding: var(--spacing-15);
+    background-color: var(--surface-section, #f8f9fa);
+    border-radius: 8px;
+    border-left: 4px solid var(--yellow-500, #ffc107);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  &__candidates-header {
+    margin-bottom: var(--spacing-12);
+    padding-bottom: var(--spacing-10);
+    border-bottom: 1px solid var(--surface-border, #dee2e6);
+  }
+
+  &__candidates-count {
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 600;
+    color: var(--text-color-secondary, #6c757d);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__candidate-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    padding: var(--spacing-10) var(--spacing-5);
+    margin-bottom: var(--spacing-8);
+    background-color: var(--surface-ground, #ffffff);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &:hover {
+      background-color: var(--surface-hover, #e9ecef);
+      transform: translateX(4px);
+    }
+  }
+
+  &__candidate-icon {
+    color: var(--primary-color, #007bff);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  &__candidate-name {
+    font-weight: 500;
+    color: var(--text-color, #212529);
+    font-size: var(--font-size-base);
   }
 }
 

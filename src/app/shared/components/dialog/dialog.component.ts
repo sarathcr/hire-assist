@@ -1,11 +1,12 @@
 import { Component, OnInit, output } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { DialogData } from '../../models/dialog.models';
 
 @Component({
   selector: 'app-dialog',
-  imports: [ButtonModule],
+  imports: [ButtonModule, CommonModule],
 
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.scss',
