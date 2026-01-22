@@ -1,22 +1,23 @@
-.coordinator-assessment {
+.coordinator-assessment-rounds {
   margin-top: var(--spacing-20);
-  height: 100%;
+  height: calc(100% - 30px);
   &__title {
     text-align: left;
     font-weight: 8700;
     color: var(--color-grey);
     font-size: var(--font-size-20);
-    margin-bottom: var(--spacing-20);
+    margin:0;
   }
   &__card {
     display: block;
     max-height: 200px;
   }
   &__wrapper {
-    height: calc(100vh - 255px);
+    height: 100%;
     overflow-y: auto;
     margin-right: -25px;
     padding-right: 25px;
+    margin-bottom: 20px;
   }
   &__list {
     display: grid;
@@ -24,5 +25,8 @@
     column-gap: var(--spacing-15);
     row-gap: var(--spacing-15);
     width: 100%;
+  }
+  @media screen and (max-width: 1024px) {
+    margin-top: 0;
   }
 }

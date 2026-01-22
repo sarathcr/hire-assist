@@ -1,13 +1,13 @@
-<div class="coordinator-assessment">
+<div class="coordinator-assessment-rounds">
   <div>
-    <h1 class="coordinator-assessment__title">Assigned Rounds</h1>
+    <h1 class="coordinator-assessment-rounds__title">Assigned Rounds</h1>
   </div>
-  <div class="coordinator-assessment__wrapper">
-    <div class="coordinator-assessment__list">
+  <div class="coordinator-assessment-rounds__wrapper">
+    <div class="coordinator-assessment-rounds__list">
       @if (!isLoading && assessmentRoundDataSource.length) {
         @for (assessment of assessmentRoundDataSource; track assessment) {
           <app-assessment-card
-            class="coordinator-assessment__card"
+            class="coordinator-assessment-rounds__card"
             [data]="assessment"
             [showToggleButton]="false"
             [showContent]="false"
@@ -20,7 +20,7 @@
       } @else {
         @for (skeleton of skeletonCards; track $index) {
           <app-assessment-card-skeleton
-            class="coordinator-assessment__card"
+            class="coordinator-assessment-rounds__card"
           ></app-assessment-card-skeleton>
         }
       }
