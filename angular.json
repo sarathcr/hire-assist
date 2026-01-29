@@ -47,6 +47,44 @@
           },
           "configurations": {
             "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ],
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "8MB",
+                  "maximumError": "8MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "8MB",
+                  "maximumError": "8MB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "dev": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.dev.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            },
+            "pre": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.pre.ts"
+                }
+              ],
               "budgets": [
                 {
                   "type": "initial",
@@ -74,6 +112,12 @@
           "configurations": {
             "production": {
               "buildTarget": "hire-assist-fe:build:production"
+            },
+            "dev": {
+              "buildTarget": "hire-assist-fe:build:dev"
+            },
+            "pre": {
+              "buildTarget": "hire-assist-fe:build:pre"
             },
             "development": {
               "buildTarget": "hire-assist-fe:build:development"

@@ -1,6 +1,6 @@
 export const environment = {
-  isProduction: true,
-  baseUrl: 'https://localhost:7238', // Update with actual prod URL
+  isProduction: false,
+  baseUrl: 'https://localhost:7238',
   authorizationUrl: 'https://hireassistsecurity.azurewebsites.net',
   assessmentUrl: 'https://hireassistassessment.azurewebsites.net',
   collectionUrl: 'https://hireassistcollections.azurewebsites.net',
