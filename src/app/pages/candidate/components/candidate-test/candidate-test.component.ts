@@ -4,23 +4,23 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
-  effect,
   HostListener,
-  inject,
   OnDestroy,
   OnInit,
-  output,
   ViewChild,
+  effect,
+  inject,
+  output,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationStart, Router } from '@angular/router';
-import { Observable, forkJoin, of, switchMap, catchError, throwError } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CarouselModule } from 'primeng/carousel';
 import { CheckboxChangeEvent, CheckboxModule } from 'primeng/checkbox';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SkeletonModule } from 'primeng/skeleton';
+import { Observable, catchError, of, switchMap, throwError } from 'rxjs';
 import { BaseComponent } from '../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../shared/components/dialog-footer/dialog-footer.component';
@@ -125,7 +125,8 @@ export class CandidateTestComponent
   private attachmentLoadPromises: Promise<void>[] = [];
   private expectedFileCounts: Record<number, number> = {};
   private failedFileCounts: Record<number, number> = {};
-  public placeholderImageUrl = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjcwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iNzAiIGZpbGw9IiNmNWY1ZjUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+RXJyb3IgRmV0Y2hpbmcgQXR0YWNobWVudDwvdGV4dD48L3N2Zz4=';
+  public placeholderImageUrl =
+    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjcwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iNzAiIGZpbGw9IiNmNWY1ZjUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+RXJyb3IgRmV0Y2hpbmcgQXR0YWNobWVudDwvdGV4dD48L3N2Zz4=';
   @ViewChild(TimerComponent) timerComponent!: TimerComponent;
   constructor(
     private readonly dialog: DialogService,
@@ -917,7 +918,7 @@ export class CandidateTestComponent
       const questionFiles = this.questionFileData[question.id] || question.file;
       const existingUrls = this.previewImageUrls[question.id];
       const hasImagesLoaded = existingUrls && existingUrls.length > 0;
-      
+
       if (questionFiles && questionFiles.length > 0 && !hasImagesLoaded) {
         // Initialize the array if it doesn't exist
         if (!this.previewImageUrls[question.id]) {
@@ -928,22 +929,27 @@ export class CandidateTestComponent
         this.failedFileCounts[question.id] = 0;
         // Set loading state
         this.isImageLoadings[question.id] = true;
-        
+
         const questionPromises: Promise<void>[] = [];
         questionFiles.forEach((file: FileDto) => {
-          const promise = this.previewImage(file, question.id).catch((error) => {
-            questionErrors.push(question.id);
-            this.imageLoadErrors[question.id] = true;
-            this.failedFileCounts[question.id] = (this.failedFileCounts[question.id] || 0) + 1;
-            this.showAttachmentErrorMessage(question.id, 'question');
-          });
+          const promise = this.previewImage(file, question.id).catch(
+            (error) => {
+              questionErrors.push(question.id);
+              this.imageLoadErrors[question.id] = true;
+              this.failedFileCounts[question.id] =
+                (this.failedFileCounts[question.id] || 0) + 1;
+              this.showAttachmentErrorMessage(question.id, 'question');
+            },
+          );
           questionPromises.push(promise);
           this.attachmentLoadPromises.push(promise);
         });
-        
+
         // Check completion after all promises
         Promise.allSettled(questionPromises).then((results) => {
-          const successCount = results.filter(r => r.status === 'fulfilled').length;
+          const successCount = results.filter(
+            (r) => r.status === 'fulfilled',
+          ).length;
           // If no images loaded successfully, show error placeholder
           if (successCount === 0 && questionFiles.length > 0) {
             this.hasImageErrors[question.id] = true;
@@ -959,9 +965,10 @@ export class CandidateTestComponent
         if (opt.hasAttachments) {
           // Try to get file data from stored data first, then from option object directly
           const optionFiles = this.optionFileData[opt.id] || opt.file;
-          const hasOptionImagesLoaded = this.previewImageUrls[opt.id] && 
-                                       this.previewImageUrls[opt.id].length > 0;
-          
+          const hasOptionImagesLoaded =
+            this.previewImageUrls[opt.id] &&
+            this.previewImageUrls[opt.id].length > 0;
+
           if (optionFiles && optionFiles.length > 0 && !hasOptionImagesLoaded) {
             // Initialize the array if it doesn't exist
             if (!this.previewImageUrls[opt.id]) {
@@ -972,22 +979,25 @@ export class CandidateTestComponent
             this.failedFileCounts[opt.id] = 0;
             // Set loading state
             this.isImageLoadings[opt.id] = true;
-            
+
             const optionPromises: Promise<void>[] = [];
             optionFiles.forEach((file: FileDto) => {
               const promise = this.previewImage(file, opt.id).catch((error) => {
                 questionErrors.push(opt.id);
                 this.imageLoadErrors[opt.id] = true;
-                this.failedFileCounts[opt.id] = (this.failedFileCounts[opt.id] || 0) + 1;
+                this.failedFileCounts[opt.id] =
+                  (this.failedFileCounts[opt.id] || 0) + 1;
                 this.showAttachmentErrorMessage(opt.id, 'option');
               });
               optionPromises.push(promise);
               this.attachmentLoadPromises.push(promise);
             });
-            
+
             // Check completion after all promises
             Promise.allSettled(optionPromises).then((results) => {
-              const successCount = results.filter(r => r.status === 'fulfilled').length;
+              const successCount = results.filter(
+                (r) => r.status === 'fulfilled',
+              ).length;
               // If no images loaded successfully, show error placeholder
               if (successCount === 0 && optionFiles.length > 0) {
                 this.hasImageErrors[opt.id] = true;
@@ -1000,7 +1010,10 @@ export class CandidateTestComponent
     }
   }
 
-  private showAttachmentErrorMessage(id: number, type: 'question' | 'option'): void {
+  private showAttachmentErrorMessage(
+    id: number,
+    type: 'question' | 'option',
+  ): void {
     // Show error message but stay on the page
     this.messageService.add({
       severity: 'error',
