@@ -398,42 +398,43 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     this.optionFileData = {};
     // Set flag before making the call to prevent recursive updates
     this.isUpdatingData = true;
-    const next = (res: any) => {
-      if (res) {
-        const transformedData = res.data.map((item: Questionsinterface) => ({
-          ...item,
-          options: this.transformOptions(item.options),
-          isExpanded: false,
-          questionUrl: item.file?.url,
-        }));
-        res.data.forEach((response: any) => {
-          if (response.hasAttachment && response.files) {
-            // Store file data for lazy loading, don't load image yet
-            this.questionFileData[response.id] = response.files;
-          }
-        });
-        this.data = { ...res, data: transformedData };
-      }
-      this.isLoading = false;
-      // Reset flag after data update to allow future user interactions
-      setTimeout(() => {
-        this.isUpdatingData = false;
-      }, 150);
-    };
-
-    const error = () => {
-      this.isLoading = false;
-      this.isUpdatingData = false; // Reset flag on error
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'error in getting question details',
-      });
-    };
-
     this.questionService
       .paginationEntity(`Questionsummary`, payload)
-      .subscribe({ next, error });
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          // Reset flag after data update to allow future user interactions
+          setTimeout(() => {
+            this.isUpdatingData = false;
+          }, 150);
+        }),
+      )
+      .subscribe({
+        next: (res: any) => {
+          if (res && Array.isArray(res.data)) {
+            const transformedData = res.data.map((item: Questionsinterface) => ({
+              ...item,
+              options: this.transformOptions(item.options),
+              isExpanded: false,
+              questionUrl: item.file?.url,
+            }));
+            res.data.forEach((response: any) => {
+              if (response.hasAttachment && response.files) {
+                // Store file data for lazy loading, don't load image yet
+                this.questionFileData[response.id] = response.files;
+              }
+            });
+            this.data = { ...res, data: transformedData };
+          }
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'error in getting question details',
+          });
+        },
+      });
   }
 
   // Private Methods
