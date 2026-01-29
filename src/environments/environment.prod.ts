@@ -1,7 +1,7 @@
 export const environment = {
   isProduction: true,
   baseUrl: 'https://localhost:7238', // Update with actual prod URL
-  uthorizationUrl: 'https://hireassistsecurity.runasp.net',
+  authorizationUrl: 'https://hireassistsecurity.runasp.net',
   assessmentUrl: 'https://hireassistassessment.runasp.net',
   collectionUrl: 'https://hireassistcollection.runasp.net',
   intreviewUrl: 'https://hireassistinterview.runasp.net',
