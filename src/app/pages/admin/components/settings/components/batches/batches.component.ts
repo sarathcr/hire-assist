@@ -234,7 +234,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
     };
 
     this.batchService
-      .paginationEntity(`/${this.url}`, payload)
+      .paginationEntity(`${this.url}`, payload)
       .subscribe({ next, error });
   }
 
