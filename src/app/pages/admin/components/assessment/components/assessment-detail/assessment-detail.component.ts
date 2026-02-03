@@ -246,7 +246,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.router.navigate([
       'admin/recruitments/candidateDetail',
       this.assessmentId,
-      data.id,
+      data.email,
     ]);
   }
 

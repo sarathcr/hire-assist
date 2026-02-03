@@ -6,7 +6,7 @@
 }
 
 .sidebar {
-  padding: var(--spacing-15);
+  padding: 45px var(--spacing-15) var(--spacing-15);
   text-align: left;
   height: 100%;
   width: 225px;
@@ -46,7 +46,7 @@
         transform 0.25s ease-in-out;
       padding: 0;
       position: absolute;
-      right: -35px;
+      right: 0;
       top: 0px;
       z-index: 11;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);

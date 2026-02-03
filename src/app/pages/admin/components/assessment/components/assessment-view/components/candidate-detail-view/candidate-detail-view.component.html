@@ -27,7 +27,7 @@
     }
 
     <!-- Tabs Section -->
-    <p-tabs value="0" class="candidate-detail__tabs">
+    <p-tabs value="0" class="candidate-detail__tabs" (valueChange)="onTabChange($event)">
       <p-tablist>
         <p-tab value="0">
           <i class="pi pi-user mr-2"></i>
@@ -35,7 +35,7 @@
         </p-tab>
         <p-tab value="1">
           <i class="pi pi-history mr-2"></i>
-          Previous Assessments
+          Previous Recruitments
         </p-tab>
       </p-tablist>
 
@@ -428,7 +428,7 @@
                     }
                   </div>
                 } @else {
-                  <app-empty-state message="No previous assesments found">
+                  <app-empty-state message="No previous recruitments found">
                   </app-empty-state>
                 }
               }

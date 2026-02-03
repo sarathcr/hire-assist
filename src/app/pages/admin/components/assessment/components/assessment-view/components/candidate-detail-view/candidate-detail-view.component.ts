@@ -69,7 +69,12 @@ export class CandidateDetailViewComponent
       this.activatedRoute.snapshot.paramMap.get('candidateId'),
     );
     this.getCandidateDetails();
-    this.getPreviousAssessmentDetails();
+  }
+
+  public onTabChange(value: string | number): void {
+    if (String(value) === '1' && !this.candidateAssessmentDataSource) {
+      this.getPreviousAssessmentDetails();
+    }
   }
 
   // Private Methods

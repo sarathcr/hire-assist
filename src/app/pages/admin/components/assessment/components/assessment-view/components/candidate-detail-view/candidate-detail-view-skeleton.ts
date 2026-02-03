@@ -33,7 +33,7 @@ import { TabsModule } from 'primeng/tabs';
           </p-tab>
           <p-tab>
             <i class="pi pi-history mr-2"></i>
-            Previous Assessments
+            Previous Recruitments
           </p-tab>
         </p-tablist>
 
