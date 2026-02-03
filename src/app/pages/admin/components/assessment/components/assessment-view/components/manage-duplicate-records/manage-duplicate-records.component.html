@@ -1,4 +1,5 @@
 <div class="duplicates">
+<div class="duplicates">
   <!-- Left Sidebar: Duplicate Groups -->
   <div class="duplicates__sidebar">
     <div class="duplicates__sidebar__header">
@@ -106,7 +107,9 @@
             <p class="duplicates__loading-text">Processing candidate...</p>
           </div>
         </div>
-      } @else if (splitPanelRendered()) {
+      } 
+      
+      @if (splitPanelRendered()) {
         <p-splitter class="duplicates__splitter" [panelSizes]="[50, 50, 50]">
           @for (candidate of splitPanelList(); track candidate.panelId) {
             <ng-template #panel>
@@ -120,6 +123,7 @@
                 (click)="onDetailsClick(candidate)"
                 (keydown.enter)="onDetailsClick(candidate)"
                 role="button"
+                aria-pressed="false"
               >
                 <p-card class="duplicates__panel__card">
                   <ng-template pTemplate="header">
@@ -152,7 +156,13 @@
       }
     </div>
 
-    <div class="duplicates__btn">
+    <div class="duplicates__btn flex gap-1">
+      <app-button
+        buttonLabel="Cancel"
+        buttonVariant="outlined"
+        icon="pi pi-times"
+        (btnClick)="onClose()"
+      ></app-button>
       <app-button
         buttonLabel="Update Candidate"
         (btnClick)="onSubmit()"
@@ -160,4 +170,5 @@
       ></app-button>
     </div>
   </div>
+</div>
 </div>

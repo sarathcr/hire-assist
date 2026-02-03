@@ -98,6 +98,10 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     this.updateCandidateData(selectedCandidate);
   }
 
+  public onClose() {
+    this.ref.close();
+  }
+
   // Private Methods
   private setConfigData() {
     const configData = this.config.data as DialogData;
@@ -128,10 +132,30 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     const headers = Object.keys(selectedCandidate).filter(
       (key) => key !== 'panelId',
     );
-    const values = headers.map((key) => `"${selectedCandidate[key]}"`);
-    const csvContent = `${headers.join(',')}\n${values.join(',')}`;
+    
+    // Helper to escape CSV values
+    const escapeCsvValue = (val: any): string => {
+        if (val === null || val === undefined) return '';
+        const str = String(val);
+        if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+            return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+    };
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const values = headers.map((key) => escapeCsvValue(selectedCandidate[key]));
+    const csvContent = `\uFEFF${headers.join(',')}\n${values.join(',')}`;
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // TEMPORARY: Download CSV for debugging
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'debug_candidate.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+
     const formData = new FormData();
     formData.append('file', blob, 'candidate.csv');
 
@@ -146,18 +170,11 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     };
     const error = (error: CustomErrorResponse) => {
       this.isLoading.set(false);
-      const businerssErrorCode = error.error.businessError;
-      if (businerssErrorCode === 4001) {
-        this.messageService.add({
+      const errorMessage = (error?.error as any)?.detail || 'Operation failed';
+       this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'User Already Exists',
-        });
-      } else
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Creation failed',
+          detail: errorMessage,
         });
     };
     this.manageDuplicateRecordsService

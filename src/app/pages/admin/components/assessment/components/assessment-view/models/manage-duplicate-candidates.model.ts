@@ -16,4 +16,5 @@ export interface CandidateData {
 export interface DialogData {
   duplicateRecords: CandidateData[];
   assessmentId: string;
+  applicationQuestions: any[];
 }

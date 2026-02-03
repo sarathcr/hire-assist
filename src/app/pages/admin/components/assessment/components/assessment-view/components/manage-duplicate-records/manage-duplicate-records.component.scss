@@ -260,6 +260,7 @@
         .p-splitter-panel {
           background: transparent;
           padding: 0.75rem;
+          overflow-y: auto;
         }
 
         .p-splitter-gutter {
@@ -315,6 +316,7 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 10px;
     padding: 0.5rem;
+    overflow: hidden;
 
     &:hover {
       transform: scale(1.02);
@@ -341,16 +343,27 @@
       }
 
       ::ng-deep {
+        .p-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .p-card-header {
+            flex-shrink: 0;
+        }
         .p-card-body {
           padding: 1.25rem;
-          height: 100%;
+          flex: 1;
+          min-height: 0;
           display: flex;
           flex-direction: column;
+          overflow: hidden;
         }
 
         .p-card-content {
           flex: 1;
           padding: 0;
+          overflow-y: auto;
         }
       }
     }

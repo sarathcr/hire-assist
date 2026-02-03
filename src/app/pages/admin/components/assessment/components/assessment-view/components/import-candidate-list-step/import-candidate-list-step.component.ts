@@ -270,6 +270,23 @@ export class ImportCandidateListStepComponent implements OnInit {
         error: (err) => {
           let errorMessage = 'Something went wrong';
 
+          // Handle 3106 error (Duplicate Data)
+          if (err.status === 422 && err.error?.businessError === 3106) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const text = e.target?.result as string;
+              const parsedData = parseCsvToJson(text);
+              const duplicateRecords = groupCandidatesByContact(parsedData);
+              if (duplicateRecords.length > 0) {
+                this.manageDuplicateRecords(duplicateRecords);
+              }
+              this.isLoading = false;
+              this.isUploading = false;
+            };
+            reader.readAsText(file);
+            return;
+          }
+
           if (typeof err.error === 'string') {
             try {
               const parsed = JSON.parse(err.error);
@@ -563,6 +580,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       data: {
         duplicateRecords,
         assessmentId: this.assessmentId(),
+        applicationQuestions: this.candidateApplicationQuestions,
       },
       header: 'Duplicate Records',
       maximizable: true,
