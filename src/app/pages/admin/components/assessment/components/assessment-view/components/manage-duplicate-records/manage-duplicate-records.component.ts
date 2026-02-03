@@ -148,13 +148,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     
-    // TEMPORARY: Download CSV for debugging
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'debug_candidate.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
+
 
     const formData = new FormData();
     formData.append('file', blob, 'candidate.csv');
