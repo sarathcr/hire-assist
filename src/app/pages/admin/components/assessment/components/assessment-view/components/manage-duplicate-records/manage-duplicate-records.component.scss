@@ -2,7 +2,7 @@
   height: 100%;
   display: flex;
   gap: 1.5rem;
-  padding: 1.5rem;
+  padding: 20px;
   background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
   min-height: 600px;
 
@@ -271,6 +271,9 @@
             background: #cbd5e0;
           }
         }
+        @media (max-width: 450px) {
+          flex-direction: column;
+        }
       }
     }
   }
@@ -397,6 +400,9 @@
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     padding: 1rem 1.5rem;
+    @media (max-width: 420px) {
+      flex-direction: column;
+    }
   }
 }
 

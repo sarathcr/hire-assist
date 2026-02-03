@@ -99,7 +99,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   public onClose() {
-    this.ref.close();
+    this.ref.close({ refresh: true });
   }
 
   // Private Methods
