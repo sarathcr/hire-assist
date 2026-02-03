@@ -209,7 +209,7 @@ export class InterviewerCandidateListComponent implements OnInit {
       assessmentId: this.assessmentId,
     };
     this.interviewService
-      .paginationEntity<InterviewByPanel>('/InterviewByPanelSummary', {
+      .paginationEntity<InterviewByPanel>('InterviewByPanelSummary', {
         ...payload,
         filterMap: this.filterMap,
       })

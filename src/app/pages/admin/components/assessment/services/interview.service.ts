@@ -106,7 +106,8 @@ export class InterviewService extends ApiService<any> {
   }
 
   public GetFiles(payload: FileDto): Observable<Blob> {
-    const url = `${this.getResourceUrl()}/files?blobId=${payload.blobId}&attachmentId=${payload.attachmentType}`;
+    const blobId = payload.blobId || payload.id;
+    const url = `${this.getResourceUrl()}/files?blobId=${blobId}&attachmentId=${payload.attachmentType}`;
     return this.httpClient.get(url, { responseType: 'blob' });
   }
 
@@ -121,9 +122,23 @@ export class InterviewService extends ApiService<any> {
     );
   }
 
+  public uploadMultiFiles(payload: { attachmentType: number; files: File[] }) {
+    const formData = new FormData();
+    formData.append('Type', payload.attachmentType.toString());
+    payload.files.forEach((file) => {
+      formData.append('File', file);
+    });
+
+    return this.httpClient.post<FileDto[]>(
+      `${this.getResourceUrl()}/files/multifiles`,
+      formData,
+    );
+  }
+
   public deleteFiles(payload: FileDto) {
+    const blobId = payload.blobId || payload.id;
     return this.httpClient.delete(
-      `${this.getResourceUrl()}/files?blobId=${payload.blobId}&attachmentTypeId=${payload.attachmentType}`,
+      `${this.getResourceUrl()}/files?blobId=${blobId}&attachmentId=${payload.attachmentType}`,
     );
   }
   public updateinterviewpanel(payload: InterviewPanelsResponse) {

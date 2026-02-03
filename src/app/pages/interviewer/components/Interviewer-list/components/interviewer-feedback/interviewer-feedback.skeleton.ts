@@ -121,7 +121,7 @@ import { AccordionModule } from 'primeng/accordion';
       &__header-card {
         border-radius: 20px;
         box-shadow: 0 8px 24px rgba(66, 165, 245, 0.15);
-        margin-bottom: 0;
+        margin-bottom: 24px;
 
         ::ng-deep .p-card {
           border: none;
@@ -148,7 +148,7 @@ import { AccordionModule } from 'primeng/accordion';
       &__candidate-card {
         border-radius: 16px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        margin-bottom: 0;
+        margin-bottom: 24px;
 
         ::ng-deep .p-card-body {
           padding: 30px;
@@ -195,7 +195,7 @@ import { AccordionModule } from 'primeng/accordion';
       &__section-card {
         border-radius: 16px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        margin-bottom: 0;
+        margin-bottom: 24px;
 
         ::ng-deep .p-card-body {
           padding: 30px;

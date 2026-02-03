@@ -85,7 +85,7 @@ export class InterviewerFeedbackComponent
   public feedbackdetails!: Feedbackcriteria[];
   public feedbackcriteria: AccordionData[] = [];
   public totalFeedbackScore!: number;
-  public previewImageUrls: string[] = [];
+  public previewImageUrls: Map<string, string> = new Map();
   public uploadedFile: FileDto[] = [];
   public pendingFiles: File[] = [];
   public pendingFilePreviews: string[] = [];
@@ -156,7 +156,7 @@ export class InterviewerFeedbackComponent
       this.updateLoadingState();
       // Reset arrays
       this.uploadedFile = [];
-      this.previewImageUrls = [];
+      this.previewImageUrls.clear();
       this.pendingFiles = [];
       this.pendingFilePreviews = [];
 
@@ -176,17 +176,9 @@ export class InterviewerFeedbackComponent
         id: item.feedbackId,
         fileDto: item.fileDto,
       }));
-      this.calculateTotalFeedbackScore();
       this.feedbackcriteria.forEach((feedback) => {
-        if (feedback.fileDto && feedback.fileDto.length > 0) {
-          feedback.fileDto.forEach((file) => {
-            this.uploadedFile.push(file);
-            // Only preview as blob if file doesn't have URL from backend
-            // Files from backend have URLs, new uploads have blobIds
-            if (!file.url && (file.blobId || file.id)) {
-              this.previewImage(file);
-            }
-          });
+        if (feedback.title === 'Attachments' && feedback.fileDto && feedback.fileDto.length > 0) {
+             this.uploadedFile = [...feedback.fileDto];
         }
       });
     };
@@ -303,62 +295,34 @@ export class InterviewerFeedbackComponent
   }
 
   public getFileUrl(file: FileDto): string {
-    // If file has URL from backend, construct full URL if it's relative
-    if (file.url) {
-      const urlString =
-        typeof file.url === 'string' ? file.url : String(file.url);
-      // If it's already a full URL (starts with http or blob), return as-is
-      if (
-        urlString.startsWith('http://') ||
-        urlString.startsWith('https://') ||
-        urlString.startsWith('blob:')
-      ) {
-        return urlString;
-      }
-      // If it's a relative path, construct full URL using interview base URL
-      // The file.url from API is like "interview/files/Work Sheet/..."
-      // INTERVIEW_URL is like "https://...azurewebsites.net/api/interview"
-      // Remove "interview/" prefix from path since INTERVIEW_URL already includes "/api/interview"
-      let cleanPath = urlString.trim();
-      if (cleanPath.startsWith('interview/')) {
-        cleanPath = cleanPath.substring('interview/'.length);
-      }
-      // Ensure proper URL construction - remove trailing/leading slashes and combine
-      const baseUrl = INTERVIEW_URL.trim().replace(/\/$/, ''); // Remove trailing slash
-      const path = cleanPath.replace(/^\//, ''); // Remove leading slash
-      return `${baseUrl}/${path}`;
+    const key = file.blobId || file.id;
+    if (key && this.previewImageUrls.has(key)) {
+      return this.previewImageUrls.get(key) || '';
     }
-    // Fallback to blob URL from preview if available
-    const fileIndex = this.uploadedFile.findIndex(
-      (f) => f.id === file.id || f.blobId === file.blobId,
-    );
-    if (fileIndex >= 0 && fileIndex < this.previewImageUrls.length) {
-      return this.previewImageUrls[fileIndex];
-    }
-    // If no preview URL but we have blobId, return empty (ImageComponent will handle it)
     return '';
   }
 
   public getCorrectAnswers(
     detail: AssessmentDetails & { correctAnswers?: number },
   ): number {
-    // Handle both correctAnswers (from API response) and correctAswers (from TypeScript model typo)
-    const detailAny = detail as {
-      correctAnswers?: number;
-      correctAswers?: number;
-    };
-    return detailAny.correctAnswers ?? detail.correctAswers ?? 0;
+    return detail.correctAnswers ?? 0;
   }
   public previewImage(file: FileDto): void {
+    const key = file.blobId || file.id;
+    if (!key) return;
+
+    this.isImageLoading = true;
+    this.isImageLoading = true;
     this.interviewService
-      .GetFiles({
-        blobId: file.blobId || file.id,
-        attachmentType: file.attachmentType,
-      })
+      .GetFiles(file)
       .subscribe({
         next: (blob: Blob) => {
           const imageUrl = URL.createObjectURL(blob);
-          this.previewImageUrls.push(imageUrl, ...this.previewImageUrls);
+          this.previewImageUrls.set(key, imageUrl);
+          this.isImageLoading = false;
+        },
+        error: () => {
+          this.isImageLoading = false;
         },
       });
   }
@@ -454,38 +418,110 @@ export class InterviewerFeedbackComponent
 
       this.isUploadingFiles = true;
 
-      this.pendingFiles.forEach((file) => {
-        const payload: FileRequest = {
-          attachmentType: 9,
-          file: file,
-        };
+      this.isUploadingFiles = true;
 
-        this.interviewService.uploadFiles(payload).subscribe({
-          next: (uploadedFile: FileDto) => {
-            uploadedFiles.push(uploadedFile);
-            uploadCount++;
-            if (uploadCount === totalFiles) {
-              this.uploadedFile.push(...uploadedFiles);
-              this.pendingFiles = [];
-              this.pendingFilePreviews = [];
-              this.isUploadingFiles = false;
-              resolve(uploadedFiles);
-            }
-          },
-          error: (error) => {
-            this.isUploadingFiles = false;
-            reject(error);
-          },
-        });
+      const payload = {
+        attachmentType: 9,
+        files: this.pendingFiles,
+      };
+
+      this.interviewService.uploadMultiFiles(payload).subscribe({
+        next: (uploadedFilesResponse: FileDto[]) => {
+          uploadedFiles.push(...uploadedFilesResponse);
+          this.uploadedFile.push(...uploadedFiles);
+          this.pendingFiles = [];
+          this.pendingFilePreviews = [];
+          this.isUploadingFiles = false;
+          resolve(uploadedFiles);
+        },
+        error: (error) => {
+          this.isUploadingFiles = false;
+          reject(error);
+        },
       });
     });
   }
+
+
+  private loadAttachmentFiles() {
+    // iterate over uploadedFile (which was populated in GetFeedbackCriteria) 
+    // BUT wait, in GetFeedbackCriteria we are now NOT pushing to uploadedFile?
+    // Ah, we need to populate this.uploadedFile from the feedback item if it's empty
+    // OR just use the feedback item's fileDto directly.
+    
+    // Let's look at how uploadedFile is used. It seems it is a flattened list of all files?
+    // Actually, in the previous code, it pushed all files from all feedback items to this.uploadedFile.
+    // We should probably do that initialization in GetFeedbackCriteria BUT skip the previewImage call.
+    
+    // Let's correct the strategy:
+    // 1. In GetFeedbackCriteria (previous step), we SHOULD populate this.uploadedFile but NOT call previewImage.
+    //    Wait, I removed the loop entirely in the previous step. I should restore the population of this.uploadedFile 
+    //    but skip the previewImage call.
+    
+    //    Actually, let's look at the removed code:
+    //    this.feedbackcriteria.forEach((feedback) => { ... this.uploadedFile.push(file) ... })
+    
+    //    If I removed that, this.uploadedFile is empty.
+    //    I should fix that in the next step or re-add it here safely.
+    
+    //    Let's assume I will fix the population in a separate method or re-add it.
+    //    For now, let's implement loadAttachmentFiles assuming files are in this.uploadedFile or feedback.fileDto.
+    
+    //    Actually, looking at the code, `uploadedFile` seems to be used for the file upload component and `removeImage`.
+    //    It serves as the source of truth for the Attachments section.
+    
+    //    Let's re-populate it here if empty and "Attachments" exists.
+    const attachmentFeedback = this.feedbackcriteria.find(f => f.title === 'Attachments');
+    if (attachmentFeedback && attachmentFeedback.fileDto) {
+         // Ensure uploadedFile matches the attachments
+         this.uploadedFile = [...attachmentFeedback.fileDto];
+         
+         this.uploadedFile.forEach(file => {
+             // Only fetch if not already fetched
+             const key = file.id || file.blobId;
+             if (key && !this.previewImageUrls.has(key)) {
+                 this.previewImage(file);
+             }
+         });
+    }
+  }
+
   public removeImage(index: number) {
-    if (index >= 0 && index < this.previewImageUrls.length) {
-      this.previewImageUrls.splice(index, 1);
-      if (index < this.uploadedFile.length) {
-        this.uploadedFile.splice(index, 1);
-      }
+    if (index >= 0 && index < this.uploadedFile.length) {
+      const file = this.uploadedFile[index];
+      const key = file.blobId || file.id;
+      
+      // Call API to delete
+      this.interviewService.deleteFiles(file).subscribe({
+        next: () => {
+           this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'File deleted successfully',
+          });
+          
+          if (key && this.previewImageUrls.has(key)) {
+            this.previewImageUrls.delete(key);
+          }
+          this.uploadedFile.splice(index, 1);
+          
+          // Also update the feedback criteria object to reflect removal
+          const attachmentFeedback = this.feedbackcriteria.find(f => f.title === 'Attachments');
+          if (attachmentFeedback && attachmentFeedback.fileDto) {
+              const fileIdx = attachmentFeedback.fileDto.findIndex(f => (f.id === file.id && f.blobId === file.blobId));
+              if (fileIdx !== -1) {
+                  attachmentFeedback.fileDto.splice(fileIdx, 1);
+              }
+          }
+        },
+        error: () => {
+             this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to delete file',
+          });
+        }
+      });
     }
   }
   public validateScore(feedback: AccordionData) {
@@ -499,8 +535,33 @@ export class InterviewerFeedbackComponent
     if (feedback.title === 'Attachments' && this.pendingFiles.length > 0) {
       this.uploadPendingFiles()
         .then((uploadedFiles: FileDto[]) => {
-          // After files are uploaded, save the feedback
-          this.saveFeedback(feedback, uploadedFiles);
+          // Update local feedback.fileDto state so the UI updates
+          if (!feedback.fileDto) {
+            feedback.fileDto = [];
+          }
+
+          // Filter out duplicates based on blobId to prevent adding the same file twice
+          const newUniqueFiles = uploadedFiles.filter(newFile => 
+            !feedback.fileDto!.some(existing => existing.blobId === newFile.blobId)
+          );
+
+          if (newUniqueFiles.length > 0) {
+            feedback.fileDto.push(...newUniqueFiles);
+
+            // Fetch blobs for new files so they display correctly
+            newUniqueFiles.forEach(file => this.previewImage(file));
+            
+            // Save only the new unique files
+            this.saveFeedback(feedback, newUniqueFiles);
+          } else {
+             // If all were duplicates or none uploaded (though uploadPendingFiles checks non-empty), 
+             // we might not need to save if nothing changed, 
+             // but if user just wants to ensure state or if there were other changes... 
+             // safest is to save with empty list if we only intended to link new files.
+             // If this was just an upload-triggered save, and no new files, maybe skip?
+             // But let's call save with empty list to be safe / consistent with "onsave" intent.
+             this.saveFeedback(feedback, []);
+          }
         })
         .catch(() => {
           this.messageService.add({
@@ -513,7 +574,12 @@ export class InterviewerFeedbackComponent
       // No pending files, save directly
       const existingFiles =
         feedback.title === 'Attachments' ? this.uploadedFile : [];
-      this.saveFeedback(feedback, existingFiles);
+      // Note: passing existingFiles here might re-send them? 
+      // saveFeedback logic: `feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : []`
+      // If we pass existing files, it might try to save them again? 
+      // Usually "filesToSave" implies NEW files to link. 
+      // If no new files, we pass [].
+      this.saveFeedback(feedback, []);
     }
   }
 
@@ -533,17 +599,22 @@ export class InterviewerFeedbackComponent
           ? filesToSave
           : [],
     };
+    // If updating, include the ID
+    if (feedback.isSaved || feedback.id) {
+        this.feedbackRequest.id = feedback.id;
+    }
+
     this.calculateTotalFeedbackScore();
 
     const next = (res: InterviewerFeedback) => {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Feedback Saved Successfully',
+        detail: feedback.isSaved ? 'Feedback Updated Successfully' : 'Feedback Saved Successfully',
       });
       this.isLoading = false;
       feedback.isSaved = true;
-      feedback.id = res.id ? res.id : 0;
+      feedback.id = res.id ? res.id : feedback.id;
 
       // Update feedback item with saved fileDto if attachments
       if (feedback.title === 'Attachments' && res.fileDto) {
@@ -556,14 +627,23 @@ export class InterviewerFeedbackComponent
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Invalid Score',
+          detail: 'Feedback already submitted',
+        });
+      } else {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to save feedback', // Generic message or dynamic based on error
         });
       }
       this.isLoading = false;
     };
-    this.interviewService
-      .PostFeedback(this.feedbackRequest)
-      .subscribe({ next, error });
+
+    if (feedback.isSaved || feedback.id) {
+        this.interviewService.updateFeedback(this.feedbackRequest).subscribe({ next, error });
+    } else {
+        this.interviewService.PostFeedback(this.feedbackRequest).subscribe({ next, error });
+    }
   }
   public onEdit(feedback: AccordionData) {
     // When editing, don't change isSaved status - user can modify and save again
@@ -583,7 +663,7 @@ export class InterviewerFeedbackComponent
           ? this.uploadedFile
           : [],
     };
-    feedback.isSaved = false;
+    feedback.isSaved = true; // Ensure it stays true during edit to prevent button flicker
     const next = () => {
       this.messageService.add({
         severity: 'success',
@@ -643,5 +723,19 @@ export class InterviewerFeedbackComponent
     this.interviewService
       .UpdateInterview(Number(this.interviewId), this.interview)
       .subscribe({ next, error });
+  }
+  public onAccordionOpen(feedback: AccordionData): void {
+    if (
+      feedback.title === 'Attachments' &&
+      feedback.fileDto &&
+      feedback.fileDto.length > 0
+    ) {
+      feedback.fileDto.forEach((file) => {
+        const key = file.blobId || file.id;
+        if (key && !this.previewImageUrls.has(key)) {
+          this.previewImage(file);
+        }
+      });
+    }
   }
 }

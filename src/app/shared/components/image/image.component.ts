@@ -40,6 +40,26 @@ export class ImageComponent implements OnInit, OnChanges {
   @ViewChild(Image) imageComponent!: Image;
   constructor(private api: ApiService<any>) {}
   ngOnInit() {
+    this.loadImage();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const cancelRequest = changes['forceCancelRequest'];
+    if (
+      cancelRequest &&
+      cancelRequest.currentValue &&
+      !cancelRequest.firstChange
+    ) {
+      this.cancelRequestSubject.next();
+    }
+
+    if (changes['imageUrl'] && !changes['imageUrl'].firstChange) {
+      this.loaded = false;
+      this.loadImage();
+    }
+  }
+
+  private loadImage(): void {
     if (!this.imageUrl || this.imageUrl == '') {
       this.loaded = true;
       return;
@@ -63,17 +83,6 @@ export class ImageComponent implements OnInit, OnChanges {
           this.loaded = true;
         },
       });
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    const cancelRequest = changes['forceCancelRequest'];
-    if (
-      cancelRequest &&
-      cancelRequest.currentValue &&
-      !cancelRequest.firstChange
-    ) {
-      this.cancelRequestSubject.next();
-    }
   }
   onCloseClick() {
     this.closeImage.emit();

@@ -257,7 +257,7 @@
                             @if (
                               (isAptitudeRound(round.roundName) ||
                                 getCorrectAnswers(detail) > 0) &&
-                              detail.correctAswers !== undefined
+                              detail.correctAnswers !== undefined
                             ) {
                               <div class="interview-feedback__detail-item">
                                 <span class="interview-feedback__detail-label">
@@ -423,19 +423,35 @@
           >
             <p-accordion-header
               class="interview-feedback__feedback-accordion-header"
+              (click)="onAccordionOpen(feedback)"
             >
               <div class="interview-feedback__feedback-header-content">
                 <p-chip
                   [label]="feedback.title"
                   [styleClass]="'interview-feedback__feedback-chip'"
                 />
-                @if (feedback.isSaved) {
-                  <p-tag
-                    value="Saved"
-                    severity="success"
-                    icon="pi pi-check-circle"
-                  />
-                }
+
+                <div class="interview-feedback__header-status">
+                  <!-- Only show score for non-attachment criteria -->
+                  @if (
+                    feedback.title !== 'Attachments' &&
+                    (feedback.score || feedback.score === 0)
+                  ) {
+                    <p-tag
+                      [value]="'Score: ' + feedback.score + '/' + feedback.maxScore"
+                      severity="info"
+                      icon="pi pi-star"
+                    />
+                  }
+
+                  @if (feedback.isSaved) {
+                    <p-tag
+                      value="Saved"
+                      severity="success"
+                      icon="pi pi-check-circle"
+                    />
+                  }
+                </div>
               </div>
             </p-accordion-header>
             <p-accordion-content class="interview-feedback__feedback-content">
@@ -452,94 +468,85 @@
                     [showCancelButton]="false"
                     (onSelect)="onFileChange($event)"
                     [disabled]="isSubmitted"
-                    chooseLabel="Choose Images"
-                    chooseIcon="pi pi-images"
+                    chooseLabel="Drag & Drop or Click to Upload Images"
+                    chooseIcon="pi pi-cloud-upload"
                     mode="advanced"
+                    styleClass="interview-feedback__upload-zone"
                   >
                   </p-fileupload>
 
-                  @if (pendingFilePreviews.length > 0) {
-                    <div class="interview-feedback__uploaded-files-section">
-                      <h4 class="interview-feedback__uploaded-files-title">
-                        Pending Uploads ({{ pendingFilePreviews.length }})
-                      </h4>
-                      <div class="interview-feedback__image-preview-grid">
-                        @for (
-                          preview of pendingFilePreviews;
-                          track i;
-                          let i = $index
-                        ) {
-                          <div
-                            class="interview-feedback__image-preview-item interview-feedback__image-preview-item--pending"
-                          >
-                            <img
-                              [src]="preview"
-                              [alt]="'Pending file ' + (i + 1)"
-                              class="interview-feedback__pending-preview-img"
-                            />
-                            <div
-                              class="interview-feedback__image-preview-overlay"
+                  <div class="interview-feedback__attachment-grid">
+                    <!-- Pending Files -->
+                    @if (pendingFilePreviews.length > 0 && !isUploadingFiles) {
+                      @for (
+                        preview of pendingFilePreviews;
+                        track i;
+                        let i = $index
+                      ) {
+                        <div class="interview-feedback__attachment-card">
+                          <img
+                            [src]="preview"
+                            [alt]="'Pending file ' + (i + 1)"
+                            class="interview-feedback__attachment-img"
+                          />
+                          <div class="interview-feedback__attachment-overlay">
+                            <span class="interview-feedback__status-badge pending"
+                              >Pending</span
                             >
-                              <button
-                                type="button"
-                                class="interview-feedback__remove-pending-btn"
-                                (click)="removePendingFile(i)"
-                                [attr.aria-label]="'Remove file ' + (i + 1)"
-                              >
-                                <i class="pi pi-times"></i>
-                              </button>
-                              <span class="interview-feedback__pending-badge"
-                                >Pending</span
-                              >
-                            </div>
+                            <button
+                              type="button"
+                              class="interview-feedback__action-btn delete"
+                              (click)="removePendingFile(i)"
+                              pTooltip="Remove"
+                              tooltipPosition="top"
+                            >
+                              <i class="pi pi-trash"></i>
+                            </button>
                           </div>
-                        }
-                      </div>
-                    </div>
-                  }
-
-                  @if (isUploadingFiles) {
-                    <div class="interview-feedback__uploaded-files-section">
-                      <h4 class="interview-feedback__uploaded-files-title">
-                        Uploading Files...
-                      </h4>
-                      <div class="interview-feedback__image-preview-grid">
-                        <div class="interview-feedback__skeleton-wrapper">
-                          <app-image-skeleton></app-image-skeleton>
                         </div>
-                      </div>
-                    </div>
-                  }
+                      }
+                    }
 
-                  @if (feedback.fileDto && feedback.fileDto.length > 0) {
-                    <div class="interview-feedback__uploaded-files-section">
-                      <h4 class="interview-feedback__uploaded-files-title">
-                        Saved Images ({{ feedback.fileDto.length }})
-                      </h4>
-                      <div class="interview-feedback__image-preview-grid">
-                        @if (isImageLoading) {
-                          <div class="interview-feedback__skeleton-wrapper">
-                            <app-image-skeleton></app-image-skeleton>
-                          </div>
-                        } @else {
-                          @for (file of feedback.fileDto; track file.id) {
-                            <div class="interview-feedback__image-preview-item">
-                              <app-image
-                                width="100"
-                                height="70"
-                                [imageUrl]="getFileUrl(file)"
-                                [paddingTop]="'0'"
-                                [forceCancelRequest]="[]"
-                                [isZoomable]="true"
-                                (closeImage)="removeImage($index)"
-                              >
-                              </app-image>
-                            </div>
-                          }
-                        }
+                    <!-- Skeleton Loaders -->
+                    @if (isUploadingFiles) {
+                      <div class="interview-feedback__attachment-card skeleton">
+                        <app-image-skeleton></app-image-skeleton>
                       </div>
-                    </div>
-                  }
+                    }
+
+                    <!-- Saved Files -->
+                    @if (feedback.fileDto && feedback.fileDto.length > 0) {
+                      @for (file of feedback.fileDto; track file.id) {
+                        <div class="interview-feedback__attachment-card">
+                          <app-image
+                            width="100%"
+                            height="100%"
+                            [imageUrl]="getFileUrl(file)"
+                            [paddingTop]="'0'"
+                            [forceCancelRequest]="[]"
+                            [isZoomable]="true"
+                            [removeIcon]="true"
+                            (closeImage)="removeImage($index)"
+                            class="interview-feedback__app-image"
+                          >
+                          </app-image>
+                          <div class="interview-feedback__attachment-overlay saved">
+                            <button
+                              type="button"
+                              class="interview-feedback__action-btn delete"
+                              (click)="removeImage($index)"
+                              pTooltip="Delete"
+                              tooltipPosition="top"
+                              [disabled]="isSubmitted"
+                              *ngIf="!isSubmitted"
+                            >
+                              <i class="pi pi-trash"></i>
+                            </button>
+                          </div>
+                        </div>
+                      }
+                    }
+                  </div>
                 </div>
               }
 
@@ -586,18 +593,14 @@
                     }
                   </div>
                   <div class="interview-feedback__action-buttons">
-                    @if (!feedback.isSaved && !isSubmitted) {
+                    @if (!isSubmitted) {
                       <app-button
-                        [buttonLabel]="'Save'"
-                        [icon]="'pi pi-save'"
-                        (btnClick)="onsave(feedback)"
-                      ></app-button>
-                    } @else if (feedback.isSaved && !isSubmitted) {
-                      <app-button
-                        [buttonLabel]="'Edit'"
-                        [buttonVariant]="'outlined'"
-                        [icon]="'pi pi-pencil'"
-                        (btnClick)="onEdit(feedback)"
+                        [buttonLabel]="feedback.isSaved ? 'Update' : 'Save'"
+                        [icon]="feedback.isSaved ? 'pi pi-pencil' : 'pi pi-save'"
+                        [buttonVariant]="feedback.isSaved ? 'outlined' : undefined"
+                        (btnClick)="
+                          feedback.isSaved ? onEdit(feedback) : onsave(feedback)
+                        "
                       ></app-button>
                     } @else {
                       <p-tag
@@ -610,18 +613,14 @@
                 </div>
               } @else {
                 <div class="interview-feedback__action-buttons">
-                  @if (!feedback.isSaved && !isSubmitted) {
+                  @if (!isSubmitted) {
                     <app-button
-                      [buttonLabel]="'Save'"
-                      [icon]="'pi pi-save'"
-                      (btnClick)="onsave(feedback)"
-                    ></app-button>
-                  } @else if (feedback.isSaved && !isSubmitted) {
-                    <app-button
-                      [buttonLabel]="'Edit'"
-                      [buttonVariant]="'outlined'"
-                      [icon]="'pi pi-pencil'"
-                      (btnClick)="onEdit(feedback)"
+                      [buttonLabel]="feedback.isSaved ? 'Update' : 'Save'"
+                      [icon]="feedback.isSaved ? 'pi pi-pencil' : 'pi pi-save'"
+                      [buttonVariant]="feedback.isSaved ? 'outlined' : undefined"
+                      (btnClick)="
+                        feedback.isSaved ? onEdit(feedback) : onsave(feedback)
+                      "
                     ></app-button>
                   } @else {
                     <p-tag

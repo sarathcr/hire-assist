@@ -58,7 +58,7 @@ export interface AssessmentDetails {
   batch: string;
   totalQuestions: number;
   attendedQuestions: number;
-  correctAswers: number;
+  correctAnswers: number;
   skipped: number;
   feedbackListDto: Feedback[] | [];
   interviewerId: string;

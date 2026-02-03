@@ -275,9 +275,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
 
     // Validate that all selected candidates have "Completed" status
+    // For Aptitude round, "Terminated" status is also allowed
     const nonCompletedCandidates = this.selectedCandidates.filter(
       (candidate: InterviewSummary) => {
         const status = candidate.status?.toLowerCase().trim();
+        if (this.isAptitudeRound()) {
+          return status !== 'completed' && status !== 'terminated';
+        }
         return status !== 'completed';
       },
     );
@@ -286,7 +290,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       this.messagesService.add({
         severity: 'warn',
         summary: 'Warning',
-        detail: 'Only candidates with "Completed" status can be rejected.',
+        detail: this.isAptitudeRound()
+          ? 'Only candidates with "Completed" or "Terminated" status can be rejected.'
+          : 'Only candidates with "Completed" status can be rejected.',
       });
       return;
     }
@@ -483,6 +489,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
+      if (this.isAptitudeRound()) {
+        return status === 'completed' || status === 'terminated';
+      }
       return status === 'completed';
     });
   }
