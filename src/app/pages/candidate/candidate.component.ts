@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { BaseComponent } from '../../shared/components/base/base.component';
 import { DialogFooterComponent } from '../../shared/components/dialog-footer/dialog-footer.component';
@@ -35,43 +35,34 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     private candidateService: CandidateService,
   ) {
     super();
-    
-    // Listen for navigation events to reload assessments when coming from thank-you page
-    this.subscriptionList.push(
-      this.router.events
-        .pipe(filter((event) => event instanceof NavigationEnd))
-        .subscribe((event: NavigationEnd) => {
-          // Check if we're on the candidate route (not thank-you) and URL has refresh param
-          if (event.url.includes('/candidate') && 
-              !event.url.includes('thank-you') && 
-              event.url.includes('refresh=true')) {
-            this.loadAssessments();
-            // Remove the query parameter after reloading
-            this.router.navigate([], {
-              relativeTo: this.route,
-              queryParams: {},
-              replaceUrl: true
-            });
-          }
-        })
-    );
   }
 
   // LifeCycle Hooks
+  // LifeCycle Hooks
   ngOnInit(): void {
-    // Check query params on initial load
-    const refreshParam = this.route.snapshot.queryParams['refresh'];
-    if (refreshParam === 'true') {
-      this.loadAssessments();
-      // Remove the query parameter after reloading
-      this.router.navigate([], {
-        relativeTo: this.route,
-        queryParams: {},
-        replaceUrl: true
-      });
-    } else {
-      this.loadAssessments();
-    }
+    // Listen to query params for changes
+    this.subscriptionList.push(
+      this.route.queryParams
+        .pipe(
+          debounceTime(50),
+          distinctUntilChanged(
+            (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr),
+          ),
+        )
+        .subscribe((params) => {
+          if (params['refresh'] === 'true') {
+            // If refresh is true, clear the param. The subsequent emission with empty params will trigger the load.
+            this.router.navigate([], {
+              relativeTo: this.route,
+              queryParams: {},
+              replaceUrl: true,
+            });
+          } else {
+            // Only load assessments when refresh param is NOT present
+            this.loadAssessments();
+          }
+        })
+    );
   }
 
   // Private Methods

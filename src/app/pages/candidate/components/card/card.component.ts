@@ -19,6 +19,7 @@ export class CardComponent implements OnInit, OnDestroy {
   public startTime = input<string>();
   public endTime = input<string>();
   public interviewDate = input<string>();
+  public isActive = input<boolean>(true);
   public disable!: boolean;
   public showButton = false;
   public intervalId!: NodeJS.Timeout;
@@ -54,30 +55,22 @@ export class CardComponent implements OnInit, OnDestroy {
       return;
     }
     
+    // Default: Show status name
+    this.buttonLabel = this.getStatusLabel(this.statusId() ?? 0);
+    this.showButton = true;
+    this.disable = true;
+
+    // Handle completed/previous
+    if (this.statusId() == this.status.Completed || this.isPreviousAssessment()) {
+       if (this.statusId() == this.status.Completed) {
+         this.buttonLabel = 'Completed';
+       } else if (this.isPreviousAssessment()) {
+         this.buttonLabel = 'Closed';
+       }
+       return;
+    }
+
     const today = new Date();
-    
-    // Reset showButton
-    this.showButton = false;
-    this.disable = false;
-    
-    // Handle completed status
-    if (this.statusId() == this.status.Completed) {
-      this.buttonLabel = 'Completed';
-      this.showButton = true;
-      this.disable = true;
-      return;
-    }
-    
-    // Handle previous assessments
-    if (this.isPreviousAssessment()) {
-      this.buttonLabel = 'Closed';
-      this.disable = true;
-      this.showButton = true;
-      return;
-    }
-    
-    // For active assessments, parse start and end times
-    // startTime and endTime should be full datetime strings or time strings
     const startTimeStr = this.startTime() ?? '';
     const endTimeStr = this.endTime() ?? '';
     const assessmentDate = new Date(this.interviewDate() ?? '');
@@ -94,22 +87,24 @@ export class CardComponent implements OnInit, OnDestroy {
     if (isNaN(endDateTime.getTime())) {
       endDateTime = this.combineDateAndTime(assessmentDate, endTimeStr);
     }
-    
-    // Compare current time with start/end datetime
-    if (today < startDateTime) {
-      // Current time is before start time - hide button
-      this.showButton = false;
-    } else if (today >= startDateTime && today <= endDateTime) {
-      // Current time is between start and end time - show Start button
-      this.buttonLabel = 'Start';
-      this.showButton = true;
-      this.disable = false;
+
+    // Time window check
+    if (today >= startDateTime && today <= endDateTime) {
+      if (this.isActive()) {
+         this.buttonLabel = 'Start Assessment';
+         this.disable = false;
+      } else {
+         this.buttonLabel = 'Absent';
+         this.disable = true;
+      }
     } else if (today > endDateTime) {
-      // Current time is after end time - show Closed button
-      this.buttonLabel = 'Closed';
-      this.showButton = true;
-      this.disable = true;
+       this.buttonLabel = 'Closed';
+       this.disable = true;
     }
+  }
+
+  private getStatusLabel(statusId: number): string {
+    return StatusEnum[statusId] || 'Unknown';
   }
   
   private combineDateAndTime(date: Date, timeStr: string): Date {
