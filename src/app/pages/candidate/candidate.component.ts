@@ -71,18 +71,23 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     this.candidateService.getCandidateAssessment().subscribe({
       next: (res: CandidateAssessment[]) => {
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize to 00:00:00.000
 
         this.activeAssessments = res.filter((a) => {
-          const assessmentDate = new Date(a.date);
-          assessmentDate.setHours(0, 0, 0, 0);
-          return assessmentDate >= today;
+          // Use endTime if available, otherwise fall back to date (though date might be null per issue description)
+          // The issue states date is null, so rely on endTime
+          const comparisonDate = a.endTime ? new Date(a.endTime) : (a.date ? new Date(a.date) : null);
+          
+          if (!comparisonDate) return false; // If neither exists, can't determine, maybe assume not active?
+          
+          return comparisonDate >= today;
         });
 
         this.previousAssessments = res.filter((a) => {
-          const assessmentDate = new Date(a.date);
-          assessmentDate.setHours(0, 0, 0, 0);
-          return assessmentDate < today;
+          const comparisonDate = a.endTime ? new Date(a.endTime) : (a.date ? new Date(a.date) : null);
+          
+          if (!comparisonDate) return true; // If data invalid, maybe show in previous as safeguard?
+          
+          return comparisonDate < today;
         });
         this.isLoading = false;
       },
