@@ -30,7 +30,7 @@
                 <span>{{ $index + 1 }}</span>
               </div>
               <h3 class="coordinator__card-title">
-                Assignment {{ $index + 1 }}
+                Assign Coordinator
               </h3>
             </div>
             <div class="coordinator__card-body">
@@ -82,9 +82,9 @@
             <div class="coordinator__empty-icon">
               <i class="pi pi-inbox"></i>
             </div>
-            <h3 class="coordinator__empty-title">No Assignments Yet</h3>
+            <h3 class="coordinator__empty-title">No Coordinators Assigned Yet</h3>
             <p class="coordinator__empty-description">
-              Click "Add Assignment" below to start assigning coordinators to
+              Click "Assign Coordinator" below to start assigning coordinators to
               recruitment rounds.
             </p>
           </div>
@@ -104,7 +104,7 @@
       <footer class="coordinator__footer">
         <app-button
           [icon]="'pi pi-plus'"
-          buttonLabel="Add Assignment"
+          buttonLabel="Assign Coordinator"
           [buttonSize]="'small'"
           (btnClick)="addRound()"
           type="button"

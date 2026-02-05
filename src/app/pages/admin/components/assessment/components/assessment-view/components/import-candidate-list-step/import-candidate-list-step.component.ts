@@ -175,12 +175,15 @@ export class ImportCandidateListStepComponent implements OnInit {
           });
           this.getAllCandidates(new PaginatedPayload(), true);
         };
-        const error = () => {
+        const error = (error: CustomErrorResponse) => {
           this.isLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Deletion is failed',
+            detail:
+              error?.error?.message ||
+              error?.error?.type ||
+              'Deletion failed',
           });
         };
         this.candidateService
@@ -352,7 +355,7 @@ export class ImportCandidateListStepComponent implements OnInit {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Creation failed',
+            detail: error?.error?.message || error?.error?.type || 'Creation failed',
           });
         };
         this.candidateService.createEntity(result).subscribe({ next, error });
@@ -461,14 +464,14 @@ export class ImportCandidateListStepComponent implements OnInit {
             },
             error: (error: CustomErrorResponse) => {
               this.isLoading = false;
-              if (error?.error?.type) {
-                this.messageService.add({
-                  severity: 'error',
-                  summary: 'Error',
-                  detail: error?.error?.type,
-                  life: 30000,
-                });
-              }
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail:
+                  error?.error?.message ||
+                  error?.error?.type ||
+                  'Failed to schedule assessment',
+              });
             },
           });
         }
@@ -709,7 +712,10 @@ export class ImportCandidateListStepComponent implements OnInit {
     this.messageService.add({
       severity: 'error',
       summary: 'Error',
-      detail: error?.error?.type || 'Contact Technical Support',
+      detail:
+        error?.error?.message ||
+        error?.error?.type ||
+        'Contact Technical Support',
     });
   }
 

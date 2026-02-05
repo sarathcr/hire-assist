@@ -214,12 +214,15 @@
     width: 80px;
     height: 80px;
     margin: 0 auto 20px;
-    background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(66, 165, 245, 0.1) 0%,
+      rgba(30, 136, 229, 0.1) 100%
+    );
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.1;
 
     i {
       font-size: 40px;

@@ -102,7 +102,11 @@ export class StoreService {
   }
 
   private getParsedState(state: string): AppState {
-    return JSON.parse(state) as AppState;
+    const parsedState = JSON.parse(state) as AppState;
+    if (parsedState.userState) {
+      parsedState.userState.profileImageUrl = undefined;
+    }
+    return parsedState;
   }
 
   private updateStore() {

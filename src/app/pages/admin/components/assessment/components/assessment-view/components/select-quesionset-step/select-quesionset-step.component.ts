@@ -14,7 +14,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { Knob } from 'primeng/knob';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
-import { ToastModule } from 'primeng/toast';
+
 import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { TableDataSourceService } from '../../../../../../../../shared/components/table/table-data-source.service';
@@ -110,7 +110,7 @@ interface QuestionSetAccordionData {
   imports: [
     ButtonComponent,
     ReactiveFormsModule,
-    ToastModule,
+
     TableComponent,
     QuestionSetStepSkeletonComponent,
     TableModule,
