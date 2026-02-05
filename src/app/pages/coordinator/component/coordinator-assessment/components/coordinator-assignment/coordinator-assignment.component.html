@@ -1,136 +1,189 @@
 <div class="coordinator-detail">
   <p-toast></p-toast>
   
-  <!-- Header Section -->
-  <div class="coordinator-detail__header">
-    <div class="coordinator-detail__header-content">
-      <div class="coordinator-detail__header-title">
-        <i class="pi pi-users coordinator-detail__header-icon"></i>
-        <h1 class="coordinator-detail__title">Panel Assignment</h1>
+  <!-- Hero Header Section -->
+  <div class="coordinator-detail__hero">
+    <div class="coordinator-detail__hero-content">
+      <div class="coordinator-detail__hero-title-section">
+        <h1 class="coordinator-detail__hero-title">
+          <i class="pi pi-briefcase"></i>
+          Panel Assignment
+        </h1>
+        <p class="coordinator-detail__hero-subtitle">
+          Assign candidates to interview panels for scheduled assessments
+        </p>
       </div>
-      <p class="coordinator-detail__subtitle">
-        Assign candidates to interview panels for scheduled assessments
-      </p>
     </div>
   </div>
 
-  <!-- Selection Summary Cards -->
-  <div class="coordinator-detail__summary">
-    <p-card class="coordinator-detail__summary-card">
-      <div class="coordinator-detail__summary-content">
-        <div class="coordinator-detail__summary-item">
-          <div class="coordinator-detail__summary-icon candidate">
-            <i class="pi pi-user"></i>
-          </div>
-          <div class="coordinator-detail__summary-info">
-            <span class="coordinator-detail__summary-label">Selected Candidate</span>
-            <span class="coordinator-detail__summary-value">
-              @if (selectedCandidatesIds.length > 0) {
-                {{ selectedCandidatesIds[0].name }}
+  <!-- Modern Stepper Navigation -->
+  <div class="coordinator-detail__stepper-wrapper">
+    <div class="coordinator-detail__stepper">
+      @for (step of stepConfig; track step.index; let i = $index) {
+        <div
+          class="coordinator-detail__stepper-item"
+          [ngClass]="{
+            'active': activeStep === step.index,
+            'completed': completedSteps.includes(step.index),
+            'disabled': !isStepEnabled(step.index),
+            'pending': !completedSteps.includes(step.index) && activeStep !== step.index
+          }"
+        >
+          <button
+            type="button"
+            class="coordinator-detail__stepper-button"
+            [disabled]="!isStepEnabled(step.index)"
+            (click)="setActiveStep(step.index)"
+            [attr.aria-label]="step.label"
+          >
+            <div class="coordinator-detail__stepper-indicator">
+              @if (completedSteps.includes(step.index) && activeStep !== step.index) {
+                <i class="pi pi-check"></i>
               } @else {
-                <span class="coordinator-detail__summary-placeholder">None selected</span>
+                <i [class]="step.icon"></i>
               }
-            </span>
-          </div>
+            </div>
+            <div class="coordinator-detail__stepper-content">
+              <span class="coordinator-detail__stepper-label">{{ step.label }}</span>
+            </div>
+            @if (activeStep === step.index) {
+              <div class="coordinator-detail__stepper-arrow">
+                <i class="pi pi-chevron-down"></i>
+              </div>
+            }
+          </button>
+          @if (i < stepConfig.length - 1) {
+            <div class="coordinator-detail__stepper-connector"
+                 [ngClass]="{'completed': completedSteps.includes(step.index)}">
+            </div>
+          }
         </div>
-        
-        <p-divider layout="vertical" [style]="{ height: '40px', margin: '0 1.5rem' }"></p-divider>
-        
-        <div class="coordinator-detail__summary-item">
-          <div class="coordinator-detail__summary-icon panel">
-            <i class="pi pi-briefcase"></i>
-          </div>
-          <div class="coordinator-detail__summary-info">
-            <span class="coordinator-detail__summary-label">Selected Panel</span>
-            <span class="coordinator-detail__summary-value">
-              @if (selectedPanelIds.length > 0) {
-                {{ selectedPanelIds[0].panelName }}
-              } @else {
-                <span class="coordinator-detail__summary-placeholder">None selected</span>
-              }
-            </span>
-          </div>
-        </div>
-        
-        <div class="coordinator-detail__summary-actions">
-          <p-button
-            label="Schedule Panel"
-            icon="pi pi-calendar-plus"
-            [disabled]="selectedCandidatesIds.length === 0 || selectedPanelIds.length === 0"
-            (onClick)="schedule()"
-            [style]="{ minWidth: '180px' }"
-            severity="primary"
-          ></p-button>
-        </div>
-      </div>
-    </p-card>
+      }
+    </div>
   </div>
 
-  <!-- Main Content Layout -->
-  <div class="coordinator-detail__view">
-    <div class="coordinator-detail__view__content">
-      <div class="coordinator-detail__schedule-layout">
-        <!-- Candidates Section -->
-        <div class="coordinator-detail__schedule-layout__left">
-          <p-card class="coordinator-detail__card">
-            <ng-template pTemplate="header">
-              <div class="coordinator-detail__card-header">
-                <div class="coordinator-detail__card-header-content">
-                  <i class="pi pi-users coordinator-detail__card-icon"></i>
-                  <div>
-                    <h2 class="coordinator-detail__card-title">Candidates</h2>
-                    <p class="coordinator-detail__card-subtitle">
-                      Select a candidate to assign to a panel
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </ng-template>
-            <app-table
-              [tableData]="data"
-              [columnsData]="candidateColumn"
-              heading="Candidate List"
-              [hasSearch]="true"
-              [parentLoader]="isCandidateLoading"
-              (pageChangeAndSort)="onTablePayloadChange($event)"
-              (selectedIds)="getSelectedcandidateId($event)"
-            ></app-table>
-          </p-card>
-        </div>
-
-        <!-- Divider -->
-        <p-divider layout="vertical" [style]="{ margin: '0 1rem' }"></p-divider>
-
-        <!-- Panels Section -->
-        <div class="coordinator-detail__schedule-layout__right">
-          <p-card class="coordinator-detail__card">
-            <ng-template pTemplate="header">
-              <div class="coordinator-detail__card-header">
-                <div class="coordinator-detail__card-header-content">
-                  <i class="pi pi-briefcase coordinator-detail__card-icon"></i>
-                  <div>
-                    <h2 class="coordinator-detail__card-title">Available Panels</h2>
-                    <p class="coordinator-detail__card-subtitle">
-                      Select a panel to assign to the candidate
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </ng-template>
-            <app-table
-              [tableData]="panelData"
-              [columnsData]="panelColumn"
-              heading="Panel List"
-              [hasSearch]="true"
-              [parentLoader]="isPanelLoading"
-              (edit)="editPanel($event)"
-              (pageChangeAndSort)="onPanelTablePayloadChange($event)"
-              (selectedIds)="getSelectedPanelId($event)"
-              [alreadySelected]="selectedPanel"
-            ></app-table>
-          </p-card>
-        </div>
+  <!-- Progress Bar -->
+  <div class="coordinator-detail__progress">
+    <div class="coordinator-detail__progress-bar">
+      <div
+        class="coordinator-detail__progress-fill"
+        [style.width.%]="getProgressPercentage()">
       </div>
+    </div>
+    <span class="coordinator-detail__progress-text">
+      {{ getProgressPercentage() }}% Complete
+    </span>
+  </div>
+
+  <!-- Content Area -->
+  <div class="coordinator-detail__content-wrapper">
+    <div class="coordinator-detail__content-header">
+      <h2 class="coordinator-detail__content-title">
+        @if (stepConfig[activeStep]) {
+          <i [class]="stepConfig[activeStep].icon"></i>
+          {{ stepConfig[activeStep].label }}
+        }
+      </h2>
+      <p class="coordinator-detail__content-description">
+        @if (stepConfig[activeStep]) {
+          {{ stepConfig[activeStep].description }}
+        }
+      </p>
+    </div>
+
+    <div class="coordinator-detail__content">
+      <!-- Step 0: Candidate Selection -->
+      @if (activeStep === 0) {
+        <app-table
+            [tableData]="data"
+            [columnsData]="candidateColumn"
+            heading="Candidate List"
+            [hasSearch]="true"
+            [parentLoader]="isCandidateLoading"
+            (pageChangeAndSort)="onTablePayloadChange($event)"
+            (selectedIds)="getSelectedcandidateId($event)"
+            [alreadySelected]="selectedCandidate"
+        ></app-table>
+        <div class="coordinator-detail__step-actions coordinator-detail__step-actions--end">
+            <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="onNextStep(0)"></p-button>
+        </div>
+      }
+
+      <!-- Step 1: Panel Selection -->
+      @if (activeStep === 1) {
+        <app-table
+            [tableData]="panelData"
+            [columnsData]="panelColumn"
+            heading="Panel List"
+            [hasSearch]="true"
+            [parentLoader]="isPanelLoading"
+            (edit)="editPanel($event)"
+            (pageChangeAndSort)="onPanelTablePayloadChange($event)"
+            (selectedIds)="getSelectedPanelId($event)"
+            [alreadySelected]="selectedPanel"
+        ></app-table>
+        <div class="coordinator-detail__step-actions coordinator-detail__step-actions--between">
+             <p-button label="Back" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="setActiveStep(0)"></p-button>
+             <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="onNextStep(1)"></p-button>
+        </div>
+      }
+
+      <!-- Step 2: Schedule (Summary) -->
+      @if (activeStep === 2) {
+        <div class="coordinator-detail__summary">
+            <p-card class="coordinator-detail__summary-card">
+              <div class="coordinator-detail__summary-content">
+                <div class="coordinator-detail__summary-item">
+                  <div class="coordinator-detail__summary-icon candidate">
+                    <i class="pi pi-user"></i>
+                  </div>
+                  <div class="coordinator-detail__summary-info">
+                    <span class="coordinator-detail__summary-label">Selected Candidate</span>
+                    <span class="coordinator-detail__summary-value">
+                      @if (selectedCandidatesIds.length > 0) {
+                        {{ selectedCandidatesIds[0].name }}
+                      } @else {
+                        <span class="coordinator-detail__summary-placeholder">None selected</span>
+                      }
+                    </span>
+                  </div>
+                </div>
+                
+                <p-divider layout="vertical" [style]="{ height: '40px', margin: '0 1.5rem' }"></p-divider>
+                
+                <div class="coordinator-detail__summary-item">
+                  <div class="coordinator-detail__summary-icon panel">
+                    <i class="pi pi-briefcase"></i>
+                  </div>
+                  <div class="coordinator-detail__summary-info">
+                    <span class="coordinator-detail__summary-label">Selected Panel</span>
+                    <span class="coordinator-detail__summary-value">
+                      @if (selectedPanelIds.length > 0) {
+                        {{ selectedPanelIds[0].name }}
+                      } @else {
+                        <span class="coordinator-detail__summary-placeholder">None selected</span>
+                      }
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="coordinator-detail__summary-actions">
+                  <p-button
+                    label="Schedule Panel"
+                    icon="pi pi-calendar-plus"
+                    [disabled]="selectedCandidatesIds.length === 0 || selectedPanelIds.length === 0"
+                    (onClick)="schedule()"
+                    [style]="{ minWidth: '180px' }"
+                    severity="primary"
+                  ></p-button>
+                </div>
+              </div>
+            </p-card>
+        </div>
+        <div class="coordinator-detail__step-actions coordinator-detail__step-actions--start">
+             <p-button label="Back" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="setActiveStep(1)"></p-button>
+        </div>
+      }
     </div>
   </div>
 </div>

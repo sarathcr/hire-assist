@@ -5,6 +5,7 @@ export interface CandidateAssessment {
   score: number;
   date: string;
   isActive: boolean;
+  isPresent: boolean;
   statusId: number;
   assessmentId: number;
   assessmentName: string;

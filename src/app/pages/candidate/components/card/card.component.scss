@@ -1,40 +1,53 @@
 .card {
   width: 100%;
   height: 100%;
-  background-color: var(--color-white);
-  border-radius: var(--border-radius-20);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
+  background: linear-gradient(180deg, var(--color-white) 0%, #fafbfc 100%);
+  border-radius: 20px;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.06),
+    0 1px 3px rgba(0, 0, 0, 0.04);
   position: relative;
   padding: var(--spacing-25);
   display: flex;
   flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s ease;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
 
   // Decorative gradient accent at top
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    height: 5px;
+    background: linear-gradient(
+      90deg,
+      var(--primary-color),
+      var(--secondary-color)
+    );
     opacity: 0;
     transition: opacity 0.3s ease;
+    border-radius: 20px 20px 0 0;
   }
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-6px);
+    box-shadow:
+      0 16px 40px rgba(21, 101, 192, 0.12),
+      0 4px 12px rgba(0, 0, 0, 0.06);
+    border-color: rgba(21, 101, 192, 0.12);
 
     &::before {
       opacity: 1;
     }
 
     .card__tag {
-      transform: scale(1.05);
+      transform: scale(1.03);
     }
   }
 
@@ -45,7 +58,11 @@
   }
 
   &__tag {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(
+      135deg,
+      var(--primary-color),
+      var(--secondary-color)
+    );
     padding: var(--spacing-6) var(--spacing-15);
     position: absolute;
     right: 0;
@@ -54,8 +71,8 @@
     font-weight: 600;
     text-transform: uppercase;
     font-size: var(--font-size-small);
-    border-radius: var(--border-radius-15) 0 0 var(--border-radius-15);
-    box-shadow: 0 2px 8px rgba(21, 101, 192, 0.25);
+    border-radius: 14px 0 0 14px;
+    box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3);
     letter-spacing: 0.5px;
     transition: transform 0.3s ease;
   }
@@ -81,7 +98,7 @@
         font-weight: 600;
         color: var(--color-davy-grey);
         min-width: 140px;
-        
+
         @media (max-width: 480px) {
           min-width: 120px;
           font-size: var(--font-size-small);

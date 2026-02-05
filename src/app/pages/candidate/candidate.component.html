@@ -1,31 +1,56 @@
 <div class="candidate-dashboard">
   <!-- Hero Section -->
-  <div class="dashboard-hero">
+  <header class="dashboard-hero">
     <div class="hero-background">
       <div class="hero-gradient"></div>
-      <div class="hero-pattern"></div>
+      <div class="hero-mesh"></div>
+      <div class="hero-blob hero-blob--1"></div>
+      <div class="hero-blob hero-blob--2"></div>
+      <div class="hero-blob hero-blob--3"></div>
     </div>
     <div class="hero-content">
+      <div class="hero-badge">
+        <i class="pi pi-briefcase"></i>
+        <span>Interview Hub</span>
+      </div>
       <h1 class="hero-title">Welcome to Your Interview Dashboard</h1>
       <p class="hero-subtitle">
-        Manage and track your interviews all in one place
+        Manage and track your interviews in one place. Start when you’re ready.
       </p>
+    </div>
+  </header>
+
+  <!-- Quick Stats -->
+  <div class="dashboard-stats">
+    <div class="stat-pill stat-pill--active">
+      <i class="pi pi-bolt"></i>
+      <span class="stat-pill__label">Active</span>
+      <span class="stat-pill__value">{{ activeAssessments.length }}</span>
+    </div>
+    <div class="stat-pill stat-pill--previous">
+      <i class="pi pi-history"></i>
+      <span class="stat-pill__label">Completed</span>
+      <span class="stat-pill__value">{{ previousAssessments.length }}</span>
     </div>
   </div>
 
   <!-- Main Content -->
-  <div class="dashboard-content">
+  <main class="dashboard-content">
     <!-- Active Tests Section -->
     <section class="assessment-section">
       <div class="section-header">
         <div class="section-header-content">
-          <h2 class="section-title">
-            <i class="pi pi-bolt section-icon"></i>
-            Active Tests
-          </h2>
-          <p class="section-subtitle">
-            Tests currently available for you to take
-          </p>
+          <div class="section-title-row">
+            <span class="section-icon-wrap">
+              <i class="pi pi-bolt section-icon"></i>
+            </span>
+            <div>
+              <h2 class="section-title">Active Tests</h2>
+              <p class="section-subtitle">
+                Tests currently available for you to take
+              </p>
+            </div>
+          </div>
         </div>
         @if (activeAssessments.length > 0) {
           <div class="section-badge">{{ activeAssessments.length }}</div>
@@ -46,8 +71,9 @@
               [startTime]="assessment.startTime"
               [endTime]="assessment.endTime"
               [interviewDate]="assessment.date"
-              [isActive]="assessment.isActive"
+              [isPresent]="assessment.isPresent"
               [buttonLabelFromBackend]="assessment.buttonLabel"
+              [assessmentRound]="assessment.round"
             >
               <p>
                 <b> Open position : </b
@@ -59,19 +85,12 @@
                 <span>{{ assessment.totalQuestions }}</span>
               </p>
               <p>
-                <b> Date : </b
-                ><span>{{ assessment.date | date: "yyyy-MM-dd" }}</span>
-              </p>
-              <p>
-                <b> Time : </b>
-                <span
-                  >{{ assessment.startTime | date: "hh:mm a" }} -
-                  {{ assessment.endTime | date: "hh:mm a" }}</span
-                >
+                <b> Scheduled Date : </b
+                ><span>{{ getScheduledDate(assessment) }}</span>
               </p>
             </app-card>
           } @empty {
-            <div class="empty-state">
+            <div class="empty-state empty-state--active">
               <div class="empty-state-icon">
                 <i class="pi pi-inbox"></i>
               </div>
@@ -90,14 +109,22 @@
     <section class="assessment-section">
       <div class="section-header">
         <div class="section-header-content">
-          <h2 class="section-title">
-            <i class="pi pi-history section-icon"></i>
-            Previous Tests
-          </h2>
-          <p class="section-subtitle">Your completed and past assessments</p>
+          <div class="section-title-row">
+            <span class="section-icon-wrap section-icon-wrap--muted">
+              <i class="pi pi-history section-icon"></i>
+            </span>
+            <div>
+              <h2 class="section-title">Previous Tests</h2>
+              <p class="section-subtitle">
+                Your completed and past assessments
+              </p>
+            </div>
+          </div>
         </div>
         @if (previousAssessments.length > 0) {
-          <div class="section-badge">{{ previousAssessments.length }}</div>
+          <div class="section-badge section-badge--muted">
+            {{ previousAssessments.length }}
+          </div>
         }
       </div>
 
@@ -114,6 +141,7 @@
               [isPreviousAssessment]="true"
               [interviewDate]="assessment.date"
               [buttonLabelFromBackend]="assessment.buttonLabel"
+              [assessmentRound]="assessment.round"
             >
               <p>
                 <b> Open position : </b
@@ -125,19 +153,12 @@
                 <span>{{ assessment.totalQuestions }}</span>
               </p>
               <p>
-                <b> Date : </b
-                ><span>{{ assessment.date | date: "yyyy-MM-dd" }}</span>
-              </p>
-              <p>
-                <b> Time : </b>
-                <span
-                  >{{ assessment.startTime | date: "hh:mm aa" }} -
-                  {{ assessment.endTime | date: "hh:mm aa" }}</span
-                >
+                <b> Scheduled Date : </b
+                ><span>{{ getScheduledDate(assessment) }}</span>
               </p>
             </app-card>
           } @empty {
-            <div class="empty-state">
+            <div class="empty-state empty-state--previous">
               <div class="empty-state-icon">
                 <i class="pi pi-calendar-times"></i>
               </div>
@@ -151,5 +172,5 @@
         }
       </div>
     </section>
-  </div>
+  </main>
 </div>

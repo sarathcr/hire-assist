@@ -16,7 +16,7 @@ import { CandidateService } from './services/candidate.service';
 
 @Component({
   selector: 'app-candidate',
-  imports: [CardComponent, CardSkeletonComponent, DatePipe],
+  imports: [CardComponent, CardSkeletonComponent],
   templateUrl: './candidate.component.html',
   styleUrl: './candidate.component.scss',
 })
@@ -128,5 +128,52 @@ export class CandidateComponent extends BaseComponent implements OnInit {
         });
       }
     });
+  }
+
+  public getScheduledDate(assessment: CandidateAssessment): string {
+    const assessmentDate = new Date(assessment.date ?? '');
+    const startTimeStr = assessment.startTime ?? '';
+    const endTimeStr = assessment.endTime ?? '';
+
+    let startDateTime = new Date(startTimeStr);
+    let endDateTime = new Date(endTimeStr);
+
+    if (isNaN(startDateTime.getTime())) {
+      startDateTime = this.combineDateAndTime(assessmentDate, startTimeStr);
+    }
+
+    if (isNaN(endDateTime.getTime())) {
+      endDateTime = this.combineDateAndTime(assessmentDate, endTimeStr);
+    }
+
+    const datePipe = new DatePipe('en-US');
+    const startFormat = datePipe.transform(startDateTime, 'dd/MM/yyyy hh:mm a');
+    const endFormat = datePipe.transform(endDateTime, 'dd/MM/yyyy hh:mm a');
+
+    return `${startFormat} - ${endFormat}`;
+  }
+
+  private combineDateAndTime(date: Date, timeStr: string): Date {
+    const combined = new Date(date);
+
+    if (!timeStr) {
+      return combined;
+    }
+
+    const timeParts = timeStr.split(':');
+    if (timeParts.length >= 2) {
+      const hours = parseInt(timeParts[0], 10);
+      const minutes = parseInt(timeParts[1], 10);
+      const seconds = timeParts.length > 2 ? parseInt(timeParts[2], 10) : 0;
+
+      if (!isNaN(hours) && !isNaN(minutes)) {
+        combined.setHours(hours);
+        combined.setMinutes(minutes);
+        combined.setSeconds(seconds);
+        combined.setMilliseconds(0);
+      }
+    }
+
+    return combined;
   }
 }

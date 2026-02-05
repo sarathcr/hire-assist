@@ -19,7 +19,8 @@ export class CardComponent implements OnInit, OnDestroy {
   public startTime = input<string>();
   public endTime = input<string>();
   public interviewDate = input<string>();
-  public isActive = input<boolean>(true);
+  public isPresent = input<boolean>(false);
+  public assessmentRound = input<string>();
   public disable!: boolean;
   public showButton = false;
   public intervalId!: NodeJS.Timeout;
@@ -70,36 +71,39 @@ export class CardComponent implements OnInit, OnDestroy {
        return;
     }
 
-    const today = new Date();
-    const startTimeStr = this.startTime() ?? '';
-    const endTimeStr = this.endTime() ?? '';
-    const assessmentDate = new Date(this.interviewDate() ?? '');
-    
-    // Try to parse as full datetime first, if that fails, combine with date
-    let startDateTime = new Date(startTimeStr);
-    let endDateTime = new Date(endTimeStr);
-    
-    // If parsing failed (invalid date), combine date with time string
-    if (isNaN(startDateTime.getTime())) {
-      startDateTime = this.combineDateAndTime(assessmentDate, startTimeStr);
-    }
-    
-    if (isNaN(endDateTime.getTime())) {
-      endDateTime = this.combineDateAndTime(assessmentDate, endTimeStr);
-    }
-
-    // Time window check
-    if (today >= startDateTime && today <= endDateTime) {
-      if (this.isActive()) {
-         this.buttonLabel = 'Start Assessment';
-         this.disable = false;
-      } else {
-         this.buttonLabel = 'Absent';
+    // Only check for time window if the status is scheduled
+    if (this.statusId() === this.status.Scheduled || this.statusId() === this.status.Active) {
+      const today = new Date();
+      const startTimeStr = this.startTime() ?? '';
+      const endTimeStr = this.endTime() ?? '';
+      const assessmentDate = new Date(this.interviewDate() ?? '');
+      
+      // Try to parse as full datetime first, if that fails, combine with date
+      let startDateTime = new Date(startTimeStr);
+      let endDateTime = new Date(endTimeStr);
+      
+      // If parsing failed (invalid date), combine date with time string
+      if (isNaN(startDateTime.getTime())) {
+        startDateTime = this.combineDateAndTime(assessmentDate, startTimeStr);
+      }
+      
+      if (isNaN(endDateTime.getTime())) {
+        endDateTime = this.combineDateAndTime(assessmentDate, endTimeStr);
+      }
+  
+      // Time window check
+      if (today >= startDateTime && today <= endDateTime) {
+        if (this.isPresent()) {
+           this.buttonLabel = 'Start Assessment';
+           this.disable = false;
+        } else {
+           this.buttonLabel = 'Absent';
+           this.disable = true;
+        }
+      } else if (today > endDateTime) {
+         this.buttonLabel = 'Closed';
          this.disable = true;
       }
-    } else if (today > endDateTime) {
-       this.buttonLabel = 'Closed';
-       this.disable = true;
     }
   }
 

@@ -133,6 +133,7 @@ export interface InterviewSummary {
 
 export interface PanelSummary {
   id: string;
+  name: string;
   panelName: string;
   panelDescription?: string;
   interviewers?: Interviewer[];

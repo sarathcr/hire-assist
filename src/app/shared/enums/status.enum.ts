@@ -9,6 +9,8 @@ export enum StatusEnum {
   Selected = 8,
   Rejected = 9,
   Scheduled = 10,
+  Paused = 11,
+  Terminated = 12,
 }
 
 export enum AttachmentTypeEnum {

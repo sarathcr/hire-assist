@@ -8,6 +8,8 @@ import { MenuItem, MessageService } from 'primeng/api';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { ChipModule } from 'primeng/chip';
+import { CommonModule } from '@angular/common';
 import { DividerModule } from 'primeng/divider';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
@@ -113,6 +115,8 @@ type payload = Record<string, any>;
     DividerModule,
     BadgeModule,
     ButtonModule,
+    ChipModule,
+    CommonModule,
   ],
   providers: [
     TableDataSourceService,
@@ -130,6 +134,33 @@ export class CoordinatorAssignmentComponent implements OnInit {
   public panelData!: PaginatedData<PanelSummary>;
   public sidebarConfig!: MenuItem[];
   public selectedView: 0 | 1 = 0;
+  
+  // Stepper Properties
+  public activeStep = 0;
+  public completedSteps: number[] = [];
+  public visitedSteps: number[] = [0];
+  
+  public stepConfig = [
+    {
+      index: 0,
+      label: 'Select Candidate',
+      description: 'Choose a candidate to schedule an interview for',
+      icon: 'pi pi-user',
+    },
+    {
+      index: 1,
+      label: 'Select Panel',
+      description: 'Assign an interviewer panel for the candidate',
+      icon: 'pi pi-users',
+    },
+    {
+      index: 2,
+      label: 'Schedule',
+      description: 'Review and confirm the interview schedule',
+      icon: 'pi pi-calendar-plus',
+    },
+  ];
+  
   public selectedCandidatesIds: InterviewSummary[] = [];
   public selectedPanelIds: PanelSummary[] = [];
   public candidateColumn: TableColumnsData = candidateTable;
@@ -185,15 +216,11 @@ export class CoordinatorAssignmentComponent implements OnInit {
   // Public Methods
 
   public onTablePayloadChange(payload: PaginatedPayload): void {
-    if (this.candidateTableFilterMap) {
-      this.candidateTableFilterMap = {
-        AssessmentRoundId: this.assessmentRoundId,
-      };
-      payload.filterMap = {
-        ...this.candidateTableFilterMap,
-        ...payload.filterMap,
-      };
-    }
+    payload.filterMap = {
+      AssessmentRoundId: this.assessmentRoundId,
+      assessmentId: this.assessmentId,
+      ...payload.filterMap,
+    };
     this.loadCandidateData(payload);
   }
 
@@ -207,6 +234,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
     }
     this.loadPanelData(payload);
   }
+
+  public selectedCandidate: string[] = [];  // For persistence
 
   public getSelectedcandidateId(selectedIds: { id: string }[]) {
     if (selectedIds.length > 1) {
@@ -222,14 +251,24 @@ export class CoordinatorAssignmentComponent implements OnInit {
       const candidate = this.data.data.find((c) => c.id === selectedIds[0].id);
       if (candidate) {
         this.selectedCandidatesIds = [candidate];
+        this.selectedCandidate = [String(candidate.id)]; // Persist selection
         this.getInterviewPanel(Number(candidate.id));
       } else {
         this.selectedCandidatesIds = [];
         this.selectedPanel = [];
+        this.selectedCandidate = [];
+        // Reset stepper state if candidate not found
+        this.completedSteps = this.completedSteps.filter(step => step !== 0);
       }
     } else {
       this.selectedCandidatesIds = [];
       this.selectedPanel = [];
+      this.selectedCandidate = [];
+      // Reset stepper state on deselection
+      this.completedSteps = this.completedSteps.filter(step => step !== 0);
+      
+      // If we are currently on a later step (which shouldn't happen via this method normally, but for safety)
+      // logic remains same.
     }
   }
   public getInterviewPanel(InterviewId: number) {
@@ -446,7 +485,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
               this.getPaginatedPanelData();
             },
           });
-      } else {
+      } else if (formData) {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -477,7 +516,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
-                detail: 'Interview panel added successfully.',
+                detail: 'Interview panel assigned successfully.',
               });
             },
           });
@@ -617,5 +656,86 @@ export class CoordinatorAssignmentComponent implements OnInit {
         this.isPanelLoading = false;
       },
     });
+  }
+// Stepper Methods
+
+  public setActiveStep(step: number): void {
+    if (this.canActivateStep(step)) {
+      this.activeStep = step;
+      if (!this.visitedSteps.includes(step)) {
+        this.visitedSteps.push(step);
+      }
+    }
+  }
+
+  public onNextStep(currentStep: number): void {
+    let canProceed = false;
+
+    if (currentStep === 0) {
+      if (this.selectedCandidatesIds.length > 0) {
+        canProceed = true;
+      } else {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Warning',
+          detail: 'Please select a candidate to proceed.',
+        });
+      }
+    } else if (currentStep === 1) {
+       if (this.selectedPanelIds.length > 0) {
+        canProceed = true;
+      } else {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Warning',
+          detail: 'Please select a panel to proceed.',
+        });
+      }
+    }
+
+    if (canProceed) {
+      const nextStep = currentStep + 1;
+      this.onCompleteStep(currentStep);
+      this.activeStep = nextStep;
+      if (!this.visitedSteps.includes(nextStep)) {
+        this.visitedSteps.push(nextStep);
+      }
+    }
+  }
+
+  public onCompleteStep(step: number): void {
+    if (!this.completedSteps.includes(step)) {
+      this.completedSteps.push(step);
+    }
+  }
+
+  public canActivateStep(step: number): boolean {
+    if (step === 0) return true;
+    return this.completedSteps.includes(step - 1);
+  }
+
+  public getProgressPercentage(): number {
+    const totalSteps = this.stepConfig.length;
+    // Count steps that are completed (in completedSteps array)
+    // Note: completedSteps includes 0 initially, so logic might need adjustment depending on how we want to show 0%
+    // If we want "Select Candidate" to be 0% complete until selected, we check logic.
+    // Let's assume progress based on completed steps count / total steps
+    // But we want visual progress.
+    // If active step is 0, progress 0%. If active 1, progress 33%.
+    // Matches assessment-view logic:
+    const stepsCompletedCount = this.completedSteps.filter(s => s < this.stepConfig.length).length;
+    // However, assessment-view used API status keys. Here we use local state.
+    // Let's base it on active step index for linear progression visualization or completed count.
+    // assessment-view: Math.round((completedSteps / totalSteps) * 100);
+    
+    // Adjust for our 0-based index and simple linear flow
+    // If we completed step 0 (selected candidate), we have 1/3 done?
+    // Let's use logic: (activeStep / (totalSteps -1)) * 100 ??
+    // Or just strictly based on completed steps.
+    return Math.round((this.completedSteps.length / totalSteps) * 100); 
+  }
+
+  public isStepEnabled(stepIndex: number): boolean {
+      return this.canActivateStep(stepIndex);
   }
 }
