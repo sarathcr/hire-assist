@@ -131,6 +131,21 @@
       <!-- Step 2: Schedule (Summary) -->
       @if (activeStep === 2) {
         <div class="coordinator-detail__summary">
+          @if (isSchedulingSuccessful) {
+            <div class="coordinator-detail__success-section">
+              <div class="coordinator-detail__success-content-wrapper">
+                <div class="coordinator-detail__success-icon-large">
+                  <i class="pi pi-check-circle" style="font-size: 4rem;"></i>
+                </div>
+                <h3 class="coordinator-detail__success-title-large">
+                  Scheduling Successful!
+                </h3>
+                <p class="coordinator-detail__success-message-large">
+                  Candidate has been successfully scheduled for the assessment panel.
+                </p>
+              </div>
+            </div>
+          }
             <p-card class="coordinator-detail__summary-card">
               <div class="coordinator-detail__summary-content">
                 <div class="coordinator-detail__summary-item">

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
@@ -83,7 +84,9 @@ type TableDataItem = InterviewByPanel & { id: string };
     TabList,
     Tabs,
     CardModule,
+    CardModule,
     BadgeModule,
+    AsyncPipe,
   ],
   providers: [TableDataSourceService],
   templateUrl: './interviewer-candidate-list.component.html',
@@ -145,6 +148,10 @@ export class InterviewerCandidateListComponent implements OnInit {
 
   get totalCount(): number {
     return this.todayCount + this.upcomingCount + this.previousCount;
+  }
+
+  get loading$() {
+    return this.dataSourceService.loading$;
   }
 
   constructor(

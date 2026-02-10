@@ -14,7 +14,7 @@
     </div>
   </div>
 
-  @if (todayTableData || PreviousTableData || upComingTableData) {
+  @if ((loading$ | async) === false) {
     <!-- Summary Statistics Cards -->
     <div class="interview-candidate__summary">
       <p-card
@@ -87,6 +87,7 @@
     </div>
 
     <!-- Tabs Section -->
+
     <div class="interview-candidate__tabs-section">
       <p-tabs value="0" class="interview-candidate__tabs">
         <p-tablist class="interview-candidate__tablist">
@@ -200,7 +201,7 @@
         </p-tabpanels>
       </p-tabs>
     </div>
-  } @else {
-    <app-interviewer-candidate-list-skeleton></app-interviewer-candidate-list-skeleton>
-  }
-</div>
+    } @else {
+        <app-interviewer-candidate-list-skeleton></app-interviewer-candidate-list-skeleton>
+    }
+

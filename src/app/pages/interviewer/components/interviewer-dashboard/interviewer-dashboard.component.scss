@@ -9,7 +9,7 @@
     font-weight: 8700;
     color: var(--color-grey);
     font-size: var(--font-size-20);
-    margin-bottom: var(--spacing-20);
+    margin: 0;
   }
   &__card {
     display: block;
@@ -20,10 +20,11 @@
     overflow-y: auto;
     margin-right: -25px;
     padding-right: 25px;
+    flex-grow: 1;
   }
   &__list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 400px));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     column-gap: var(--spacing-15);
     row-gap: var(--spacing-15);
     width: 100%;

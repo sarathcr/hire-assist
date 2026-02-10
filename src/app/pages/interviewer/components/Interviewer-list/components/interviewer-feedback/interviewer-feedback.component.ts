@@ -84,7 +84,7 @@ export class InterviewerFeedbackComponent
   public requestData!: CandidateDetailRequest;
   public feedbackdetails!: Feedbackcriteria[];
   public feedbackcriteria: AccordionData[] = [];
-  public totalFeedbackScore!: number;
+  public totalFeedbackScore: number = 0;
   public previewImageUrls: Map<string, string> = new Map();
   public uploadedFile: FileDto[] = [];
   public pendingFiles: File[] = [];
@@ -175,12 +175,15 @@ export class InterviewerFeedbackComponent
         isScoreInValid: false,
         id: item.feedbackId,
         fileDto: item.fileDto,
+        originalContent: item.comments ?? '',
+        originalScore: item.score ?? null,
       }));
       this.feedbackcriteria.forEach((feedback) => {
         if (feedback.title === 'Attachments' && feedback.fileDto && feedback.fileDto.length > 0) {
              this.uploadedFile = [...feedback.fileDto];
         }
       });
+      this.calculateTotalFeedbackScore();
     };
     const error = (error: CustomErrorResponse) => {
       this.messageService.add({
@@ -395,7 +398,57 @@ export class InterviewerFeedbackComponent
           fileUploadComponent.clear();
         }
       }, 100);
+      
+      // Auto-save: Upload pending files immediately
+      this.uploadAndSaveAttachments();
     }
+  }
+
+  private uploadAndSaveAttachments(): void {
+    const attachmentFeedback = this.feedbackcriteria.find(f => f.title === 'Attachments');
+    if (!attachmentFeedback) return;
+
+    this.uploadPendingFiles()
+      .then((uploadedFiles: FileDto[]) => {
+        if (uploadedFiles.length > 0) {
+          // Update feedback object
+           if (!attachmentFeedback.fileDto) {
+             attachmentFeedback.fileDto = [];
+           }
+           
+           // Filter duplicates (though uploadPendingFiles pushes to this.uploadedFile, 
+           // we need to sync attachmentFeedback.fileDto if it's separate? 
+           // In 'onsave' we pushed to feedback.fileDto. 
+           // Implementation in uploadPendingFiles pushes to this.uploadedFile.
+           
+           // Sync this.uploadedFile to attachmentFeedback.fileDto
+           // Actually `this.uploadedFile` is used as the source of truth for display?
+           // Let's ensure consistency.
+           
+           // Just add the new files to the feedback dto for saving
+           const newUniqueFiles = uploadedFiles.filter(newFile => 
+             !attachmentFeedback.fileDto!.some(existing => existing.blobId === newFile.blobId)
+           );
+           
+           if (newUniqueFiles.length > 0) {
+             attachmentFeedback.fileDto.push(...newUniqueFiles);
+             
+             // Fetch blobs for display
+             newUniqueFiles.forEach(file => this.previewImage(file));
+             
+             // Save feedback to persist the association
+             this.saveFeedback(attachmentFeedback, newUniqueFiles); 
+           }
+        }
+      })
+      .catch((err) => {
+        console.error('Upload failed', err);
+        this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to upload files',
+        });
+      });
   }
 
   public removePendingFile(index: number): void {
@@ -405,18 +458,16 @@ export class InterviewerFeedbackComponent
     }
   }
 
+
   private uploadPendingFiles(): Promise<FileDto[]> {
     return new Promise((resolve, reject) => {
       const uploadedFiles: FileDto[] = [];
-      let uploadCount = 0;
       const totalFiles = this.pendingFiles.length;
 
       if (totalFiles === 0) {
         resolve(uploadedFiles);
         return;
       }
-
-      this.isUploadingFiles = true;
 
       this.isUploadingFiles = true;
 
@@ -427,8 +478,10 @@ export class InterviewerFeedbackComponent
 
       this.interviewService.uploadMultiFiles(payload).subscribe({
         next: (uploadedFilesResponse: FileDto[]) => {
+          // Add mapped files to local list
           uploadedFiles.push(...uploadedFilesResponse);
           this.uploadedFile.push(...uploadedFiles);
+          
           this.pendingFiles = [];
           this.pendingFilePreviews = [];
           this.isUploadingFiles = false;
@@ -512,6 +565,34 @@ export class InterviewerFeedbackComponent
               if (fileIdx !== -1) {
                   attachmentFeedback.fileDto.splice(fileIdx, 1);
               }
+              // Save feedback to reflect the removal of the attachment link
+              // We pass empty array for filesToSave because we are just updating the state (deletion), not adding new files.
+              // But strictly speaking, if we delete a file, do we need to update the feedback object via API?
+              // The `deleteFiles` API likely deletes the file record. 
+              // Does it check if it's linked to a feedback? 
+              // If the file is deleted, the link is probably broken or removed by cascade, 
+              // BUT to be safe and ensure the backend knows the feedback is updated, we call saveFeedback (update).
+              // Actually, simply calling saveFeedback with remaining files might be correct or just empty.
+              // The `saveFeedback` uses `fileDto` from the request or `filesToSave`.
+              // `filesToSave` is used if `length > 0`.
+              // So if we pass [], it sends what logic?
+              // `fileDto: feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : [],`
+              // If we pass [], it sends empty list. 
+              // Does the backend Replace the list or Append?
+              // Based on `onsave` logic: 
+              // `fileDto: feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : [],`
+              // If we delete a file, we probably want to send the *remaining* files?
+              // Or does the backend only accept *new* files to add?
+              // If it ONLY accepts new files, then deleting the file via `deleteFiles` API is enough.
+              // However, the user request says "the save button functionalities and needed api calls should happen".
+              // The save logic updates `feedbackRequest`.
+              // If I call saveFeedback(attachmentFeedback, []), it basically updates the feedback entity details/score.
+              // It doesn't seem to send the *full list* of current files to *replace* them, only *new* files to *add*.
+              // Because `filesToSave` comes from `newUniqueFiles` in `onsave`.
+              
+              // So, `deleteFiles` probably handles the actual deletion.
+              // But we might want to trigger `saveFeedback` just to "save" the state of feedback if needed (e.g. isSaved=true).
+              this.saveFeedback(attachmentFeedback, [], false);
           }
         },
         error: () => {
@@ -583,7 +664,7 @@ export class InterviewerFeedbackComponent
     }
   }
 
-  private saveFeedback(feedback: AccordionData, filesToSave: FileDto[]): void {
+  private saveFeedback(feedback: AccordionData, filesToSave: FileDto[], showToast: boolean = true): void {
     this.feedbackRequest = {
       assessmentId: Number(this.assessmentId),
       candidateId: this.candidateid ?? '',
@@ -607,17 +688,23 @@ export class InterviewerFeedbackComponent
     this.calculateTotalFeedbackScore();
 
     const next = (res: InterviewerFeedback) => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: feedback.isSaved ? 'Feedback Updated Successfully' : 'Feedback Saved Successfully',
-      });
+      if (showToast) {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: feedback.isSaved ? 'Feedback Updated Successfully' : 'Feedback Saved Successfully',
+        });
+      }
       this.isLoading = false;
       feedback.isSaved = true;
       feedback.id = res.id ? res.id : feedback.id;
+      
+      // Update original values to match current saved values
+      feedback.originalContent = feedback.content;
+      feedback.originalScore = feedback.score;
 
       // Update feedback item with saved fileDto if attachments
-      if (feedback.title === 'Attachments' && res.fileDto) {
+      if (feedback.title === 'Attachments' && res.fileDto && res.fileDto.length > 0) {
         feedback.fileDto = res.fileDto;
       }
     };
@@ -672,6 +759,11 @@ export class InterviewerFeedbackComponent
       });
       this.isLoading = false;
       feedback.isSaved = true;
+      
+      // Update original values to match current saved values
+      feedback.originalContent = feedback.content;
+      feedback.originalScore = feedback.score;
+      
       this.isImageLoading = true;
       if (feedback.fileDto && feedback.fileDto.length > 0) {
         this.GetfeedbackCriteria();
@@ -692,6 +784,46 @@ export class InterviewerFeedbackComponent
       .updateFeedback(this.feedbackRequest)
       .subscribe({ next, error });
   }
+
+  public hasChanges(feedback: AccordionData): boolean {
+    // For attachments, we rely on duplicate checks in file upload, so button enabled if there are pending files
+    if (feedback.title === 'Attachments') {
+      return this.pendingFiles.length > 0;
+    }
+
+    // Normalized content comparison (strip HTML tags)
+    const currentContent = this.stripHtml(feedback.content ?? '');
+    const originalContent = this.stripHtml(feedback.originalContent ?? '');
+    
+    // Check if score changed
+    const currentScore = feedback.score ?? null;
+    const originalScore = feedback.originalScore ?? null;
+    const scoreChanged = currentScore !== originalScore;
+
+    // Check if content changed
+    const contentChanged = currentContent !== originalContent;
+
+    // If it's a new unsaved item, and both content and score are empty/null, it should be disabled
+    // This handles the case where p-editor initializes with <p><br></p> which strips to empty
+    if (!feedback.isSaved) {
+        const isContentEmpty = currentContent.trim() === '';
+        const isScoreEmpty = currentScore === null;
+        
+        if (isContentEmpty && isScoreEmpty) {
+            return false;
+        }
+    }
+    
+    return contentChanged || scoreChanged;
+  }
+
+  private stripHtml(html: string): string {
+    if (!html) return '';
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  }
+
   public onSubmit() {
     this.interview = {
       id: Number(this.interviewId),

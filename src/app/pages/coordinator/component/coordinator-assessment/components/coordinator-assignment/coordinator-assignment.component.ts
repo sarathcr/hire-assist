@@ -179,6 +179,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
   public combinedPayloadData: any;
   public isCandidateLoading = false;
   public isPanelLoading = false;
+  public isSchedulingSuccessful = false;
   private lastSelectedPanelId: string | null = null;
 
   private ref: DynamicDialogRef | undefined;
@@ -238,6 +239,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
   public selectedCandidate: string[] = [];  // For persistence
 
   public getSelectedcandidateId(selectedIds: { id: string }[]) {
+    this.isSchedulingSuccessful = false;
     if (selectedIds.length > 1) {
       this.messageService.add({
         severity: 'warn',
@@ -282,6 +284,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
   }
 
   public getSelectedPanelId(selectedIds: { id: string }[]) {
+    this.isSchedulingSuccessful = false;
     if (selectedIds.length > 1) {
       this.messageService.add({
         severity: 'warn',
@@ -518,6 +521,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
                 summary: 'Success',
                 detail: 'Interview panel assigned successfully.',
               });
+              this.isSchedulingSuccessful = true;
             },
           });
       },
@@ -593,6 +597,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
           summary: 'Success',
           detail: 'Interview panel Updated successfully.',
         });
+        this.isSchedulingSuccessful = true;
       },
       error: () => {
         this.messageService.add({

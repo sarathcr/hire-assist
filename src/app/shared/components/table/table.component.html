@@ -322,14 +322,25 @@
                     PaginatedDataActions.StartInterview
                   )
                 ) {
-                  <p-button
-                    icon="pi pi-play"
-                    [label]="'Start Interview'"
-                    class="mr-2"
-                    [outlined]="true"
-                    severity="success"
-                    (onClick)="onStartInterview(product)"
-                  />
+                  @if (product.status === 'Completed') {
+                    <p-button
+                      icon="pi pi-eye"
+                      [label]="'View'"
+                      class="mr-2"
+                      [outlined]="true"
+                      severity="secondary"
+                      (onClick)="onStartInterview(product)"
+                    />
+                  } @else {
+                    <p-button
+                      icon="pi pi-play"
+                      [label]="'Start Interview'"
+                      class="mr-2"
+                      [outlined]="true"
+                      severity="success"
+                      (onClick)="onStartInterview(product)"
+                    />
+                  }
                 }
                 @if (
                   headerColumn.actions?.includes(PaginatedDataActions.Edit)

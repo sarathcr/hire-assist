@@ -10,7 +10,7 @@
       <div class="interview-feedback__header">
         <div class="interview-feedback__header-content">
           <div class="interview-feedback__header-icon">
-            <i class="pi pi-calendar-check"></i>
+            <i class="pi pi-calendar"></i>
           </div>
           <div class="interview-feedback__header-text">
             <h1 class="interview-feedback__title">
@@ -88,7 +88,7 @@
           <div class="interview-feedback__score-info">
             <div class="interview-feedback__score-label">Total Score</div>
             <p-tag
-              [value]="totalFeedbackScore + '/' + getMaxTotalScore()"
+              [value]="(totalFeedbackScore || 0) + '/' + getMaxTotalScore()"
               severity="info"
               class="interview-feedback__score-badge"
             />
@@ -595,9 +595,9 @@
                   <div class="interview-feedback__action-buttons">
                     @if (!isSubmitted) {
                       <app-button
-                        [buttonLabel]="feedback.isSaved ? 'Update' : 'Save'"
-                        [icon]="feedback.isSaved ? 'pi pi-pencil' : 'pi pi-save'"
-                        [buttonVariant]="feedback.isSaved ? 'outlined' : undefined"
+                        [buttonLabel]="'Save'"
+                        [icon]="'pi pi-save'"
+                        [disabled]="!hasChanges(feedback)"
                         (btnClick)="
                           feedback.isSaved ? onEdit(feedback) : onsave(feedback)
                         "
@@ -611,26 +611,8 @@
                     }
                   </div>
                 </div>
-              } @else {
-                <div class="interview-feedback__action-buttons">
-                  @if (!isSubmitted) {
-                    <app-button
-                      [buttonLabel]="feedback.isSaved ? 'Update' : 'Save'"
-                      [icon]="feedback.isSaved ? 'pi pi-pencil' : 'pi pi-save'"
-                      [buttonVariant]="feedback.isSaved ? 'outlined' : undefined"
-                      (btnClick)="
-                        feedback.isSaved ? onEdit(feedback) : onsave(feedback)
-                      "
-                    ></app-button>
-                  } @else {
-                    <p-tag
-                      value="Submitted"
-                      severity="success"
-                      class="interview-feedback__submitted-tag"
-                    />
-                  }
-                </div>
               }
+
             </p-accordion-content>
           </p-accordion-panel>
         }

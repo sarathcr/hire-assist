@@ -1,3 +1,4 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SkeletonComponent } from '../../../../shared/components/assessment-card/assessment-card-skeleton';
@@ -12,7 +13,7 @@ import { Assessment } from '../../../admin/models/assessment.model';
 
 @Component({
   selector: 'app-interviewer-dashboard',
-  imports: [AssessmentCardComponent, SkeletonComponent, PaginationComponent],
+  imports: [AssessmentCardComponent, SkeletonComponent, PaginationComponent, AsyncPipe],
   templateUrl: './interviewer-dashboard.component.html',
   styleUrl: './interviewer-dashboard.component.scss',
   providers: [GenericDataSource],
@@ -24,6 +25,8 @@ export class InterviewerDashboardComponent
   public assessmentData!: Assessment[];
   public totalRecords = 0;
   public filterMap!: KeyValueMap<string>;
+  public hasLoaded = false;
+  private initialized = false;
 
   constructor(
     public dataSource: GenericDataSource<AssessmentForm>,
@@ -40,6 +43,14 @@ export class InterviewerDashboardComponent
       this.totalRecords = records;
     });
     this.subscriptionList.push(sub);
+    
+    this.dataSource.loading$.subscribe((isLoading) => {
+      if (isLoading) {
+        this.initialized = true;
+      } else if (this.initialized) {
+        this.hasLoaded = true;
+      }
+    });
   }
 
   // Public Methods

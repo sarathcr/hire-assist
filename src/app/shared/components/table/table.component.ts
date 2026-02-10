@@ -460,6 +460,22 @@ export class TableComponent<
         return;
       }
 
+      // Check if external data reset happened (mismatch between last request and current data)
+      if (this.lastPaginationCall) {
+        const lastPageSize =
+          this.lastPaginationCall.payload.pagination.pageSize;
+        const lastPageNumber =
+          this.lastPaginationCall.payload.pagination.pageNumber;
+
+        if (
+          currentTableData.pageSize !== lastPageSize ||
+          currentTableData.pageNumber !== lastPageNumber
+        ) {
+          // External change detected, clear lastPaginationCall so next user action isn't blocked
+          this.lastPaginationCall = null;
+        }
+      }
+
       const wasLoading = this.internalIsLoading();
       this.internalIsLoading.set(false);
 

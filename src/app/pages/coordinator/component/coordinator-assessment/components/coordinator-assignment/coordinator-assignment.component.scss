@@ -440,6 +440,97 @@
       }
     }
 
+    // ============================================
+    // Success Section
+    // ============================================
+  &__success-section {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 20px;
+    padding: var(--spacing-40);
+    margin-bottom: var(--spacing-30);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.1), 0 8px 10px -6px rgba(16, 185, 129, 0.1);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      left: -50px;
+      width: 150px;
+      height: 150px;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.2) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -30px;
+      right: -30px;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.2) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+  }
+
+  &__success-content-wrapper {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+  }
+
+  &__success-icon-large {
+    color: #10b981;
+    margin-bottom: 0.5rem;
+    filter: drop-shadow(0 4px 6px rgba(16, 185, 129, 0.2));
+    animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.2s forwards;
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  &__success-title-large {
+    color: #065f46;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.025em;
+    animation: fadeUp 0.5s ease 0.3s forwards;
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  &__success-message-large {
+    color: #047857;
+    font-size: 1.125rem;
+    margin: 0;
+    max-width: 600px;
+    line-height: 1.6;
+    animation: fadeUp 0.5s ease 0.4s forwards;
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes popIn {
+      to { opacity: 1; transform: scale(1); }
+  }
+
+  @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+  }
+
     &-content {
       display: flex;
       align-items: center;

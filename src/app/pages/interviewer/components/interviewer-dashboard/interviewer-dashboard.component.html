@@ -3,26 +3,36 @@
     <h1 class="coordinator-assessment__title">Recruitments</h1>
   </div>
   <div class="coordinator-assessment__wrapper">
-    @if (assessmentData !== undefined) {
+    @if ((dataSource.loading$ | async) || !hasLoaded) {
       <div class="coordinator-assessment__list">
-        @for (assessment of assessmentData; track assessment) {
-          <app-assessment-card
-            class="coordinator-assessment__card"
-            [data]="assessment"
-            [showToggleButton]="false"
-            [showContent]="false"
-            (click)="
-              onClickAssessment(assessment.id ?? 0, assessment.panel ?? 0)
-            "
-          ></app-assessment-card>
-        } @empty {
-          <p>No data available</p>
-        }
+        <app-assessment-card-skeleton
+          class="coordinator-assessment__card"
+        ></app-assessment-card-skeleton>
+        <app-assessment-card-skeleton
+          class="coordinator-assessment__card"
+        ></app-assessment-card-skeleton>
+        <app-assessment-card-skeleton
+          class="coordinator-assessment__card"
+        ></app-assessment-card-skeleton>
       </div>
     } @else {
-      <app-assessment-card-skeleton
-        class="coordinator-assessment__card"
-      ></app-assessment-card-skeleton>
+      @if (assessmentData && assessmentData.length > 0) {
+        <div class="coordinator-assessment__list">
+          @for (assessment of assessmentData; track assessment) {
+            <app-assessment-card
+              class="coordinator-assessment__card"
+              [data]="assessment"
+              [showToggleButton]="false"
+              [showContent]="false"
+              (click)="
+                onClickAssessment(assessment.id ?? 0, assessment.panel ?? 0)
+              "
+            ></app-assessment-card>
+          }
+        </div>
+      } @else {
+        <p>No data available</p>
+      }
     }
   </div>
   <app-pagination

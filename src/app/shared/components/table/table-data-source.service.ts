@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // table-data-source.service.ts
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, combineLatest, Observable, switchMap } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, switchMap, finalize } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
 import { PaginatedPayload } from '../../models/pagination.models';
@@ -14,8 +14,10 @@ export class TableDataSourceService<T> {
     new PaginatedPayload(),
   );
   private readonly externalFilterSubject = new BehaviorSubject<Record<string, any>>({});
+  private readonly loadingSubject = new BehaviorSubject<boolean>(false);
 
   public data$: Observable<PaginatedData<T>>;
+  public loading$ = this.loadingSubject.asObservable();
 
   constructor(private readonly http: HttpClient) {
     this.data$ = combineLatest([
@@ -23,16 +25,16 @@ export class TableDataSourceService<T> {
       this.externalFilterSubject,
     ]).pipe(
       switchMap(([payload, externalFilters]) => {
+        this.loadingSubject.next(true);
         const mergedPayload = { ...payload };
         mergedPayload.filterMap = {
           ...payload.filterMap,
           ...externalFilters,
         };
 
-        return this.http.post<PaginatedData<T>>(
-          this.endpointUrl,
-          mergedPayload,
-        );
+        return this.http
+          .post<PaginatedData<T>>(this.endpointUrl, mergedPayload)
+          .pipe(finalize(() => this.loadingSubject.next(false)));
       }),
     );
   }
@@ -45,7 +47,10 @@ export class TableDataSourceService<T> {
     if (!this.endpointUrl) {
       throw new Error('Endpoint URL not set in TableDataSourceService.');
     }
-    return this.http.post<PaginatedData<T>>(this.endpointUrl, payload);
+    this.loadingSubject.next(true);
+    return this.http
+      .post<PaginatedData<T>>(this.endpointUrl, payload)
+      .pipe(finalize(() => this.loadingSubject.next(false)));
   }
 
   updatePayload(payload: PaginatedPayload) {

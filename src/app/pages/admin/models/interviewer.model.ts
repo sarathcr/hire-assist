@@ -77,6 +77,8 @@ export interface AccordionData {
   isSaved?: boolean | false;
   isScoreInValid: boolean | false;
   fileDto?: FileDto[];
+  originalContent?: string | null;
+  originalScore?: number | null;
 }
 
 export interface InterviewerFeedback {

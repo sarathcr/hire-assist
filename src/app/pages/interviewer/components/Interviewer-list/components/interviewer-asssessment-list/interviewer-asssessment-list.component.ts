@@ -1,3 +1,4 @@
+import { AsyncPipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AssessmentCardComponent } from '../../../../../../shared/components/assessment-card/assessment-card.component';
@@ -13,7 +14,7 @@ import { StoreService } from '../../../../../../shared/services/store.service';
 
 @Component({
   selector: 'app-interviewer-asssessment-list',
-  imports: [AssessmentCardComponent, SkeletonComponent, PaginationComponent],
+  imports: [AssessmentCardComponent, SkeletonComponent, PaginationComponent, AsyncPipe],
 
   templateUrl: './interviewer-asssessment-list.component.html',
   styleUrl: './interviewer-asssessment-list.component.scss',

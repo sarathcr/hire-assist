@@ -199,7 +199,7 @@ export class DashboardComponent implements OnInit {
         label: 'Interviews',
         icon: 'pi pi-calendar',
         routerLink: ['/interviewer'],
-        routerLinkActiveOptions: { exact: true },
+        routerLinkActiveOptions: { exact: false },
         tooltip: 'Interviews',
       },
     ];

@@ -233,6 +233,9 @@ import { AccordionModule } from 'primeng/accordion';
 
       &__accordion-content {
         padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
       }
 
       &__detail-grid {
