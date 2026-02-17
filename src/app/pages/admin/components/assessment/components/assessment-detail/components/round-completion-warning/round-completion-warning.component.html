@@ -1,0 +1,54 @@
+<div class="warning-modal">
+  <div class="warning-modal__header">
+    <div class="warning-modal__icon-wrapper">
+      <i class="pi pi-exclamation-triangle"></i>
+    </div>
+    <div class="warning-modal__title-section">
+      <h3>Action Required</h3>
+      <p>Unable to complete round</p>
+    </div>
+  </div>
+
+  <div class="warning-modal__content">
+    <div class="warning-modal__summary">
+      <p>
+        There are <strong>{{ candidates.length }} candidate{{ candidates.length > 1 ? 's' : '' }}</strong> 
+        with pending actions. All candidates must be marked as 
+        <span class="status-badge status-selected">Selected</span> or 
+        <span class="status-badge status-rejected">Rejected</span>.
+      </p>
+    </div>
+
+    <div class="warning-modal__list-container">
+      <div class="warning-modal__list-header">
+        <span>Pending Candidates</span>
+      </div>
+      <div class="warning-modal__list">
+        @for (candidate of candidates; track candidate.id) {
+          <div class="candidate-item">
+            <div class="candidate-item__avatar">
+              {{ getInitials(candidate.name) }}
+            </div>
+            <div class="candidate-item__info">
+              <span class="candidate-item__name">{{ candidate.name }}</span>
+              <span class="candidate-item__email">{{ candidate.email }}</span>
+            </div>
+            <div class="candidate-item__status">
+              <span class="status-pill" [ngClass]="'status-' + (candidate.status.toLowerCase() || 'pending')">
+                {{ candidate.status || 'Pending' }}
+              </span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="warning-modal__footer">
+    <p-button 
+      label="Review Candidates" 
+      styleClass="p-button-outlined p-button-secondary" 
+      (click)="close()"
+    ></p-button>
+  </div>
+</div>

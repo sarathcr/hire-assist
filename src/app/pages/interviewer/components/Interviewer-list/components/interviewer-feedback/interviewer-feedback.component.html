@@ -355,24 +355,26 @@
                                           >{{ feedback.criteria }}</span
                                         >
                                       </div>
-                                      <div
-                                        class="interview-feedback__feedback-score"
-                                      >
-                                        <span
-                                          class="interview-feedback__feedback-score-value"
-                                          >{{
-                                            feedback.feedbackScore || 0
-                                          }}</span
+                                      @if (feedback.criteria !== 'Attachments') {
+                                        <div
+                                          class="interview-feedback__feedback-score"
                                         >
-                                        <span
-                                          class="interview-feedback__feedback-score-separator"
-                                          >/</span
-                                        >
-                                        <span
-                                          class="interview-feedback__feedback-score-max"
-                                          >{{ feedback.maxScore || 0 }}</span
-                                        >
-                                      </div>
+                                          <span
+                                            class="interview-feedback__feedback-score-value"
+                                            >{{
+                                              feedback.feedbackScore || 0
+                                            }}</span
+                                          >
+                                          <span
+                                            class="interview-feedback__feedback-score-separator"
+                                            >/</span
+                                          >
+                                          <span
+                                            class="interview-feedback__feedback-score-max"
+                                            >{{ feedback.maxScore || 0 }}</span
+                                          >
+                                        </div>
+                                      }
                                     </div>
                                     @if (feedback.feedbackDetails) {
                                       <div

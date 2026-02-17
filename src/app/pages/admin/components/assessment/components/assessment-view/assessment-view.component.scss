@@ -96,6 +96,19 @@
       i {
         font-size: clamp(14px, 1.8vw + 0.25rem, 16px);
       }
+
+      &--active {
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.25);
+        transition: all 0.3s ease;
+        padding-right: var(--spacing-15);
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.35);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+      }
     }
   }
 

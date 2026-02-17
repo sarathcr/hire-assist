@@ -37,6 +37,10 @@
           <i class="pi pi-history mr-2"></i>
           Previous Recruitments
         </p-tab>
+        <p-tab value="2">
+          <i class="pi pi-comments mr-2"></i>
+          Interview Feedbacks
+        </p-tab>
       </p-tablist>
 
       <p-tabpanels>
@@ -434,6 +438,106 @@
               }
             } @else {
               <app-candidate-detail-previous-assessment-skeleton />
+            }
+          </div>
+        </p-tabpanel>
+
+        <!-- Interview Feedbacks Tab -->
+        <p-tabpanel value="2">
+          <div class="candidate-detail__content">
+            @if (isLoadingInterviewFeedbacks) {
+              <app-candidate-detail-previous-assessment-skeleton />
+            } @else {
+              @if (interviewFeedbacksDataSource?.previousInterviews && interviewFeedbacksDataSource.previousInterviews.length > 0) {
+                <div class="candidate-detail__assessments">
+                  <p-accordion [multiple]="true" class="candidate-detail__rounds-accordion">
+                    @for (round of interviewFeedbacksDataSource.previousInterviews; track round.roundId) {
+                      <p-accordion-panel [value]="round.sequence">
+                        <p-accordion-header>
+                          <div class="candidate-detail__round-header">
+                            <span class="candidate-detail__round-name">
+                              <i class="pi pi-sitemap"></i>
+                              {{ round.roundName }}
+                            </span>
+                            @if (round.status) {
+                              <p-tag [value]="round.status" [severity]="getStatusSeverityFromString(round.status)" />
+                            }
+                          </div>
+                        </p-accordion-header>
+                        <p-accordion-content>
+                          @if (round.assessmentDetails && round.assessmentDetails.length > 0) {
+                            <div class="candidate-detail__round-details">
+                              @for (detail of round.assessmentDetails; track $index) {
+                                <div class="candidate-detail__details-grid" [style]="{'margin-bottom': '1rem', 'border-bottom': '1px solid #e5e7eb', 'padding-bottom': '1rem'}">
+                                  <!-- Panel Name -->
+                                  @if (hasValue(detail.panelName)) {
+                                    <div class="candidate-detail__detail-item">
+                                      <span class="candidate-detail__detail-label">Panel</span>
+                                      <span class="candidate-detail__detail-value">{{ detail.panelName }}</span>
+                                    </div>
+                                  }
+                                  
+                                  <!-- Interviewer Name -->
+                                  @if (hasValue(detail.interviewerName)) {
+                                    <div class="candidate-detail__detail-item">
+                                      <span class="candidate-detail__detail-label">Interviewer</span>
+                                      <span class="candidate-detail__detail-value">{{ detail.interviewerName }}</span>
+                                    </div>
+                                  }
+
+                                  <!-- Date -->
+                                  @if (getDetailDate(detail)) {
+                                    <div class="candidate-detail__detail-item">
+                                      <span class="candidate-detail__detail-label">Date</span>
+                                      <span class="candidate-detail__detail-value">{{ getDetailDate(detail) }}</span>
+                                    </div>
+                                  }
+
+                                  <!-- Total Score -->
+                                  @if (hasValue(detail.totalScore)) {
+                                    <div class="candidate-detail__detail-item">
+                                      <span class="candidate-detail__detail-label">Total Score</span>
+                                      <span class="candidate-detail__detail-value">{{ detail.totalScore }}</span>
+                                    </div>
+                                  }
+                                </div>
+
+                                <!-- Feedback List -->
+                                @if (detail.feedbackListDto && detail.feedbackListDto.length > 0) {
+                                  <div class="candidate-detail__feedback-list">
+                                    <h4 class="mb-2 font-semibold">Feedback Details</h4>
+                                    @for (feedback of detail.feedbackListDto; track $index) {
+                                      <div class="mb-3 p-3 border-round bg-gray-50">
+                                        <div class="flex justify-content-between align-items-center mb-2">
+                                          <span class="font-medium">{{ feedback.criteria }}</span>
+                                          @if (feedback.feedbackScore !== null && feedback.feedbackScore !== undefined && feedback.criteria !== 'Attachments') {
+                                            <p-tag [value]="feedback.feedbackScore + '/' + feedback.maxScore" severity="info" />
+                                          }
+                                        </div>
+                                        
+                                        @if (feedback.feedbackDetails) {
+                                          <div class="text-sm" [innerHTML]="feedback.feedbackDetails"></div>
+                                        }
+
+                                        <!-- Attachments -->
+                                        <!-- Attachments are not currently available in Feedback interface -->
+                                      </div>
+                                    }
+                                  </div>
+                                }
+                              }
+                            </div>
+                          } @else {
+                             <app-empty-state message="No details available for this round" />
+                          }
+                        </p-accordion-content>
+                      </p-accordion-panel>
+                    }
+                  </p-accordion>
+                </div>
+              } @else {
+                <app-empty-state message="No interview feedbacks found" />
+              }
             }
           </div>
         </p-tabpanel>

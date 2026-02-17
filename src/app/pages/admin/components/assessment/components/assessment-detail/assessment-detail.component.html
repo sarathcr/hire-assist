@@ -25,9 +25,15 @@
         }
       </div>
       @if (data) {
-        <div class="assessment-detail__hero-badge">
+        <div 
+          class="assessment-detail__hero-badge"
+          (click)="navigateToSummary()"
+          pTooltip="Click to view full summary"
+          tooltipPosition="bottom"
+          style="cursor: pointer;">
           <i class="pi pi-info-circle"></i>
-          <span>Recruitment Details</span>
+          <span>Recruitment Summary</span>
+          <i class="pi pi-arrow-right" style="font-size: 0.8rem; margin-left: 0.5rem"></i>
         </div>
       }
     </div>
@@ -87,7 +93,7 @@
     <div class="assessment-detail__rounds-header">
       <h2 class="assessment-detail__rounds-title">
         <i class="pi pi-sitemap"></i>
-        Assessment Rounds
+        Recruitment Rounds
       </h2>
       <p class="assessment-detail__rounds-description">
         Select a round to view and manage candidates
@@ -199,6 +205,7 @@
             tooltipPosition="bottom"
             severity="warn"
             [outlined]="true"
+            [disabled]="!isAssignPanelEnabled()"
             (onClick)="OnPanelClick()"
           />
         }

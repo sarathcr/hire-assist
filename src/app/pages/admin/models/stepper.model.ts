@@ -45,4 +45,5 @@ export interface CandidateData {
   isScheduled: string;
   scheduledDate: string;
   assessmentRoundId: number;
+  interviewId?: number;
 }

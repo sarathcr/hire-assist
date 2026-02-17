@@ -52,6 +52,8 @@ import { forkJoin, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 import { PaginatedData } from './../../../../../../shared/models/pagination.models';
 import { ScheduleInterviewComponent } from './components/schedule-interview/schedule-interview.component';
+
+import { RoundCompletionWarningComponent } from './components/round-completion-warning/round-completion-warning.component';
 import { SelectPanelDailogComponent } from './components/select-panel-dailog/select-panel-dailog.component';
 import { CandidateService } from '../../services/candidate.service';
 
@@ -245,8 +247,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public onView(data: CandidateData): void {
     this.router.navigate([
       'admin/recruitments/candidateDetail',
-      this.assessmentId,
+      String(this.assessmentId),
       data.email,
+      data.interviewId ? String(data.interviewId) : '0',
     ]);
   }
 
@@ -276,40 +279,28 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     // Validate that all selected candidates have "Completed" status
     // For Aptitude round, "Terminated" status is also allowed
-    const nonCompletedCandidates = this.selectedCandidates.filter(
+    // Validate that all selected candidates have valid status
+    // Valid statuses: "Completed", "Selected", "Rejected"
+    // For Aptitude round, "Terminated" status is also allowed
+    const invalidCandidates = this.selectedCandidates.filter(
       (candidate: InterviewSummary) => {
         const status = candidate.status?.toLowerCase().trim();
+        const validStatuses = ['completed', 'selected', 'rejected'];
+
         if (this.isAptitudeRound()) {
-          return status !== 'completed' && status !== 'terminated';
+          return !validStatuses.includes(status) && status !== 'terminated';
         }
-        return status !== 'completed';
+        return !validStatuses.includes(status);
       },
     );
 
-    if (nonCompletedCandidates.length > 0) {
+    if (invalidCandidates.length > 0) {
       this.messagesService.add({
         severity: 'warn',
         summary: 'Warning',
         detail: this.isAptitudeRound()
-          ? 'Only candidates with "Completed" or "Terminated" status can be rejected.'
-          : 'Only candidates with "Completed" status can be rejected.',
-      });
-      return;
-    }
-
-    // Check if any candidates are already rejected
-    const alreadyRejectedCandidates = this.selectedCandidates.filter(
-      (candidate: InterviewSummary) => {
-        const status = candidate.status?.toLowerCase().trim();
-        return status === 'rejected';
-      },
-    );
-
-    if (alreadyRejectedCandidates.length > 0) {
-      this.messagesService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'One or more selected candidates are already rejected.',
+          ? 'Only candidates with "Completed", "Selected", "Rejected" or "Terminated" status can be processed.'
+          : 'Only candidates with "Completed", "Selected" or "Rejected" status can be processed.',
       });
       return;
     }
@@ -369,36 +360,23 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Validate that all selected candidates have "Completed" status
-    const nonCompletedCandidates = this.selectedCandidates.filter(
+    // Validate that all selected candidates have valid status
+    // Valid statuses: "Completed", "Selected", "Rejected"
+    const invalidCandidates = this.selectedCandidates.filter(
       (candidate: InterviewSummary) => {
         const status = candidate.status?.toLowerCase().trim();
-        return status !== 'completed';
+        return (
+          status !== 'completed' && status !== 'selected' && status !== 'rejected'
+        );
       },
     );
 
-    if (nonCompletedCandidates.length > 0) {
+    if (invalidCandidates.length > 0) {
       this.messagesService.add({
         severity: 'warn',
         summary: 'Warning',
-        detail: 'Only candidates with "Completed" status can be selected.',
-      });
-      return;
-    }
-
-    // Check if any candidates are already selected
-    const alreadySelectedCandidates = this.selectedCandidates.filter(
-      (candidate: InterviewSummary) => {
-        const status = candidate.status?.toLowerCase().trim();
-        return status === 'selected';
-      },
-    );
-
-    if (alreadySelectedCandidates.length > 0) {
-      this.messagesService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'One or more selected candidates are already selected.',
+        detail:
+          'Only candidates with "Completed", "Selected" or "Rejected" status can be processed.',
       });
       return;
     }
@@ -450,6 +428,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.filterMap = { assessmentRoundId: step };
     // Clear panel assignment cache when round changes
     this.candidatePanelAssignments.clear();
+    this.updateTableColumns();
     this.getPaginatedCandidateData(this.filterMap);
   }
 
@@ -463,19 +442,21 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Check if all selected candidates have status "Completed" (case-insensitive)
+    // Check if all selected candidates have status "Completed", "Selected", or "Rejected"
     return this.selectedCandidates.every((candidate) => {
       if (!candidate || !candidate.status) {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
-      return status === 'completed';
+      return (
+        status === 'completed' || status === 'selected' || status === 'rejected'
+      );
     });
   }
 
   /**
    * Checks if the Reject button should be enabled
-   * Enabled when at least one candidate is selected and all selected candidates have status "Completed"
+   * Enabled when at least one candidate is selected and all selected candidates have status "Completed", "Selected", or "Rejected"
    */
   public isRejectEnabled(): boolean {
     // Must have at least one candidate selected
@@ -483,16 +464,23 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Check if all selected candidates have status "Completed" (case-insensitive)
+    // Check if all selected candidates have status "Completed", "Selected", or "Rejected"
     return this.selectedCandidates.every((candidate) => {
       if (!candidate || !candidate.status) {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
       if (this.isAptitudeRound()) {
-        return status === 'completed' || status === 'terminated';
+        return (
+          status === 'completed' ||
+          status === 'terminated' ||
+          status === 'selected' ||
+          status === 'rejected'
+        );
       }
-      return status === 'completed';
+      return (
+        status === 'completed' || status === 'selected' || status === 'rejected'
+      );
     });
   }
 
@@ -507,13 +495,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Check if all selected candidates have status "Selected" or "Rejected" (case-insensitive)
+    // Check if all selected candidates have status "Pending" (case-insensitive)
     return this.selectedCandidates.every((candidate) => {
       if (!candidate || !candidate.status) {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
-      return status === 'selected' || status === 'rejected';
+      return status === 'pending';
     });
   }
 
@@ -1102,9 +1090,25 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       this.step = res;
       this.assessmentRoundList = res;
       if (this.step.length > 0) {
-        this.currentStep = this.step[0].id;
-        this.roundStatus = this.step[0].status === 'Completed';
+        // Find the first round that is NOT completed
+        const activeRoundIndex = this.step.findIndex(
+          (round) => round.status !== 'Completed',
+        );
+
+        if (activeRoundIndex !== -1) {
+          // Found a non-completed round, set it as active
+          this.activeMenuItemIndex = activeRoundIndex;
+          this.currentStep = this.step[activeRoundIndex].id;
+          this.roundStatus = this.step[activeRoundIndex].status === 'Completed';
+        } else {
+          // All rounds are completed, set the last round as active
+          this.activeMenuItemIndex = this.step.length - 1;
+          this.currentStep = this.step[this.step.length - 1].id;
+          this.roundStatus = true; // Last round is completed
+        }
+
         this.filterMap = { assessmentRoundId: this.currentStep };
+        this.updateTableColumns();
         this.getPaginatedCandidateData(this.filterMap);
       }
     };
@@ -1123,6 +1127,38 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.assessmentService
       .getAssessmentRoundByAssessmnetId(id)
       .subscribe({ next, error });
+  }
+
+  private updateTableColumns() {
+    // Clone the base columns to avoid mutating the original
+    let newColumns = tableColumns.columns.map((col) => {
+      // Deep copy relevant properties if needed, specifically actions array
+      if (col.field === 'actions') {
+        return { ...col, actions: [...(col.actions || [])] };
+      }
+      return { ...col };
+    });
+
+    // 1. Remove Delete button from all rounds
+    const actionsCol = newColumns.find((c) => c.field === 'actions');
+    if (actionsCol && actionsCol.actions) {
+      actionsCol.actions = actionsCol.actions.filter(
+        (a) => a !== PaginatedDataActions.Delete,
+      );
+    }
+
+    // 2. Hide "Proceed to next round" for the last round
+    if (this.step && this.step.length > 0) {
+      const lastRoundId = this.step[this.step.length - 1].id;
+      if (this.currentStep === lastRoundId) {
+        newColumns = newColumns.filter((c) => c.field !== 'isScheduled');
+      }
+    }
+
+    this.columns = {
+      ...tableColumns,
+      columns: newColumns,
+    };
   }
 
   private openDeleteCandidateConfirmationModal(id: string) {
@@ -1602,6 +1638,69 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     // Set loading state
     this.isCompletingRound = true;
 
+    // Fetch ALL candidates for validation
+    // Using a large page size to ensure we get everyone
+    const validationPayload = {
+      multiSortedColumns: [],
+      filterMap: {
+        AssessmentRoundId: this.currentStep,
+      },
+      pagination: {
+        pageNumber: 1,
+        pageSize: -1, 
+      },
+    };
+
+    this.interviewService
+      .paginationEntity<CandidateData>('InterviewSummary', validationPayload)
+      .subscribe({
+        next: (res: PaginatedData<CandidateData>) => {
+          // Check if ANY candidate is NOT Selected or Rejected
+          const pendingCandidates = res.data.filter(
+            (c) => {
+               const status = c.status?.toLowerCase();
+               return status !== 'selected' && status !== 'rejected';
+            }
+          );
+
+          if (pendingCandidates.length > 0) {
+            this.isCompletingRound = false;
+            
+            // Show Custom Warning Modal
+            this.ref = this.dialog.open(RoundCompletionWarningComponent, {
+              data: {
+                candidates: pendingCandidates
+              },
+              header: ' ', // Empty header to let component handle it
+              maximizable: false,
+              width: '40vw',
+              modal: true,
+              focusOnShow: false,
+              closeOnEscape: true,
+              dismissableMask: true,
+              styleClass: 'round-completion-warning-dialog',
+              breakpoints: {
+                '960px': '75vw',
+                '640px': '95vw',
+              },
+            });
+          } else {
+            // Validation Passed - Proceed with existing completion logic
+            this.proceedWithRoundCompletion(data);
+          }
+        },
+        error: () => {
+          this.isCompletingRound = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to validate candidate statuses. Please try again.',
+          });
+        }
+      });
+  }
+
+  private proceedWithRoundCompletion(data: FilterMap) {
     const payload = {
       multiSortedColumns: [],
       filterMap: data || {},
@@ -1665,5 +1764,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+  public navigateToSummary(): void {
+    if (this.assessmentId) {
+      this.router.navigate(['/admin/recruitments/recruitment-summary', this.assessmentId]);
+    }
   }
 }

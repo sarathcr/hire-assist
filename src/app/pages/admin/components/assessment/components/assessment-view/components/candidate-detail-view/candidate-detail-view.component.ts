@@ -11,6 +11,10 @@ import {
   candidateDetails,
   candidatePreviousAssessments,
 } from '../../../../../../models/candidate-data.model';
+import { InterviewerCandidate } from '../../../../../../models/interviewer.model';
+import { TagModule } from 'primeng/tag';
+import { ChipModule } from 'primeng/chip';
+import { DividerModule } from 'primeng/divider';
 import { AssessmentService } from '../../../../../../services/assessment.service';
 import { InterviewService } from '../../../../services/interview.service';
 import { CandidateDetailPreviousAssessmentSkeletonComponent } from './candidate-detail-previous-assessment-skeleton';
@@ -24,6 +28,9 @@ import { EmptyStateComponent } from "../../../../../../../../shared/components/e
     AccordionModule,
     DatePipe,
     TabsModule,
+    TagModule,
+    ChipModule,
+    DividerModule,
     FormsModule,
     EditorModule,
     CandidateDetailViewSkeletonComponent,
@@ -42,11 +49,14 @@ export class CandidateDetailViewComponent
   public candidateId!: string;
   public candidateDetailsDataSource!: candidateDetails;
   public candidateAssessmentDataSource!: candidatePreviousAssessments[];
+  public interviewFeedbacksDataSource!: InterviewerCandidate;
   public url = 'assessmentsummary';
   public editorStatus = true;
   public isLoading = true;
   public isLoadingPreviousAssessments = true;
+  public isLoadingInterviewFeedbacks = true;
   public isCoverImageLoading = false;
+  public interviewId!: number;
 
   constructor(
     public activatedRoute: ActivatedRoute,
@@ -68,12 +78,17 @@ export class CandidateDetailViewComponent
     this.candidateId = String(
       this.activatedRoute.snapshot.paramMap.get('candidateId'),
     );
+    this.interviewId = Number(
+      this.activatedRoute.snapshot.paramMap.get('interviewId'),
+    );
     this.getCandidateDetails();
   }
 
   public onTabChange(value: string | number): void {
     if (String(value) === '1' && !this.candidateAssessmentDataSource) {
       this.getPreviousAssessmentDetails();
+    } else if (String(value) === '2') {
+      this.getInterviewFeedbacks();
     }
   }
 
@@ -102,6 +117,72 @@ export class CandidateDetailViewComponent
     this.interviewService
       .GetCandidateAssessmentDetails(this.candidateId, this.assessmentId)
       .subscribe({ next, error });
+  }
+
+  private getInterviewFeedbacks(): void {
+    this.isLoadingInterviewFeedbacks = true;
+    const payload = {
+      assessmentId: this.assessmentId,
+      candidateId: this.candidateId,
+      interviewId: this.interviewId || 0,
+    };
+    this.interviewService.GetCandidateDetails(payload).subscribe({
+      next: (res: InterviewerCandidate) => {
+        this.interviewFeedbacksDataSource = res;
+        this.isLoadingInterviewFeedbacks = false;
+      },
+      error: () => {
+        this.isLoadingInterviewFeedbacks = false;
+      },
+    });
+  }
+
+  public getStatusSeverity(status: string): 'success' | 'danger' | 'warn' | 'info' | undefined {
+    switch (status?.toLowerCase()) {
+      case 'selected':
+        return 'success';
+      case 'rejected':
+        return 'danger';
+      case 'completed':
+        return 'success';
+      default:
+        return 'info';
+    }
+  }
+
+  public getStatusSeverityFromString(status: string | undefined): 'success' | 'danger' | 'warn' | 'info' | undefined {
+    if (!status) return undefined;
+    switch (status?.toLowerCase()) {
+      case 'selected':
+        return 'success';
+      case 'rejected':
+        return 'danger';
+      case 'completed':
+        return 'success';
+      default:
+        return 'info';
+    }
+  }
+
+  public formatDate(dateString: string | undefined | Date): string {
+    if (!dateString) return 'N/A';
+    return new DatePipe('en-US').transform(dateString, 'mediumDate') || 'N/A';
+  }
+
+  public isAptitudeRound(roundName: string): boolean {
+    return roundName?.toLowerCase().includes('aptitude');
+  }
+
+  public hasValue(value: any): boolean {
+    return value !== null && value !== undefined && value !== '';
+  }
+
+  public getDetailDate(detail: any): string {
+    return this.formatDate(detail.date);
+  }
+
+  public getCorrectAnswers(detail: any): number {
+    return detail.correctAnswers || 0;
   }
 
   // Public method to update cover image

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DialogService } from 'primeng/dynamicdialog';
 import { StepperModule } from 'primeng/stepper';
+import { TooltipModule } from 'primeng/tooltip';
 import { Subscription } from 'rxjs';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
@@ -57,6 +58,7 @@ export interface RoundModel {
     CommonModule,
     StepperModule,
     ButtonModule,
+    TooltipModule,
     SelectQuesionsetStepComponent,
     CoordinatorStepComponent,
     AssessmentRoundComponent,
@@ -135,6 +137,7 @@ export class AssessmentViewComponent
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     public dialog: DialogService,
     private stepsStatusService: StepsStatusService,
   ) {
