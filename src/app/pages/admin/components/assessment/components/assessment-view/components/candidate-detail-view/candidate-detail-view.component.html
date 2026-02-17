@@ -448,10 +448,10 @@
             @if (isLoadingInterviewFeedbacks) {
               <app-candidate-detail-previous-assessment-skeleton />
             } @else {
-              @if (interviewFeedbacksDataSource?.previousInterviews && interviewFeedbacksDataSource.previousInterviews.length > 0) {
+              @if ((interviewFeedbacksDataSource?.previousInterviews?.length ?? 0) > 0) {
                 <div class="candidate-detail__assessments">
                   <p-accordion [multiple]="true" class="candidate-detail__rounds-accordion">
-                    @for (round of interviewFeedbacksDataSource.previousInterviews; track round.roundId) {
+                    @for (round of interviewFeedbacksDataSource!.previousInterviews; track round.roundId) {
                       <p-accordion-panel [value]="round.sequence">
                         <p-accordion-header>
                           <div class="candidate-detail__round-header">

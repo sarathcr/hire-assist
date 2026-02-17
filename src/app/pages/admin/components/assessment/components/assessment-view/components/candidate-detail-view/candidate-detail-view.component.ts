@@ -49,7 +49,7 @@ export class CandidateDetailViewComponent
   public candidateId!: string;
   public candidateDetailsDataSource!: candidateDetails;
   public candidateAssessmentDataSource!: candidatePreviousAssessments[];
-  public interviewFeedbacksDataSource!: InterviewerCandidate;
+  public interviewFeedbacksDataSource?: InterviewerCandidate;
   public url = 'assessmentsummary';
   public editorStatus = true;
   public isLoading = true;
