@@ -167,4 +167,16 @@ export class AssessmentService extends ApiService<any> {
       `${this.getResourceUrl()}/candidates/${candidateId}/${assessmentId}`,
     );
   }
+
+  public getDashboardAssessments() {
+    const payload = {
+      sortedColumn: { active: '', direction: '' },
+      filterMap: {},
+      pagination: { pageNumber: 1, pageSize: 5 },
+    };
+    return this.httpClient.post<any>(
+      `${this.getResourceUrl()}/assessmentsummary`,
+      payload
+    );
+  }
 }

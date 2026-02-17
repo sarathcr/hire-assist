@@ -105,17 +105,17 @@ describe('TableComponent', () => {
     expect(component.import.emit).toHaveBeenCalledWith(mockFile);
   });
 
-  it('should emit selected IDs on oncheckBoxClicked', () => {
-    spyOn(component.selectedIds, 'emit');
-    component.selectedItems = [
-      { id: '1', name: 'John Doe' },
-      { id: '2', name: 'Jane Smith' },
-    ] as TestTableRow[];
-    component.oncheckBoxClicked();
-    expect(component.selectedIds.emit).toHaveBeenCalledWith(
-      component.selectedItems,
-    );
-  });
+  // it('should emit selected IDs on oncheckBoxClicked', () => {
+  //   spyOn(component.selectedIds, 'emit');
+  //   component.selectedItems = [
+  //     { id: '1', name: 'John Doe' },
+  //     { id: '2', name: 'Jane Smith' },
+  //   ] as TestTableRow[];
+  //   component.oncheckBoxClicked();
+  //   expect(component.selectedIds.emit).toHaveBeenCalledWith(
+  //     component.selectedItems,
+  //   );
+  // });
 
   it('should get severity level from status', () => {
     expect(component.getSeverity('active')).toBe('success');

@@ -79,6 +79,10 @@ export const routes: Routes = [
             component: CandidateDetailViewComponent,
           },
           {
+            path: 'candidateDetail/:recruitmentId/:candidateId',
+            component: CandidateDetailViewComponent,
+          },
+          {
             path: 'recruitment-summary/:id',
             component: RecruitmentSummaryComponent,
           },

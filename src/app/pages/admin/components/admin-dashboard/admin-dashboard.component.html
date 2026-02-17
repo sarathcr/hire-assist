@@ -1,262 +1,240 @@
 <div class="dashboard-container">
   <!-- Header Section -->
   <div class="dashboard-header">
-    <h1 class="dashboard-title">Dashboard</h1>
+    <div class="header-left">
+      <h1 class="dashboard-title">Dashboard</h1>
+      <p class="dashboard-subtitle">Welcome back, {{ currentUser()?.name }}</p>
+    </div>
     <div class="header-actions">
+      <!-- Mock Search -->
+      <div class="search-wrapper" style="display:none;">
+         <i class="pi pi-search"></i>
+         <input type="text" placeholder="Search..." />
+      </div>
       <div class="date-badge">
-        <i class="pi pi-calendar"></i>
-        <span>{{ todayDate }}</span>
+        <i class="pi pi-calendar-plus"></i>
+        <span>{{ todayDate() }}</span>
       </div>
     </div>
   </div>
 
-  <!-- Top Stat Cards Section -->
+  <!-- Row 1: Top Stat Cards Section -->
   <div class="stats-grid">
-    @if (isLoadingDashboard) {
+    @if (isLoadingDashboard()) {
       <!-- Skeleton Loaders -->
-      <div class="stat-card-modern stat-card-primary stat-card-skeleton">
-        <div class="stat-card-content-modern">
-          <div class="stat-card-header">
-            <div
-              class="stat-icon-wrapper stat-icon-primary skeleton-icon"
-            ></div>
-            <div class="skeleton-badge"></div>
-          </div>
-          <div class="stat-card-body">
-            <div class="skeleton-label"></div>
-            <div class="skeleton-number"></div>
-            <div class="stat-card-footer">
-              <div class="skeleton-detail"></div>
-              <div class="skeleton-detail"></div>
+      @for (item of [1, 2, 3]; track $index) {
+        <div class="stat-card-modern stat-card-skeleton">
+          <div class="stat-card-content-modern">
+            <div class="stat-card-header">
+              <div class="skeleton-icon"></div>
+              <div class="skeleton-badge"></div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="stat-card-modern stat-card-success stat-card-skeleton">
-        <div class="stat-card-content-modern">
-          <div class="stat-card-header">
-            <div
-              class="stat-icon-wrapper stat-icon-success skeleton-icon"
-            ></div>
-          </div>
-          <div class="stat-card-body">
-            <div class="skeleton-label"></div>
-            <div class="skeleton-number"></div>
+            <div class="stat-card-body">
+              <div class="skeleton-label"></div>
+              <div class="skeleton-number"></div>
+            </div>
             <div class="stat-card-footer">
               <div class="skeleton-detail"></div>
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="stat-card-modern stat-card-info stat-card-skeleton">
-        <div class="stat-card-content-modern">
-          <div class="stat-card-header">
-            <div class="stat-icon-wrapper stat-icon-info skeleton-icon"></div>
-          </div>
-          <div class="stat-card-body">
-            <div class="skeleton-label"></div>
-            <div class="skeleton-number"></div>
-            <div class="stat-card-footer">
-              <div class="skeleton-detail"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      }
     } @else {
       <!-- Real Content -->
-      <div
-        class="stat-card-modern stat-card-primary"
-        routerLink="/admin/recruitments"
-      >
-        <div class="stat-card-background">
-          <div class="stat-card-pattern"></div>
-        </div>
+      <div class="stat-card-modern stat-card-primary" routerLink="/admin/recruitments">
+        <div class="stat-card-background"><div class="stat-card-pattern"></div></div>
         <div class="stat-card-content-modern">
           <div class="stat-card-header">
-            <div class="stat-icon-wrapper stat-icon-primary">
-              <i class="pi pi-briefcase"></i>
-            </div>
-            @if (assessmentData.active) {
-              <span class="stat-badge stat-badge-success">
-                {{ assessmentData.active }} Active
-              </span>
-            }
+            <div class="stat-icon-wrapper"><i class="pi pi-briefcase"></i></div>
+            @if (assessmentData().active) { <span class="stat-badge">{{ assessmentData().active }} Active</span> }
           </div>
           <div class="stat-card-body">
             <h3 class="stat-card-label">Total Recruitments</h3>
-            <p class="stat-card-number">{{ assessmentData.total }}</p>
-            <div class="stat-card-footer">
-              <span class="stat-detail">
-                <i class="pi pi-check-circle"></i>
-                Active: {{ assessmentData.active }}
-              </span>
-              <span class="stat-detail">
-                <i class="pi pi-pause-circle"></i>
-                Inactive: {{ assessmentData.inactive }}
-              </span>
-            </div>
+            <p class="stat-card-number">{{ assessmentData().total }}</p>
+          </div>
+          <div class="stat-card-footer">
+            <span class="stat-detail"><i class="pi pi-check-circle"></i> Active: {{ assessmentData().active }}</span>
+            <span class="stat-detail"><i class="pi pi-pause-circle"></i> Inactive: {{ assessmentData().inactive }}</span>
           </div>
         </div>
       </div>
 
-      <div
-        class="stat-card-modern stat-card-success"
-        routerLink="/admin/roles-access"
-      >
-        <div class="stat-card-background">
-          <div class="stat-card-pattern"></div>
-        </div>
+      <div class="stat-card-modern stat-card-success" routerLink="/admin/roles-access">
+        <div class="stat-card-background"><div class="stat-card-pattern"></div></div>
         <div class="stat-card-content-modern">
           <div class="stat-card-header">
-            <div class="stat-icon-wrapper stat-icon-success">
-              <i class="pi pi-users"></i>
-            </div>
+            <div class="stat-icon-wrapper"><i class="pi pi-users"></i></div>
           </div>
           <div class="stat-card-body">
             <h3 class="stat-card-label">Total Users</h3>
-            <p class="stat-card-number">{{ usersData.total }}</p>
-            <div class="stat-card-footer">
-              <span class="stat-detail">
-                <i class="pi pi-info-circle"></i>
-                System users
-              </span>
-            </div>
+            <p class="stat-card-number">{{ usersData().total }}</p>
+          </div>
+          <div class="stat-card-footer">
+            <span class="stat-detail"><i class="pi pi-info-circle"></i> System users</span>
           </div>
         </div>
       </div>
 
-      <div
-        class="stat-card-modern stat-card-info"
-        routerLink="/admin/settings/questions"
-      >
-        <div class="stat-card-background">
-          <div class="stat-card-pattern"></div>
-        </div>
+      <div class="stat-card-modern stat-card-info" routerLink="/admin/settings/questions">
+        <div class="stat-card-background"><div class="stat-card-pattern"></div></div>
         <div class="stat-card-content-modern">
           <div class="stat-card-header">
-            <div class="stat-icon-wrapper stat-icon-info">
-              <i class="pi pi-file-edit"></i>
-            </div>
+            <div class="stat-icon-wrapper"><i class="pi pi-file-edit"></i></div>
           </div>
           <div class="stat-card-body">
             <h3 class="stat-card-label">Questions</h3>
-            <p class="stat-card-number">{{ questionsData.total }}</p>
-            <div class="stat-card-footer">
-              <span class="stat-detail">
-                <i class="pi pi-info-circle"></i>
-                Available questions
-              </span>
-            </div>
+            <p class="stat-card-number">{{ questionsData().total }}</p>
+          </div>
+          <div class="stat-card-footer">
+            <span class="stat-detail"><i class="pi pi-clock"></i> Available questions</span>
           </div>
         </div>
       </div>
     }
   </div>
 
-  <!-- Middle Section - Charts -->
-  <div class="dashboard-charts-section">
-    <!-- Left Panel - Dashboard Overview -->
-    <div class="chart-panel chart-panel-left">
-      <p-card class="chart-card">
-        <ng-template pTemplate="header">
-          <div class="panel-header">
-            <div class="panel-title-section">
-              <p class="panel-title">Dashboard Overview</p>
-            </div>
-          </div>
-        </ng-template>
-        <div class="panel-content">
-          @if (
-            assessmentData !== undefined &&
-            usersData !== undefined &&
-            questionsData !== undefined &&
-            overviewChartData
-          ) {
-            <div class="chart-wrapper chart-wrapper-bar">
-              <p-chart
-                type="bar"
-                [data]="overviewChartData"
-                [options]="overviewChartOptions"
-              ></p-chart>
-            </div>
-            <div class="chart-legend">
-              <div class="legend-item">
-                <span class="legend-dot legend-dot-primary"></span>
-                <span>Recruitments</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-dot legend-dot-success"></span>
-                <span>Users</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-dot legend-dot-info"></span>
-                <span>Questions</span>
-              </div>
-            </div>
-          } @else {
-            <div class="chart-skeleton chart-skeleton-bar">
-              <div class="skeleton-bars">
-                <div class="skeleton-bar"></div>
-                <div class="skeleton-bar"></div>
-                <div class="skeleton-bar"></div>
-              </div>
 
-              <div class="chart-legend">
-                <div class="chart-skeleton-label"></div>
-                <div class="chart-skeleton-label"></div>
-                <div class="chart-skeleton-label"></div>
+
+  <!-- Row 3: Main Content Grid (Charts + Activity) -->
+  <div class="dashboard-main-content">
+    <!-- Charts Section -->
+    <div class="dashboard-charts-section">
+      <!-- Overview Chart -->
+      <div class="chart-panel">
+        <div class="chart-card">
+          <div class="panel-header">
+            <h2 class="panel-title">Dashboard Overview</h2>
+          </div>
+          <div class="panel-content">
+            @if (overviewChartData()) {
+              <div class="chart-wrapper chart-wrapper-bar">
+                <p-chart type="bar" [data]="overviewChartData()" [options]="overviewChartOptions()"></p-chart>
               </div>
-            </div>
-          }
+              <div class="chart-legend">
+                <div class="legend-item"><span class="legend-dot legend-dot-primary"></span><span>Recruitments</span></div>
+                <div class="legend-item"><span class="legend-dot legend-dot-success"></span><span>Users</span></div>
+                <div class="legend-item"><span class="legend-dot legend-dot-info"></span><span>Questions</span></div>
+              </div>
+            } @else {
+              <div class="chart-skeleton chart-skeleton-bar">
+                <div class="skeleton-bars"><div class="skeleton-bar"></div><div class="skeleton-bar"></div><div class="skeleton-bar"></div></div>
+              </div>
+            }
+          </div>
         </div>
-      </p-card>
+      </div>
+
+      <!-- Analytics Chart -->
+      <div class="chart-panel">
+        <div class="chart-card">
+          <div class="panel-header">
+            <h2 class="panel-title">Analytics</h2>
+          </div>
+          <div class="panel-content">
+            @if (assessmentStatusChartData()) {
+              <div class="chart-wrapper chart-wrapper-doughnut">
+                <p-chart type="doughnut" [data]="assessmentStatusChartData()" [options]="assessmentStatusChartOptions()"></p-chart>
+                <div class="doughnut-center-text">
+                  <span class="center-percentage">{{ activePercentage() }}%</span>
+                  <span class="center-label">Active</span>
+                </div>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item"><span class="legend-dot legend-dot-success"></span><span>Active</span></div>
+                <div class="legend-item"><span class="legend-dot legend-dot-danger"></span><span>Inactive</span></div>
+              </div>
+            } @else {
+              <div class="chart-skeleton chart-skeleton-doughnut">
+                <div class="skeleton-circle"></div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Right Panel - Analytics -->
-    <div class="chart-panel chart-panel-right">
-      <p-card class="chart-card">
-        <ng-template pTemplate="header">
-          <div class="panel-header">
-            <p class="panel-title">Analytics</p>
-          </div>
-        </ng-template>
-        <div class="panel-content">
-          @if (assessmentData !== undefined && assessmentStatusChartData) {
-            <div class="chart-wrapper chart-wrapper-doughnut">
-              <p-chart
-                type="doughnut"
-                [data]="assessmentStatusChartData"
-                [options]="assessmentStatusChartOptions"
-              ></p-chart>
-              <div class="doughnut-center-text">
-                <span class="center-percentage">{{ activePercentage }}%</span>
-                <span class="center-label">Active</span>
+    <!-- Recent Activity Feed -->
+    <div class="activity-feed-section">
+      <div class="activity-feed-card">
+        <div class="panel-header">
+          <h2 class="panel-title">Recent Activity</h2>
+          <a href="javascript:void(0)" class="panel-action">View All</a>
+        </div>
+        <div class="activity-list">
+          @for (activity of recentActivities(); track $index) {
+            <div class="activity-item">
+              <div class="activity-avatar" [ngClass]="'avatar-' + activity.type">
+                <i [class]="activity.icon"></i>
               </div>
-            </div>
-            <div class="chart-legend">
-              <div class="legend-item">
-                <span class="legend-dot legend-dot-success"></span>
-                <span>Active</span>
-              </div>
-              <div class="legend-item">
-                <span class="legend-dot legend-dot-danger"></span>
-                <span>Inactive</span>
-              </div>
-            </div>
-          } @else {
-            <div class="chart-skeleton chart-skeleton-doughnut">
-              <div class="skeleton-circle"></div>
-
-              <div class="chart-legend">
-                <div class="chart-skeleton-label"></div>
-                <div class="chart-skeleton-label"></div>
+              <div class="activity-content">
+                <p class="activity-message" [innerHTML]="activity.message"></p>
+                <span class="activity-time">{{ activity.time }}</span>
               </div>
             </div>
           }
         </div>
-      </p-card>
+      </div>
     </div>
   </div>
+
+  <!-- Row 4: New Widgets Section (Upcoming Interviews + Active Recruitments) -->
+  <div class="dashboard-widgets-section">
+    <!-- Upcoming Interviews -->
+    <div class="widget-card">
+      <div class="panel-header">
+        <h2 class="panel-title">Upcoming Interviews</h2>
+        <a href="javascript:void(0)" class="panel-action">View Calendar</a>
+      </div>
+      <div class="panel-content">
+        <div class="interviews-list">
+          @for (interview of upcomingInterviews(); track $index) {
+            <div class="interview-item">
+              <div class="candidate-avatar">{{ interview.avatar }}</div>
+              <div class="interview-details">
+                <p class="candidate-name">{{ interview.candidate }}</p>
+                <p class="interview-role">{{ interview.role }}</p>
+              </div>
+              <div class="interview-meta">
+                <span class="interview-time">{{ interview.time }}</span>
+                <span class="interview-date">Today</span>
+              </div>
+              <button class="join-btn">Join</button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Recruitments -->
+    <div class="widget-card">
+      <div class="panel-header">
+        <h2 class="panel-title">Active Recruitments</h2>
+        <a [routerLink]="['/admin/recruitments']" class="panel-action">View All</a>
+      </div>
+      <div class="panel-content">
+        @if (recentAssessments().length > 0) {
+          <div class="health-metrics"> <!-- Reusing metric class for list style -->
+            @for (assessment of recentAssessments(); track assessment.id) {
+              <div class="metric-item">
+                <div class="metric-header">
+                  <span>{{ assessment.name }}</span>
+                  <span class="metric-value-text" style="color: #10b981; font-weight:600;">Active</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <!-- Use activeRoundsPercentage if available, else 0/Mock -->
+                  <div class="progress-bar-fill" [style.width.%]="assessment.activeRoundsPercentage || 25" style="background-color: #3b82f6;"></div>
+                </div>
+                <span class="metric-value">{{ assessment.startDateTime | date:'mediumDate' }}</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="no-data-msg">
+            <p>No active recruitments found.</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
 </div>

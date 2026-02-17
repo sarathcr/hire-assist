@@ -84,9 +84,9 @@ describe('AdminDashboardComponent', () => {
 
     expect(mockStoreService.getUserData).toHaveBeenCalled();
     expect(mockDashboardService.getEntityById).toHaveBeenCalledWith('123');
-    expect(component.assessmentData?.total).toBe(10);
-    expect(component.usersData?.total).toBe(50);
-    expect(component.questionsData?.total).toBe(5);
+    expect(component.assessmentData().total).toBe(10);
+    expect(component.usersData().total).toBe(50);
+    expect(component.questionsData().total).toBe(5);
   }));
 
   it('should handle errors from dashboard service gracefully', fakeAsync(() => {

@@ -249,7 +249,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       'admin/recruitments/candidateDetail',
       String(this.assessmentId),
       data.email,
-      data.interviewId ? String(data.interviewId) : '0',
+      data.interviewId ? String(data.interviewId) : String(data.id || '0'),
     ]);
   }
 

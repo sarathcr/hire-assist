@@ -282,12 +282,12 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const assessmentRoundOptions: Option[] = this.assessmentRounds.map(
-      (round: RoundModel) => ({
+    const assessmentRoundOptions: Option[] = this.assessmentRounds
+      .filter((round: RoundModel) => !round.round.toLowerCase().includes('aptitude'))
+      .map((round: RoundModel) => ({
         label: round.round,
         value: round.id ? String(round.id) : '',
-      }),
-    );
+      }));
 
     this.coordinatorData = {
       cordinators: this.cordinators || [],
