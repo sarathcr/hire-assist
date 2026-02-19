@@ -517,7 +517,12 @@ export class CandidateTestComponent
       this.candidatetestservice
         .getCandidateAnswer(this.assessmentId, this.candidateId)
         .subscribe({
-          next: (answers: CandidateAnswer[]) => {
+          next: (response: any) => {
+            if (!response) {
+              return;
+            }
+            const answers = Array.isArray(response) ? response : [response];
+
             answers.forEach((answer: CandidateAnswer) => {
               const question =
                 this.data &&
@@ -566,13 +571,7 @@ export class CandidateTestComponent
     if (typeof document !== 'undefined') {
       document.documentElement
         .requestFullscreen()
-        .then(() =>
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Info',
-            detail: 'Entered fullscreen mode.',
-          }),
-        )
+        .then(() => {})
         .catch(() =>
           this.messageService.add({
             severity: 'error',
@@ -610,8 +609,8 @@ export class CandidateTestComponent
       if (result) {
         this.warningService.setWarningCount(1);
         this.enterFullScreenMode();
-        this.ref?.close(true);
       } else {
+        this.saveTerminationTime(StatusEnum.Terminated);
         this.router.navigate(['candidate/thank-you']);
       }
     });
@@ -753,14 +752,7 @@ export class CandidateTestComponent
 
   private createCandidateAnswer(payload: Payload): Observable<void> {
     return this.candidatetestservice.addcandidateAnswer(payload).pipe(
-      switchMap(() => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Candidate answer created successfully.',
-        });
-        return of(void 0);
-      }),
+      switchMap(() => of(void 0)),
       catchError((error) => {
         this.messageService.add({
           severity: 'warn',
@@ -774,14 +766,7 @@ export class CandidateTestComponent
 
   private updateCandidateAnswer(payload: Payload): Observable<void> {
     return this.candidatetestservice.updateCandidateAnswer(payload).pipe(
-      switchMap(() => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Candidate answer updated successfully.',
-        });
-        return of(void 0);
-      }),
+      switchMap(() => of(void 0)),
       catchError((error) => {
         this.messageService.add({
           severity: 'error',
@@ -840,15 +825,15 @@ export class CandidateTestComponent
     this.totalQuestions = data?.questions;
   }
 
-  private saveTerminationTime(): void {
-    if (!this.timerComponent) return;
+  private saveTerminationTime(status: number = 11): void {
+    if (!this.timerComponent || !this.candidateId || !this.assessmentId) return;
     const remainingTime = this.timerComponent.getCurrentFormattedTime();
 
     const payload = {
       candidateId: this.candidateId,
       assessmentId: this.assessmentId,
       terminatedTime: remainingTime,
-      terminatedStatus: 11, //paused status
+      terminatedStatus: status,
     };
 
     this.candidatetestservice
@@ -861,11 +846,6 @@ export class CandidateTestComponent
       if (document.fullscreenElement) {
         document.exitFullscreen().then(() => {
           this.latestFullscreenExitTime = new Date().toISOString();
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Info',
-            detail: 'Exited fullscreen mode.',
-          });
         });
       }
     } else {
@@ -879,6 +859,7 @@ export class CandidateTestComponent
   }
 
   private fetchTerminationTimeAndSetTimer(): void {
+    if (!this.assessmentId || !this.candidateId) return;
     this.candidatetestservice
       .getCandidateTestTerminationTime(this.assessmentId, this.candidateId)
       .subscribe({

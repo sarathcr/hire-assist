@@ -489,6 +489,112 @@
     padding: 0;
   }
 
+  /* ---------------- Configuration Section ---------------- */
+  &__config-section {
+    margin-top: 24px;
+    border-top: 1px solid #e9ecef;
+    padding-top: 24px;
+    margin-bottom: 24px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  &__config-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 16px 0;
+  }
+
+  &__config-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__config-item {
+    display: flex;
+    align-items: center;
+    // justify-content: space-between;
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    gap: 24px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      border-color: #bbdefb;
+      box-shadow: 0 2px 8px rgba(33, 150, 243, 0.08);
+    }
+
+    @media screen and (max-width: 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+  }
+
+  &__config-round-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+
+    .assessment-round__round-number {
+      margin: 0;
+    }
+    
+    .assessment-round__round-name {
+      font-size: 15px;
+    }
+  }
+
+  &__config-inputs {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+
+    @media screen and (max-width: 768px) {
+      width: 100%;
+      gap: 16px;
+    }
+  }
+
+  &__input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input {
+      width: 140px;
+      
+      @media screen and (max-width: 768px) {
+        width: 100%;
+      }
+    }
+
+    ::ng-deep .assessment-round__duration-picker {
+      width: 140px !important;
+
+      @media screen and (max-width: 768px) {
+        width: 100% !important;
+      }
+
+      .p-inputtext {
+        width: 100% !important;
+      }
+    }
+  }
+
   /* ---------------- RESPONSIVE ---------------- */
 
   @media screen and (max-width: 768px) {

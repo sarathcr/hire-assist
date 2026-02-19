@@ -16,6 +16,10 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
+import { InputTextModule } from 'primeng/inputtext';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { CalendarModule } from 'primeng/calendar';
+import { FormsModule } from '@angular/forms';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
@@ -49,6 +53,10 @@ import { StepsStatusService } from '../../../../services/steps-status.service';
     ReactiveFormsModule,
     AssessmentRoundSkeletonComponent,
     ToastModule,
+    InputTextModule,
+    FloatLabelModule,
+    FormsModule,
+    CalendarModule
   ],
   templateUrl: './assessment-round.component.html',
   styleUrl: './assessment-round.component.scss',
@@ -159,6 +167,9 @@ export class AssessmentRoundComponent
       .map((item: Option) => ({
         id: item.value.toString(),
         name: item.label,
+        timerHour: 0,
+        durationDate: new Date(new Date().setHours(0, 0, 0, 0)),
+        maxTerminationCount: 0
       }));
 
     const existingIds = new Set(this.submittedData.map((item) => item.id));
@@ -472,6 +483,11 @@ export class AssessmentRoundComponent
         RoundId: Number(item.id),
         name: item.name,
         sequence: index + 1,
+        // Convert durationDate (Date) to hours decimal (number)
+        timerHour: item.durationDate 
+          ? item.durationDate.getHours() + (item.durationDate.getMinutes() / 100)
+          : 0,
+        maxTerminationCount: item.maxTerminationCount || 0,
       }),
     );
 
@@ -523,14 +539,27 @@ export class AssessmentRoundComponent
           this.isLoading = false;
           this.isDataLoaded = true;
           this.assessmentRounds = response;
-          this.submittedData = response.map((item) => ({
+          this.submittedData = response.map((item) => {
+
+          const date = new Date();
+          const timerValue = item.timerHour || 0;         
+          const hours = Math.floor(timerValue);
+          const minutes = Math.round((timerValue - hours) * 100);
+          date.setHours(hours);
+          date.setMinutes(minutes);
+          date.setSeconds(0);
+
+            return {
             name: item.round,
             id: item.roundId.toString(),
             sequence: item.sequence,
-          }));
+            timerHour: item.timerHour || 0,
+            durationDate: date,
+            maxTerminationCount: item.maxTerminationCount || 0,
+          }});
           this.fGroup.patchValue({
             round: this.submittedData.map((item) => item.id),
-          });
+          }); 
           this.assessmentRoundSubscription = undefined;
           this.roundsUpdated.emit(this.submittedData.length);
           this.cdr.detectChanges();

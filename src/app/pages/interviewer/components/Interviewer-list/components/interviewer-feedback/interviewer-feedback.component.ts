@@ -42,6 +42,11 @@ import {
 } from '../../../../../admin/models/interviewer.model';
 import { InterviewerFeedbackSkeletonComponent } from './interviewer-feedback.skeleton';
 import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
+import { CountdownTimerComponent } from '../../../../../../shared/components/countdown-timer/countdown-timer.component';
+import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
+import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
+import { DialogData } from '../../../../../../shared/models/dialog.models';
+import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 
 @Component({
   selector: 'app-interviewer-feedback',
@@ -65,9 +70,11 @@ import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
     ChipModule,
     TagModule,
     DividerModule,
+    CountdownTimerComponent,
   ],
   templateUrl: './interviewer-feedback.component.html',
   styleUrl: './interviewer-feedback.component.scss',
+  standalone: true,
 })
 export class InterviewerFeedbackComponent
   extends BaseComponent
@@ -98,6 +105,10 @@ export class InterviewerFeedbackComponent
   public isImageLoading = false;
   public isUploadingFiles = false;
   public interview!: Interview;
+  public durationMinutes = 0;
+  public warningThresholds = [10, 5];
+  private ref: any;
+
   constructor(
     private readonly interviewService: InterviewService,
     private readonly messageService: MessageService,
@@ -179,8 +190,12 @@ export class InterviewerFeedbackComponent
         originalScore: item.score ?? null,
       }));
       this.feedbackcriteria.forEach((feedback) => {
-        if (feedback.title === 'Attachments' && feedback.fileDto && feedback.fileDto.length > 0) {
-             this.uploadedFile = [...feedback.fileDto];
+        if (
+          feedback.title === 'Attachments' &&
+          feedback.fileDto &&
+          feedback.fileDto.length > 0
+        ) {
+          this.uploadedFile = [...feedback.fileDto];
         }
       });
       this.calculateTotalFeedbackScore();
@@ -200,6 +215,40 @@ export class InterviewerFeedbackComponent
       .subscribe({ next, error });
   }
 
+  public handleTimerWarning(minutesRemaining: number): void {
+    const modalData: DialogData = {
+      message: `Only ${minutesRemaining} minutes remaining!`,
+      isChoice: false,
+      cancelButtonText: '',
+      acceptButtonText: 'Continue',
+    };
+
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Time Warning',
+      maximizable: false,
+      width: '25vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+  }
+
+  public handleTimeExpired(): void {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Time Limit Reached',
+      detail: 'The scheduled duration has ended.',
+      life: 5000,
+    });
+  }
+
   private updateLoadingState(): void {
     this.isLoading = !(
       this.isInterviewerLoaded && this.isFeedbackCriteriaLoaded
@@ -217,15 +266,38 @@ export class InterviewerFeedbackComponent
       .reduce((acc, curr) => acc + (curr.maxScore || 0), 0);
   }
 
+  public get isAllCriteriaMarked(): boolean {
+    if (!this.feedbackcriteria || this.feedbackcriteria.length === 0) {
+      return false;
+    }
+    return this.feedbackcriteria
+      .filter((fb) => fb.title !== 'Attachments')
+      .every(
+        (fb) =>
+          fb.isSaved &&
+          !this.hasChanges(fb) &&
+          fb.score !== null &&
+          fb.score !== undefined &&
+          fb.content &&
+          this.stripHtml(fb.content).trim() !== '' &&
+          !fb.isScoreInValid,
+      );
+  }
+
   public getStatusText(statusId: number): string {
     const statusMap: Record<number, string> = {
-      1: 'Pending',
-      2: 'In Progress',
-      3: 'Completed',
-      4: 'Cancelled',
-      5: 'Rejected',
-      6: 'Selected',
-      7: 'Submitted',
+      [StatusEnum.Active]: 'In Progress',
+      [StatusEnum.Pending]: 'In Progress', // Mapped to In Progress as per request
+      [StatusEnum.OnReview]: 'On Review',
+      [StatusEnum.NotAttended]: 'Not Attended',
+      [StatusEnum.Skip]: 'Skipped',
+      [StatusEnum.Saved]: 'Saved',
+      [StatusEnum.Completed]: 'Completed',
+      [StatusEnum.Selected]: 'Selected',
+      [StatusEnum.Rejected]: 'Rejected',
+      [StatusEnum.Scheduled]: 'Scheduled',
+      [StatusEnum.Paused]: 'Paused',
+      [StatusEnum.Terminated]: 'Terminated',
     };
     return statusMap[statusId] || 'Unknown';
   }
@@ -237,13 +309,18 @@ export class InterviewerFeedbackComponent
       number,
       'success' | 'info' | 'warn' | 'danger' | 'secondary'
     > = {
-      1: 'info',
-      2: 'warn',
-      3: 'success',
-      4: 'danger',
-      5: 'danger',
-      6: 'success',
-      7: 'success',
+      [StatusEnum.Active]: 'warn',
+      [StatusEnum.Pending]: 'warn',
+      [StatusEnum.OnReview]: 'warn',
+      [StatusEnum.NotAttended]: 'danger',
+      [StatusEnum.Skip]: 'secondary',
+      [StatusEnum.Saved]: 'success',
+      [StatusEnum.Completed]: 'success',
+      [StatusEnum.Selected]: 'success',
+      [StatusEnum.Rejected]: 'danger',
+      [StatusEnum.Scheduled]: 'warn',
+      [StatusEnum.Paused]: 'secondary',
+      [StatusEnum.Terminated]: 'danger',
     };
     return severityMap[statusId] || 'secondary';
   }
@@ -316,18 +393,16 @@ export class InterviewerFeedbackComponent
 
     this.isImageLoading = true;
     this.isImageLoading = true;
-    this.interviewService
-      .GetFiles(file)
-      .subscribe({
-        next: (blob: Blob) => {
-          const imageUrl = URL.createObjectURL(blob);
-          this.previewImageUrls.set(key, imageUrl);
-          this.isImageLoading = false;
-        },
-        error: () => {
-          this.isImageLoading = false;
-        },
-      });
+    this.interviewService.GetFiles(file).subscribe({
+      next: (blob: Blob) => {
+        const imageUrl = URL.createObjectURL(blob);
+        this.previewImageUrls.set(key, imageUrl);
+        this.isImageLoading = false;
+      },
+      error: () => {
+        this.isImageLoading = false;
+      },
+    });
   }
   private getAssessmentDetails(payload: CandidateDetailRequest): void {
     const next = (res: InterviewerCandidate) => {
@@ -336,6 +411,9 @@ export class InterviewerFeedbackComponent
       this.updateLoadingState();
 
       this.isSubmitted = res.isActive == false ? true : false;
+      if (res.timerHour) {
+        this.durationMinutes = this.convertTimerHourToMinutes(res.timerHour);
+      }
     };
     const error = () => {
       this.messageService.add({
@@ -398,55 +476,60 @@ export class InterviewerFeedbackComponent
           fileUploadComponent.clear();
         }
       }, 100);
-      
+
       // Auto-save: Upload pending files immediately
       this.uploadAndSaveAttachments();
     }
   }
 
   private uploadAndSaveAttachments(): void {
-    const attachmentFeedback = this.feedbackcriteria.find(f => f.title === 'Attachments');
+    const attachmentFeedback = this.feedbackcriteria.find(
+      (f) => f.title === 'Attachments',
+    );
     if (!attachmentFeedback) return;
 
     this.uploadPendingFiles()
       .then((uploadedFiles: FileDto[]) => {
         if (uploadedFiles.length > 0) {
           // Update feedback object
-           if (!attachmentFeedback.fileDto) {
-             attachmentFeedback.fileDto = [];
-           }
-           
-           // Filter duplicates (though uploadPendingFiles pushes to this.uploadedFile, 
-           // we need to sync attachmentFeedback.fileDto if it's separate? 
-           // In 'onsave' we pushed to feedback.fileDto. 
-           // Implementation in uploadPendingFiles pushes to this.uploadedFile.
-           
-           // Sync this.uploadedFile to attachmentFeedback.fileDto
-           // Actually `this.uploadedFile` is used as the source of truth for display?
-           // Let's ensure consistency.
-           
-           // Just add the new files to the feedback dto for saving
-           const newUniqueFiles = uploadedFiles.filter(newFile => 
-             !attachmentFeedback.fileDto!.some(existing => existing.blobId === newFile.blobId)
-           );
-           
-           if (newUniqueFiles.length > 0) {
-             attachmentFeedback.fileDto.push(...newUniqueFiles);
-             
-             // Fetch blobs for display
-             newUniqueFiles.forEach(file => this.previewImage(file));
-             
-             // Save feedback to persist the association
-             this.saveFeedback(attachmentFeedback, newUniqueFiles); 
-           }
+          if (!attachmentFeedback.fileDto) {
+            attachmentFeedback.fileDto = [];
+          }
+
+          // Filter duplicates (though uploadPendingFiles pushes to this.uploadedFile,
+          // we need to sync attachmentFeedback.fileDto if it's separate?
+          // In 'onsave' we pushed to feedback.fileDto.
+          // Implementation in uploadPendingFiles pushes to this.uploadedFile.
+
+          // Sync this.uploadedFile to attachmentFeedback.fileDto
+          // Actually `this.uploadedFile` is used as the source of truth for display?
+          // Let's ensure consistency.
+
+          // Just add the new files to the feedback dto for saving
+          const newUniqueFiles = uploadedFiles.filter(
+            (newFile) =>
+              !attachmentFeedback.fileDto!.some(
+                (existing) => existing.blobId === newFile.blobId,
+              ),
+          );
+
+          if (newUniqueFiles.length > 0) {
+            attachmentFeedback.fileDto.push(...newUniqueFiles);
+
+            // Fetch blobs for display
+            newUniqueFiles.forEach((file) => this.previewImage(file));
+
+            // Save feedback to persist the association
+            this.saveFeedback(attachmentFeedback, newUniqueFiles);
+          }
         }
       })
       .catch((err) => {
         console.error('Upload failed', err);
         this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to upload files',
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to upload files',
         });
       });
   }
@@ -457,7 +540,6 @@ export class InterviewerFeedbackComponent
       this.pendingFilePreviews.splice(index, 1);
     }
   }
-
 
   private uploadPendingFiles(): Promise<FileDto[]> {
     return new Promise((resolve, reject) => {
@@ -481,7 +563,7 @@ export class InterviewerFeedbackComponent
           // Add mapped files to local list
           uploadedFiles.push(...uploadedFilesResponse);
           this.uploadedFile.push(...uploadedFiles);
-          
+
           this.pendingFiles = [];
           this.pendingFilePreviews = [];
           this.isUploadingFiles = false;
@@ -495,47 +577,48 @@ export class InterviewerFeedbackComponent
     });
   }
 
-
   private loadAttachmentFiles() {
-    // iterate over uploadedFile (which was populated in GetFeedbackCriteria) 
+    // iterate over uploadedFile (which was populated in GetFeedbackCriteria)
     // BUT wait, in GetFeedbackCriteria we are now NOT pushing to uploadedFile?
     // Ah, we need to populate this.uploadedFile from the feedback item if it's empty
     // OR just use the feedback item's fileDto directly.
-    
+
     // Let's look at how uploadedFile is used. It seems it is a flattened list of all files?
     // Actually, in the previous code, it pushed all files from all feedback items to this.uploadedFile.
     // We should probably do that initialization in GetFeedbackCriteria BUT skip the previewImage call.
-    
+
     // Let's correct the strategy:
     // 1. In GetFeedbackCriteria (previous step), we SHOULD populate this.uploadedFile but NOT call previewImage.
-    //    Wait, I removed the loop entirely in the previous step. I should restore the population of this.uploadedFile 
+    //    Wait, I removed the loop entirely in the previous step. I should restore the population of this.uploadedFile
     //    but skip the previewImage call.
-    
+
     //    Actually, let's look at the removed code:
     //    this.feedbackcriteria.forEach((feedback) => { ... this.uploadedFile.push(file) ... })
-    
+
     //    If I removed that, this.uploadedFile is empty.
     //    I should fix that in the next step or re-add it here safely.
-    
+
     //    Let's assume I will fix the population in a separate method or re-add it.
     //    For now, let's implement loadAttachmentFiles assuming files are in this.uploadedFile or feedback.fileDto.
-    
+
     //    Actually, looking at the code, `uploadedFile` seems to be used for the file upload component and `removeImage`.
     //    It serves as the source of truth for the Attachments section.
-    
+
     //    Let's re-populate it here if empty and "Attachments" exists.
-    const attachmentFeedback = this.feedbackcriteria.find(f => f.title === 'Attachments');
+    const attachmentFeedback = this.feedbackcriteria.find(
+      (f) => f.title === 'Attachments',
+    );
     if (attachmentFeedback && attachmentFeedback.fileDto) {
-         // Ensure uploadedFile matches the attachments
-         this.uploadedFile = [...attachmentFeedback.fileDto];
-         
-         this.uploadedFile.forEach(file => {
-             // Only fetch if not already fetched
-             const key = file.id || file.blobId;
-             if (key && !this.previewImageUrls.has(key)) {
-                 this.previewImage(file);
-             }
-         });
+      // Ensure uploadedFile matches the attachments
+      this.uploadedFile = [...attachmentFeedback.fileDto];
+
+      this.uploadedFile.forEach((file) => {
+        // Only fetch if not already fetched
+        const key = file.id || file.blobId;
+        if (key && !this.previewImageUrls.has(key)) {
+          this.previewImage(file);
+        }
+      });
     }
   }
 
@@ -543,65 +626,69 @@ export class InterviewerFeedbackComponent
     if (index >= 0 && index < this.uploadedFile.length) {
       const file = this.uploadedFile[index];
       const key = file.blobId || file.id;
-      
+
       // Call API to delete
       this.interviewService.deleteFiles(file).subscribe({
         next: () => {
-           this.messageService.add({
+          this.messageService.add({
             severity: 'success',
             summary: 'Success',
             detail: 'File deleted successfully',
           });
-          
+
           if (key && this.previewImageUrls.has(key)) {
             this.previewImageUrls.delete(key);
           }
           this.uploadedFile.splice(index, 1);
-          
+
           // Also update the feedback criteria object to reflect removal
-          const attachmentFeedback = this.feedbackcriteria.find(f => f.title === 'Attachments');
+          const attachmentFeedback = this.feedbackcriteria.find(
+            (f) => f.title === 'Attachments',
+          );
           if (attachmentFeedback && attachmentFeedback.fileDto) {
-              const fileIdx = attachmentFeedback.fileDto.findIndex(f => (f.id === file.id && f.blobId === file.blobId));
-              if (fileIdx !== -1) {
-                  attachmentFeedback.fileDto.splice(fileIdx, 1);
-              }
-              // Save feedback to reflect the removal of the attachment link
-              // We pass empty array for filesToSave because we are just updating the state (deletion), not adding new files.
-              // But strictly speaking, if we delete a file, do we need to update the feedback object via API?
-              // The `deleteFiles` API likely deletes the file record. 
-              // Does it check if it's linked to a feedback? 
-              // If the file is deleted, the link is probably broken or removed by cascade, 
-              // BUT to be safe and ensure the backend knows the feedback is updated, we call saveFeedback (update).
-              // Actually, simply calling saveFeedback with remaining files might be correct or just empty.
-              // The `saveFeedback` uses `fileDto` from the request or `filesToSave`.
-              // `filesToSave` is used if `length > 0`.
-              // So if we pass [], it sends what logic?
-              // `fileDto: feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : [],`
-              // If we pass [], it sends empty list. 
-              // Does the backend Replace the list or Append?
-              // Based on `onsave` logic: 
-              // `fileDto: feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : [],`
-              // If we delete a file, we probably want to send the *remaining* files?
-              // Or does the backend only accept *new* files to add?
-              // If it ONLY accepts new files, then deleting the file via `deleteFiles` API is enough.
-              // However, the user request says "the save button functionalities and needed api calls should happen".
-              // The save logic updates `feedbackRequest`.
-              // If I call saveFeedback(attachmentFeedback, []), it basically updates the feedback entity details/score.
-              // It doesn't seem to send the *full list* of current files to *replace* them, only *new* files to *add*.
-              // Because `filesToSave` comes from `newUniqueFiles` in `onsave`.
-              
-              // So, `deleteFiles` probably handles the actual deletion.
-              // But we might want to trigger `saveFeedback` just to "save" the state of feedback if needed (e.g. isSaved=true).
-              this.saveFeedback(attachmentFeedback, [], false);
+            const fileIdx = attachmentFeedback.fileDto.findIndex(
+              (f) => f.id === file.id && f.blobId === file.blobId,
+            );
+            if (fileIdx !== -1) {
+              attachmentFeedback.fileDto.splice(fileIdx, 1);
+            }
+            // Save feedback to reflect the removal of the attachment link
+            // We pass empty array for filesToSave because we are just updating the state (deletion), not adding new files.
+            // But strictly speaking, if we delete a file, do we need to update the feedback object via API?
+            // The `deleteFiles` API likely deletes the file record.
+            // Does it check if it's linked to a feedback?
+            // If the file is deleted, the link is probably broken or removed by cascade,
+            // BUT to be safe and ensure the backend knows the feedback is updated, we call saveFeedback (update).
+            // Actually, simply calling saveFeedback with remaining files might be correct or just empty.
+            // The `saveFeedback` uses `fileDto` from the request or `filesToSave`.
+            // `filesToSave` is used if `length > 0`.
+            // So if we pass [], it sends what logic?
+            // `fileDto: feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : [],`
+            // If we pass [], it sends empty list.
+            // Does the backend Replace the list or Append?
+            // Based on `onsave` logic:
+            // `fileDto: feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : [],`
+            // If we delete a file, we probably want to send the *remaining* files?
+            // Or does the backend only accept *new* files to add?
+            // If it ONLY accepts new files, then deleting the file via `deleteFiles` API is enough.
+            // However, the user request says "the save button functionalities and needed api calls should happen".
+            // The save logic updates `feedbackRequest`.
+            // If I call saveFeedback(attachmentFeedback, []), it basically updates the feedback entity details/score.
+            // It doesn't seem to send the *full list* of current files to *replace* them, only *new* files to *add*.
+            // Because `filesToSave` comes from `newUniqueFiles` in `onsave`.
+
+            // So, `deleteFiles` probably handles the actual deletion.
+            // But we might want to trigger `saveFeedback` just to "save" the state of feedback if needed (e.g. isSaved=true).
+            this.saveFeedback(attachmentFeedback, [], false);
           }
         },
         error: () => {
-             this.messageService.add({
+          this.messageService.add({
             severity: 'error',
             summary: 'Error',
             detail: 'Failed to delete file',
           });
-        }
+        },
       });
     }
   }
@@ -622,26 +709,29 @@ export class InterviewerFeedbackComponent
           }
 
           // Filter out duplicates based on blobId to prevent adding the same file twice
-          const newUniqueFiles = uploadedFiles.filter(newFile => 
-            !feedback.fileDto!.some(existing => existing.blobId === newFile.blobId)
+          const newUniqueFiles = uploadedFiles.filter(
+            (newFile) =>
+              !feedback.fileDto!.some(
+                (existing) => existing.blobId === newFile.blobId,
+              ),
           );
 
           if (newUniqueFiles.length > 0) {
             feedback.fileDto.push(...newUniqueFiles);
 
             // Fetch blobs for new files so they display correctly
-            newUniqueFiles.forEach(file => this.previewImage(file));
-            
+            newUniqueFiles.forEach((file) => this.previewImage(file));
+
             // Save only the new unique files
             this.saveFeedback(feedback, newUniqueFiles);
           } else {
-             // If all were duplicates or none uploaded (though uploadPendingFiles checks non-empty), 
-             // we might not need to save if nothing changed, 
-             // but if user just wants to ensure state or if there were other changes... 
-             // safest is to save with empty list if we only intended to link new files.
-             // If this was just an upload-triggered save, and no new files, maybe skip?
-             // But let's call save with empty list to be safe / consistent with "onsave" intent.
-             this.saveFeedback(feedback, []);
+            // If all were duplicates or none uploaded (though uploadPendingFiles checks non-empty),
+            // we might not need to save if nothing changed,
+            // but if user just wants to ensure state or if there were other changes...
+            // safest is to save with empty list if we only intended to link new files.
+            // If this was just an upload-triggered save, and no new files, maybe skip?
+            // But let's call save with empty list to be safe / consistent with "onsave" intent.
+            this.saveFeedback(feedback, []);
           }
         })
         .catch(() => {
@@ -655,16 +745,20 @@ export class InterviewerFeedbackComponent
       // No pending files, save directly
       const existingFiles =
         feedback.title === 'Attachments' ? this.uploadedFile : [];
-      // Note: passing existingFiles here might re-send them? 
+      // Note: passing existingFiles here might re-send them?
       // saveFeedback logic: `feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : []`
-      // If we pass existing files, it might try to save them again? 
-      // Usually "filesToSave" implies NEW files to link. 
+      // If we pass existing files, it might try to save them again?
+      // Usually "filesToSave" implies NEW files to link.
       // If no new files, we pass [].
       this.saveFeedback(feedback, []);
     }
   }
 
-  private saveFeedback(feedback: AccordionData, filesToSave: FileDto[], showToast: boolean = true): void {
+  private saveFeedback(
+    feedback: AccordionData,
+    filesToSave: FileDto[],
+    showToast: boolean = true,
+  ): void {
     this.feedbackRequest = {
       assessmentId: Number(this.assessmentId),
       candidateId: this.candidateid ?? '',
@@ -682,7 +776,7 @@ export class InterviewerFeedbackComponent
     };
     // If updating, include the ID
     if (feedback.isSaved || feedback.id) {
-        this.feedbackRequest.id = feedback.id;
+      this.feedbackRequest.id = feedback.id;
     }
 
     this.calculateTotalFeedbackScore();
@@ -692,19 +786,25 @@ export class InterviewerFeedbackComponent
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: feedback.isSaved ? 'Feedback Updated Successfully' : 'Feedback Saved Successfully',
+          detail: feedback.isSaved
+            ? 'Feedback Updated Successfully'
+            : 'Feedback Saved Successfully',
         });
       }
       this.isLoading = false;
       feedback.isSaved = true;
       feedback.id = res.id ? res.id : feedback.id;
-      
+
       // Update original values to match current saved values
       feedback.originalContent = feedback.content;
       feedback.originalScore = feedback.score;
 
       // Update feedback item with saved fileDto if attachments
-      if (feedback.title === 'Attachments' && res.fileDto && res.fileDto.length > 0) {
+      if (
+        feedback.title === 'Attachments' &&
+        res.fileDto &&
+        res.fileDto.length > 0
+      ) {
         feedback.fileDto = res.fileDto;
       }
     };
@@ -727,10 +827,23 @@ export class InterviewerFeedbackComponent
     };
 
     if (feedback.isSaved || feedback.id) {
-        this.interviewService.updateFeedback(this.feedbackRequest).subscribe({ next, error });
+      this.interviewService
+        .updateFeedback(this.feedbackRequest)
+        .subscribe({ next, error });
     } else {
-        this.interviewService.PostFeedback(this.feedbackRequest).subscribe({ next, error });
+      this.interviewService
+        .PostFeedback(this.feedbackRequest)
+        .subscribe({ next, error });
     }
+  }
+
+  private convertTimerHourToMinutes(timerHour: number): number {
+    if (!timerHour) return 0;
+
+    const hours = Math.floor(timerHour);
+    const minutes = Math.round((timerHour - hours) * 100);
+
+    return hours * 60 + minutes;
   }
   public onEdit(feedback: AccordionData) {
     // When editing, don't change isSaved status - user can modify and save again
@@ -759,11 +872,11 @@ export class InterviewerFeedbackComponent
       });
       this.isLoading = false;
       feedback.isSaved = true;
-      
+
       // Update original values to match current saved values
       feedback.originalContent = feedback.content;
       feedback.originalScore = feedback.score;
-      
+
       this.isImageLoading = true;
       if (feedback.fileDto && feedback.fileDto.length > 0) {
         this.GetfeedbackCriteria();
@@ -794,7 +907,7 @@ export class InterviewerFeedbackComponent
     // Normalized content comparison (strip HTML tags)
     const currentContent = this.stripHtml(feedback.content ?? '');
     const originalContent = this.stripHtml(feedback.originalContent ?? '');
-    
+
     // Check if score changed
     const currentScore = feedback.score ?? null;
     const originalScore = feedback.originalScore ?? null;
@@ -806,18 +919,18 @@ export class InterviewerFeedbackComponent
     // If it's a new unsaved item, and both content and score are empty/null, it should be disabled
     // This handles the case where p-editor initializes with <p><br></p> which strips to empty
     if (!feedback.isSaved) {
-        const isContentEmpty = currentContent.trim() === '';
-        const isScoreEmpty = currentScore === null;
-        
-        if (isContentEmpty && isScoreEmpty) {
-            return false;
-        }
+      const isContentEmpty = currentContent.trim() === '';
+      const isScoreEmpty = currentScore === null;
+
+      if (isContentEmpty && isScoreEmpty) {
+        return false;
+      }
     }
-    
+
     return contentChanged || scoreChanged;
   }
 
-  private stripHtml(html: string): string {
+  public stripHtml(html: string): string {
     if (!html) return '';
     const tmp = document.createElement('DIV');
     tmp.innerHTML = html;

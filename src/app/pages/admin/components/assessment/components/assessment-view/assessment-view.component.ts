@@ -50,6 +50,8 @@ export interface RoundModel {
   sequence: number;
   status?: string;
   statusId?: number;
+  timerHour?: number;
+  maxTerminationCount?: number;
 }
 
 @Component({

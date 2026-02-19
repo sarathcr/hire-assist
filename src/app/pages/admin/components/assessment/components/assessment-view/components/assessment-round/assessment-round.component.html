@@ -47,10 +47,18 @@
         <!-- Use opacity and pointer-events to prevent layout shifts while hiding -->
         <div
           class="assessment-round__rounds-section"
-          [style.opacity]="(submittedData && submittedData.length > 0) ? '1' : '0'"
-          [style.pointer-events]="(submittedData && submittedData.length > 0) ? 'auto' : 'none'"
-          [style.max-height]="(submittedData && submittedData.length > 0) ? 'none' : '0'"
-          [style.overflow]="(submittedData && submittedData.length > 0) ? 'visible' : 'hidden'"
+          [style.opacity]="
+            submittedData && submittedData.length > 0 ? '1' : '0'
+          "
+          [style.pointer-events]="
+            submittedData && submittedData.length > 0 ? 'auto' : 'none'
+          "
+          [style.max-height]="
+            submittedData && submittedData.length > 0 ? 'none' : '0'
+          "
+          [style.overflow]="
+            submittedData && submittedData.length > 0 ? 'visible' : 'hidden'
+          "
         >
           <div #roundsList class="assessment-round__rounds-list">
             @for (data of submittedData; let idx = $index; track data.id) {
@@ -82,14 +90,79 @@
         <!-- Use opacity and pointer-events to prevent layout shifts while hiding -->
         <div
           class="assessment-round__empty-state"
-          [style.opacity]="(!submittedData || submittedData.length === 0) ? '1' : '0'"
-          [style.pointer-events]="(!submittedData || submittedData.length === 0) ? 'auto' : 'none'"
-          [style.max-height]="(!submittedData || submittedData.length === 0) ? 'none' : '0'"
-          [style.overflow]="(!submittedData || submittedData.length === 0) ? 'visible' : 'hidden'"
+          [style.opacity]="
+            !submittedData || submittedData.length === 0 ? '1' : '0'
+          "
+          [style.pointer-events]="
+            !submittedData || submittedData.length === 0 ? 'auto' : 'none'
+          "
+          [style.max-height]="
+            !submittedData || submittedData.length === 0 ? 'none' : '0'
+          "
+          [style.overflow]="
+            !submittedData || submittedData.length === 0 ? 'visible' : 'hidden'
+          "
         >
           <i class="pi pi-inbox assessment-round__empty-icon"></i>
           <p class="assessment-round__empty-text">No rounds selected</p>
         </div>
+
+        <!-- Configuration Section -->
+        @if (submittedData && submittedData.length > 0) {
+          <div class="assessment-round__config-section">
+            <h3 class="assessment-round__config-title">Round Configuration</h3>
+            <div class="assessment-round__config-list">
+              @for (data of submittedData; let idx = $index; track data.id) {
+                <div class="assessment-round__config-item">
+                  <div class="assessment-round__config-round-info">
+                    <span class="assessment-round__round-number">{{
+                      idx + 1
+                    }}</span>
+                    <span class="assessment-round__round-name">{{
+                      data.name
+                    }}</span>
+                  </div>
+
+                  <div class="assessment-round__config-inputs">
+                    <!-- Max Attempts Input (Only for Aptitude Round) -->
+                    @if (
+                      data &&
+                      data.name &&
+                      data.name.toLowerCase().includes("aptitude")
+                    ) {
+                      <div class="assessment-round__input-group">
+                        <label [for]="'attempts-' + idx">Number of Tries</label>
+                        <input
+                          pInputText
+                          type="number"
+                          [id]="'attempts-' + idx"
+                          [(ngModel)]="data.maxTerminationCount"
+                          min="1"
+                          placeholder="1"
+                        />
+                      </div>
+                    }
+                    <!-- Duration Input -->
+                    <div class="assessment-round__input-group">
+                      <label [for]="'duration-' + idx">Duration (HH:mm)</label>
+                      <p-calendar 
+                        [id]="'duration-' + idx" 
+                        [(ngModel)]="data.durationDate" 
+                        [timeOnly]="true" 
+                        [showTime]="true" 
+                        [hourFormat]="'24'"
+                        inputId="timeonly"
+                        placeholder="00:00"
+                        appendTo="body"
+                        styleClass="assessment-round__duration-picker"
+                      ></p-calendar>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
       </div>
 
       <!-- Footer Submit Button -->

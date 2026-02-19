@@ -9,6 +9,7 @@ export interface InterviewerCandidate {
   statusId: number; // Using the enum
   previousInterviews: PreviousInterview[];
   isActive: boolean;
+  timerHour: number;
 }
 
 export interface PreviousInterview {

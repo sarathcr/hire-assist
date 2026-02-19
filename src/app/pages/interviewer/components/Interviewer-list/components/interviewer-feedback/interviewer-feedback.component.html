@@ -5,7 +5,15 @@
 @if (!isLoading && responseData && feedbackdetails) {
   <div class="interview-feedback">
     <p-toast></p-toast>
-    <!-- Hero Header Section -->
+    <div class="interview-feedback__timer">
+      <app-countdown-timer
+        [timerHour]="responseData.timerHour"
+        [warningThresholds]="warningThresholds"
+        (warning)="handleTimerWarning($event)"
+        (timeExpired)="handleTimeExpired()"
+      >
+      </app-countdown-timer>
+    </div>
     <p-card class="interview-feedback__header-card">
       <div class="interview-feedback__header">
         <div class="interview-feedback__header-content">
@@ -31,7 +39,6 @@
       </div>
     </p-card>
 
-    <!-- Candidate Info Card -->
     <p-card class="interview-feedback__candidate-card">
       <div class="interview-feedback__candidate-content">
         <div class="interview-feedback__candidate-info">
@@ -97,7 +104,6 @@
       </div>
     </p-card>
 
-    <!-- Previous Rounds Section -->
     @if (
       responseData.previousInterviews &&
       responseData.previousInterviews.length > 0
@@ -161,7 +167,6 @@
                             }
                           </div>
                           <div class="interview-feedback__detail-grid">
-                            <!-- Question Set - Only show for aptitude rounds -->
                             @if (
                               isAptitudeRound(round.roundName) &&
                               hasValue(detail.questionSet)
@@ -177,7 +182,6 @@
                                 >
                               </div>
                             }
-                            <!-- Batch - Only show for aptitude rounds -->
                             @if (
                               isAptitudeRound(round.roundName) &&
                               hasValue(detail.batch)
@@ -193,7 +197,6 @@
                                 >
                               </div>
                             }
-                            <!-- Panel Name - Show if available -->
                             @if (hasValue(detail.panelName)) {
                               <div class="interview-feedback__detail-item">
                                 <span class="interview-feedback__detail-label">
@@ -206,7 +209,6 @@
                                 >
                               </div>
                             }
-                            <!-- Interviewer Name - Show if available -->
                             @if (hasValue(detail.interviewerName)) {
                               <div class="interview-feedback__detail-item">
                                 <span class="interview-feedback__detail-label">
@@ -219,7 +221,6 @@
                                 >
                               </div>
                             }
-                            <!-- Total Questions - Only show for aptitude rounds or if value exists -->
                             @if (
                               (isAptitudeRound(round.roundName) ||
                                 hasValue(detail.totalQuestions)) &&
@@ -236,7 +237,6 @@
                                 >
                               </div>
                             }
-                            <!-- Attended Questions - Only show for aptitude rounds or if value exists -->
                             @if (
                               (isAptitudeRound(round.roundName) ||
                                 hasValue(detail.attendedQuestions)) &&
@@ -253,7 +253,6 @@
                                 >
                               </div>
                             }
-                            <!-- Correct Answers - Only show for aptitude rounds or if value exists -->
                             @if (
                               (isAptitudeRound(round.roundName) ||
                                 getCorrectAnswers(detail) > 0) &&
@@ -270,7 +269,6 @@
                                 >
                               </div>
                             }
-                            <!-- Skipped - Only show for aptitude rounds or if value exists -->
                             @if (
                               (isAptitudeRound(round.roundName) ||
                                 hasValue(detail.skipped)) &&
@@ -287,7 +285,6 @@
                                 >
                               </div>
                             }
-                            <!-- Total Score - Show if available -->
                             @if (
                               hasValue(detail.totalScore) ||
                               detail.totalScore === 0
@@ -305,7 +302,6 @@
                                 >
                               </div>
                             }
-                            <!-- Score - Show if available and different from totalScore -->
                             @if (
                               hasValue(detail.score) &&
                               detail.score !== detail.totalScore
@@ -322,7 +318,6 @@
                               </div>
                             }
                           </div>
-                          <!-- Feedback List DTO - Show for non-aptitude rounds -->
                           @if (
                             !isAptitudeRound(round.roundName) &&
                             detail.feedbackListDto &&
@@ -355,7 +350,9 @@
                                           >{{ feedback.criteria }}</span
                                         >
                                       </div>
-                                      @if (feedback.criteria !== 'Attachments') {
+                                      @if (
+                                        feedback.criteria !== "Attachments"
+                                      ) {
                                         <div
                                           class="interview-feedback__feedback-score"
                                         >
@@ -408,7 +405,6 @@
       </p-card>
     }
 
-    <!-- Feedback Criteria Section -->
     <p-card class="interview-feedback__feedback-card">
       <div class="interview-feedback__section-header">
         <div class="interview-feedback__section-icon">
@@ -434,13 +430,14 @@
                 />
 
                 <div class="interview-feedback__header-status">
-                  <!-- Only show score for non-attachment criteria -->
                   @if (
-                    feedback.title !== 'Attachments' &&
+                    feedback.title !== "Attachments" &&
                     (feedback.score || feedback.score === 0)
                   ) {
                     <p-tag
-                      [value]="'Score: ' + feedback.score + '/' + feedback.maxScore"
+                      [value]="
+                        'Score: ' + feedback.score + '/' + feedback.maxScore
+                      "
                       severity="info"
                       icon="pi pi-star"
                     />
@@ -478,7 +475,6 @@
                   </p-fileupload>
 
                   <div class="interview-feedback__attachment-grid">
-                    <!-- Pending Files -->
                     @if (pendingFilePreviews.length > 0 && !isUploadingFiles) {
                       @for (
                         preview of pendingFilePreviews;
@@ -492,7 +488,8 @@
                             class="interview-feedback__attachment-img"
                           />
                           <div class="interview-feedback__attachment-overlay">
-                            <span class="interview-feedback__status-badge pending"
+                            <span
+                              class="interview-feedback__status-badge pending"
                               >Pending</span
                             >
                             <button
@@ -509,14 +506,12 @@
                       }
                     }
 
-                    <!-- Skeleton Loaders -->
                     @if (isUploadingFiles) {
                       <div class="interview-feedback__attachment-card skeleton">
                         <app-image-skeleton></app-image-skeleton>
                       </div>
                     }
 
-                    <!-- Saved Files -->
                     @if (feedback.fileDto && feedback.fileDto.length > 0) {
                       @for (file of feedback.fileDto; track file.id) {
                         <div class="interview-feedback__attachment-card">
@@ -532,7 +527,9 @@
                             class="interview-feedback__app-image"
                           >
                           </app-image>
-                          <div class="interview-feedback__attachment-overlay saved">
+                          <div
+                            class="interview-feedback__attachment-overlay saved"
+                          >
                             <button
                               type="button"
                               class="interview-feedback__action-btn delete"
@@ -603,7 +600,8 @@
                         (btnClick)="
                           feedback.isSaved ? onEdit(feedback) : onsave(feedback)
                         "
-                      ></app-button>
+                      >
+                      </app-button>
                     } @else {
                       <p-tag
                         value="Submitted"
@@ -614,7 +612,6 @@
                   </div>
                 </div>
               }
-
             </p-accordion-content>
           </p-accordion-panel>
         }
@@ -625,8 +622,10 @@
             [buttonLabel]="'Review & Submit'"
             [icon]="'pi pi-check-circle'"
             [buttonSize]="'large'"
+            [disabled]="!isAllCriteriaMarked"
             (btnClick)="onSubmit()"
-          ></app-button>
+          >
+          </app-button>
         </div>
       }
     </p-card>

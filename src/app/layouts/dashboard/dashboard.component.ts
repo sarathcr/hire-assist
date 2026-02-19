@@ -138,7 +138,7 @@ export class DashboardComponent implements OnInit {
         label: 'Frontdesk',
         icon: 'pi pi-home',
         routerLink: ['/frontdesk'],
-        routerLinkActiveOptions: { exact: true },
+        routerLinkActiveOptions: { exact: false },
         tooltip: 'Frontdesk',
       });
     }
@@ -187,7 +187,7 @@ export class DashboardComponent implements OnInit {
         label: 'Dashboard',
         icon: 'pi pi-home',
         routerLink: ['/candidate'],
-        routerLinkActiveOptions: { exact: true },
+        routerLinkActiveOptions: { exact: false },
         tooltip: 'Dashboard',
       },
     ];
@@ -217,7 +217,7 @@ export class DashboardComponent implements OnInit {
         label: 'Frontdesk',
         icon: 'pi pi-home',
         routerLink: ['/frontdesk'],
-        routerLinkActiveOptions: { exact: true },
+        routerLinkActiveOptions: { exact: false },
         tooltip: 'Frontdesk',
       });
     }
@@ -248,7 +248,7 @@ export class DashboardComponent implements OnInit {
         label: 'Frontdesk',
         icon: 'pi pi-home',
         routerLink: ['/frontdesk'],
-        routerLinkActiveOptions: { exact: true },
+        routerLinkActiveOptions: { exact: false },
         tooltip: 'Frontdesk',
       });
     }
@@ -261,7 +261,7 @@ export class DashboardComponent implements OnInit {
         label: 'Recruitments',
         icon: 'pi pi-home',
         routerLink: ['/frontdesk'],
-        routerLinkActiveOptions: { exact: true },
+        routerLinkActiveOptions: { exact: false },
         tooltip: 'Recruitments',
       },
     ];

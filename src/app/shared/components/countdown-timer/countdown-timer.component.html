@@ -1,0 +1,10 @@
+<div class="countdown-timer" [class.overtime-active]="isOvertime()">
+  <i
+    class="pi"
+    [ngClass]="isOvertime() ? 'pi-exclamation-circle' : 'pi-clock'"
+  ></i>
+  <span>{{ displayTime() }}</span>
+  @if (isOvertime()) {
+    <span class="overtime-label">OVERTIME</span>
+  }
+</div>

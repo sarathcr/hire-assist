@@ -49,6 +49,8 @@ export interface AssessmentRoundsInterface {
   RoundId: number;
   name: string;
   sequence: number;
+  timerHour?: number;
+  maxTerminationCount?: number;
   assessmentId?: number;
 }
 
@@ -109,6 +111,8 @@ export class RoundModal extends FormEntity {
   id = '';
   name = '';
   sequence = 0;
+  timerHour = 0;
+  maxTerminationCount = 0;
   metadata: Metadata = {
     validatorsMap: {
       name: [Validators.required],
