@@ -543,7 +543,7 @@
     .assessment-round__round-number {
       margin: 0;
     }
-    
+
     .assessment-round__round-name {
       font-size: 15px;
     }
@@ -552,7 +552,7 @@
   &__config-inputs {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 32px;
     flex-wrap: wrap;
 
     @media screen and (max-width: 768px) {
@@ -565,6 +565,8 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    position: relative;
+    margin-bottom: var(--spacing-20);
 
     label {
       font-size: 12px;
@@ -576,9 +578,13 @@
 
     input {
       width: 140px;
-      
+
       @media screen and (max-width: 768px) {
         width: 100%;
+      }
+
+      &.ng-invalid.ng-dirty {
+        border-color: #e24c4c;
       }
     }
 
@@ -592,7 +598,25 @@
       .p-inputtext {
         width: 100% !important;
       }
+
+      &.ng-invalid.ng-dirty .p-inputtext {
+        color: var(--p-form-field-invalid-placeholder-color);
+      }
     }
+  }
+
+  &__validation-label {
+    position: absolute;
+    left: 0;
+    font-size: var(--font-size-small);
+    bottom: -18px;
+    color: var(--p-form-field-invalid-placeholder-color);
+    white-space: nowrap;
+  }
+
+  &__required {
+    color: var(--p-form-field-invalid-placeholder-color);
+    font-weight: 700;
   }
 
   /* ---------------- RESPONSIVE ---------------- */

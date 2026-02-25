@@ -56,8 +56,7 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
         this.timeLeft.set(totalSeconds);
         this.hasEmittedExpired = false;
         this.startTimer();
-      },
-      { allowSignalWrites: true },
+      }
     );
   }
 

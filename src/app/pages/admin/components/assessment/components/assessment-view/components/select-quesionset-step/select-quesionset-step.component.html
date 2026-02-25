@@ -62,18 +62,6 @@
                       </div>
                     }
                   </div>
-                  @let accordionData =
-                    questionSetAccordionData.get(questionSet.id.toString());
-                  @if (
-                    accordionData &&
-                    accordionData.selectedIds &&
-                    accordionData.selectedIds.length > 0
-                  ) {
-                    <span class="QuestionSet__badge">
-                      <i class="pi pi-check-circle"></i>
-                      {{ accordionData.selectedIds.length }} selected
-                    </span>
-                  }
                 </div>
               </p-accordion-header>
               <p-accordion-content>
@@ -141,7 +129,7 @@
                         >({{
                           currentAccordionData.selectedIds.length
                         }}
-                        questions)</span
+                        questions selected)</span
                       >
                     </div>
                     <div class="QuestionSet__summary-content">

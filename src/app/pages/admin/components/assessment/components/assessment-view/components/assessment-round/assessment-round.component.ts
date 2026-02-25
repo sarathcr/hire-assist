@@ -12,7 +12,13 @@ import {
   ChangeDetectorRef,
 } from '@angular/core';
 import Sortable from 'sortablejs';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormArray,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
@@ -56,7 +62,7 @@ import { StepsStatusService } from '../../../../services/steps-status.service';
     InputTextModule,
     FloatLabelModule,
     FormsModule,
-    CalendarModule
+    CalendarModule,
   ],
   templateUrl: './assessment-round.component.html',
   styleUrl: './assessment-round.component.scss',
@@ -73,6 +79,7 @@ export class AssessmentRoundComponent
   public submittedData: AssessmentRoundFormGroup[] = [];
   public newRoundsToCreate: RoundsInterface[] = [];
   public isLoading = false;
+  public roundConfigForms = new FormArray<FormGroup>([]);
 
   public assessmentId = input<number>();
   private dialogRef: DynamicDialogRef | undefined;
@@ -169,7 +176,7 @@ export class AssessmentRoundComponent
         name: item.label,
         timerHour: 0,
         durationDate: new Date(new Date().setHours(0, 0, 0, 0)),
-        maxTerminationCount: 0
+        maxTerminationCount: 0,
       }));
 
     const existingIds = new Set(this.submittedData.map((item) => item.id));
@@ -183,6 +190,7 @@ export class AssessmentRoundComponent
     );
 
     this.submittedData = [...existingData, ...newRounds];
+    this.buildRoundConfigForms();
     this.reinitSortable();
   }
 
@@ -312,6 +320,7 @@ export class AssessmentRoundComponent
       ); // Prevent triggering valueChanges
     }
     this.roundsUpdated.emit(this.submittedData.length);
+    this.buildRoundConfigForms();
     this.reinitSortable();
   }
 
@@ -374,12 +383,83 @@ export class AssessmentRoundComponent
     });
   }
 
+  public getRoundFormGroup(idx: number): FormGroup {
+    return this.roundConfigForms.at(idx) as FormGroup;
+  }
+
+  public getErrorMessage(idx: number, controlName: string): string {
+    const group = this.getRoundFormGroup(idx);
+    const fc = group.get(controlName);
+
+    if (!fc || !fc.touched || !fc.errors) {
+      return '';
+    }
+
+    const errors = fc.errors;
+
+    if (errors['required']) {
+      return 'This field is required.';
+    }
+
+    if (errors['min']) {
+      return `Value must be at least ${errors['min'].min}.`;
+    }
+
+    return 'This field has an invalid value.';
+  }
+
+  public buildRoundConfigForms(): void {
+    this.roundConfigForms.clear();
+    for (const data of this.submittedData) {
+      const isAptitude = data.name?.toLowerCase().includes('aptitude');
+      const group = new FormGroup({
+        duration: new FormControl(data.durationDate, [Validators.required]),
+        maxTerminationCount: new FormControl(
+          data.maxTerminationCount,
+          isAptitude ? [Validators.required, Validators.min(1)] : [],
+        ),
+      });
+
+      // Sync FormControl values back to submittedData on change
+      group.get('duration')?.valueChanges.subscribe((val) => {
+        data.durationDate = val ?? undefined;
+      });
+      group.get('maxTerminationCount')?.valueChanges.subscribe((val) => {
+        data.maxTerminationCount = val ?? undefined;
+      });
+
+      this.roundConfigForms.push(group);
+    }
+  }
+
   public onSubmitAll(): void {
     if (this.submittedData.length === 0) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
         detail: 'Please select or create at least one round.',
+      });
+      return;
+    }
+
+    // Validate: check duration is not 00:00 for each round
+    let hasInvalidDuration = false;
+    this.roundConfigForms.controls.forEach((group) => {
+      const durationCtrl = group.get('duration');
+      const val = durationCtrl?.value;
+      if (!val || (val.getHours() === 0 && val.getMinutes() === 0)) {
+        durationCtrl?.setErrors({ required: true });
+        hasInvalidDuration = true;
+      }
+    });
+
+    this.roundConfigForms.markAllAsTouched();
+
+    if (this.roundConfigForms.invalid || hasInvalidDuration) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Validation Error',
+        detail: 'Please fill in all required fields for each round.',
       });
       return;
     }
@@ -484,8 +564,8 @@ export class AssessmentRoundComponent
         name: item.name,
         sequence: index + 1,
         // Convert durationDate (Date) to hours decimal (number)
-        timerHour: item.durationDate 
-          ? item.durationDate.getHours() + (item.durationDate.getMinutes() / 100)
+        timerHour: item.durationDate
+          ? item.durationDate.getHours() + item.durationDate.getMinutes() / 100
           : 0,
         maxTerminationCount: item.maxTerminationCount || 0,
       }),
@@ -540,26 +620,26 @@ export class AssessmentRoundComponent
           this.isDataLoaded = true;
           this.assessmentRounds = response;
           this.submittedData = response.map((item) => {
-
-          const date = new Date();
-          const timerValue = item.timerHour || 0;         
-          const hours = Math.floor(timerValue);
-          const minutes = Math.round((timerValue - hours) * 100);
-          date.setHours(hours);
-          date.setMinutes(minutes);
-          date.setSeconds(0);
+            const date = new Date();
+            const timerValue = item.timerHour || 0;
+            const hours = Math.floor(timerValue);
+            const minutes = Math.round((timerValue - hours) * 100);
+            date.setHours(hours);
+            date.setMinutes(minutes);
+            date.setSeconds(0);
 
             return {
-            name: item.round,
-            id: item.roundId.toString(),
-            sequence: item.sequence,
-            timerHour: item.timerHour || 0,
-            durationDate: date,
-            maxTerminationCount: item.maxTerminationCount || 0,
-          }});
+              name: item.round,
+              id: item.roundId.toString(),
+              sequence: item.sequence,
+              timerHour: item.timerHour || 0,
+              durationDate: date,
+              maxTerminationCount: item.maxTerminationCount || 0,
+            };
+          });
           this.fGroup.patchValue({
             round: this.submittedData.map((item) => item.id),
-          }); 
+          });
           this.assessmentRoundSubscription = undefined;
           this.roundsUpdated.emit(this.submittedData.length);
           this.cdr.detectChanges();

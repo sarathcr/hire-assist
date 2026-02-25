@@ -325,7 +325,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Deleted Assessment Successfully',
+        detail: 'Deleted Recruitment Successfully',
       });
       this.reloadPaginatedData();
       this.isLoading = false;
@@ -373,7 +373,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
 
   private getConfirmDeleteDialogData(): DialogData {
     return {
-      message: `Are you sure you want to delete this Assessment?`,
+      message: `Are you sure you want to delete this recruitment?`,
       isChoice: true,
       closeOnNavigation: true,
       acceptButtonText: 'Yes',

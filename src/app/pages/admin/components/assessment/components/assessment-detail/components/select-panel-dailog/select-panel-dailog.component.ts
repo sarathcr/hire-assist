@@ -213,10 +213,18 @@ export class SelectPanelDailogComponent implements OnInit {
     this.fGroup?.get('panels')?.setValidators(Validators.required);
     this.fGroup?.get('panels')?.updateValueAndValidity();
 
+    // Map interviewer objects ({id, name}) to plain ID strings so the
+    // multiselect can match them against its option values (which use the id/email as value).
+    const interviewerIds: string[] = Array.isArray(panelData.interviewers)
+      ? (panelData.interviewers as unknown as { id: string; name: string }[]).map(
+          (i) => i.id,
+        )
+      : [];
+
     const normalizedFormData: interviewerInterface = {
       id: panelData.id ? Number.parseInt(panelData.id) : undefined,
       panelId: panelData.id ? Number.parseInt(panelData.id) : undefined,
-      interviewers: panelData.interviewers ?? [],
+      interviewers: interviewerIds,
       panelName: panelData.panel,
     };
 

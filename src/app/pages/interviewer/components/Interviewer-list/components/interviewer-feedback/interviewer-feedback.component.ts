@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AccordionModule } from 'primeng/accordion';
 import { MessageService } from 'primeng/api';
 import { BadgeModule } from 'primeng/badge';
@@ -78,7 +79,7 @@ import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 })
 export class InterviewerFeedbackComponent
   extends BaseComponent
-  implements OnInit
+  implements OnInit, OnDestroy
 {
   public score = new Score();
   public configMap!: ConfigMap;
@@ -104,10 +105,19 @@ export class InterviewerFeedbackComponent
   public feedbackRequest!: InterviewerFeedback;
   public isImageLoading = false;
   public isUploadingFiles = false;
+  public isDragOver = false;
+
   public interview!: Interview;
   public durationMinutes = 0;
   public warningThresholds = [10, 5];
   private ref: any;
+
+  // ── Draggable timer state ────────────────────────
+  public timerPos: { x: number; y: number } | null = null;
+  public isDraggingTimer = false;
+  private _timerDragOffset = { x: 0, y: 0 };
+  private _timerMoveHandler?: (e: MouseEvent) => void;
+  private _timerUpHandler?: () => void;
 
   constructor(
     private readonly interviewService: InterviewService,
@@ -171,24 +181,35 @@ export class InterviewerFeedbackComponent
       this.pendingFiles = [];
       this.pendingFilePreviews = [];
 
-      this.feedbackcriteria = this.feedbackdetails.map((item) => ({
-        title: item.criteria,
-        value: item.id,
-        content: item.comments ?? '',
-        score: item.score ?? null,
-        maxScore: item.maxScore ?? 10,
-        isSaved:
-          item.comments ||
-          item.score ||
-          (item.fileDto && item.fileDto.length > 0)
-            ? true
-            : false,
-        isScoreInValid: false,
-        id: item.feedbackId,
-        fileDto: item.fileDto,
-        originalContent: item.comments ?? '',
-        originalScore: item.score ?? null,
-      }));
+      this.feedbackcriteria = this.feedbackdetails.map((item) => {
+        // Sort files if they exist to maintain consistent order in UI
+        if (item.fileDto && item.fileDto.length > 0) {
+          item.fileDto.sort((a, b) => {
+            const nameA = a.name?.toLowerCase() || '';
+            const nameB = b.name?.toLowerCase() || '';
+            return nameA.localeCompare(nameB);
+          });
+        }
+
+        return {
+          title: item.criteria,
+          value: item.id,
+          content: item.comments ?? '',
+          score: item.score ?? null,
+          maxScore: item.maxScore ?? 10,
+          isSaved:
+            item.comments ||
+            item.score ||
+            (item.fileDto && item.fileDto.length > 0)
+              ? true
+              : false,
+          isScoreInValid: false,
+          id: item.feedbackId,
+          fileDto: item.fileDto,
+          originalContent: item.comments ?? '',
+          originalScore: item.score ?? null,
+        };
+      });
       this.feedbackcriteria.forEach((feedback) => {
         if (
           feedback.title === 'Attachments' &&
@@ -199,6 +220,7 @@ export class InterviewerFeedbackComponent
         }
       });
       this.calculateTotalFeedbackScore();
+      this.loadAttachmentFiles();
     };
     const error = (error: CustomErrorResponse) => {
       this.messageService.add({
@@ -264,6 +286,10 @@ export class InterviewerFeedbackComponent
     return this.feedbackcriteria
       .filter((fb) => fb.title !== 'Attachments')
       .reduce((acc, curr) => acc + (curr.maxScore || 0), 0);
+  }
+
+  public get savedCriteriaCount(): number {
+    return this.feedbackcriteria.filter((fb) => fb.isSaved).length;
   }
 
   public get isAllCriteriaMarked(): boolean {
@@ -442,7 +468,12 @@ export class InterviewerFeedbackComponent
               pendingFile.lastModified === file.lastModified,
           );
 
-          if (!isDuplicate) {
+          // Also check if file was already uploaded
+          const isAlreadyUploaded = this.uploadedFile.some(
+            (uploaded) => uploaded.name === file.name,
+          );
+
+          if (!isDuplicate && !isAlreadyUploaded) {
             newFiles.push(file);
             this.pendingFiles.push(file);
             const reader = new FileReader();
@@ -483,6 +514,9 @@ export class InterviewerFeedbackComponent
   }
 
   private uploadAndSaveAttachments(): void {
+    // Guard against concurrent uploads
+    if (this.isUploadingFiles) return;
+
     const attachmentFeedback = this.feedbackcriteria.find(
       (f) => f.title === 'Attachments',
     );
@@ -491,37 +525,8 @@ export class InterviewerFeedbackComponent
     this.uploadPendingFiles()
       .then((uploadedFiles: FileDto[]) => {
         if (uploadedFiles.length > 0) {
-          // Update feedback object
-          if (!attachmentFeedback.fileDto) {
-            attachmentFeedback.fileDto = [];
-          }
-
-          // Filter duplicates (though uploadPendingFiles pushes to this.uploadedFile,
-          // we need to sync attachmentFeedback.fileDto if it's separate?
-          // In 'onsave' we pushed to feedback.fileDto.
-          // Implementation in uploadPendingFiles pushes to this.uploadedFile.
-
-          // Sync this.uploadedFile to attachmentFeedback.fileDto
-          // Actually `this.uploadedFile` is used as the source of truth for display?
-          // Let's ensure consistency.
-
-          // Just add the new files to the feedback dto for saving
-          const newUniqueFiles = uploadedFiles.filter(
-            (newFile) =>
-              !attachmentFeedback.fileDto!.some(
-                (existing) => existing.blobId === newFile.blobId,
-              ),
-          );
-
-          if (newUniqueFiles.length > 0) {
-            attachmentFeedback.fileDto.push(...newUniqueFiles);
-
-            // Fetch blobs for display
-            newUniqueFiles.forEach((file) => this.previewImage(file));
-
-            // Save feedback to persist the association
-            this.saveFeedback(attachmentFeedback, newUniqueFiles);
-          }
+          // Reload feedback criteria to get proper file data from the server
+          this.GetfeedbackCriteria();
         }
       })
       .catch((err) => {
@@ -543,35 +548,70 @@ export class InterviewerFeedbackComponent
 
   private uploadPendingFiles(): Promise<FileDto[]> {
     return new Promise((resolve, reject) => {
-      const uploadedFiles: FileDto[] = [];
       const totalFiles = this.pendingFiles.length;
 
       if (totalFiles === 0) {
-        resolve(uploadedFiles);
+        resolve([]);
         return;
       }
 
       this.isUploadingFiles = true;
 
-      const payload = {
-        attachmentType: 9,
-        files: this.pendingFiles,
-      };
+      const attachmentFeedback = this.feedbackcriteria.find(
+        (f) => f.title === 'Attachments',
+      );
+      const feedbackCriteriaId = attachmentFeedback ? attachmentFeedback.value : 6;
+      const feedbackId = attachmentFeedback?.id ?? 0;
 
-      this.interviewService.uploadMultiFiles(payload).subscribe({
-        next: (uploadedFilesResponse: FileDto[]) => {
-          // Add mapped files to local list
-          uploadedFiles.push(...uploadedFilesResponse);
-          this.uploadedFile.push(...uploadedFiles);
+      const filesToUpload = [...this.pendingFiles];
 
-          this.pendingFiles = [];
-          this.pendingFilePreviews = [];
+      // Clear pending files immediately to prevent duplicate uploads
+      this.pendingFiles = [];
+      this.pendingFilePreviews = [];
+
+      const uploadObservables = filesToUpload.map((file) =>
+        this.interviewService.uploadAttachment({
+          idType: 9,
+          file: file,
+          id: feedbackId,
+          interviewerId: this.interviewerId ?? '',
+          candidateId: this.candidateid ?? '',
+          assessmentId: Number(this.assessmentId),
+          feedbackCriteriaId: feedbackCriteriaId,
+          feedbackDetails: '<p><p/>',
+          feedbackScore: 0,
+          assessmentRoundId: Number(this.assessmentRoundId),
+          interviewId: Number(this.interviewId),
+        }),
+      );
+
+      forkJoin(uploadObservables).subscribe({
+        next: (responses) => {
+          // Map raw API responses to FileDto objects
+          const mappedFiles: FileDto[] = responses.map((res, index) => {
+            const fileUrl = res.fileUrl || '';
+            // Extract blob ID from fileUrl path (e.g. "interview/files/Work Sheet/3d25fdbd-...-596.png")
+            const pathSegments = fileUrl.split('/');
+            const blobFileName = pathSegments[pathSegments.length - 1] || '';
+            const blobId = blobFileName.split('.')[0] || blobFileName;
+
+            return {
+              id: blobId,
+              blobId: blobId,
+              name: filesToUpload[index]?.name || blobFileName,
+              path: fileUrl,
+              url: fileUrl,
+              attachmentType: 9,
+            } as FileDto;
+          });
+
+          this.uploadedFile.push(...mappedFiles);
           this.isUploadingFiles = false;
-          resolve(uploadedFiles);
+          resolve(mappedFiles);
         },
-        error: (error) => {
+        error: (err: unknown) => {
           this.isUploadingFiles = false;
-          reject(error);
+          reject(err);
         },
       });
     });
@@ -652,34 +692,8 @@ export class InterviewerFeedbackComponent
             if (fileIdx !== -1) {
               attachmentFeedback.fileDto.splice(fileIdx, 1);
             }
-            // Save feedback to reflect the removal of the attachment link
-            // We pass empty array for filesToSave because we are just updating the state (deletion), not adding new files.
-            // But strictly speaking, if we delete a file, do we need to update the feedback object via API?
-            // The `deleteFiles` API likely deletes the file record.
-            // Does it check if it's linked to a feedback?
-            // If the file is deleted, the link is probably broken or removed by cascade,
-            // BUT to be safe and ensure the backend knows the feedback is updated, we call saveFeedback (update).
-            // Actually, simply calling saveFeedback with remaining files might be correct or just empty.
-            // The `saveFeedback` uses `fileDto` from the request or `filesToSave`.
-            // `filesToSave` is used if `length > 0`.
-            // So if we pass [], it sends what logic?
-            // `fileDto: feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : [],`
-            // If we pass [], it sends empty list.
-            // Does the backend Replace the list or Append?
-            // Based on `onsave` logic:
-            // `fileDto: feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : [],`
-            // If we delete a file, we probably want to send the *remaining* files?
-            // Or does the backend only accept *new* files to add?
-            // If it ONLY accepts new files, then deleting the file via `deleteFiles` API is enough.
-            // However, the user request says "the save button functionalities and needed api calls should happen".
-            // The save logic updates `feedbackRequest`.
-            // If I call saveFeedback(attachmentFeedback, []), it basically updates the feedback entity details/score.
-            // It doesn't seem to send the *full list* of current files to *replace* them, only *new* files to *add*.
-            // Because `filesToSave` comes from `newUniqueFiles` in `onsave`.
-
-            // So, `deleteFiles` probably handles the actual deletion.
-            // But we might want to trigger `saveFeedback` just to "save" the state of feedback if needed (e.g. isSaved=true).
-            this.saveFeedback(attachmentFeedback, [], false);
+            // Refresh feedback criteria to get current state from server
+            this.GetfeedbackCriteria();
           }
         },
         error: () => {
@@ -799,13 +813,9 @@ export class InterviewerFeedbackComponent
       feedback.originalContent = feedback.content;
       feedback.originalScore = feedback.score;
 
-      // Update feedback item with saved fileDto if attachments
-      if (
-        feedback.title === 'Attachments' &&
-        res.fileDto &&
-        res.fileDto.length > 0
-      ) {
-        feedback.fileDto = res.fileDto;
+      // If attachments were saved, reload feedback criteria to get proper file data with correct blob IDs
+      if (feedback.title === 'Attachments') {
+        this.GetfeedbackCriteria();
       }
     };
     const error = (error: CustomErrorResponse) => {
@@ -982,5 +992,46 @@ export class InterviewerFeedbackComponent
         }
       });
     }
+  }
+
+  // ── Draggable timer ────────────────────────────────
+  public startTimerDrag(event: MouseEvent, timerEl: HTMLElement): void {
+    event.preventDefault();
+
+    // On first drag, capture the element's current rendered position
+    if (!this.timerPos) {
+      const rect = timerEl.getBoundingClientRect();
+      this.timerPos = { x: rect.left, y: rect.top };
+    }
+
+    this.isDraggingTimer = true;
+    this._timerDragOffset.x = event.clientX - this.timerPos.x;
+    this._timerDragOffset.y = event.clientY - this.timerPos.y;
+
+    const timerW = timerEl.offsetWidth;
+    const timerH = timerEl.offsetHeight;
+
+    this._timerMoveHandler = (e: MouseEvent) => {
+      if (!this.isDraggingTimer || !this.timerPos) return;
+      // Clamp to viewport so it can't be dragged off screen
+      this.timerPos = {
+        x: Math.max(0, Math.min(window.innerWidth - timerW, e.clientX - this._timerDragOffset.x)),
+        y: Math.max(0, Math.min(window.innerHeight - timerH, e.clientY - this._timerDragOffset.y)),
+      };
+    };
+
+    this._timerUpHandler = () => {
+      this.isDraggingTimer = false;
+      document.removeEventListener('mousemove', this._timerMoveHandler!);
+      document.removeEventListener('mouseup', this._timerUpHandler!);
+    };
+
+    document.addEventListener('mousemove', this._timerMoveHandler);
+    document.addEventListener('mouseup', this._timerUpHandler);
+  }
+
+  public override ngOnDestroy(): void {
+    if (this._timerMoveHandler) document.removeEventListener('mousemove', this._timerMoveHandler);
+    if (this._timerUpHandler)   document.removeEventListener('mouseup',   this._timerUpHandler);
   }
 }

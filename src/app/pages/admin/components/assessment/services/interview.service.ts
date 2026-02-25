@@ -106,7 +106,14 @@ export class InterviewService extends ApiService<any> {
   }
 
   public GetFiles(payload: FileDto): Observable<Blob> {
-    const blobId = payload.blobId || payload.id;
+    let blobId = payload.blobId || payload.id || '';
+    // Append file extension from name if blobId doesn't already have one
+    if (payload.name && !blobId.includes('.')) {
+      const extMatch = payload.name.match(/\.[^.]+$/);
+      if (extMatch) {
+        blobId += extMatch[0];
+      }
+    }
     const url = `${this.getResourceUrl()}/files?blobId=${blobId}&attachmentId=${payload.attachmentType}`;
     return this.httpClient.get(url, { responseType: 'blob' });
   }
@@ -135,10 +142,42 @@ export class InterviewService extends ApiService<any> {
     );
   }
 
+  public uploadAttachment(payload: {
+    idType: number;
+    file: File;
+    id: number;
+    interviewerId: string;
+    candidateId: string;
+    assessmentId: number;
+    feedbackCriteriaId: number;
+    feedbackDetails: string;
+    feedbackScore: number;
+    assessmentRoundId: number;
+    interviewId: number;
+  }) {
+    const formData = new FormData();
+    formData.append('IdType', payload.idType.toString());
+    formData.append('File', payload.file);
+    formData.append('Id', payload.id.toString());
+    formData.append('InterviewerId', payload.interviewerId);
+    formData.append('CandidateId', payload.candidateId);
+    formData.append('AssessmentId', payload.assessmentId.toString());
+    formData.append('FeedbackCriteriaId', payload.feedbackCriteriaId.toString());
+    formData.append('FeedbackDetails', payload.feedbackDetails);
+    formData.append('FeedbackScore', payload.feedbackScore.toString());
+    formData.append('AssessmentRoundId', payload.assessmentRoundId.toString());
+    formData.append('InterviewId', payload.interviewId.toString());
+
+    return this.httpClient.post<{ success: boolean; fileUrl: string; message: string }>(
+      `${this.getResourceUrl()}/UploadAttachment`,
+      formData,
+    );
+  }
+
   public deleteFiles(payload: FileDto) {
     const blobId = payload.blobId || payload.id;
     return this.httpClient.delete(
-      `${this.getResourceUrl()}/files?blobId=${blobId}&attachmentId=${payload.attachmentType}`,
+      `${this.getResourceUrl()}/DeleteAttachment?blobId=${blobId}&attachmentTypeId=${payload.attachmentType}`,
     );
   }
   public updateinterviewpanel(payload: InterviewPanelsResponse) {

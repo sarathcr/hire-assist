@@ -131,31 +131,63 @@
                       data.name.toLowerCase().includes("aptitude")
                     ) {
                       <div class="assessment-round__input-group">
-                        <label [for]="'attempts-' + idx">Number of Tries</label>
+                        <label [for]="'attempts-' + idx"
+                          >Number of Tries
+                          <span class="assessment-round__required"
+                            >*</span
+                          ></label
+                        >
                         <input
                           pInputText
                           type="number"
                           [id]="'attempts-' + idx"
-                          [(ngModel)]="data.maxTerminationCount"
+                          [formControl]="
+                            $any(
+                              getRoundFormGroup(idx).get('maxTerminationCount')
+                            )
+                          "
                           min="1"
                           placeholder="1"
                         />
+                        @if (
+                          getRoundFormGroup(idx).get("maxTerminationCount")
+                            ?.touched &&
+                          getRoundFormGroup(idx).get("maxTerminationCount")
+                            ?.invalid
+                        ) {
+                          <span class="assessment-round__validation-label">
+                            {{ getErrorMessage(idx, "maxTerminationCount") }}
+                          </span>
+                        }
                       </div>
                     }
                     <!-- Duration Input -->
                     <div class="assessment-round__input-group">
-                      <label [for]="'duration-' + idx">Duration (HH:mm)</label>
-                      <p-calendar 
-                        [id]="'duration-' + idx" 
-                        [(ngModel)]="data.durationDate" 
-                        [timeOnly]="true" 
-                        [showTime]="true" 
+                      <label [for]="'duration-' + idx"
+                        >Duration (HH:mm)
+                        <span class="assessment-round__required">*</span></label
+                      >
+                      <p-calendar
+                        [id]="'duration-' + idx"
+                        [formControl]="
+                          $any(getRoundFormGroup(idx).get('duration'))
+                        "
+                        [timeOnly]="true"
+                        [showTime]="true"
                         [hourFormat]="'24'"
                         inputId="timeonly"
                         placeholder="00:00"
                         appendTo="body"
                         styleClass="assessment-round__duration-picker"
                       ></p-calendar>
+                      @if (
+                        getRoundFormGroup(idx).get("duration")?.touched &&
+                        getRoundFormGroup(idx).get("duration")?.invalid
+                      ) {
+                        <span class="assessment-round__validation-label">
+                          {{ getErrorMessage(idx, "duration") }}
+                        </span>
+                      }
                     </div>
                   </div>
                 </div>
