@@ -48,7 +48,7 @@ import { TabsModule } from 'primeng/tabs';
                 </div>
                 <div class="candidate-skeleton__card">
                   <div class="candidate-skeleton__card-grid">
-                    @for (item of skeletonItems; track item) {
+                    @for (item of skeletonItems; track $index) {
                       <div class="candidate-skeleton__info-item">
                         <p-skeleton
                           width="40px"
@@ -77,7 +77,7 @@ import { TabsModule } from 'primeng/tabs';
                 </div>
                 <div class="candidate-skeleton__card">
                   <div class="candidate-skeleton__questions">
-                    @for (q of skeletonQuestions; track q) {
+                    @for (q of skeletonQuestions; track $index) {
                       <div class="candidate-skeleton__question-item">
                         <p-skeleton
                           width="100%"

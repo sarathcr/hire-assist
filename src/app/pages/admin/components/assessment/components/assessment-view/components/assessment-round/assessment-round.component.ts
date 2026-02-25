@@ -563,10 +563,11 @@ export class AssessmentRoundComponent
         RoundId: Number(item.id),
         name: item.name,
         sequence: index + 1,
-        // Convert durationDate (Date) to hours decimal (number)
         timerHour: item.durationDate
-          ? item.durationDate.getHours() + item.durationDate.getMinutes() / 100
-          : 0,
+          ? `${item.durationDate.getHours().toString().padStart(2, '0')}:` +
+            `${item.durationDate.getMinutes().toString().padStart(2, '0')}:` +
+            `${item.durationDate.getSeconds().toString().padStart(2, '0')}`
+          : '00:00:00',
         maxTerminationCount: item.maxTerminationCount || 0,
       }),
     );

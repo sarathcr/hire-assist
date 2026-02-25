@@ -15,21 +15,21 @@ import { TabsModule } from 'primeng/tabs';
       </div>
 
       <div class="previous-assessment-skeleton__content">
-        @for (assessment of skeletonAssessments; track assessment) {
+        @for (assessment of skeletonAssessments; track $index) {
           <div class="previous-assessment-skeleton__card">
             <div class="previous-assessment-skeleton__card-header">
               <p-skeleton width="200px" height="20px" />
               <p-skeleton width="80px" height="16px" />
             </div>
             <div class="previous-assessment-skeleton__card-body">
-              @for (round of skeletonRounds; track round) {
+              @for (round of skeletonRounds; track $index) {
                 <div class="previous-assessment-skeleton__round">
                   <div class="previous-assessment-skeleton__round-header">
                     <p-skeleton width="150px" height="18px" />
                     <p-skeleton width="100px" height="16px" />
                   </div>
                   <div class="previous-assessment-skeleton__round-content">
-                    @for (item of skeletonDetails; track item) {
+                    @for (item of skeletonDetails; track $index) {
                       <div class="previous-assessment-skeleton__detail-item">
                         <p-skeleton width="120px" height="14px" />
                         <p-skeleton width="80px" height="14px" />

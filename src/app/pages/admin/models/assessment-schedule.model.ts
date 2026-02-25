@@ -49,7 +49,7 @@ export interface AssessmentRoundsInterface {
   RoundId: number;
   name: string;
   sequence: number;
-  timerHour?: number;
+  timerHour?: string;
   maxTerminationCount?: number;
   assessmentId?: number;
 }

@@ -995,8 +995,14 @@ export class InterviewerFeedbackComponent
   }
 
   // ── Draggable timer ────────────────────────────────
-  public startTimerDrag(event: MouseEvent, timerEl: HTMLElement): void {
-    event.preventDefault();
+  public startTimerDrag(event: MouseEvent | TouchEvent, timerEl: HTMLElement): void {
+    // Prevent default to avoid scrolling while dragging
+    if (event.cancelable) {
+      event.preventDefault();
+    }
+
+    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
 
     // On first drag, capture the element's current rendered position
     if (!this.timerPos) {
@@ -1005,33 +1011,47 @@ export class InterviewerFeedbackComponent
     }
 
     this.isDraggingTimer = true;
-    this._timerDragOffset.x = event.clientX - this.timerPos.x;
-    this._timerDragOffset.y = event.clientY - this.timerPos.y;
+    this._timerDragOffset.x = clientX - this.timerPos.x;
+    this._timerDragOffset.y = clientY - this.timerPos.y;
 
     const timerW = timerEl.offsetWidth;
     const timerH = timerEl.offsetHeight;
 
-    this._timerMoveHandler = (e: MouseEvent) => {
+    this._timerMoveHandler = (e: MouseEvent | TouchEvent) => {
       if (!this.isDraggingTimer || !this.timerPos) return;
+
+      const moveX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
+      const moveY = e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
+
       // Clamp to viewport so it can't be dragged off screen
       this.timerPos = {
-        x: Math.max(0, Math.min(window.innerWidth - timerW, e.clientX - this._timerDragOffset.x)),
-        y: Math.max(0, Math.min(window.innerHeight - timerH, e.clientY - this._timerDragOffset.y)),
+        x: Math.max(0, Math.min(window.innerWidth - timerW, moveX - this._timerDragOffset.x)),
+        y: Math.max(0, Math.min(window.innerHeight - timerH, moveY - this._timerDragOffset.y)),
       };
     };
 
     this._timerUpHandler = () => {
       this.isDraggingTimer = false;
-      document.removeEventListener('mousemove', this._timerMoveHandler!);
+      document.removeEventListener('mousemove', this._timerMoveHandler! as any);
       document.removeEventListener('mouseup', this._timerUpHandler!);
+      document.removeEventListener('touchmove', this._timerMoveHandler! as any);
+      document.removeEventListener('touchend', this._timerUpHandler!);
     };
 
-    document.addEventListener('mousemove', this._timerMoveHandler);
+    document.addEventListener('mousemove', this._timerMoveHandler as any);
     document.addEventListener('mouseup', this._timerUpHandler);
+    document.addEventListener('touchmove', this._timerMoveHandler as any, { passive: false });
+    document.addEventListener('touchend', this._timerUpHandler);
   }
 
   public override ngOnDestroy(): void {
-    if (this._timerMoveHandler) document.removeEventListener('mousemove', this._timerMoveHandler);
-    if (this._timerUpHandler)   document.removeEventListener('mouseup',   this._timerUpHandler);
+    if (this._timerMoveHandler) {
+      document.removeEventListener('mousemove', this._timerMoveHandler as any);
+      document.removeEventListener('touchmove', this._timerMoveHandler as any);
+    }
+    if (this._timerUpHandler) {
+      document.removeEventListener('mouseup', this._timerUpHandler);
+      document.removeEventListener('touchend', this._timerUpHandler);
+    }
   }
 }

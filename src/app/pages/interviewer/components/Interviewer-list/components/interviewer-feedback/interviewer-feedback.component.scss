@@ -634,7 +634,6 @@ $white: #ffffff;
 
         &:hover {
           background: $slate-50;
-          box-shadow: 0 6px 20px rgba($indigo-500, 0.13);
           transform: translateY(-1px);
 
           &::before {
@@ -713,7 +712,6 @@ $white: #ffffff;
 
         &:hover {
           background: rgba($green-500, 0.1) !important;
-          box-shadow: 0 6px 20px rgba($green-500, 0.15) !important;
         }
 
         &[aria-expanded='true'] {

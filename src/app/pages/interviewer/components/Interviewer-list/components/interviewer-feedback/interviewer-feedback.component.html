@@ -11,7 +11,8 @@
     [style.left.px]="timerPos?.x ?? null"
     [style.top.px]="timerPos?.y ?? null"
     [style.right]="timerPos ? 'auto' : null"
-    (mousedown)="startTimerDrag($event, timerEl)"
+    (mousedown)="startTimerDrag($any($event), timerEl)"
+    (touchstart)="startTimerDrag($any($event), timerEl)"
   >
     <app-countdown-timer
       [timerHour]="responseData.timerHour"
@@ -25,7 +26,6 @@
 
 @if (!isLoading && responseData && feedbackdetails) {
   <div class="ifb">
-    <p-toast></p-toast>
 
     <!-- ═══════════════════════════════════
          HERO HEADER CARD

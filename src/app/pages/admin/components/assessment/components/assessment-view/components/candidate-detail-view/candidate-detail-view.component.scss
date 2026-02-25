@@ -4,11 +4,9 @@
 
   // Header Section
   &__header {
-    background: linear-gradient(
-      135deg,
-      var(--primary-color) 0%,
-      var(--secondary-color) 100%
-    );
+    background: linear-gradient(135deg,
+        var(--primary-color) 0%,
+        var(--secondary-color) 100%);
     border-radius: 0;
     padding: var(--spacing-30);
     box-shadow:
@@ -448,6 +446,124 @@
       }
     }
   }
+
+  // Interview Feedbacks Updates
+  &__feedback-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-seperator);
+    border-radius: var(--spacing-10);
+    padding: var(--spacing-20);
+    margin-bottom: var(--spacing-20);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .candidate-detail__details-grid {
+      border-bottom: 2px solid var(--dashboard-main-background-color);
+      padding-bottom: var(--spacing-20);
+      margin-bottom: var(--spacing-20);
+    }
+  }
+
+  &__detail-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    background: transparent;
+    padding: 0;
+  }
+
+  &__detail-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--spacing-8);
+    background: var(--dashboard-main-background-color);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-18);
+    flex-shrink: 0;
+    margin-right: 12px;
+  }
+
+  &__detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+
+  &__feedback-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-15);
+  }
+
+  &__feedback-list-title {
+    font-size: var(--font-size-18);
+    font-weight: 600;
+    color: var(--color-dune);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+
+    i {
+      color: var(--primary-color);
+      font-size: var(--font-size-16);
+    }
+  }
+
+  &__feedback-items {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-15);
+  }
+
+  &__feedback-item {
+    background: var(--dashboard-main-background-color);
+    border-radius: var(--spacing-8);
+    padding: var(--spacing-15);
+    border-left: 3px solid var(--primary-color);
+  }
+
+  &__feedback-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-10);
+  }
+
+  &__feedback-criteria {
+    font-size: var(--font-size-16);
+    font-weight: 600;
+    color: var(--color-dune);
+  }
+
+  &__feedback-text {
+    font-size: var(--font-size-16);
+    line-height: 1.5;
+    color: var(--color-dune);
+
+    // Quill overrides to align with base typography
+    ::ng-deep {
+      .ql-editor {
+        padding: 0;
+        font-family: inherit;
+
+        p {
+          margin-bottom: 0.5rem;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
 }
 
 // Responsive Design
@@ -534,6 +650,7 @@
           margin-bottom: var(--spacing-20);
           overflow-x: auto;
           -webkit-overflow-scrolling: touch;
+
           &::-webkit-scrollbar {
             display: none;
           }
@@ -591,12 +708,20 @@
       font-size: var(--font-size-16);
     }
 
-    &__info-label {
+    &__info-label,
+    &__detail-label {
       font-size: var(--font-size-small);
     }
 
-    &__info-value {
+    &__info-value,
+    &__detail-value {
       font-size: var(--font-size-base);
+    }
+
+    &__detail-icon {
+      width: 32px;
+      height: 32px;
+      font-size: var(--font-size-14);
     }
 
     &__accordion {
@@ -716,6 +841,23 @@
           border-radius: var(--spacing-6);
         }
       }
+    }
+
+    &__feedback-card {
+      padding: var(--spacing-15);
+
+      .candidate-detail__details-grid {
+        padding-bottom: var(--spacing-15);
+        margin-bottom: var(--spacing-15);
+      }
+    }
+
+    &__feedback-item {
+      padding: var(--spacing-12);
+    }
+
+    &__feedback-criteria {
+      font-size: var(--font-size-base);
     }
 
     &__empty-state {

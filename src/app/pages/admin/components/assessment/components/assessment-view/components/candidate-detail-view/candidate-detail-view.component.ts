@@ -164,6 +164,27 @@ export class CandidateDetailViewComponent
     }
   }
 
+  public getFeedbackScoreSeverity(
+    score: number | null | undefined,
+    maxScore: number | null | undefined
+  ): 'success' | 'warn' | 'danger' | 'info' {
+    if (
+      score === null ||
+      score === undefined ||
+      maxScore === null ||
+      maxScore === undefined ||
+      maxScore === 0
+    ) {
+      return 'info';
+    }
+
+    const percentage = (score / maxScore) * 100;
+
+    if (percentage >= 80) return 'success';
+    if (percentage >= 50) return 'warn';
+    return 'danger';
+  }
+
   public formatDate(dateString: string | undefined | Date): string {
     if (!dateString) return 'N/A';
     return new DatePipe('en-US').transform(dateString, 'mediumDate') || 'N/A';
