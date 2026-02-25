@@ -7,7 +7,7 @@
 }
 
 .summary-container {
-    max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
     padding: 2rem;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -318,24 +318,62 @@
 .audit-list {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
-.audit-candidate-card {
-    border: 1px solid #cbd5e1;
-    border-radius: 12px;
-    background: white;
+/* Overriding PrimeNG Accordion Styles */
+::ng-deep .audit-list p-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+::ng-deep .audit-candidate-panel {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 16px !important;
+    background: white !important;
     overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    /* Softer shadow */
+    margin-bottom: 0;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.candidate-header {
-    background: #f8fafc;
-    padding: 1.5rem;
+::ng-deep .audit-candidate-panel:hover {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    /* Elevate on hover */
+}
+
+::ng-deep .audit-accordion-header .p-accordion-header-link {
+    background: linear-gradient(to right, #f8fafc, #ffffff) !important;
+    padding: 1.25rem 1.75rem 1.25rem 1.25rem !important;
+    border: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s ease;
+}
+
+::ng-deep .audit-accordion-header .p-accordion-header-link:hover {
+    background: linear-gradient(to right, #f1f5f9, #f8fafc) !important;
+}
+
+::ng-deep .audit-candidate-panel .p-accordion-content,
+::ng-deep .audit-candidate-panel .p-toggleable-content,
+::ng-deep .audit-candidate-panel .p-accordion-body {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #ffffff !important;
+    border: none !important;
+}
+
+/* Header Content Inside Accordion */
+.candidate-header-content {
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid #e2e8f0;
+    padding-left: 0.5rem;
 }
 
 .candidate-info-block {
@@ -345,52 +383,92 @@
 }
 
 .candidate-avatar.large {
-    width: 64px;
-    height: 64px;
-    font-size: 2rem;
-}
-
-.candidate-name {
-    margin: 0 0 0.25rem 0;
-    font-size: 1.5rem;
-    color: #0f172a;
+    width: 56px;
+    height: 56px;
+    font-size: 1.75rem;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    /* Gradient background for avatars */
+    color: white;
+    border-radius: 12px;
+    /* Slightly squarish modern avatar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: 700;
 }
 
+.candidate-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.candidate-name {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #1e293b;
+    font-weight: 700;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
 .candidate-id {
-    color: #64748b;
+    color: #94a3b8;
     font-weight: 500;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
 }
 
 .candidate-contact {
     display: flex;
-    gap: 1.5rem;
-    color: #475569;
-    font-size: 0.9rem;
+    gap: 1.25rem;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 .candidate-contact i {
-    margin-right: 0.35rem;
-    color: #94a3b8;
+    margin-right: 0.4rem;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+}
+
+.candidate-contact span {
+    display: flex;
+    align-items: center;
 }
 
 .candidate-score-block {
     display: flex;
     align-items: center;
     gap: 2rem;
+    padding-right: 1rem;
 }
 
 .final-score {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    background: #f1f5f9;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.score-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #64748b;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.1rem;
 }
 
 .score-value {
-    font-size: 1.75rem;
+    font-size: 1.35rem;
     font-weight: 800;
-    color: #1e293b;
+    color: #0f172a;
+    line-height: 1;
 }
 
 .candidate-rounds {

@@ -621,13 +621,17 @@ export class AssessmentRoundComponent
           this.isDataLoaded = true;
           this.assessmentRounds = response;
           this.submittedData = response.map((item) => {
-            const date = new Date();
-            const timerValue = item.timerHour || 0;
-            const hours = Math.floor(timerValue);
-            const minutes = Math.round((timerValue - hours) * 100);
-            date.setHours(hours);
-            date.setMinutes(minutes);
-            date.setSeconds(0);
+          const date = new Date();
+
+          if (item.timerHour) {
+            const timeString = typeof item.timerHour === 'string'
+              ? item.timerHour
+              : '00:00:00';
+            const [h, m, s] = timeString.split(':').map(Number);
+            date.setHours(h || 0, m || 0, s || 0, 0);
+          } else {
+            date.setHours(0, 0, 0, 0);
+          }
 
             return {
               name: item.round,

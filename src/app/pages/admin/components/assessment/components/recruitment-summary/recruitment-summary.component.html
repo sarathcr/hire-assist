@@ -131,145 +131,151 @@
       <h2 class="section-title"><i class="pi pi-file-edit text-blue"></i> Candidate Audit Report</h2>
       
       <div class="audit-list">
-        @for (candidate of summaryData.detailedCandidates; track candidate.id) {
-          <div class="audit-candidate-card">
-            <!-- Candidate Header -->
-            <div class="candidate-header">
-              <div class="candidate-info-block">
-                <div class="candidate-avatar large">{{ candidate.name.charAt(0) }}</div>
-                <div class="candidate-details">
-                  <h3 class="candidate-name">{{ candidate.name }} <span class="candidate-id">({{ candidate.id }})</span></h3>
-                  <div class="candidate-contact">
-                    <span><i class="pi pi-envelope"></i> {{ candidate.email }}</span>
-                    <span><i class="pi pi-phone"></i> {{ candidate.phone }}</span>
+        <!-- We use an array of active indices or values for multiple accordion expansion -->
+        <p-accordion [multiple]="true" [value]="activeAccordionIds">
+          @for (candidate of summaryData.detailedCandidates; track candidate.id) {
+            <p-accordion-panel [value]="candidate.id" class="audit-candidate-panel">
+              <!-- Candidate Header (Always Visible) -->
+              <p-accordion-header class="audit-accordion-header">
+                <div class="candidate-header-content">
+                  <div class="candidate-info-block">
+                    <div class="candidate-avatar large">{{ candidate.name.charAt(0) }}</div>
+                    <div class="candidate-details">
+                      <h3 class="candidate-name">{{ candidate.name }} <span class="candidate-id">({{ candidate.id }})</span></h3>
+                      <div class="candidate-contact">
+                        <span><i class="pi pi-envelope"></i> {{ candidate.email }}</span>
+                        <span><i class="pi pi-phone"></i> {{ candidate.phone }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="candidate-score-block">
+                    <div class="final-score">
+                      <span class="score-label">Overall Score</span>
+                      <span class="score-value">{{ candidate.overallScore }}%</span>
+                    </div>
+                    <span class="candidate-status" [ngClass]="'status-' + candidate.finalStatus.toLowerCase().replace(' ', '-')">
+                      {{ candidate.finalStatus }}
+                    </span>
                   </div>
                 </div>
-              </div>
-              <div class="candidate-score-block">
-                <div class="final-score">
-                  <span class="score-label">Overall Score</span>
-                  <span class="score-value">{{ candidate.overallScore }}%</span>
-                </div>
-                <span class="candidate-status" [ngClass]="'status-' + candidate.finalStatus.toLowerCase().replace(' ', '-')">
-                  {{ candidate.finalStatus }}
-                </span>
-              </div>
-            </div>
+              </p-accordion-header>
 
-            <!-- Rounds Details -->
-            <div class="candidate-rounds">
-              <h4 class="rounds-title">Round Details</h4>
-              
-              @for (round of candidate.roundsData; track round.roundId) {
-                <div class="round-detail-block">
+              <!-- Rounds Details (Collapsible) -->
+              <p-accordion-content>
+                <div class="candidate-rounds">
+                  <h4 class="rounds-title">Round Details</h4>
                   
-                  <!-- Round Header Info -->
-                  <div class="round-header-info">
-                    <div class="round-title-group">
-                      <span class="round-badge">{{ round.roundId }}</span>
-                      <h5 class="round-name">{{ round.roundName }}</h5>
-                      <span class="round-status-badge" [ngClass]="'status-' + round.status.toLowerCase().replace(' ', '-')">
-                        {{ round.status }}
-                      </span>
-                    </div>
-                    <div class="round-score-info">
-                      <div class="score-pill">
-                        <span class="pill-label">Score</span>
-                        <span class="pill-val" [class.text-green]="round.score >= round.cutOffScore" [class.text-red]="round.score < round.cutOffScore">
-                          {{ round.score }}
-                        </span>
-                      </div>
-                      <div class="score-pill outline">
-                        <span class="pill-label">Cut-off</span>
-                        <span class="pill-val">{{ round.cutOffScore }}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Round Meta Data -->
-                  <div class="round-meta-grid">
-                    <div class="meta-field">
-                      <span class="field-label">Interviewer</span>
-                      <span class="field-value"><i class="pi pi-user"></i> {{ round.interviewer }}</span>
-                    </div>
-                    <div class="meta-field">
-                      <span class="field-label">Question Set</span>
-                      <span class="field-value"><i class="pi pi-file"></i> {{ round.questionSet }}</span>
-                    </div>
-                  </div>
-
-                  <!-- Feedback Criteria -->
-                  <div class="feedback-section">
-                    <h6 class="feedback-title">Feedback Breakdown</h6>
-                    <table class="feedback-table">
-                      <thead>
-                        <tr>
-                          <th>Criteria</th>
-                          <th style="width: 80px; text-align: center;">Score</th>
-                          <th>Remarks</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        @for (crit of round.feedbackCriteria; track crit.name) {
-                          <tr>
-                            <td class="crit-name">{{ crit.name }}</td>
-                            <td class="crit-score text-center">{{ crit.score }}/10</td>
-                            <td class="crit-remarks">{{ crit.remarks }}</td>
-                          </tr>
-                        }
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <!-- Overall Reason -->
-                  <div class="reason-section">
-                    <span class="reason-label"><i class="pi pi-comment"></i> Overall Comments:</span>
-                    <p class="reason-text">{{ round.overallReason }}</p>
-                  </div>
-
-                  <!-- Attachments -->
-                  @if (round.frontdeskAttachments.length > 0 || round.worksheetAttachments.length > 0) {
-                    <div class="attachments-section">
-                      <h6 class="attachments-title"><i class="pi pi-paperclip"></i> Documents & Attachments</h6>
+                  @for (round of candidate.roundsData; track round.roundId) {
+                    <div class="round-detail-block">
                       
-                      @if (round.frontdeskAttachments.length > 0) {
-                        <div class="attachment-group">
-                          <span class="group-label">Frontdesk:</span>
-                          <div class="attachment-chips">
-                            @for (file of round.frontdeskAttachments; track file.name) {
-                              <span class="doc-chip">
-                                <i class="pi" [ngClass]="{'pi-file-pdf text-red': file.type === 'pdf', 'pi-file-word text-blue': file.type === 'doc', 'pi-file': file.type !== 'pdf' && file.type !== 'doc'}"></i>
-                                <span class="doc-name">{{ file.name }}</span>
-                                <span class="doc-size">({{ file.size }})</span>
-                              </span>
-                            }
+                      <!-- Round Header Info -->
+                      <div class="round-header-info">
+                        <div class="round-title-group">
+                          <span class="round-badge">{{ round.roundId }}</span>
+                          <h5 class="round-name">{{ round.roundName }}</h5>
+                          <span class="round-status-badge" [ngClass]="'status-' + round.status.toLowerCase().replace(' ', '-')">
+                            {{ round.status }}
+                          </span>
+                        </div>
+                        <div class="round-score-info">
+                          <div class="score-pill">
+                            <span class="pill-label">Score</span>
+                            <span class="pill-val" [class.text-green]="round.score >= round.cutOffScore" [class.text-red]="round.score < round.cutOffScore">
+                              {{ round.score }}
+                            </span>
+                          </div>
+                          <div class="score-pill outline">
+                            <span class="pill-label">Cut-off</span>
+                            <span class="pill-val">{{ round.cutOffScore }}</span>
                           </div>
                         </div>
-                      }
-                      
-                      @if (round.worksheetAttachments.length > 0) {
-                        <div class="attachment-group">
-                          <span class="group-label">Worksheet:</span>
-                          <div class="attachment-chips">
-                            @for (file of round.worksheetAttachments; track file.name) {
-                              <span class="doc-chip">
-                                <i class="pi" [ngClass]="{'pi-file-pdf text-red': file.type === 'pdf', 'pi-image text-green': file.type === 'image', 'pi-code text-orange': file.type === 'code', 'pi-file': file.type === 'text'}"></i>
-                                <span class="doc-name">{{ file.name }}</span>
-                                <span class="doc-size">({{ file.size }})</span>
-                              </span>
+                      </div>
+
+                      <!-- Round Meta Data -->
+                      <div class="round-meta-grid">
+                        <div class="meta-field">
+                          <span class="field-label">Interviewer</span>
+                          <span class="field-value"><i class="pi pi-user"></i> {{ round.interviewer }}</span>
+                        </div>
+                        <div class="meta-field">
+                          <span class="field-label">Question Set</span>
+                          <span class="field-value"><i class="pi pi-file"></i> {{ round.questionSet }}</span>
+                        </div>
+                      </div>
+
+                      <!-- Feedback Criteria -->
+                      <div class="feedback-section">
+                        <h6 class="feedback-title">Feedback Breakdown</h6>
+                        <table class="feedback-table">
+                          <thead>
+                            <tr>
+                              <th>Criteria</th>
+                              <th style="width: 80px; text-align: center;">Score</th>
+                              <th>Remarks</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (crit of round.feedbackCriteria; track crit.name) {
+                              <tr>
+                                <td class="crit-name">{{ crit.name }}</td>
+                                <td class="crit-score text-center">{{ crit.score }}/10</td>
+                                <td class="crit-remarks">{{ crit.remarks }}</td>
+                              </tr>
                             }
-                          </div>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <!-- Overall Reason -->
+                      <div class="reason-section">
+                        <span class="reason-label"><i class="pi pi-comment"></i> Overall Comments:</span>
+                        <p class="reason-text">{{ round.overallReason }}</p>
+                      </div>
+
+                      <!-- Attachments -->
+                      @if (round.frontdeskAttachments.length > 0 || round.worksheetAttachments.length > 0) {
+                        <div class="attachments-section">
+                          <h6 class="attachments-title"><i class="pi pi-paperclip"></i> Documents & Attachments</h6>
+                          
+                          @if (round.frontdeskAttachments.length > 0) {
+                            <div class="attachment-group">
+                              <span class="group-label">Frontdesk:</span>
+                              <div class="attachment-chips">
+                                @for (file of round.frontdeskAttachments; track file.name) {
+                                  <span class="doc-chip">
+                                    <i class="pi" [ngClass]="{'pi-file-pdf text-red': file.type === 'pdf', 'pi-file-word text-blue': file.type === 'doc', 'pi-file': file.type !== 'pdf' && file.type !== 'doc'}"></i>
+                                    <span class="doc-name">{{ file.name }}</span>
+                                    <span class="doc-size">({{ file.size }})</span>
+                                  </span>
+                                }
+                              </div>
+                            </div>
+                          }
+                          
+                          @if (round.worksheetAttachments.length > 0) {
+                            <div class="attachment-group">
+                              <span class="group-label">Worksheet:</span>
+                              <div class="attachment-chips">
+                                @for (file of round.worksheetAttachments; track file.name) {
+                                  <span class="doc-chip">
+                                    <i class="pi" [ngClass]="{'pi-file-pdf text-red': file.type === 'pdf', 'pi-image text-green': file.type === 'image', 'pi-code text-orange': file.type === 'code', 'pi-file': file.type === 'text'}"></i>
+                                    <span class="doc-name">{{ file.name }}</span>
+                                    <span class="doc-size">({{ file.size }})</span>
+                                  </span>
+                                }
+                              </div>
+                            </div>
+                          }
                         </div>
                       }
+
                     </div>
                   }
-
                 </div>
-              }
-            </div>
-            
-          </div>
-        }
+              </p-accordion-content>
+            </p-accordion-panel>
+          }
+        </p-accordion>
       </div>
     </div>
 

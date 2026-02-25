@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { AccordionModule } from 'primeng/accordion';
 import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-recruitment-summary',
   standalone: true,
-  imports: [CommonModule, ButtonModule],
+  imports: [CommonModule, ButtonModule, AccordionModule],
   templateUrl: './recruitment-summary.component.html',
   styleUrl: './recruitment-summary.component.scss'
 })
@@ -191,7 +192,12 @@ export class RecruitmentSummaryComponent {
     ]
   };
 
-  constructor(private location: Location) {}
+  public activeAccordionIds: string[] = [];
+
+  constructor(private location: Location) {
+    // Open all accordions by default for the audit report
+    this.activeAccordionIds = this.summaryData.detailedCandidates.map((c: any) => c.id);
+  }
 
   public printSummary(): void {
     window.print();
@@ -201,4 +207,3 @@ export class RecruitmentSummaryComponent {
     this.location.back();
   }
 }
-
