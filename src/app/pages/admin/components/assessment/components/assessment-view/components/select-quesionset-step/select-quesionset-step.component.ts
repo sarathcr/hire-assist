@@ -1012,12 +1012,15 @@ export class SelectQuesionsetStepComponent
   }
 
   public hasSubmittedQuestionSets(): boolean {
-    for (const accordionData of this.questionSetAccordionData.values()) {
-      if (accordionData.isUpdate) {
-        return true;
+
+      if (this.questionSets.length === 0) {
+        return false;
       }
-    }
-    return false;
+
+        return this.questionSets.every((set) => {
+        const accordionData = this.questionSetAccordionData.get(set.id.toString());
+        return accordionData && accordionData.isUpdate && accordionData.selectedIds.length > 0;
+      });
   }
 
   private restoreSearchValueOnly(questionSetId: string): void {
