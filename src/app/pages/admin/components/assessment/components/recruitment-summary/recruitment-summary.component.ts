@@ -3,6 +3,8 @@ import { Component } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { AccordionModule } from 'primeng/accordion';
 import { Location } from '@angular/common';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-recruitment-summary',
@@ -48,8 +50,8 @@ export class RecruitmentSummaryComponent {
             status: 'Passed',
             score: 85,
             cutOffScore: 60,
+            panelName: 'HR Screening Panel',
             interviewer: 'Sarah (HR)',
-            questionSet: 'General Screening V2',
             overallReason: 'Strong communication, matches basic requirements perfectly.',
             feedbackCriteria: [
               { name: 'Communication', score: 9, remarks: 'Clear and concise' },
@@ -64,6 +66,7 @@ export class RecruitmentSummaryComponent {
             status: 'Passed',
             score: 95,
             cutOffScore: 70,
+            panelName: 'Auto-Evaluator Module',
             interviewer: 'Automated Platform',
             questionSet: 'Frontend Dev Aptitude Set A',
             overallReason: 'Excellent problem solving skills.',
@@ -80,8 +83,8 @@ export class RecruitmentSummaryComponent {
             status: 'Passed',
             score: 88,
             cutOffScore: 75,
+            panelName: 'Frontend Experts Panel',
             interviewer: 'Alice S.',
-            questionSet: 'Tech L1 - Core JS/React',
             overallReason: 'Solid grasp of JS fundamentals and React hooks.',
             feedbackCriteria: [
               { name: 'JavaScript Core', score: 9, remarks: 'Knows closures and event loop well.' },
@@ -100,8 +103,8 @@ export class RecruitmentSummaryComponent {
             status: 'Passed',
             score: 96,
             cutOffScore: 80,
+            panelName: 'System Architecture Panel',
             interviewer: 'Charlie B.',
-            questionSet: 'Tech L2 - System Design & Architecture',
             overallReason: 'Exceptional architectural knowledge.',
             feedbackCriteria: [
               { name: 'System Design', score: 10, remarks: 'Designed a scalable notification system.' },
@@ -116,8 +119,8 @@ export class RecruitmentSummaryComponent {
             status: 'Passed',
             score: 92,
             cutOffScore: 70,
+            panelName: 'Final Culture Fit Panel',
             interviewer: 'Diana P.',
-            questionSet: 'Culture Fit Scorecard',
             overallReason: 'Great team player, aligns with core values.',
             feedbackCriteria: [
               { name: 'Leadership', score: 9, remarks: 'Mentored juniors previously.' },
@@ -142,8 +145,8 @@ export class RecruitmentSummaryComponent {
             status: 'Passed',
             score: 75,
             cutOffScore: 60,
+            panelName: 'HR Screening Panel',
             interviewer: 'Sarah (HR)',
-            questionSet: 'General Screening V2',
             overallReason: 'Good communication, sufficient experience.',
             feedbackCriteria: [
               { name: 'Communication', score: 8, remarks: 'Articulate' },
@@ -158,6 +161,7 @@ export class RecruitmentSummaryComponent {
             status: 'Passed',
             score: 72,
             cutOffScore: 70,
+            panelName: 'Auto-Evaluator Module',
             interviewer: 'Automated Platform',
             questionSet: 'Frontend Dev Aptitude Set A',
             overallReason: 'Just passed the cut-off.',
@@ -174,8 +178,8 @@ export class RecruitmentSummaryComponent {
             status: 'Failed',
             score: 55,
             cutOffScore: 75,
+            panelName: 'Frontend Experts Panel',
             interviewer: 'Bob J.',
-            questionSet: 'Tech L1 - Core JS/React',
             overallReason: 'Did not demonstrate strong foundational knowledge of React state management.',
             feedbackCriteria: [
               { name: 'JavaScript Core', score: 6, remarks: 'Okay with basics, struggled with promises.' },
@@ -196,11 +200,40 @@ export class RecruitmentSummaryComponent {
 
   constructor(private location: Location) {
     // Open all accordions by default for the audit report
+    this.expandAllAccordions();
+  }
+
+  private expandAllAccordions(): void {
     this.activeAccordionIds = this.summaryData.detailedCandidates.map((c: any) => c.id);
   }
 
   public printSummary(): void {
-    window.print();
+    // Ensure all accordions are expanded before capturing
+    this.expandAllAccordions();
+    
+    // Delay to let Angular/PrimeNG DOM updates apply fully before capturing DOM
+    setTimeout(() => {
+      const data = document.querySelector('.printable-area') as HTMLElement;
+      if (!data) return;
+
+      // Use a custom class briefly to hide things we don't want in the PDF
+      // Since we had .no-print for standard printing, we can hide them manually here if needed, 
+      // but html2canvas only captures what's inside .printable-area anyway.
+
+      html2canvas(data, { scale: 2, useCORS: true }).then(canvas => {
+        // Calculate dimensions to match exact aspect ratio in a continuous single-page PDF
+        const pdfWidth = 210; // standard A4 width in mm
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        const contentDataURL = canvas.toDataURL('image/png', 1.0);
+        
+        // Create PDF exactly the size of the content so there are no awkward page breaks cutting text
+        const pdf = new jsPDF('p', 'mm', [pdfWidth, pdfHeight]); 
+        
+        pdf.addImage(contentDataURL, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`${this.summaryData.recruitmentName.replace(/\s+/g, '_')}_Audit_Report.pdf`);
+      });
+    }, 500); // 500ms allows animations/accordions adequate time to complete opening
   }
 
   public goBack(): void {

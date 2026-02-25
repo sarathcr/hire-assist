@@ -23,11 +23,12 @@
       <div class="hero-content">
         <h1 class="hero-title">{{ summaryData.recruitmentName }}</h1>
         <div class="hero-meta">
-          <span class="meta-item"><i class="pi pi-hashtag"></i> {{ summaryData.recruitmentId }}</span>
-          <span class="meta-divider">|</span>
-          <span class="meta-item"><i class="pi pi-calendar"></i> {{ summaryData.dateCreated | date:'mediumDate' }}</span>
-          <span class="meta-divider">|</span>
+          <span class="meta-item"><i class="pi pi-tag"></i> {{ summaryData.recruitmentId }}</span>
+          <span class="meta-divider">•</span>
+          <span class="meta-item"><i class="pi pi-calendar"></i> {{ summaryData.dateCreated | date:'longDate' }}</span>
+          <span class="meta-divider">•</span>
           <span class="meta-item status-badge" [ngClass]="'status-' + summaryData.status.toLowerCase().replace(' ', '-')">
+            <i class="pi pi-circle-fill" style="font-size: 0.5rem; margin-right: 0.35rem;"></i>
             {{ summaryData.status }}
           </span>
         </div>
@@ -76,7 +77,10 @@
 
     <!-- Recruitment Journey Pipeline -->
     <div class="section-container">
-      <h2 class="section-title"><i class="pi pi-sitemap"></i> Recruitment Pipeline</h2>
+      <div class="section-header-wrapper">
+        <h2 class="section-title"><span class="icon-wrapper blue"><i class="pi pi-sitemap"></i></span> Recruitment Pipeline</h2>
+        <p class="section-subtitle">Progression of candidates through each defined stage</p>
+      </div>
       <div class="pipeline-container">
         @for (round of summaryData.rounds; track round.id; let i = $index) {
           <div class="pipeline-step">
@@ -128,7 +132,10 @@
 
     <!-- Candidate Audit Report Section -->
     <div class="section-container audit-report-section">
-      <h2 class="section-title"><i class="pi pi-file-edit text-blue"></i> Candidate Audit Report</h2>
+      <div class="section-header-wrapper">
+        <h2 class="section-title"><span class="icon-wrapper indigo"><i class="pi pi-file-check"></i></span> Candidate Audit Report</h2>
+        <p class="section-subtitle">Comprehensive breakdown of feedbacks, scores, and attachments per candidate</p>
+      </div>
       
       <div class="audit-list">
         <!-- We use an array of active indices or values for multiple accordion expansion -->
@@ -192,15 +199,21 @@
                       </div>
 
                       <!-- Round Meta Data -->
-                      <div class="round-meta-grid">
+                      <div class="round-meta-grid" [ngClass]="{'three-cols': round.questionSet}">
+                        <div class="meta-field">
+                          <span class="field-label">Panel Name</span>
+                          <span class="field-value"><i class="pi pi-users"></i> {{ round.panelName }}</span>
+                        </div>
                         <div class="meta-field">
                           <span class="field-label">Interviewer</span>
                           <span class="field-value"><i class="pi pi-user"></i> {{ round.interviewer }}</span>
                         </div>
-                        <div class="meta-field">
-                          <span class="field-label">Question Set</span>
-                          <span class="field-value"><i class="pi pi-file"></i> {{ round.questionSet }}</span>
-                        </div>
+                        @if (round.questionSet) {
+                          <div class="meta-field">
+                            <span class="field-label">Question Set</span>
+                            <span class="field-value"><i class="pi pi-file-edit"></i> {{ round.questionSet }}</span>
+                          </div>
+                        }
                       </div>
 
                       <!-- Feedback Criteria -->
