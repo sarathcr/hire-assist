@@ -305,6 +305,27 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     return { blobId, attachmentTypeId };
   }
 
+  public getFileName(file: any): string {
+    return file?.Name || file?.name || 'Unknown File';
+  }
+
+  public getAttachmentType(file: any): number | undefined {
+    return file?.AttachmentType !== undefined ? file.AttachmentType : file?.attachmentType;
+  }
+
+  public getAttachmentTypeName(type: number | string | undefined): string {
+    if (type === undefined) return 'Unknown';
+    const typeStr = type.toString();
+    const option = this.idTypeSelectConfig.options?.find(opt => opt.value === typeStr);
+    return option ? option.label : 'Unknown';
+  }
+
+  public openImage(url: string | undefined): void {
+    if (url) {
+      window.open(url, '_blank');
+    }
+  }
+
   private fetchImage() {
     if (!this.uploadedFileUrl || this.uploadedFileUrl.length === 0) {
       this.isLoadingExistingImages = false;

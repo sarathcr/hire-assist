@@ -112,6 +112,10 @@ export class InterviewerFeedbackComponent
   public warningThresholds = [10, 5];
   private ref: any;
 
+  // ── Track elapsed time ────────────────────────
+  public elapsedSeconds = 0;
+  public formattedDuration = '00:00:00';
+
   // ── Draggable timer state ────────────────────────
   public timerPos: { x: number; y: number } | null = null;
   public isDraggingTimer = false;
@@ -269,6 +273,17 @@ export class InterviewerFeedbackComponent
       detail: 'The scheduled duration has ended.',
       life: 5000,
     });
+  }
+
+  public onTimeElapsed(seconds: number): void {
+    this.elapsedSeconds = seconds;
+    
+    // update formatted duration
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    
+    this.formattedDuration = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
 
   private updateLoadingState(): void {
@@ -847,8 +862,15 @@ export class InterviewerFeedbackComponent
     }
   }
 
-  private convertTimerHourToMinutes(timerHour: number): number {
+  private convertTimerHourToMinutes(timerHour: number | string): number {
     if (!timerHour) return 0;
+
+    if (typeof timerHour === 'string') {
+      const parts = timerHour.split(':');
+      const hours = parseInt(parts[0] || '0', 10);
+      const minutes = parseInt(parts[1] || '0', 10);
+      return hours * 60 + minutes;
+    }
 
     const hours = Math.floor(timerHour);
     const minutes = Math.round((timerHour - hours) * 100);

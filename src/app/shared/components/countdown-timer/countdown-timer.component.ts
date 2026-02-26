@@ -18,14 +18,16 @@ import { CommonModule } from '@angular/common';
   styleUrl: './countdown-timer.component.scss',
 })
 export class CountdownTimerComponent implements OnInit, OnDestroy {
-  public timerHour = input.required<number>();
+  public timerHour = input.required<number | string>();
 
   public warningThresholds = input<number[]>([10, 5]);
 
   public warning = output<number>();
   public timeExpired = output<void>();
+  public timeElapsed = output<number>();
 
   public timeLeft = signal<number>(0);
+  public originalTimeSeconds = signal<number>(0);
 
   public isOvertime = computed(() => this.timeLeft() < 0);
 
@@ -49,11 +51,23 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
       () => {
         const rawHour = this.timerHour();
 
-        const hours = Math.floor(rawHour);
-        const minutes = Math.round((rawHour - hours) * 100);
-        const totalSeconds = hours * 3600 + minutes * 60;
+        let totalSeconds = 0;
+
+        if (typeof rawHour === 'string') {
+          // Parse HH:mm:ss
+          const parts = rawHour.split(':');
+          const hours = parseInt(parts[0] || '0', 10);
+          const minutes = parseInt(parts[1] || '0', 10);
+          const seconds = parseInt(parts[2] || '0', 10);
+          totalSeconds = hours * 3600 + minutes * 60 + seconds;
+        } else if (typeof rawHour === 'number') {
+          const hours = Math.floor(rawHour);
+          const minutes = Math.round((rawHour - hours) * 100);
+          totalSeconds = hours * 3600 + minutes * 60;
+        }
 
         this.timeLeft.set(totalSeconds);
+        this.originalTimeSeconds.set(totalSeconds);
         this.hasEmittedExpired = false;
         this.startTimer();
       }
@@ -80,6 +94,9 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
         if (newTime > 0) {
           this.checkWarning(newTime);
         }
+
+        // Emit elapsed time
+        this.timeElapsed.emit(this.originalTimeSeconds() - newTime);
 
         return newTime;
       });

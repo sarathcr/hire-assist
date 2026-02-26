@@ -3,7 +3,7 @@
 }
 
 <!-- Floating Timer — draggable, always visible -->
-@if (responseData) {
+@if (responseData && !isSubmitted) {
   <div
     #timerEl
     class="ifb__timer"
@@ -19,6 +19,7 @@
       [warningThresholds]="warningThresholds"
       (warning)="handleTimerWarning($event)"
       (timeExpired)="handleTimeExpired()"
+      (timeElapsed)="onTimeElapsed($event)"
     >
     </app-countdown-timer>
   </div>

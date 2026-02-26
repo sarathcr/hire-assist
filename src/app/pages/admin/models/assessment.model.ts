@@ -93,7 +93,7 @@ export class Score extends FormEntity {
 export interface AssessmentRoundFormGroup {
   id: string;
   name: string;
-  timerHour?: number;
+  timerHour?: number | string;
   durationDate?: Date;
   maxTerminationCount?: number;
 }

@@ -116,24 +116,40 @@
         <p class="proofUpload__loader-text">Loading images...</p>
       </div>
     } @else {
-      @if (uploadedFileUrl && uploadedFileUrl.length > 0 && imageUrl.length > 0) {
+      @if (uploadedFileUrl && uploadedFileUrl.length > 0) {
         <div class="proofUpload__preview-grid">
-          @for (imgUrl of imageUrl; track imgUrl; let i = $index) {
+          @for (file of uploadedFileUrl; track file.Id || $index; let i = $index) {
             <div class="proofUpload__preview-card proofUpload__preview-card--existing">
-              <div class="proofUpload__preview-image-wrapper">
-                <img 
-                  [src]="imgUrl" 
-                  alt="Existing ID proof"
-                  class="proofUpload__preview-image"
-                />
+              <!-- Let's wrap the image to allow clicking -->
+              <div class="proofUpload__preview-image-wrapper" (click)="openImage(imageUrl[i])" style="cursor: pointer;" [title]="'Click to view full image'">
+                @if (imageUrl[i]) {
+                  <img 
+                    [src]="imageUrl[i]" 
+                    [alt]="getFileName(file)"
+                    class="proofUpload__preview-image"
+                  />
+                } @else {
+                  <div class="proofUpload__loader-container" style="height: 100%; display: flex; align-items: center; justify-content: center;">
+                    <p-progressSpinner [style]="{ width: '20px', height: '20px' }" strokeWidth="4"></p-progressSpinner>
+                  </div>
+                }
+                <!-- We need to stop event propagation for delete to avoid opening the image -->
                 <button 
                   class="proofUpload__preview-remove"
-                  (click)="onDeleteImage(i)"
+                  (click)="onDeleteImage(i); $event.stopPropagation()"
                   type="button"
                   aria-label="Delete existing image"
                 >
                   <i class="pi pi-trash"></i>
                 </button>
+              </div>
+              <div class="proofUpload__preview-info">
+                <span class="proofUpload__preview-filename" [title]="getFileName(file)">
+                  {{ getFileName(file) }}
+                </span>
+                <span class="proofUpload__preview-type" style="font-size: 12px; color: #666; display: block; margin-top: 4px;">
+                  {{ getAttachmentTypeName(getAttachmentType(file)) }}
+                </span>
               </div>
             </div>
           }
