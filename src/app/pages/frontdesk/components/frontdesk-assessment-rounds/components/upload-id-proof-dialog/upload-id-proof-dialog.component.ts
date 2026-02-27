@@ -47,6 +47,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   public isUploading = false;
   public uploadProgress = 0;
   public previewImages: { file: File; previewUrl: string }[] = [];
+  public readonly MAX_FILE_SIZE = 5242880;
   @ViewChild('fileUpload') fileUpload!: FileUpload;
 
   constructor(
@@ -76,7 +77,6 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
 
     this.candidateId = this.config.data?.candidateEmail;
 
-    // Load existing images after modal opens
     this.loadExistingImages();
   }
 
@@ -115,52 +115,45 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     }
     return null;
   }
-  public onFileChange(event: FileSelectEvent): void {
+public onFileChange(event: FileSelectEvent): void {
     const files = event.currentFiles || event.files || [];
+    
     if (files.length > 0) {
-      // Handle multiple files and create previews
       Array.from(files).forEach((file: File) => {
-        if (file.type.startsWith('image/')) {
-          // Check if file is already added to avoid duplicates
-          const isDuplicate = this.previewImages.some(
-            (img) => img.file.name === file.name && img.file.size === file.size,
-          );
+        const isDuplicate = this.previewImages.some(
+          (img) => img.file.name === file.name && img.file.size === file.size
+        );
 
-          if (!isDuplicate) {
-            const previewUrl = URL.createObjectURL(file);
-            this.previewImages.push({
-              file,
-              previewUrl,
-            });
-          }
+        if (!isDuplicate) {
+          const previewUrl = URL.createObjectURL(file);
+          this.previewImages.push({
+            file,
+            previewUrl,
+          });
         }
       });
 
-      // Update form with all files
-      if (this.previewImages.length > 0) {
-        const filesArray = this.previewImages.map((img) => img.file);
-        this.fGroup.patchValue({ idFile: filesArray });
-        this.fGroup.get('idFile')?.updateValueAndValidity();
-        this.fGroup.get('idFile')?.markAsTouched();
-      }
+      this.fileUpload.clear();
+
+      this.updateFormValidation();
     }
   }
 
-  public removePreviewImage(index: number): void {
-    // Revoke object URL to free memory
+public removePreviewImage(index: number): void {
     URL.revokeObjectURL(this.previewImages[index].previewUrl);
+    
     this.previewImages.splice(index, 1);
 
-    // Update form validation - require at least one file
-    if (this.previewImages.length === 0) {
-      this.fGroup.patchValue({ idFile: null });
-      // Clear the file upload component
-      if (this.fileUpload) {
-        this.fileUpload.clear();
-      }
-    } else {
+    this.updateFormValidation();
+  }
+
+
+  private updateFormValidation() {
+    if (this.previewImages.length > 0) {
       const filesArray = this.previewImages.map((img) => img.file);
       this.fGroup.patchValue({ idFile: filesArray });
+    } else {
+      this.fGroup.patchValue({ idFile: null });
     }
     this.fGroup.get('idFile')?.updateValueAndValidity();
   }
@@ -188,7 +181,6 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     let uploadCount = 0;
     let hasError = false;
 
-    // Upload files sequentially
     filesToUpload.forEach((file) => {
       const payload: IdProofUploadRequest = {
         CandidateId: this.candidateId,
@@ -226,6 +218,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       });
     });
   }
+
 
   public ngOnDestroy(): void {
     // Clean up object URLs to prevent memory leaks
