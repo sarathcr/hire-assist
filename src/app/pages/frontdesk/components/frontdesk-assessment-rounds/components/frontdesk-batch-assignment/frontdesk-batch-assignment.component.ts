@@ -195,7 +195,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     this.markAsPresentRequest = { InterviewsId: candidate.id };
     // Show loading skeleton while API call is in progress
     this.loadingBatches[batchId] = true;
-    
+
     const next = () => {
       this.messageService.add({
         severity: 'success',
@@ -251,7 +251,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: `Candidate ${candidate.name} marked as present`,
+          detail: `Candidate ${candidate.name} assigned to another batch successfully`,
         });
         this.getAllPaginatedCandidates(new PaginatedPayload(), batchId);
         this.getAllPaginatedCandidates(new PaginatedPayload(), targetBatchId);

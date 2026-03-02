@@ -1,6 +1,4 @@
 <div class="proofUpload">
-  <p-toast position="top-right"></p-toast>
-
   <!-- Scrollable Content Area -->
   <div class="proofUpload__content">
     <!-- ID Type Selection -->
@@ -37,6 +35,11 @@
               <p class="proofUpload__upload-hint">or click to browse</p>
             </div>
           </div>
+          @if (duplicateError) {
+            <small class="proofUpload__validation-error">
+              {{ duplicateError }}
+            </small>
+          }
         </ng-template>
       </p-fileupload>
 
@@ -161,22 +164,20 @@
       </div>
     }
   </div>
-
-  <!-- Fixed Footer -->
-  <div class="proofUpload__actions">
-    <p-button
-      label="Cancel"
-      severity="secondary"
-      [outlined]="true"
-      [disabled]="isUploading"
-      (onClick)="onClose()"
-    ></p-button>
-
-    <p-button
-      label="Upload Images"
-      [disabled]="!fGroup.valid || previewImages.length === 0 || isUploading"
-      [loading]="isUploading"
-      (onClick)="onSubmit()"
-    ></p-button>
-  </div>
+    <footer class="proofUpload__actions">
+      <app-button
+        buttonLabel="Cancel"
+        [buttonVariant]="'outlined'"
+        [buttonSize]="'medium'"
+        [disabled]="isUploading"
+        (btnClick)="onClose()"
+      ></app-button>
+      <app-button
+        buttonLabel="Upload Images"
+        [buttonSize]="'medium'"
+        [isLoading]="isUploading"
+        [disabled]="!fGroup.valid || previewImages.length === 0 || isUploading"
+        (btnClick)="onSubmit()"
+      ></app-button>
+  </footer>
 </div>

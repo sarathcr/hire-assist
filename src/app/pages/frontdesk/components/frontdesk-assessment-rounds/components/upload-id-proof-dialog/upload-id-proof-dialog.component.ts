@@ -2,6 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService } from 'primeng/dynamicdialog';
+import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
+import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
+import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { FileSelectEvent, FileUpload } from 'primeng/fileupload';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonModule } from 'primeng/button';
@@ -19,6 +23,7 @@ import {
 } from '../../../../../admin/models/assessment.model';
 import { MessageService } from 'primeng/api';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
+import { ButtonComponent } from "../../../../../../shared/components/button/button.component";
 
 @Component({
   selector: 'app-upload-id-proof-dialog',
@@ -29,9 +34,11 @@ import { CustomErrorResponse } from '../../../../../../shared/models/custom-erro
     ProgressSpinnerModule,
     ButtonModule,
     ToastModule,
-  ],
+    ButtonComponent
+],
   templateUrl: './upload-id-proof-dialog.component.html',
   styleUrl: './upload-id-proof-dialog.component.scss',
+  providers: [DialogService],
 })
 export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   public configMap!: ConfigMap;
@@ -48,6 +55,8 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   public uploadProgress = 0;
   public previewImages: { file: File; previewUrl: string }[] = [];
   public readonly MAX_FILE_SIZE = 5242880;
+  public duplicateError: string | null = null;
+  private deleteRef?: DynamicDialogRef;
   @ViewChild('fileUpload') fileUpload!: FileUpload;
 
   constructor(
@@ -56,6 +65,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     public config: DynamicDialogConfig,
     private readonly assessmentService: AssessmentService,
     private readonly messageService: MessageService,
+    private readonly dialog: DialogService,
   ) {}
 
   public idTypeSelectConfig: CustomSelectConfig = {
@@ -115,38 +125,48 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     }
     return null;
   }
-public onFileChange(event: FileSelectEvent): void {
+  public onFileChange(event: FileSelectEvent): void {
     const files = event.currentFiles || event.files || [];
-    
-    if (files.length > 0) {
-      Array.from(files).forEach((file: File) => {
-        const isDuplicate = this.previewImages.some(
-          (img) => img.file.name === file.name && img.file.size === file.size
-        );
+    this.duplicateError = null;
 
-        if (!isDuplicate) {
-          const previewUrl = URL.createObjectURL(file);
-          this.previewImages.push({
-            file,
-            previewUrl,
-          });
-        }
-      });
+    Array.from(files).forEach((file: File) => {
+      const isDuplicate = this.previewImages.some(
+        (img) =>
+          img.file.name === file.name &&
+          img.file.size === file.size &&
+          img.file.lastModified === file.lastModified,
+      );
 
-      this.fileUpload.clear();
+      if (isDuplicate) {
+        this.duplicateError = `${file.name} already selected`;
+        return;
+      }
 
-      this.updateFormValidation();
-    }
-  }
+      const isExistingDuplicate =
+        this.uploadedFileUrl?.some(
+          (f) => this.getFileName(f)?.toLowerCase() === file.name.toLowerCase(),
+        ) ?? false;
 
-public removePreviewImage(index: number): void {
-    URL.revokeObjectURL(this.previewImages[index].previewUrl);
-    
-    this.previewImages.splice(index, 1);
+      if (isExistingDuplicate) {
+        this.duplicateError = `${file.name} already uploaded`;
+        return;
+      }
 
+      const previewUrl = URL.createObjectURL(file);
+      this.previewImages.push({ file, previewUrl });
+    });
+
+    this.fileUpload.clear();
     this.updateFormValidation();
   }
 
+  public removePreviewImage(index: number): void {
+    URL.revokeObjectURL(this.previewImages[index].previewUrl);
+    this.previewImages.splice(index, 1);
+
+    this.duplicateError = null;
+    this.updateFormValidation();
+  }
 
   private updateFormValidation() {
     if (this.previewImages.length > 0) {
@@ -219,7 +239,6 @@ public removePreviewImage(index: number): void {
     });
   }
 
-
   public ngOnDestroy(): void {
     // Clean up object URLs to prevent memory leaks
     this.previewImages.forEach((img) => URL.revokeObjectURL(img.previewUrl));
@@ -230,15 +249,60 @@ public removePreviewImage(index: number): void {
   }
 
   public onDeleteImage(index: number): void {
-    if (!this.uploadedFileUrl) {
-      return;
-    }
-    const file = this.uploadedFileUrl[index];
-    if (!file) {
-      return;
-    }
+    if (!this.uploadedFileUrl) return;
 
-    // Handle both capitalized and lowercase property names from API
+    const file = this.uploadedFileUrl[index];
+    if (!file) return;
+
+    this.openDeleteConfirmDialog(index, file);
+  }
+
+  public formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  private openDeleteConfirmDialog(index: number, file: FileDto): void {
+    const modalData: DialogData = {
+      message: `Are you sure you want to delete this file?`,
+      isChoice: true,
+      closeOnNavigation: true,
+      acceptButtonText: 'Yes',
+      cancelButtonText: 'Cancel',
+    };
+
+    this.deleteRef = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Warning',
+      width: '35vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    this.deleteRef?.onClose.subscribe((res: boolean) => {
+      if (res) {
+        this.deleteImage(index, file);
+      } else {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Info',
+          detail: 'Deletion Cancelled',
+        });
+      }
+    });
+  }
+
+  private deleteImage(index: number, file: FileDto): void {
     const { blobId, attachmentTypeId } = this.getFileDtoProperties(file);
 
     if (!blobId || attachmentTypeId === undefined) {
@@ -248,27 +312,30 @@ public removePreviewImage(index: number): void {
 
     this.assessmentService
       .deleteIdProof({
-        blobId: blobId,
-        attachmentTypeId: attachmentTypeId,
+        blobId,
+        attachmentTypeId,
         candidateId: this.candidateId,
       })
       .subscribe({
         next: () => {
-          if (this.uploadedFileUrl) {
-            this.uploadedFileUrl.splice(index, 1);
-            this.imageUrl.splice(index, 1);
-            this.fGroup.patchValue({ idFile: null });
-          }
+          this.uploadedFileUrl?.splice(index, 1);
+          this.imageUrl.splice(index, 1);
+          this.fGroup.patchValue({ idFile: null });
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'File deleted successfully',
+          });
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to delete file',
+          });
         },
       });
-  }
-
-  public formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
   private getFileDtoProperties(file: FileDto): {
@@ -303,13 +370,17 @@ public removePreviewImage(index: number): void {
   }
 
   public getAttachmentType(file: any): number | undefined {
-    return file?.AttachmentType !== undefined ? file.AttachmentType : file?.attachmentType;
+    return file?.AttachmentType !== undefined
+      ? file.AttachmentType
+      : file?.attachmentType;
   }
 
   public getAttachmentTypeName(type: number | string | undefined): string {
     if (type === undefined) return 'Unknown';
     const typeStr = type.toString();
-    const option = this.idTypeSelectConfig.options?.find(opt => opt.value === typeStr);
+    const option = this.idTypeSelectConfig.options?.find(
+      (opt) => opt.value === typeStr,
+    );
     return option ? option.label : 'Unknown';
   }
 
