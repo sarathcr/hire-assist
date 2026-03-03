@@ -30,6 +30,7 @@ import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
+import { PopoverModule } from 'primeng/popover';
 import { Tooltip } from 'primeng/tooltip';
 import { debounceTime, Subject } from 'rxjs';
 import {
@@ -55,6 +56,7 @@ export const uniqueStatuses = [
   { label: 'Selected', value: 'Selected' },
   { label: 'Completed', value: 'Completed' },
   { label: 'Rejected', value: 'Rejected' },
+  { label: 'Active', value: 'Active' },
 ];
 
 export const uniqueStatusesForIsSchedule = [
@@ -92,6 +94,7 @@ export const uniquesActives = [
     DatePipe,
     ImageComponent,
     ImageSkeletonComponent,
+    PopoverModule,
   ],
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss',
@@ -116,8 +119,6 @@ export class TableComponent<
   private isInitializingFromAlreadySelected = false;
   private lastEmittedSelection: string[] = [];
   private appliedFilters: Record<string, any> = {};
-  private isManualFilterTrigger = false;
-  private isApplyingFilter = false;
   public tableData = input<PaginatedData<T>>();
   public columnsData = input<TableColumnsData>();
   public exportButton = input<boolean>(false);
@@ -134,10 +135,13 @@ export class TableComponent<
   public statusOptionsForSchedule: SelectItem[] = uniqueStatusesForIsSchedule;
   public hasSearch = input<boolean>(false);
   public searchDebounceTime = input<number>(400);
+  public paginationDebounceTime = input<number>(50);
   public enableCandidateStyling = input<boolean>(false);
   public activeFilters = new Set<string>();
   public isAnyFilterActive = false;
   public globalPayload = new PaginatedPayload();
+  private readonly paginationSubject = new Subject<PaginatedPayload>();
+  private pendingDebounce = false;
 
   public parentLoader = input<boolean>(false);
   private readonly internalIsLoading = signal<boolean>(false);
@@ -485,7 +489,8 @@ export class TableComponent<
         this.lastPaginationCall &&
         !this.hasFiltersInPayload(this.lastPaginationCall.payload)
       ) {
-        this.triggerFilterApplication();
+        const lazyLoadEvent = this.createLazyLoadEvent();
+        this.processLazyLoad(lazyLoadEvent);
         return;
       }
 
@@ -498,6 +503,17 @@ export class TableComponent<
         this.pageChangeAndSort.emit(payload);
       });
     this.subscriptionList.push(sub);
+
+    const pagSub = this.paginationSubject
+      .pipe(debounceTime(this.paginationDebounceTime()))
+      .subscribe((payload: PaginatedPayload) => {
+        this.internalIsLoading.set(true);
+        this.pageChangeAndSort.emit(payload);
+        setTimeout(() => {
+          this.pendingDebounce = false;
+        }, 50);
+      });
+    this.subscriptionList.push(pagSub);
 
     effect(() => {
       const alreadySelectedIds = this.alreadySelected();
@@ -741,7 +757,9 @@ export class TableComponent<
     if (!this.hasValidFilters(eventFilters)) {
       if (Object.keys(this.appliedFilters).length > 0) {
         this.appliedFilters = {};
-        this.triggerFilterApplication();
+        // Trigger a fresh lazy load without filters
+        const lazyLoadEvent = this.createLazyLoadEvent();
+        this.processLazyLoad(lazyLoadEvent);
       }
       return;
     }
@@ -751,18 +769,13 @@ export class TableComponent<
       JSON.stringify(eventFilters) !== JSON.stringify(previousAppliedFilters);
 
     if (filtersChanged) {
-      this.isApplyingFilter = true;
       this.appliedFilters = structuredClone(eventFilters);
       this.filterApplicationTimestamp.set(Date.now());
-
+      
+      // Manually trigger the debounced processLazyLoad here so we have explicit control
+      // over filter changes, rather than relying solely on Primeng's implicit onLazyLoad
       const lazyLoadEvent = this.createLazyLoadEvent();
-      this.isManualFilterTrigger = true;
-      try {
-        this.processLazyLoad(lazyLoadEvent);
-      } finally {
-        this.isManualFilterTrigger = false;
-        this.isApplyingFilter = false;
-      }
+      this.processLazyLoad(lazyLoadEvent);
     }
   }
 
@@ -776,22 +789,17 @@ export class TableComponent<
   }
 
   private processLazyLoad(event: any): void {
-    if (this.isLoading() && !this.isManualFilterTrigger) {
+    if (this.isLoading() && !this.pendingDebounce) {
       return;
     }
 
-    if (this.shouldSkipCall(event)) {
-      this.internalIsLoading.set(false);
-      return;
-    }
-
-    this.internalIsLoading.set(true);
+    this.pendingDebounce = true;
     this.activeFilters.clear();
 
     const payload = this.buildPayload(event);
 
     if (this.shouldSkipDuplicateCall(payload)) {
-      this.internalIsLoading.set(false);
+      this.pendingDebounce = false;
       return;
     }
 
@@ -802,7 +810,7 @@ export class TableComponent<
 
     this.globalPayload = payload;
     this.isAnyFilterActive = this.activeFilters.size > 0 || !!this.searchValue;
-    this.pageChangeAndSort.emit(payload);
+    this.paginationSubject.next(payload);
   }
 
   public getRowsPerPageOptions(): number[] {
@@ -880,23 +888,6 @@ export class TableComponent<
       multiSortMeta: this.table.multiSortMeta,
       filters: this.appliedFilters,
     };
-  }
-
-  private triggerFilterApplication(): void {
-    const lazyLoadEvent = this.createLazyLoadEvent();
-    this.isManualFilterTrigger = true;
-    try {
-      this.processLazyLoad(lazyLoadEvent);
-    } finally {
-      this.isManualFilterTrigger = false;
-    }
-  }
-
-  private shouldSkipCall(event: any): boolean {
-    if (this.isApplyingFilter && !this.isManualFilterTrigger) {
-      return !!(event.multiSortMeta || event.sortField);
-    }
-    return false;
   }
 
   private buildPayload(event: any): PaginatedPayload {
@@ -989,7 +980,7 @@ export class TableComponent<
   }
 
   private shouldSkipDuplicateCall(payload: PaginatedPayload): boolean {
-    if (!this.lastPaginationCall || this.isManualFilterTrigger) {
+    if (!this.lastPaginationCall) {
       return false;
     }
 

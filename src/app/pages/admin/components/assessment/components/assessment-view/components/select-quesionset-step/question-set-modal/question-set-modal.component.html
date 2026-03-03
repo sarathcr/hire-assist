@@ -1,20 +1,32 @@
-<div class="question-set-form">
-  <form [formGroup]="questionSetFGroup">
-    <div class="question-set-form_field-container">
-      <app-input-text
-        type="text"
-        class="question-set-form_field-col_one"
-        [formGroup]="questionSetFGroup"
-        [config]="configMap['title']"
-      ></app-input-text>
-      <app-input-textarea
-        class="question-set-form_field"
-        [formGroup]="questionSetFGroup"
-        type="text"
-        [config]="configMap['description']"
-      ></app-input-textarea>
+<div class="question-set-modal">
+  <div class="question-set-modal__info-banner">
+    <div class="info-banner-icon">
+      <i class="pi pi-sparkles"></i>
     </div>
-  </form>
+    <div class="info-banner-text">
+      <h4>Provide Details</h4>
+      <p>Give your question set a clear title and description to help organize your assessment rounds.</p>
+    </div>
+  </div>
+
+  <div class="question-set-form">
+    <form [formGroup]="questionSetFGroup">
+      <div class="question-set-form_field-container">
+        <app-input-text
+          type="text"
+          class="question-set-form_field-col-one"
+          [formGroup]="questionSetFGroup"
+          [config]="configMap['title']"
+        ></app-input-text>
+        <app-input-textarea
+          class="question-set-form_field-col-one"
+          [formGroup]="questionSetFGroup"
+          type="text"
+          [config]="configMap['description']"
+        ></app-input-textarea>
+      </div>
+    </form>
+  </div>
 </div>
 <footer class="dialog-footer">
   <div class="dialog-footer__btn-wrapper">

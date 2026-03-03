@@ -187,47 +187,17 @@
       </div>
       <div class="assessment-detail__actions">
         <p-button
-          icon="pi pi-calendar-plus"
-          label="Schedule"
-          pTooltip="Schedule Interview"
-          tooltipPosition="bottom"
+          icon="pi pi-bolt"
+          label="Actions"
           [outlined]="true"
-          severity="info"
-          [disabled]="!isScheduleEnabled() || isLoading"
-          [loading]="isLoading"
-          (onClick)="schedule()"
+          severity="secondary"
+          (onClick)="openMenu($event, actionsMenu)"
         />
-        @if (!isAptitudeRound()) {
-          <p-button
-            icon="pi pi-user-plus"
-            label="Assign Panel"
-            pTooltip="Assign Candidate to Panel"
-            tooltipPosition="bottom"
-            severity="warn"
-            [outlined]="true"
-            [disabled]="!isAssignPanelEnabled()"
-            (onClick)="OnPanelClick()"
-          />
-        }
-        <p-button
-          icon="pi pi-check-square"
-          label="Select"
-          pTooltip="Select Candidate"
-          severity="success"
-          tooltipPosition="bottom"
-          [outlined]="true"
-          [disabled]="!isSelectEnabled()"
-          (onClick)="selectCandidate()"
-        />
-        <p-button
-          icon="pi pi-ban"
-          label="Reject"
-          severity="danger"
-          pTooltip="Reject Candidate"
-          tooltipPosition="bottom"
-          [outlined]="true"
-          [disabled]="!isRejectEnabled()"
-          (onClick)="rejectCandidate()"
+        <p-menu
+          #actionsMenu
+          [model]="actionItems"
+          [popup]="true"
+          appendTo="body"
         />
       </div>
     </div>

@@ -5,10 +5,12 @@ import { AccordionModule, AccordionTabOpenEvent } from 'primeng/accordion';
 import { MenuItem, MessageService } from 'primeng/api';
 import { ChipModule } from 'primeng/chip';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Toast } from 'primeng/toast';
+import { finalize } from 'rxjs/operators';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
+import { TableSkeletonComponent } from '../../../../../../shared/components/table/table.skeleton';
 import { ASSESSMENT_URL } from '../../../../../../shared/constants/api';
+import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import {
   FilterMap,
@@ -19,18 +21,11 @@ import {
   FieldType,
   TableColumnsData,
 } from '../../../../../../shared/models/table.models';
-import {
-  FileDto,
-  IdProofUploadRequest,
-} from '../../../../../admin/models/assessment.model';
 import { MarkAsPresentRequest } from '../../../../../admin/models/question.model';
 import { AssessmentService } from '../../../../../admin/services/assessment.service';
 import { AssignBatchDialogComponent } from '../assign-batch-dialog/assign-batch-dialog.component';
 import { UploadIdProofDialogComponent } from '../upload-id-proof-dialog/upload-id-proof-dialog.component';
 import { FrontdeskBatchAssignmentSkeletonComponent } from './frontdesk-batch-assignment-skeleton.component';
-import { TableSkeletonComponent } from '../../../../../../shared/components/table/table.skeleton';
-import { StatusEnum } from '../../../../../../shared/enums/status.enum';
-import { finalize } from 'rxjs/operators';
 const tableColumns: TableColumnsData = {
   columns: [
     {
@@ -103,6 +98,7 @@ export interface Candidate {
   batchQuestionSetsId?: string;
   toggleTooltipIconIndex?: number;
   visibleButtonIndices?: number[];
+  disabledButtonIndices?: number[];
 }
 
 export interface ButtonAction {
@@ -122,7 +118,14 @@ export interface AssignToAnotherBatchDialogData {
 
 @Component({
   selector: 'app-frontdesk-batch-assignment',
-  imports: [AccordionModule, TableComponent, CommonModule, ChipModule, Toast, FrontdeskBatchAssignmentSkeletonComponent, TableSkeletonComponent],
+  imports: [
+    AccordionModule,
+    TableComponent,
+    CommonModule,
+    ChipModule,
+    FrontdeskBatchAssignmentSkeletonComponent,
+    TableSkeletonComponent,
+  ],
   templateUrl: './frontdesk-batch-assignment.component.html',
   styleUrl: './frontdesk-batch-assignment.component.scss',
   providers: [TableDataSourceService],
@@ -142,6 +145,11 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
   private ref: DynamicDialogRef | undefined;
   public isLoading: boolean = true;
   public loadingBatches: Record<string, boolean> = {};
+
+  private readonly ALLOWED_ACTION_STATUSES = [
+    StatusEnum.Active,
+    StatusEnum.Scheduled,
+  ];
 
   public filterMap!: FilterMap;
 
@@ -349,14 +357,29 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       const updatedRes: PaginatedData<Candidate> = {
         ...res,
         data: res.data.map((candidate) => {
+          const isAllowed =
+            this.ALLOWED_ACTION_STATUSES.includes(candidate.statusId!) ||
+            ['active', 'pending', 'scheduled'].includes(candidate.status || '');
           // Candidate is present if statusId is Active (1) or status is 'Active'
-          const isPresent = candidate.statusId === StatusEnum.Active || candidate.status?.toLowerCase() === 'active';
+          const isPresent =
+            candidate.statusId === StatusEnum.Active ||
+            candidate.status?.toLowerCase() === 'active';
+            
           return {
             ...candidate,
-            // Default to absent: show only "Mark as Present" (index 0) - check icon
-            // When present (Active): show "Unmark Presence" (index 1) - close icon, "Assign to another batch" (index 2), and "Upload Id Proof" (index 3)
-            toggleTooltipIconIndex: isPresent ? 0 : 1,
-            visibleButtonIndices: isPresent ? [1, 2, 3] : [0],
+            // 0 -> Mark as Present, 1 -> Mark as Absent
+            // If present, show 'Mark as Absent' (1), otherwise show 'Mark as Present' (0)
+            toggleTooltipIconIndex: isPresent ? 1 : 0, 
+            
+            // We always want to show all dropdown actions to the user instead of hiding them
+            // [0/1 (Presence Toggle), 2 (Assign Batch), 3 (Upload ID)]
+            visibleButtonIndices: isPresent ? [1, 2, 3] : [0, 2, 3],
+            
+            // Disable everything if the overall status doesn't allow actions.
+            // Even if allowed, "Upload ID" (3) and "Assign to Batch" (2) might only make 
+            // sense if they are marked Present, but the requirement specifically states that 
+            // for inactive/other status they should be disabled.
+            disabledButtonIndices: !isAllowed ? (isPresent ? [1, 2, 3] : [0, 2, 3]) : [],
           };
         }),
       };
@@ -405,13 +428,19 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
             ...response,
             data: response.data.map((candidate) => {
               // Candidate is present if statusId is Active (1) or status is 'Active'
-              const isPresent = candidate.statusId === StatusEnum.Active || candidate.status?.toLowerCase() === 'active';
+              const isPresent =
+                candidate.statusId === StatusEnum.Active ||
+                candidate.status?.toLowerCase() === 'active';
+                
+              const isAllowed =
+                this.ALLOWED_ACTION_STATUSES.includes(candidate.statusId!) ||
+                ['active', 'pending', 'scheduled'].includes(candidate.status?.toLowerCase() || '');
+
               return {
                 ...candidate,
-                // Default to absent: show only "Mark as Present" (index 0) - check icon
-                // When present (Active): show "Unmark Presence" (index 1) - close icon, "Assign to another batch" (index 2), and "Upload Id Proof" (index 3)
-                toggleTooltipIconIndex: isPresent ? 0 : 1,
-                visibleButtonIndices: isPresent ? [1, 2, 3] : [0],
+                toggleTooltipIconIndex: isPresent ? 1 : 0, 
+                visibleButtonIndices: isPresent ? [1, 2, 3] : [0, 2, 3],
+                disabledButtonIndices: !isAllowed ? (isPresent ? [1, 2, 3] : [0, 2, 3]) : [],
               };
             }),
           };

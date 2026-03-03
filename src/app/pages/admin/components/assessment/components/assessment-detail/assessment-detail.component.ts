@@ -5,6 +5,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { Menu, MenuModule } from 'primeng/menu';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SkeletonModule } from 'primeng/skeleton';
 import { StepperModule } from 'primeng/stepper';
@@ -140,6 +141,7 @@ export interface AssesmentRoundResponse {
     SkeletonModule,
     StepperModule,
     ButtonModule,
+    MenuModule,
     TableComponent,
     ButtonComponent,
     Toast,
@@ -170,6 +172,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public selectedPanels!: PanelSummary;
   public isLoading = false;
   public isCompletingRound = false;
+  public actionItems: MenuItem[] = [];
 
   private nextRoundId!: number | null;
   private candidatePanelAssignments = new Map<string, boolean>();
@@ -486,7 +489,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   /**
    * Checks if the Assign Panel button should be enabled
-   * Enabled when at least one candidate is selected and all selected candidates have status "Selected" or "Rejected"
+   * Enabled when at least one candidate is selected and all selected candidates have status "Pending" or "Active"
    * Note: OnPanelClick only supports assigning one candidate at a time, but button enables for multiple
    */
   public isAssignPanelEnabled(): boolean {
@@ -495,13 +498,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    // Check if all selected candidates have status "Pending" (case-insensitive)
+    // Check if all selected candidates have status "Pending" or "Active" (case-insensitive)
     return this.selectedCandidates.every((candidate) => {
       if (!candidate || !candidate.status) {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
-      return status === 'pending';
+      return status === 'pending' || status === 'active';
     });
   }
 
@@ -579,6 +582,55 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
 
     return true;
+  }
+
+  /**
+   * Build action menu items based on current selection & round state.
+   * Called just before the menu is shown so items are always up-to-date.
+   */
+  public buildActionItems(): void {
+    const items: MenuItem[] = [
+      {
+        label: 'Schedule',
+        icon: 'pi pi-calendar-plus',
+        command: () => this.schedule(),
+        disabled: !this.isScheduleEnabled() || this.isLoading,
+      },
+    ];
+
+    if (!this.isAptitudeRound()) {
+      items.push({
+        label: 'Assign Panel',
+        icon: 'pi pi-user-plus',
+        command: () => this.OnPanelClick(),
+        disabled: !this.isAssignPanelEnabled(),
+      });
+    }
+
+    items.push(
+      {
+        label: 'Select',
+        icon: 'pi pi-check-square',
+        command: () => this.selectCandidate(),
+        disabled: !this.isSelectEnabled(),
+      },
+      {
+        label: 'Reject',
+        icon: 'pi pi-ban',
+        command: () => this.rejectCandidate(),
+        disabled: !this.isRejectEnabled(),
+      },
+    );
+
+    this.actionItems = items;
+  }
+
+  /**
+   * Build action items then toggle the popup menu.
+   */
+  public openMenu(event: Event, menu: Menu): void {
+    this.buildActionItems();
+    menu.toggle(event);
   }
 
   /**

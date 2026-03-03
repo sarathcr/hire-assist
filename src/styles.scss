@@ -22,7 +22,7 @@
   --dashboard-main-background-color: #f5f6fa;
   --color-warning-secondary: #f39b2124;
   --background-blue: rgb(0, 149, 255);
-  --color-light-green:#e6f4ea;
+  --color-light-green: #e6f4ea;
   // Spacing Variables
   // rem
   --spacing-1-rem: 1rem;
@@ -117,4 +117,20 @@ html {
 
 .mr-10 {
   margin-right: 10px;
+}
+
+// Compact action dropdown — popover appended to body, must be global
+.p-popover .p-popover-content {
+  .p-button {
+    padding: 0.3rem 0.6rem;
+    font-size: 12px;
+
+    .p-button-icon {
+      font-size: 12px;
+    }
+
+    &:hover:not(:disabled) {
+      background-color: var(--background-secondary, #2196f324) !important;
+    }
+  }
 }

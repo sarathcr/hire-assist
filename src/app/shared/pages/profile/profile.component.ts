@@ -4,12 +4,10 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { TabsModule } from 'primeng/tabs';
-import { Toast } from 'primeng/toast';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { BaseComponent } from '../../components/base/base.component';
 import { AttachmentTypeEnum } from '../../enums/status.enum';
-import { ErrorResponse } from '../../models/custom-error.models';
 import { FileRequest } from '../../models/files.models';
 import { buildFormGroup, ConfigMap } from '../../utilities/form.utility';
 import { StoreService } from '../../services/store.service';
@@ -29,7 +27,6 @@ import { ProfileSkeletonComponent } from './profile-skeleton.component';
     BasicInformationComponent,
     CoverImageComponent,
     ButtonModule,
-    Toast,
     ProfileSkeletonComponent,
     SkeletonModule,
     TooltipModule,

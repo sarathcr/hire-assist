@@ -3,7 +3,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { Toast, ToastModule } from 'primeng/toast';
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
@@ -23,10 +22,7 @@ import { AuthService } from '../../services/auth.service';
     ReactiveFormsModule,
     InputTextComponent,
     ButtonComponent,
-    ToastModule,
-    Toast,
   ],
-  providers: [MessageService],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss',
 })

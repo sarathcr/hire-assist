@@ -985,6 +985,15 @@ export class SelectQuesionsetStepComponent
   }
 
   public onCompleteQuestionSetStep(): void {
+    if (!this.hasSubmittedQuestionSets()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Please select questions for all created Question Sets.',
+      });
+      return;
+    }
+
     const assessmentId = Number(this.assessmentId());
     if (assessmentId) {
       this.isLoading = true;

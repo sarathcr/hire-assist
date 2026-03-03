@@ -1,23 +1,74 @@
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .batch-detail {
   overflow-x: hidden;
+  height: fit-content;
+  /* Fill space to let background shine */
+  /* Fill space to let background shine */
+  // padding: 1.5rem;
+  /* Removed local gradient to inherit main layout background */
+  border-radius: 16px;
+  animation: fadeSlideUp 0.6s ease-out forwards;
+
+  &__acc-header {
+    gap: 1rem;
+  }
+
+  &__header-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.03);
+  }
+
   &__title {
     text-align: left;
     font-weight: 700;
     color: var(--color-grey);
-    font-size: var(--font-size-20);
-    margin-bottom: var(--spacing-20);
+    font-size: var(--font-size-24);
+    /* Slightly larger */
+    margin: 0;
+    display: flex;
+    align-items: center;
+
+    i {
+      color: var(--primary-color, #1D4ED8);
+      font-size: var(--font-size-20);
+      background: rgba(29, 78, 216, 0.1);
+      padding: 10px;
+      border-radius: 12px;
+      margin-right: 12px;
+    }
   }
+
   &__view {
     display: flex;
     width: 100%;
     gap: 1rem;
     position: relative;
-    overflow: auto;
-    height: calc(100vh - 180px);
     box-sizing: border-box;
+
     &__content {
       flex-grow: 1;
-      overflow: auto;
+      min-width: 0;
+      width: 100%;
+      background: transparent;
+      border-radius: 16px;
+      padding: 1.5rem 0;
+      /* Removed horizontal padding to fit better after full width layout transition */
+      border: none;
+
       &__btn-grp {
         bottom: 0;
         padding-right: var(--spacing-10);
@@ -28,10 +79,12 @@
         justify-content: flex-end;
       }
     }
+
     app-stepper-skeleton {
       flex-grow: 1;
     }
   }
+
   &__schedule-layout {
     display: flex;
     gap: 2rem;
@@ -43,15 +96,177 @@
       border-radius: 8px;
     }
   }
+
   &__skeleton-chip {
     margin-bottom: var(--spacing-15);
   }
+
   &__skeleton-table {
     margin-top: var(--spacing-10);
   }
+
   ::ng-deep {
-    .p-accordion .p-accordioncontent {
-      overflow: unset;
+
+    /* ════════════════════════════════════════════════════
+       ACCORDION REDESIGN - CLEAN MODERN CARDS
+    ════════════════════════════════════════════════════ */
+    .batch-detail__accordion {
+      display: flex;
+      flex-direction: column;
+      gap: 16px; // Using Flex gap for clean spacing
+      width: 100%;
+      min-width: 0;
+
+      .p-accordion-panel {
+        border: 1px solid rgba(0, 0, 0, 0.05) !important; // Very subtle border
+        background: #ffffff !important; // Pure white background
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02); // Extremely soft shadow
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin: 0 !important; // rely on flex gap
+        width: 100%;
+        min-width: 0;
+
+        animation: fadeSlideUp 0.5s ease-out forwards;
+        opacity: 0;
+
+        &:nth-child(1) {
+          animation-delay: 0.1s;
+        }
+
+        &:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+
+        &:nth-child(3) {
+          animation-delay: 0.3s;
+        }
+
+        &:nth-child(4) {
+          animation-delay: 0.4s;
+        }
+
+        &:nth-child(5) {
+          animation-delay: 0.5s;
+        }
+
+        &:hover {
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+          transform: translateY(-2px);
+          border-color: rgba(0, 0, 0, 0.08) !important;
+        }
+
+        // Expanded state styling for the entire panel
+        &[ng-reflect-active='true'],
+        &:has(.p-accordion-header-link[aria-expanded='true']) {
+          box-shadow: 0 12px 32px rgba(var(--primary-color-rgb, 29, 78, 216), 0.08);
+          border-color: rgba(var(--primary-color-rgb, 29, 78, 216), 0.2) !important;
+        }
+      }
+
+      .p-accordion-header {
+        border: none !important;
+        padding: 0;
+        margin: 0;
+        background: transparent !important;
+
+        .p-accordion-header-link {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          padding: 16px 20px;
+          background: transparent !important;
+          border: none !important;
+          color: #334155;
+          text-decoration: none;
+
+          &:hover {
+            background: #f8fafc !important;
+          }
+
+          &[aria-expanded='true'] {
+            background: #fdfdfd !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
+          }
+
+          // Chevron styling
+          .p-accordion-toggle-icon {
+            flex-shrink: 0;
+            margin-left: auto; // Push chevron to far right
+            color: #94a3b8;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+          }
+        }
+      }
+
+      .p-accordion-content {
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+
+        .p-accordion-content-container {
+          padding: 0;
+          overflow-x: auto;
+          width: 100%;
+        }
+      }
+    }
+
+    /* Target inner custom DOM classes */
+    .batch-detail__acc-header-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px; // Space between name and chip
+      min-width: 0; // Prevent flex blowout
+
+      @media (max-width: 600px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        width: 100%;
+      }
+    }
+
+    .batch-detail__acc-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      letter-spacing: -0.3px;
+      word-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+    }
+
+    .batch-detail__acc-content {
+      // padding: 20px 24px !important; // Roomy padding for inner content
+      background: transparent !important;
+      max-width: 100%; // Ensure it doesn't break out horizontally
+
+      app-table {
+        display: block;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+      }
+    }
+
+    .p-chip {
+      background-color: var(--primary-color-light, #eff6ff);
+      color: var(--primary-color-dark, #1e3a8a);
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      border: 1px solid rgba(59, 130, 246, 0.15);
+
+      .p-chip-icon {
+        font-size: 12px;
+        margin-right: 6px;
+      }
     }
   }
 }

@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DialogService } from 'primeng/dynamicdialog';
 import { StepperModule } from 'primeng/stepper';
 import { TooltipModule } from 'primeng/tooltip';
 import { Subscription } from 'rxjs';
+import { MessageService } from 'primeng/api';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { Option } from '../../../../../../shared/models/option';
@@ -137,11 +138,14 @@ export class AssessmentViewComponent
   private stepStatusUpdateSubscription?: Subscription;
   private stepCompletedSubscription?: Subscription;
 
+  @ViewChild(SelectQuesionsetStepComponent) questionSetStepComponent!: SelectQuesionsetStepComponent;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     public dialog: DialogService,
     private stepsStatusService: StepsStatusService,
+    private messageService: MessageService,
   ) {
     super();
   }
@@ -191,6 +195,20 @@ export class AssessmentViewComponent
   }
 
   public setActiveStep(step: number): void {
+    // If we are currently on the Question Set step and trying to navigate away
+    if (this.activeStep === 1 && step !== 1) {
+      if (
+        this.questionSetStepComponent &&
+        !this.questionSetStepComponent.hasSubmittedQuestionSets()
+      ) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Warning',
+          detail: 'Please select questions for all created Question Sets before proceeding.',
+        });
+        return; // Prevent navigation
+      }
+    }
     this.activeStep = step;
   }
 

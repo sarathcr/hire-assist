@@ -167,19 +167,18 @@
                         >Duration (HH:mm)
                         <span class="assessment-round__required">*</span></label
                       >
-                      <p-calendar
+                      <p-datepicker
                         [id]="'duration-' + idx"
                         [formControl]="
                           $any(getRoundFormGroup(idx).get('duration'))
                         "
                         [timeOnly]="true"
-                        [showTime]="true"
                         [hourFormat]="'24'"
                         inputId="timeonly"
                         placeholder="00:00"
                         appendTo="body"
                         styleClass="assessment-round__duration-picker"
-                      ></p-calendar>
+                      ></p-datepicker>
                       @if (
                         getRoundFormGroup(idx).get("duration")?.touched &&
                         getRoundFormGroup(idx).get("duration")?.invalid

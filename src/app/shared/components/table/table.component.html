@@ -435,32 +435,40 @@
                   (onClick)="onButtonClick(product)"
                 >
                 </p-button>
-              }
-              @for (
-                icon of headerColumn.buttonIcons;
-                let i = $index;
-                track icon
-              ) {
-                @if (
-                  product.visibleButtonIndices
-                    ? product.visibleButtonIndices.includes(i)
-                    : product.toggleTooltipIconIndex !== i
-                ) {
-                  <p-button
-                    [outlined]="true"
-                    [raised]="true"
-                    [icon]="headerColumn.buttonLabels?.[i] ? icon : icon"
-                    [label]="headerColumn.buttonLabels?.[i] ?? ''"
-                    [pTooltip]="headerColumn.buttonTooltips?.[i] ?? ''"
-                    (onClick)="
-                      onButtonClick(
-                        product,
-                        headerColumn.buttonTooltips?.[i] ?? ''
-                      )
-                    "
-                    styleClass="mr-10"
-                  ></p-button>
-                }
+              } @else {
+                <p-popover #op appendTo="body">
+                  <div class="flex flex-column gap-1 p-1" style="display: flex; flex-direction: column;">
+                    @for (
+                      icon of headerColumn.buttonIcons;
+                      let i = $index;
+                      track icon
+                    ) {
+                      @if (
+                        (product.visibleButtonIndices
+                          ? product.visibleButtonIndices.includes(i)
+                          : product.toggleTooltipIconIndex !== i) || 
+                          product.disabledButtonIndices?.includes(i)
+                      ) {
+                        <p-button
+                          [icon]="headerColumn.buttonLabels?.[i] ? icon : icon"
+                          [label]="headerColumn.buttonLabels?.[i] ?? ''"
+                          [text]="true"
+                          [plain]="true"
+                          [disabled]="product.disabledButtonIndices?.includes(i)"
+                          styleClass="w-full text-left justify-content-start"
+                          (onClick)="op.hide(); onButtonClick(product, headerColumn.buttonTooltips?.[i] ?? '')"
+                        ></p-button>
+                      }
+                    }
+                  </div>
+                </p-popover>
+                <p-button
+                  icon="pi pi-ellipsis-v"
+                  [rounded]="true"
+                  [text]="true"
+                  [plain]="true"
+                  (onClick)="op.toggle($event)"
+                ></p-button>
               }
             </td>
           } @else if (headerColumn.field === "active") {

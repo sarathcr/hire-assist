@@ -841,6 +841,15 @@ export class CandidateTestComponent
       .subscribe();
   }
 
+  private parseTimeToSeconds(timeString: string): number {
+    if (!timeString || timeString === '00:00:00') return 3600; // Default 1 hour fallback
+    const parts = timeString.split(':').map(Number);
+    if (parts.length === 3) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+    return 3600;
+  }
+
   private exitFullScreenMode(): void {
     if (typeof document !== 'undefined') {
       if (document.fullscreenElement) {
@@ -869,11 +878,16 @@ export class CandidateTestComponent
               response?.terminatedTime != null &&
               response?.terminatedTime != '00:00:00'
             ) {
-              const [hours, minutes, seconds] = response.terminatedTime
-                .split(':')
-                .map(Number);
-              const secondsLeft = hours * 3600 + minutes * 60 + seconds;
+              const secondsLeft = this.parseTimeToSeconds(
+                response.terminatedTime,
+              );
               this.timerComponent.setInitialTime(secondsLeft);
+            }
+            else if (this.data?.timerHour) {
+              const initialSeconds = this.parseTimeToSeconds(
+                this.data.timerHour,
+              );
+              this.timerComponent.setInitialTime(initialSeconds);
             } else {
               this.timerComponent.setInitialTime(3600);
             }
@@ -881,7 +895,10 @@ export class CandidateTestComponent
         },
         error: () => {
           if (this.timerComponent) {
-            this.timerComponent.setInitialTime(3600);
+            const fallbackSeconds = this.data?.timerHour
+              ? this.parseTimeToSeconds(this.data.timerHour)
+              : 3600;
+            this.timerComponent.setInitialTime(fallbackSeconds);
           }
         },
       });

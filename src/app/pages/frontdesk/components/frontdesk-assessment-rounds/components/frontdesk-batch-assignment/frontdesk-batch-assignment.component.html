@@ -1,11 +1,16 @@
 <div class="batch-detail">
-  <h1 class="batch-detail__title">Batches Details</h1>
+  <div class="batch-detail__header-wrapper">
+    <h1 class="batch-detail__title">
+      <i class="pi pi-calendar-times"></i>
+      Batches Details
+    </h1>
+  </div>
   <div class="batch-detail__view">
     <div class="batch-detail__view__content">
       @if (isLoading) {
         <app-frontdesk-batch-assignment-skeleton></app-frontdesk-batch-assignment-skeleton>
       } @else {
-        <p-accordion [value]="0" (onOpen)="onAccordionOpen($event)">
+        <p-accordion [value]="0" (onOpen)="onAccordionOpen($event)" class="batch-detail__accordion">
           @if (batchList && batchList.length === 0) {
             <p-accordion-panel [disabled]="true">
               <p-accordion-header>No batches available</p-accordion-header>
@@ -13,14 +18,16 @@
           }
           @for (item of batchList; track item.name) {
             <p-accordion-panel [value]="item.name">
-              <p-accordion-header>{{ item.name }} </p-accordion-header>
-              <p-accordion-content>
-                <div>
+              <p-accordion-header class="batch-detail__acc-header">
+                <div class="batch-detail__acc-header-content">
+                  <span class="batch-detail__acc-name">{{ item.name }}</span>
                   <p-chip
                     label="{{ item.scheduledTime }}"
                     icon="pi pi-calendar"
                   />
                 </div>
+              </p-accordion-header>
+              <p-accordion-content class="batch-detail__acc-content">
 
                 @if (loadingBatches[item.id] && !candidatesByBatch[item.id]) {
                   <app-table-skeleton></app-table-skeleton>
@@ -41,5 +48,5 @@
       }
     </div>
   </div>
-  <p-toast position="top-right" class="Toast"></p-toast>
 </div>
+

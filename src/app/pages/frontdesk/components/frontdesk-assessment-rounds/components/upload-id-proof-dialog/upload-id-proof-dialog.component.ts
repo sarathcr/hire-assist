@@ -55,6 +55,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   public uploadProgress = 0;
   public previewImages: { file: File; previewUrl: string }[] = [];
   public readonly MAX_FILE_SIZE = 5242880;
+  public readonly MAX_FILES = 10;
   public duplicateError: string | null = null;
   private deleteRef?: DynamicDialogRef;
   @ViewChild('fileUpload') fileUpload!: FileUpload;
@@ -130,6 +131,11 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     this.duplicateError = null;
 
     Array.from(files).forEach((file: File) => {
+      if (this.previewImages.length >= this.MAX_FILES) {
+        this.duplicateError = `Maximum ${this.MAX_FILES} files allowed`;
+        return;
+      }
+
       const isDuplicate = this.previewImages.some(
         (img) =>
           img.file.name === file.name &&

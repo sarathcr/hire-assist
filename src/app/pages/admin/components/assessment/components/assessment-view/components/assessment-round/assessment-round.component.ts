@@ -24,7 +24,7 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
-import { CalendarModule } from 'primeng/calendar';
+import { DatePickerModule } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
@@ -62,7 +62,7 @@ import { StepsStatusService } from '../../../../services/steps-status.service';
     InputTextModule,
     FloatLabelModule,
     FormsModule,
-    CalendarModule,
+    DatePickerModule,
   ],
   templateUrl: './assessment-round.component.html',
   styleUrl: './assessment-round.component.scss',

@@ -1,10 +1,12 @@
 .table {
   font-size: var(--font-size-base);
+
   :host ::ng-deep .p-paginator {
     display: flex;
     justify-content: center;
     align-items: center;
   }
+
   &.table-loading {
     ::ng-deep {
       .p-paginator-rpp-options {
@@ -35,11 +37,13 @@
       }
     }
   }
+
   &__row--disabled {
     opacity: 0.6;
     background-color: #f1f5f9 !important;
     pointer-events: none;
   }
+
   @media (max-width: 440px) {
     ::ng-deep {
       .p-paginator p-component {
@@ -47,30 +51,37 @@
           min-width: 2rem;
           height: 2rem;
         }
+
         .p-paginator-content-start {
           display: none !important;
         }
       }
     }
   }
+
   ::ng-deep {
+
     .p-badge,
     .p-tag,
     .p-button,
     .p-inputtext {
       font-size: var(--font-size-small);
     }
+
     .p-toolbar-start {
       display: flex;
       gap: 1rem;
     }
-    .p-table-wrapper {
+
+    .p-datatable-table {
       min-width: 1200px;
     }
-    .p-datatable-thead > tr > th.p-datatable-column-sorted {
+
+    .p-datatable-thead>tr>th.p-datatable-column-sorted {
       background-color: rgb(255, 255, 255);
       color: rgb(0, 0, 0);
     }
+
     p-paginator {
       display: flex;
       width: 100%;
@@ -81,6 +92,7 @@
     .p-paginator-content-start {
       display: none;
     }
+
     .p-paginator-page,
     .p-paginator-next,
     .p-paginator-last,
@@ -90,21 +102,25 @@
       height: 2rem !important;
     }
   }
+
   &_skeleton {
     min-width: 100%;
   }
+
   &__expanded {
     &__correctAnswer {
       color: rgb(8, 135, 8);
       width: fit-content;
       font-weight: bold;
     }
+
     &__optionList {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
       list-style-type: lower-alpha;
     }
+
     &__optionListForImage {
       display: flex;
       flex-direction: column;
@@ -112,33 +128,42 @@
       list-style-type: lower-alpha;
     }
   }
+
   &_isAlready {
     background-color: rgb(255, 255, 237);
     box-shadow: inset 4px 0 0 #ff9800;
+
     &:hover {
       background-color: rgb(255, 255, 237) !important;
     }
   }
+
   &_isDuplicate {
     background-color: rgb(255, 182, 182);
+
     &:hover {
       background-color: rgb(255, 182, 182) !important;
     }
   }
+
   &__row--batch-assigned {
     background-color: #e8f5e9 !important;
     box-shadow: inset 4px 0 0 #4caf50;
+
     &:hover {
       background-color: #c8e6c9 !important;
     }
   }
+
   &__row--not-scheduled {
     background-color: #fff3e0 !important;
     box-shadow: inset 4px 0 0 #ff9800;
+
     &:hover {
       background-color: #ffe0b2 !important;
     }
   }
+
   &__custom-paginator {
     display: flex;
     align-items: center;
@@ -168,10 +193,12 @@
         width: 100%;
       }
     }
+
     &_search {
       // display: flex;
       justify-content: flex-end;
     }
+
     &_clear {
       display: flex;
       justify-content: flex-start;
@@ -181,6 +208,7 @@
 
         @media (max-width: 470px) {
           width: 100%;
+
           ::ng-deep button {
             width: 100% !important;
           }
@@ -188,28 +216,34 @@
       }
     }
   }
+
   &__buttonColumn {
     display: flex;
     flex-direction: row;
   }
+
   @media screen and (max-width: 470px) {
-    &__globalFilters > div {
+    &__globalFilters>div {
       width: 100%;
     }
   }
+
   @media screen and (max-width: 768px) {
     ::ng-deep {
       .hideOnMobile {
         display: none;
       }
     }
+
     &__globalFilters {
       flex-direction: column;
       align-items: flex-start;
       gap: 1rem;
+
       &_search,
       &_clear {
         justify-content: space-between;
+
         ::ng-deep {
           .p-inputtext {
             width: 100%;
@@ -219,6 +253,7 @@
       }
     }
   }
+
   &__previewImage {
     margin-top: 10px;
     max-width: 100%;
@@ -227,6 +262,7 @@
     margin-left: 6%;
     position: relative;
     cursor: pointer;
+
     &--placeholder {
       display: flex;
       flex-direction: column;
@@ -239,15 +275,18 @@
       background-color: #f9f9f9;
       cursor: pointer;
       transition: all 0.2s ease;
+
       &:hover {
         border-color: #999;
         background-color: #f0f0f0;
+
         i {
           color: #999 !important;
         }
       }
     }
   }
+
   @media screen and (max-width: 375px) {
     &__globalFilters {
       &_search input {
@@ -257,6 +296,7 @@
       }
     }
   }
+
   @media screen and (min-width: 470px) {
 
     .table__globalFilters_filters {
@@ -264,33 +304,41 @@
       align-items: center;
       gap: 1rem;
     }
+
     .table__globalFilters_search,
     .table__globalFilters_clear {
       width: auto !important;
       justify-content: flex-start;
     }
   }
+
   :host ::ng-deep .p-paginator {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
+
   :host ::ng-deep .p-skeleton {
     border-radius: 8px;
   }
+
   ::ng-deep {
+
     .p-datatable-filter-overlay,
     .p-datatable-filter-buttonbar {
       font-size: var(--font-size-small);
     }
-    .p-datatable-tbody > tr > td {
+
+    .p-datatable-tbody>tr>td {
       white-space: wrap !important;
     }
   }
+
   :host ::ng-deep {
     .p-datatable-loading-overlay {
       background: transparent !important;
     }
+
     @media (max-width: 768px) {
       .p-paginator-page {
         max-width: 30px;
@@ -299,17 +347,21 @@
       }
     }
   }
+
   .button-group {
     display: flex;
     gap: 1rem;
+
     app-button {
       margin: 0;
     }
+
     @media (max-width: 768px) {
       gap: 0.5rem;
       justify-content: center;
     }
   }
+
   &__header-no-pointer {
     pointer-events: none;
     cursor: default;
@@ -325,6 +377,7 @@
 
 // Tooltip styles for desktop (PrimeNG tooltip) to match mobile custom tooltip exactly
 :host ::ng-deep {
+
   // Style PrimeNG tooltips on table rows - target with highest specificity
   .table-row-tooltip.p-tooltip,
   .p-tooltip.table-row-tooltip,
@@ -402,8 +455,8 @@
   }
 
   // Fallback: target all tooltips that appear near table rows with tabindex
-  .p-datatable-tbody tr[tabindex="0"] ~ .p-tooltip,
-  .p-datatable-tbody tr[tabindex="0"] + .p-tooltip,
+  .p-datatable-tbody tr[tabindex="0"]~.p-tooltip,
+  .p-datatable-tbody tr[tabindex="0"]+.p-tooltip,
   .p-tooltip {
     max-width: 300px !important;
     min-width: 150px !important;
@@ -452,7 +505,8 @@
       border-left-color: transparent !important;
     }
   }
-  .p-datatable-thead > tr > th p-columnfilter{
+
+  .p-datatable-thead>tr>th p-columnfilter {
     pointer-events: all;
     cursor: pointer;
   }

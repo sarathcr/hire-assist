@@ -33,6 +33,7 @@
               <i class="pi pi-cloud-upload proofUpload__upload-icon"></i>
               <p class="proofUpload__upload-text">Drag and drop images here</p>
               <p class="proofUpload__upload-hint">or click to browse</p>
+              <p class="proofUpload__upload-limit">Max {{ MAX_FILES }} files &bull; Max {{ MAX_FILE_SIZE / 1048576 }}MB each</p>
             </div>
           </div>
           @if (duplicateError) {

@@ -5,7 +5,6 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { CarouselModule } from 'primeng/carousel';
-import { Toast } from 'primeng/toast';
 
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputPasswordComponent } from '../../../../shared/components/form/input-password/input-password.component';
@@ -37,7 +36,6 @@ interface Slide {
     InputTextComponent,
     ButtonComponent,
     ReactiveFormsModule,
-    Toast,
     InputPasswordComponent,
     CarouselModule,
   ],

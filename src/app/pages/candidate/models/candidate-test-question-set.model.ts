@@ -1,6 +1,7 @@
 export interface CandidateTestQuestionSet {
   questionSetId: number;
   questions: Questions[];
+  timerHour: string;
 }
 
 export interface Questions {

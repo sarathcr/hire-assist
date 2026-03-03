@@ -7,7 +7,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { By } from '@angular/platform-browser';
-import { CalendarModule } from 'primeng/calendar';
+import { DatePickerModule } from 'primeng/datepicker';
 import { FloatLabel } from 'primeng/floatlabel';
 import { CustomInputTextCalenderConfig } from '../../../utilities/form.utility';
 import { InputTextCalenderComponent } from './input-text-calender.component';
@@ -25,7 +25,7 @@ describe('InputTextCalenderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ReactiveFormsModule, FloatLabel, FormsModule, CalendarModule],
+      imports: [ReactiveFormsModule, FloatLabel, FormsModule, DatePickerModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InputTextCalenderComponent);
