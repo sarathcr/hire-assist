@@ -35,6 +35,7 @@
                   <app-table
                     [tableData]="candidatesByBatch[item.id]"
                     [columnsData]="columns"
+                    [hasCheckbox]="false"
                     [hasSearch]="true"
                     [parentLoader]="loadingBatches[item.id] || false"
                     (pageChangeAndSort)="onTablePayloadChange($event, item.id)"
