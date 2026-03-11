@@ -63,7 +63,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
             // Only load assessments when refresh param is NOT present
             this.loadAssessments();
           }
-        })
+        }),
     );
   }
 
@@ -77,7 +77,8 @@ export class CandidateComponent extends BaseComponent implements OnInit {
         this.activeAssessments = res.filter((a) => {
           const isFinished =
             a.statusId === StatusEnum.Completed ||
-            a.statusId === StatusEnum.Quit;
+            a.statusId === StatusEnum.Quit ||
+            a.statusId === StatusEnum.Selected;
 
           if (isFinished) return false;
 
@@ -95,7 +96,8 @@ export class CandidateComponent extends BaseComponent implements OnInit {
         this.previousAssessments = res.filter((a) => {
           const isFinished =
             a.statusId === StatusEnum.Completed ||
-            a.statusId === StatusEnum.Quit;
+            a.statusId === StatusEnum.Quit ||
+            a.statusId === StatusEnum.Selected;
 
           if (isFinished) return true;
 

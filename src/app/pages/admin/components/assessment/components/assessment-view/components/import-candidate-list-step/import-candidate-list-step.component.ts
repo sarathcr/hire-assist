@@ -181,9 +181,7 @@ export class ImportCandidateListStepComponent implements OnInit {
             severity: 'error',
             summary: 'Error',
             detail:
-              error?.error?.message ||
-              error?.error?.type ||
-              'Deletion failed',
+              error?.error?.message || error?.error?.type || 'Deletion failed',
           });
         };
         this.candidateService
@@ -355,7 +353,8 @@ export class ImportCandidateListStepComponent implements OnInit {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: error?.error?.message || error?.error?.type || 'Creation failed',
+            detail:
+              error?.error?.message || error?.error?.type || 'Creation failed',
           });
         };
         this.candidateService.createEntity(result).subscribe({ next, error });
@@ -500,8 +499,7 @@ export class ImportCandidateListStepComponent implements OnInit {
         // Check which candidates are already assigned to a batch
         const alreadyAssignedCandidates = this.data.data.filter(
           (candidate) =>
-            this.selectedUsers.includes(candidate.id) &&
-            candidate.batchId > 0,
+            this.selectedUsers.includes(candidate.id) && candidate.batchId > 0,
         );
 
         if (alreadyAssignedCandidates.length > 0) {
@@ -669,6 +667,7 @@ export class ImportCandidateListStepComponent implements OnInit {
   private getAllQuestionSets(payload: PaginatedPayload): void {
     payload.filterMap = {
       assessmentId: Number(this.assessmentId()),
+      activeSet: '',
     };
     payload.pagination.pageSize = -1;
 
