@@ -21,7 +21,7 @@ export interface candidateTestTermination {
   candidateId: string;
   assessmentId: number;
   terminatedTime: string;
-  terminatedStatus: number;
+  timerDuration: string;
 }
 @Injectable({
   providedIn: 'root',
@@ -90,6 +90,13 @@ export class CandidateTestService extends ApiService<any> {
   ) {
     return this.httpClient.get<any>(
       `${this.getResourceUrl()}/candidateTermination/${candidateId}/${assessmentId}`,
+    );
+  }
+
+  public quitAssessment(candidateId: string, assessmentId: number) {
+    return this.httpClient.put<any>(
+      `${this.getResourceUrl()}/quitAssessment/${candidateId}/${assessmentId}`,
+      {},
     );
   }
 }

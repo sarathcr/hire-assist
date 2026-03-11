@@ -13,9 +13,9 @@
         <i class="pi pi-briefcase"></i>
         <span>Interview Hub</span>
       </div>
-      <h1 class="hero-title">Welcome to Your Interview Dashboard</h1>
+      <h1 class="hero-title">Welcome to Your Assessment Dashboard</h1>
       <p class="hero-subtitle">
-        Manage and track your interviews in one place. Start when you’re ready.
+        Manage and track your assessments in one place. Start when you’re ready.
       </p>
     </div>
   </header>
@@ -29,7 +29,7 @@
     </div>
     <div class="stat-pill stat-pill--previous">
       <i class="pi pi-history"></i>
-      <span class="stat-pill__label">Completed</span>
+      <span class="stat-pill__label">Previous</span>
       <span class="stat-pill__value">{{ previousAssessments.length }}</span>
     </div>
   </div>
@@ -52,9 +52,6 @@
             </div>
           </div>
         </div>
-        @if (activeAssessments.length > 0) {
-          <div class="section-badge">{{ activeAssessments.length }}</div>
-        }
       </div>
 
       <div class="card-wrapper">
@@ -121,11 +118,6 @@
             </div>
           </div>
         </div>
-        @if (previousAssessments.length > 0) {
-          <div class="section-badge section-badge--muted">
-            {{ previousAssessments.length }}
-          </div>
-        }
       </div>
 
       <div class="card-wrapper">

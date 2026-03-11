@@ -1,14 +1,11 @@
 <div class="assessment">
   @if (isLoading || !data.questions.length) {
-    <app-candidate-test-skeleton></app-candidate-test-skeleton>
+  <app-candidate-test-skeleton></app-candidate-test-skeleton>
   } @else {
-    <div class="assessment__carousel">
-      @for (quest of data.questions; track quest.id) {
-        <div class="assessment__carousel__button">
-          <app-button
-            class="btn"
-            [btnRounded]="true"
-            [buttonSeverity]="
+  <div class="assessment__carousel">
+    @for (quest of data.questions; track quest.id) {
+    <div class="assessment__carousel__button">
+      <app-button class="btn" [btnRounded]="true" [buttonSeverity]="
               quest.status === 'reviewed'
                 ? 'warn'
                 : quest.status === 'skipped'
@@ -18,202 +15,140 @@
                     : quest.id === activeButtonId
                       ? 'info'
                       : 'secondary'
-            "
-            buttonLabel="{{ data.questions.indexOf(quest) + 1 }}"
-            (btnClick)="onButtonClick(quest.id)"
-            >{{ activeButtonId }}
-          </app-button>
-        </div>
+            " buttonLabel="{{ data.questions.indexOf(quest) + 1 }}" (btnClick)="onButtonClick(quest.id)">{{
+        activeButtonId }}
+      </app-button>
+    </div>
+    }
+  </div>
+  <div class="assessment__tooltip">
+    <ul class="assessment__tooltip-list">
+      <li class="assessment__tooltip-list-item">
+        <span class="assessment__tooltip-item assessment__tooltip-item_active"></span>
+        <span class="assessment__tooltip-text">Active</span>
+      </li>
+      <li class="assessment__tooltip-list-item">
+        <span class="assessment__tooltip-item assessment__tooltip-item_skip"></span>
+        <span class="assessment__tooltip-text">Skipped</span>
+      </li>
+      <li class="assessment__tooltip-list-item">
+        <span class="assessment__tooltip-item assessment__tooltip-item_review"></span>
+        <span class="assessment__tooltip-text">Marked as review</span>
+      </li>
+      <li class="assessment__tooltip-list-item">
+        <span class="assessment__tooltip-item assessment__tooltip-item_complete"></span>
+        <span class="assessment__tooltip-text">Completed</span>
+      </li>
+      <li class="assessment__tooltip-list-item">
+        <span class="assessment__tooltip-item assessment__tooltip-item_unattended"></span>
+        <span class="assessment__tooltip-text">Unattended</span>
+      </li>
+    </ul>
+  </div>
+  <div class="assessment__header-wrapper">
+    <p class="assessment__title">
+      Question
+      {{ data.questions ? data.questions.indexOf(activeQuestion) + 1 : "" }}
+    </p>
+    <div class="assessment__header_end">
+      <app-timer></app-timer>
+    </div>
+  </div>
+
+  @if (activeQuestion) {
+  <div class="assessment__question">
+    <app-question [question]="activeQuestion" [previewImageUrls]="previewImageUrls"
+      [imageLoading]="isImageLoadings[activeQuestion.id]" [hasImageError]="hasImageErrors[activeQuestion.id]"
+      [placeholderImageUrl]="placeholderImageUrl">
+    </app-question>
+    @if (activeQuestion.isMultipleChoice === true) {
+    <div class="assessment__checkbox-group">
+      @for (option of activeQuestion.options; track option.id) {
+      <div class="assessment__checkbox-item">
+        <p-checkbox [inputId]="'checkbox_' + activeQuestion.id + '_' + option.id" [value]="option.id"
+          [(ngModel)]="selectedValues[activeQuestion.id]" variant="filled"
+          (checked)="(selectedValues[activeQuestion.id])"
+          (onChange)="onCheckboxChange($event, activeQuestion.id)"></p-checkbox>
+        <label [for]="'checkbox_' + activeQuestion.id + '_' + option.id">{{ option.optionText }}</label>
+      </div>
+
+      @if (option.hasAttachments) {
+      @if (isImageLoadings[option.id]) {
+      <app-image-skeleton></app-image-skeleton>
+      } @else if (previewImageUrls[option.id] && previewImageUrls[option.id].length) {
+      @for (
+      imgUrl of previewImageUrls[option.id];
+      track imgUrl;
+      let i = $index
+      ) {
+      <div class="assessment__previewImage">
+        <app-image width="100" height="70" [imageUrl]="imgUrl" [paddingTop]="'0'" [forceCancelRequest]="[]"
+          [isZoomable]="true" [removeIcon]="true">
+        </app-image>
+      </div>
+      }
+      } @else if (hasImageErrors[option.id]) {
+      <div class="assessment__previewImage">
+        <img [src]="placeholderImageUrl" alt="Error fetching attachment"
+          style="width: 100px; height: 70px; object-fit: contain; border: 1px solid #ddd;" />
+      </div>
+      }
+      }
       }
     </div>
-    <div class="assessment__tooltip">
-      <ul class="assessment__tooltip-list">
-        <li class="assessment__tooltip-list-item">
-          <span
-            class="assessment__tooltip-item assessment__tooltip-item_active"
-          ></span>
-          <span class="assessment__tooltip-text">Active</span>
-        </li>
-        <li class="assessment__tooltip-list-item">
-          <span
-            class="assessment__tooltip-item assessment__tooltip-item_skip"
-          ></span>
-          <span class="assessment__tooltip-text">Skipped</span>
-        </li>
-        <li class="assessment__tooltip-list-item">
-          <span
-            class="assessment__tooltip-item assessment__tooltip-item_review"
-          ></span>
-          <span class="assessment__tooltip-text">Marked as review</span>
-        </li>
-        <li class="assessment__tooltip-list-item">
-          <span
-            class="assessment__tooltip-item assessment__tooltip-item_complete"
-          ></span>
-          <span class="assessment__tooltip-text">Completed</span>
-        </li>
-        <li class="assessment__tooltip-list-item">
-          <span
-            class="assessment__tooltip-item assessment__tooltip-item_unattended"
-          ></span>
-          <span class="assessment__tooltip-text">Unattended</span>
-        </li>
-      </ul>
+    } @else {
+    @for (item of activeQuestion.options; track item.id) {
+    <app-input-radio [option]="item" [(selectedValue)]="selectedValues[activeQuestion.id]"
+      [groupName]="'question_' + activeQuestion.id"
+      (selectedValueChange)="onOptionSelect(activeQuestion.id, $event)"></app-input-radio>
+
+    @if (item.hasAttachments) {
+    @if (isImageLoadings[item.id]) {
+    <app-image-skeleton></app-image-skeleton>
+    } @else if (previewImageUrls[item.id] && previewImageUrls[item.id].length) {
+    @for (
+    imgUrl of previewImageUrls[item.id];
+    track imgUrl;
+    let i = $index
+    ) {
+    <div class="assessment__previewImage">
+      <app-image width="100" height="70" [imageUrl]="imgUrl" [paddingTop]="'0'" [forceCancelRequest]="[]"
+        [isZoomable]="true" [removeIcon]="true">
+      </app-image>
     </div>
-    <div class="assessment__header-wrapper">
-      <p class="assessment__title">
-        Question
-        {{ data.questions ? data.questions.indexOf(activeQuestion) + 1 : "" }}
-      </p>
-      <div class="assessment__header_end">
-        <app-timer></app-timer>
-      </div>
-    </div>
-
-    @if (activeQuestion) {
-      <div class="assessment__question">
-        <app-question
-          [question]="activeQuestion"
-          [previewImageUrls]="previewImageUrls"
-          [imageLoading]="isImageLoadings[activeQuestion.id]"
-          [hasImageError]="hasImageErrors[activeQuestion.id]"
-          [placeholderImageUrl]="placeholderImageUrl"
-        >
-        </app-question>
-        @if (activeQuestion.isMultipleChoice === true) {
-          <div class="assessment__checkbox-group">
-            @for (option of activeQuestion.options; track option.id) {
-              <div class="assessment__checkbox-item">
-                <p-checkbox
-                  [inputId]="'checkbox_' + activeQuestion.id + '_' + option.id"
-                  [value]="option.id"
-                  [(ngModel)]="selectedValues[activeQuestion.id]"
-                  variant="filled"
-                  (checked)="(selectedValues[activeQuestion.id])"
-                  (onChange)="onCheckboxChange($event, activeQuestion.id)"
-                ></p-checkbox>
-                <label
-                  [for]="'checkbox_' + activeQuestion.id + '_' + option.id"
-                  >{{ option.optionText }}</label
-                >
-              </div>
-
-              @if (option.hasAttachments) {
-                @if (isImageLoadings[option.id]) {
-                  <app-image-skeleton></app-image-skeleton>
-                } @else if (previewImageUrls[option.id] && previewImageUrls[option.id].length) {
-                  @for (
-                    imgUrl of previewImageUrls[option.id];
-                    track imgUrl;
-                    let i = $index
-                  ) {
-                    <div class="assessment__previewImage">
-                      <app-image
-                        width="100"
-                        height="70"
-                        [imageUrl]="imgUrl"
-                        [paddingTop]="'0'"
-                        [forceCancelRequest]="[]"
-                        [isZoomable]="true"
-                        [removeIcon]="true"
-                      >
-                      </app-image>
-                    </div>
-                  }
-                } @else if (hasImageErrors[option.id]) {
-                  <div class="assessment__previewImage">
-                    <img
-                      [src]="placeholderImageUrl"
-                      alt="Error fetching attachment"
-                      style="width: 100px; height: 70px; object-fit: contain; border: 1px solid #ddd;"
-                    />
-                  </div>
-                }
-              }
-            }
-          </div>
-        } @else {
-          @for (item of activeQuestion.options; track item.id) {
-            <app-input-radio
-              [option]="item"
-              [(selectedValue)]="selectedValues[activeQuestion.id]"
-              [groupName]="'question_' + activeQuestion.id"
-              (selectedValueChange)="onOptionSelect(activeQuestion.id, $event)"
-            ></app-input-radio>
-
-            @if (item.hasAttachments) {
-              @if (isImageLoadings[item.id]) {
-                <app-image-skeleton></app-image-skeleton>
-              } @else if (previewImageUrls[item.id] && previewImageUrls[item.id].length) {
-                @for (
-                  imgUrl of previewImageUrls[item.id];
-                  track imgUrl;
-                  let i = $index
-                ) {
-                  <div class="assessment__previewImage">
-                    <app-image
-                      width="100"
-                      height="70"
-                      [imageUrl]="imgUrl"
-                      [paddingTop]="'0'"
-                      [forceCancelRequest]="[]"
-                      [isZoomable]="true"
-                      [removeIcon]="true"
-                    >
-                    </app-image>
-                  </div>
-                }
-              } @else if (hasImageErrors[item.id]) {
-                <div class="assessment__previewImage">
-                  <img
-                    [src]="placeholderImageUrl"
-                    alt="Error fetching attachment"
-                    style="width: 100px; height: 70px; object-fit: contain; border: 1px solid #ddd;"
-                  />
-                </div>
-              }
-            }
-          }
-        }
-      </div>
     }
-    <div class="assessment__actionButtons">
-      <div class="assessment__actionButtons_review-skip-button">
-        <app-button
-          [buttonLabel]="'Mark as Review'"
-          [buttonVariant]="'outlined'"
-          [disabled]="isSaving"
-          [isLoading]="isSaving"
-          (btnClick)="onReviewBtnClick()"
-        ></app-button>
-        <app-button
-          [buttonLabel]="'Skip'"
-          [buttonVariant]="'outlined'"
-          [disabled]="isSaving"
-          [isLoading]="isSaving"
-          (btnClick)="onSkipBtnClick()"
-        ></app-button>
-      </div>
-
-      <div class="save-button">
-        @if (
-          data.questions.indexOf(activeQuestion) + 1 === data.questions.length
-        ) {
-          <app-button
-            [buttonLabel]="'Finish'"
-            [disabled]="!selectedValues[activeQuestion?.id] || isSaving || isSubmitting"
-            [isLoading]="isSaving || isSubmitting"
-            (btnClick)="onFinishBtnClick()"
-          ></app-button>
-        } @else {
-          <app-button
-            [buttonLabel]="'Save & Next'"
-            [disabled]="!selectedValues[activeQuestion?.id] || isSaving"
-            [isLoading]="isSaving"
-            (btnClick)="onSaveBtnClick()"
-          ></app-button>
-        }
-      </div>
+    } @else if (hasImageErrors[item.id]) {
+    <div class="assessment__previewImage">
+      <img [src]="placeholderImageUrl" alt="Error fetching attachment"
+        style="width: 100px; height: 70px; object-fit: contain; border: 1px solid #ddd;" />
     </div>
+    }
+    }
+    }
+    }
+  </div>
+  }
+  <div class="assessment__actionButtons">
+    <div class="assessment__actionButtons_review-skip-button">
+      <app-button [buttonLabel]="'Mark as Review'" [buttonVariant]="'outlined'" [disabled]="isSaving"
+        [isLoading]="isSaving" (btnClick)="onReviewBtnClick()"></app-button>
+      <app-button [buttonLabel]="'Quit'" [buttonVariant]="'outlined'" [buttonSeverity]="'danger'" [disabled]="isSaving"
+        [isLoading]="isSaving" (btnClick)="onQuitBtnClick()"></app-button>
+      <app-button [buttonLabel]="'Skip'" [buttonVariant]="'outlined'" [disabled]="isSaving" [isLoading]="isSaving"
+        (btnClick)="onSkipBtnClick()"></app-button>
+    </div>
+
+    <div class="save-button">
+      @if (
+      data.questions.indexOf(activeQuestion) + 1 === data.questions.length
+      ) {
+      <app-button [buttonLabel]="'Finish'" [disabled]="!selectedValues[activeQuestion?.id] || isSaving || isSubmitting"
+        [isLoading]="isSaving || isSubmitting" (btnClick)="onFinishBtnClick()"></app-button>
+      } @else {
+      <app-button [buttonLabel]="'Save & Next'" [disabled]="!selectedValues[activeQuestion?.id] || isSaving"
+        [isLoading]="isSaving" (btnClick)="onSaveBtnClick()"></app-button>
+      }
+    </div>
+  </div>
   }
 </div>

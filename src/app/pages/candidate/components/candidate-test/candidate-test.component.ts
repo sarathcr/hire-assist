@@ -56,8 +56,8 @@ export interface Payload {
 export interface CandidateTestTermination {
   candidateId: string;
   assessmentId: number;
-  terminatedTime: Date;
-  terminatedStatus: number;
+  terminatedTime: string;
+  timerDuration: string;
 }
 interface CandidateAnswer {
   questionId: number;
@@ -87,8 +87,7 @@ interface CandidateAnswer {
 })
 export class CandidateTestComponent
   extends BaseComponent
-  implements OnInit, OnDestroy, AfterViewInit
-{
+  implements OnInit, OnDestroy, AfterViewInit {
   public data!: CandidateTestQuestionSet;
   // Service
   private readonly warningService = inject(AssessmentWarningService);
@@ -174,7 +173,7 @@ export class CandidateTestComponent
 
     this.getAllQuestions();
 
-    if (this.warningCount == 2) {
+    if (this.warningCount >= this.data?.maxTerminationCount) {
       this.showTestTerminationDialog();
     } else this.enterFullScreenMode();
 
@@ -216,7 +215,7 @@ export class CandidateTestComponent
     if (!this.isFullScreen) {
       this.saveTerminationTime();
 
-      if (this.warningCount <= 1) {
+      if (this.warningCount < (this.data?.maxTerminationCount ?? 2)) {
         this.showWarningDialog();
       } else {
         this.showTestTerminationDialog();
@@ -229,7 +228,7 @@ export class CandidateTestComponent
     if (document.visibilityState === 'hidden') {
       this.saveTerminationTime();
 
-      if (this.warningCount < 2) {
+      if (this.warningCount < (this.data?.maxTerminationCount ?? 2)) {
         this.showWarningDialog();
       } else {
         this.showTestTerminationDialog();
@@ -280,6 +279,10 @@ export class CandidateTestComponent
         this.isSaving = false;
       },
     });
+  }
+
+  public onQuitBtnClick() {
+    this.quitAssessment();
   }
 
   public onSaveBtnClick() {
@@ -446,6 +449,13 @@ export class CandidateTestComponent
   }
 
   private getAnswerOptionId(selectedValue: any): string {
+    if (
+      this.activeQuestion.status === 'skipped' ||
+      this.activeQuestion.status === 'reviewed'
+    ) {
+      return '';
+    }
+
     let answerOptionId: string;
     if (this.activeQuestion.isMultipleChoice) {
       this.onCheckboxChange(
@@ -463,9 +473,6 @@ export class CandidateTestComponent
         this.onOptionSelect(this.activeButtonId, selectedValue);
       }
       answerOptionId = selectedValue ? String(selectedValue) : '';
-    }
-    if (this.activeQuestion.status === 'skipped') {
-      answerOptionId = '';
     }
     return answerOptionId;
   }
@@ -571,7 +578,7 @@ export class CandidateTestComponent
     if (typeof document !== 'undefined') {
       document.documentElement
         .requestFullscreen()
-        .then(() => {})
+        .then(() => { })
         .catch(() =>
           this.messageService.add({
             severity: 'error',
@@ -606,21 +613,28 @@ export class CandidateTestComponent
       },
     });
     this.ref?.onClose.subscribe((result) => {
-      if (result) {
+      if (result === true) {
         this.warningService.setWarningCount(1);
         this.enterFullScreenMode();
       } else {
-        this.saveTerminationTime(StatusEnum.Terminated);
-        this.router.navigate(['candidate/thank-you']);
+        this.quitAssessment();
       }
+      this.ref = undefined;
     });
   }
 
   private getWarningDialogData(): DialogData {
+    const maxAttempts = this.data?.maxTerminationCount ?? 2;
+    const remainingAttempts = maxAttempts - this.warningCount;
+    const message =
+      remainingAttempts === 1
+        ? `You have exited fullscreen mode/switched tab. Please return to fullscreen to continue your assessment. This is your final warning.`
+        : `You have exited fullscreen mode/switched tab. Please return to fullscreen to continue your assessment. You have ${remainingAttempts} attempts remaining.`;
+
     return {
       headerTitle: 'Warning',
-      warningCount: this.warningCount,
-      message: `You have exited fullscreen mode/switched tab. Please return to fullscreen to continue your assessment. This is your final warning.`,
+      warningCount: remainingAttempts,
+      message: message,
       isChoice: true,
       closeOnNavigation: false,
       acceptButtonText: 'Continue',
@@ -737,6 +751,13 @@ export class CandidateTestComponent
         if (this.activeQuestion) {
           this.loadQuestionAttachments(this.activeQuestion);
         }
+
+        // Initialize timer and answers after DOM updates
+        this.cdRef.detectChanges();
+        setTimeout(() => {
+          this.fetchCandidateAnswers();
+          this.fetchTerminationTimeAndSetTimer();
+        });
       }
     };
     const error = (error: string) => {
@@ -829,11 +850,11 @@ export class CandidateTestComponent
     if (!this.timerComponent || !this.candidateId || !this.assessmentId) return;
     const remainingTime = this.timerComponent.getCurrentFormattedTime();
 
-    const payload = {
+    const payload: CandidateTestTermination = {
       candidateId: this.candidateId,
       assessmentId: this.assessmentId,
-      terminatedTime: remainingTime,
-      terminatedStatus: status,
+      terminatedTime: new Date().toISOString(),
+      timerDuration: remainingTime,
     };
 
     this.candidatetestservice
@@ -1019,5 +1040,24 @@ export class CandidateTestComponent
       detail: `Failed to load ${type} attachment. Please continue with the assessment.`,
       life: 5000,
     });
+  }
+
+  private quitAssessment() {
+    if (this.isSaving) return;
+    this.isSaving = true;
+    this.exitFullScreenMode();
+    this.candidatetestservice
+      .quitAssessment(this.candidateId, this.assessmentId)
+      .subscribe({
+        next: () => {
+          this.isSaving = false;
+          this.router.navigate(['candidate/thank-you']);
+        },
+        error: () => {
+          this.isSaving = false;
+          // Even if API fails, we should probably still navigate away as they chose to quit
+          this.router.navigate(['candidate/thank-you']);
+        },
+      });
   }
 }

@@ -13,6 +13,7 @@ import { CardComponent } from './components/card/card.component';
 import { CardSkeletonComponent } from './components/card/card-skeleton.component';
 import { CandidateAssessment } from './models/candidate.model';
 import { CandidateService } from './services/candidate.service';
+import { DeviceWarningService } from '../../shared/services/device-width.service';
 
 @Component({
   selector: 'app-candidate',
@@ -33,6 +34,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private candidateService: CandidateService,
+    private deviceWarningService: DeviceWarningService,
   ) {
     super();
   }
@@ -73,20 +75,38 @@ export class CandidateComponent extends BaseComponent implements OnInit {
         const today = new Date();
 
         this.activeAssessments = res.filter((a) => {
-          // Use endTime if available, otherwise fall back to date (though date might be null per issue description)
-          // The issue states date is null, so rely on endTime
-          const comparisonDate = a.endTime ? new Date(a.endTime) : (a.date ? new Date(a.date) : null);
-          
-          if (!comparisonDate) return false; // If neither exists, can't determine, maybe assume not active?
-          
+          const isFinished =
+            a.statusId === StatusEnum.Completed ||
+            a.statusId === StatusEnum.Quit;
+
+          if (isFinished) return false;
+
+          const comparisonDate = a.endTime
+            ? new Date(a.endTime)
+            : a.date
+              ? new Date(a.date)
+              : null;
+
+          if (!comparisonDate) return false;
+
           return comparisonDate >= today;
         });
 
         this.previousAssessments = res.filter((a) => {
-          const comparisonDate = a.endTime ? new Date(a.endTime) : (a.date ? new Date(a.date) : null);
-          
-          if (!comparisonDate) return true; // If data invalid, maybe show in previous as safeguard?
-          
+          const isFinished =
+            a.statusId === StatusEnum.Completed ||
+            a.statusId === StatusEnum.Quit;
+
+          if (isFinished) return true;
+
+          const comparisonDate = a.endTime
+            ? new Date(a.endTime)
+            : a.date
+              ? new Date(a.date)
+              : null;
+
+          if (!comparisonDate) return true;
+
           return comparisonDate < today;
         });
         this.isLoading = false;
@@ -99,32 +119,36 @@ export class CandidateComponent extends BaseComponent implements OnInit {
 
   // Public Methods
   public onAssessmentStart(assessment: CandidateAssessment) {
-    const modalData: DialogData = {
-      message:
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',
-      isChoice: true,
-      acceptButtonText: 'Start Assessment',
-      cancelButtonText: 'Cancel',
-    };
-    this.ref = this.dialog.open(DialogComponent, {
-      data: modalData,
-      header: 'Assessment instructions',
-      maximizable: true,
-      width: '50vw',
-      modal: true,
-      focusOnShow: false,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-      templates: {
-        footer: DialogFooterComponent,
-      },
-    });
-    this.ref.onClose.subscribe((result) => {
-      if (result) {
-        this.router.navigate(['/candidate/test'], {
-          state: { assessment: assessment },
+    this.deviceWarningService.checkDeviceWidth().subscribe((canProceed) => {
+      if (canProceed) {
+        const modalData: DialogData = {
+          message:
+            'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',
+          isChoice: true,
+          acceptButtonText: 'Start Assessment',
+          cancelButtonText: 'Cancel',
+        };
+        this.ref = this.dialog.open(DialogComponent, {
+          data: modalData,
+          header: 'Assessment instructions',
+          maximizable: true,
+          width: '50vw',
+          modal: true,
+          focusOnShow: false,
+          breakpoints: {
+            '960px': '75vw',
+            '640px': '90vw',
+          },
+          templates: {
+            footer: DialogFooterComponent,
+          },
+        });
+        this.ref.onClose.subscribe((result) => {
+          if (result) {
+            this.router.navigate(['/candidate/test'], {
+              state: { assessment: assessment },
+            });
+          }
         });
       }
     });

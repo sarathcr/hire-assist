@@ -390,34 +390,7 @@
   line-height: 1.5;
 }
 
-.section-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  height: 44px;
-  background: linear-gradient(
-    135deg,
-    var(--primary-color),
-    var(--secondary-color)
-  );
-  color: #fff;
-  border-radius: 14px;
-  font-size: var(--font-size-18);
-  font-weight: 700;
-  box-shadow: 0 6px 16px rgba(21, 101, 192, 0.3);
-  padding: 0 var(--spacing-12);
-  transition: transform 0.25s ease;
 
-  &:hover {
-    transform: scale(1.05);
-  }
-
-  &--muted {
-    background: linear-gradient(135deg, #64748b, #94a3b8);
-    box-shadow: 0 6px 16px rgba(100, 116, 139, 0.25);
-  }
-}
 
 // ─── Card Wrapper ─────────────────────────────────────────────────────────
 .card-wrapper {

@@ -11,6 +11,7 @@ export enum StatusEnum {
   Scheduled = 10,
   Paused = 11,
   Terminated = 12,
+  Quit = 13,
 }
 
 export enum AttachmentTypeEnum {

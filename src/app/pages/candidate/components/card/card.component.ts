@@ -55,54 +55,56 @@ export class CardComponent implements OnInit, OnDestroy {
       }
       return;
     }
-    
+
     // Default: Show status name
     this.buttonLabel = this.getStatusLabel(this.statusId() ?? 0);
     this.showButton = true;
     this.disable = true;
 
     // Handle completed/previous
-    if (this.statusId() == this.status.Completed || this.isPreviousAssessment()) {
-       if (this.statusId() == this.status.Completed) {
-         this.buttonLabel = 'Completed';
-       } else if (this.isPreviousAssessment()) {
-         this.buttonLabel = 'Closed';
-       }
-       return;
+    if (
+      this.statusId() == this.status.Completed ||
+      this.isPreviousAssessment()
+    ) {
+      this.buttonLabel = this.getStatusLabel(this.statusId() ?? 0);
+      return;
     }
 
     // Only check for time window if the status is scheduled
-    if (this.statusId() === this.status.Scheduled || this.statusId() === this.status.Active) {
+    if (
+      this.statusId() === this.status.Scheduled ||
+      this.statusId() === this.status.Active
+    ) {
       const today = new Date();
       const startTimeStr = this.startTime() ?? '';
       const endTimeStr = this.endTime() ?? '';
       const assessmentDate = new Date(this.interviewDate() ?? '');
-      
+
       // Try to parse as full datetime first, if that fails, combine with date
       let startDateTime = new Date(startTimeStr);
       let endDateTime = new Date(endTimeStr);
-      
+
       // If parsing failed (invalid date), combine date with time string
       if (isNaN(startDateTime.getTime())) {
         startDateTime = this.combineDateAndTime(assessmentDate, startTimeStr);
       }
-      
+
       if (isNaN(endDateTime.getTime())) {
         endDateTime = this.combineDateAndTime(assessmentDate, endTimeStr);
       }
-  
+
       // Time window check
       if (today >= startDateTime && today <= endDateTime) {
         if (this.isPresent()) {
-           this.buttonLabel = 'Start Assessment';
-           this.disable = false;
+          this.buttonLabel = 'Start Assessment';
+          this.disable = false;
         } else {
-           this.buttonLabel = 'Absent';
-           this.disable = true;
+          this.buttonLabel = 'Absent';
+          this.disable = true;
         }
       } else if (today > endDateTime) {
-         this.buttonLabel = 'Closed';
-         this.disable = true;
+        this.buttonLabel = this.getStatusLabel(this.statusId() ?? 0);
+        this.disable = true;
       }
     }
   }
@@ -110,21 +112,21 @@ export class CardComponent implements OnInit, OnDestroy {
   private getStatusLabel(statusId: number): string {
     return StatusEnum[statusId] || 'Unknown';
   }
-  
+
   private combineDateAndTime(date: Date, timeStr: string): Date {
     const combined = new Date(date);
-    
+
     if (!timeStr) {
       return combined;
     }
-    
+
     // Try parsing time string as HH:MM:SS or HH:MM format
     const timeParts = timeStr.split(':');
     if (timeParts.length >= 2) {
       const hours = parseInt(timeParts[0], 10);
       const minutes = parseInt(timeParts[1], 10);
       const seconds = timeParts.length > 2 ? parseInt(timeParts[2], 10) : 0;
-      
+
       if (!isNaN(hours) && !isNaN(minutes)) {
         combined.setHours(hours);
         combined.setMinutes(minutes);
@@ -132,7 +134,7 @@ export class CardComponent implements OnInit, OnDestroy {
         combined.setMilliseconds(0);
       }
     }
-    
+
     return combined;
   }
 }
