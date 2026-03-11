@@ -54,11 +54,29 @@
 
   &__validation-error {
     color: #ef4444;
-    font-size: 12px;
-    margin: 0px 6px;
-    display: block;
-    font-weight: 700;
-    padding: 0 1.125rem 1.125rem;
+    font-size: 0.8125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    line-height: 1.4;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    box-sizing: border-box;
+    word-break: break-word;
+    /* Prevents long unbreakable strings from overflowing */
+    overflow-wrap: anywhere;
+
+    &::before {
+      content: "\e90b";
+      /* pi-exclamation-circle */
+      font-family: "primeicons";
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 0.125rem;
+    }
   }
 
   &__upload-placeholder {
@@ -449,6 +467,8 @@
     bottom: 0;
     z-index: 10;
     flex-shrink: 0;
+    border-bottom-right-radius: 12px;
+    border-bottom-left-radius: 12px;
 
     @media (max-width: 640px) {
       padding: 1rem;
@@ -483,7 +503,21 @@
 ::ng-deep {
   .p-fileupload {
     .p-fileupload-buttonbar {
-      display: none;
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 0 !important;
+      opacity: 0 !important;
+    }
+
+    .p-fileupload-messages,
+    p-messages,
+    .p-messages,
+    p-message,
+    .p-message {
+      display: none !important;
     }
 
     .p-fileupload-content {

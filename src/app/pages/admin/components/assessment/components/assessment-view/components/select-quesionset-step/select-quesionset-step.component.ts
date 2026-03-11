@@ -406,10 +406,10 @@ export class SelectQuesionsetStepComponent
         detail: 'Questions and set save failed',
       });
     };
-    this.assessmentService
-      .createEntity(this.questionSetSubmittedData, 'questionsetquestions')
-      .subscribe({ next, error });
-  }
+      this.assessmentService
+        .createEntity(this.questionSetSubmittedData, 'questionsetquestions')
+        .subscribe({ next, error });
+    }
 
   public onUpdate(questionSetId: string) {
     const accordionData = this.questionSetAccordionData.get(questionSetId);
@@ -810,11 +810,11 @@ export class SelectQuesionsetStepComponent
           (item: QuestionsSetQuesions) => item.questionId.toString(),
         );
 
-        this.questionSetAccordionData.set(questionSetId, { ...accordionData });
-
         if (accordionData.selectedIds.length > 0) {
           accordionData.isUpdate = true;
         }
+
+        this.questionSetAccordionData.set(questionSetId, { ...accordionData });
         const deduplicatedResponse: GetSelectedQuestionsForSet = {
           questionSetId: res.questionSetId,
           questions: accordionData.allSelectedQuestions,

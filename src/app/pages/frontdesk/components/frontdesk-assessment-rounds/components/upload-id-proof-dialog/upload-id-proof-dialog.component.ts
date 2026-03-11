@@ -23,7 +23,7 @@ import {
 } from '../../../../../admin/models/assessment.model';
 import { MessageService } from 'primeng/api';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
-import { ButtonComponent } from "../../../../../../shared/components/button/button.component";
+import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-upload-id-proof-dialog',
@@ -34,8 +34,8 @@ import { ButtonComponent } from "../../../../../../shared/components/button/butt
     ProgressSpinnerModule,
     ButtonModule,
     ToastModule,
-    ButtonComponent
-],
+    ButtonComponent,
+  ],
   templateUrl: './upload-id-proof-dialog.component.html',
   styleUrl: './upload-id-proof-dialog.component.scss',
   providers: [DialogService],
@@ -56,7 +56,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   public previewImages: { file: File; previewUrl: string }[] = [];
   public readonly MAX_FILE_SIZE = 5242880;
   public readonly MAX_FILES = 10;
-  public duplicateError: string | null = null;
+  public fileValidationError: string | null = null;
   private deleteRef?: DynamicDialogRef;
   @ViewChild('fileUpload') fileUpload!: FileUpload;
 
@@ -128,11 +128,25 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   }
   public onFileChange(event: FileSelectEvent): void {
     const files = event.currentFiles || event.files || [];
-    this.duplicateError = null;
+    this.fileValidationError = null;
 
     Array.from(files).forEach((file: File) => {
       if (this.previewImages.length >= this.MAX_FILES) {
-        this.duplicateError = `Maximum ${this.MAX_FILES} files allowed`;
+        this.fileValidationError = `Maximum ${this.MAX_FILES} files allowed`;
+        return;
+      }
+
+      if (
+        file.type !== 'image/jpeg' &&
+        file.type !== 'image/png' &&
+        file.type !== 'application/pdf'
+      ) {
+        this.fileValidationError = `Only JPG, PNG and PDF files are accepted`;
+        return;
+      }
+
+      if (file.size > this.MAX_FILE_SIZE) {
+        this.fileValidationError = `${file.name}: Invalid file size, maximum upload size is ${this.MAX_FILE_SIZE / 1048576} MB.`;
         return;
       }
 
@@ -144,7 +158,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       );
 
       if (isDuplicate) {
-        this.duplicateError = `${file.name} already selected`;
+        this.fileValidationError = `${file.name} already selected`;
         return;
       }
 
@@ -154,7 +168,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
         ) ?? false;
 
       if (isExistingDuplicate) {
-        this.duplicateError = `${file.name} already uploaded`;
+        this.fileValidationError = `${file.name} already uploaded`;
         return;
       }
 
@@ -170,7 +184,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     URL.revokeObjectURL(this.previewImages[index].previewUrl);
     this.previewImages.splice(index, 1);
 
-    this.duplicateError = null;
+    this.fileValidationError = null;
     this.updateFormValidation();
   }
 
@@ -225,7 +239,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
-              detail: `${totalFiles} ID Proof image${totalFiles > 1 ? 's' : ''} uploaded successfully`,
+              detail: `${totalFiles} ID Proof file${totalFiles > 1 ? 's' : ''} uploaded successfully`,
             });
             // Close modal after successful upload
             this.ref.close({ success: true });
@@ -238,7 +252,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'error',
             summary: 'Upload Failed',
-            detail: error?.error?.type || 'Failed to upload ID proof image',
+            detail: error?.error?.type || 'Failed to upload ID proof file',
           });
         },
       });
@@ -388,6 +402,11 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       (opt) => opt.value === typeStr,
     );
     return option ? option.label : 'Unknown';
+  }
+
+  public isPdf(file: any): boolean {
+    const filename = this.getFileName(file) || '';
+    return filename.toLowerCase().endsWith('.pdf');
   }
 
   public openImage(url: string | undefined): void {

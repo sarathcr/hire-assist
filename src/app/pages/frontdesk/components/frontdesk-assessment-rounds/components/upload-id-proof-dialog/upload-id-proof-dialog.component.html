@@ -12,8 +12,6 @@
         #fileUpload
         name="idProofFiles[]"
         [multiple]="true"
-        accept="image/*"
-        [maxFileSize]="MAX_FILE_SIZE"
         [auto]="false"
         customUpload
         [showUploadButton]="false"
@@ -31,17 +29,18 @@
           >
             <div class="proofUpload__upload-placeholder">
               <i class="pi pi-cloud-upload proofUpload__upload-icon"></i>
-              <p class="proofUpload__upload-text">Drag and drop images here</p>
+              <p class="proofUpload__upload-text">
+                Drag and drop JPG, PNG, or PDF here
+              </p>
               <p class="proofUpload__upload-hint">or click to browse</p>
-              <p class="proofUpload__upload-limit">Max {{ MAX_FILES }} files &bull; Max {{ MAX_FILE_SIZE / 1048576 }}MB each</p>
+              <p class="proofUpload__upload-limit">
+                Max {{ MAX_FILES }} files &bull; Max
+                {{ MAX_FILE_SIZE / 1048576 }}MB each
+              </p>
             </div>
           </div>
-          @if (duplicateError) {
-            <small class="proofUpload__validation-error">
-              {{ duplicateError }}
-            </small>
-          }
         </ng-template>
+        <ng-template pTemplate="toolbar"></ng-template>
       </p-fileupload>
 
       <!-- Selected Image Previews -->
@@ -49,8 +48,8 @@
         <div class="proofUpload__preview-section">
           <div class="proofUpload__preview-header">
             <span class="proofUpload__preview-title">
-              <i class="pi pi-image"></i>
-              Selected Images ({{ previewImages.length }})
+              <i class="pi pi-file"></i>
+              Selected Files ({{ previewImages.length }})
             </span>
           </div>
 
@@ -62,11 +61,35 @@
             ) {
               <div class="proofUpload__preview-card">
                 <div class="proofUpload__preview-image-wrapper">
-                  <img
-                    [src]="preview.previewUrl"
-                    [alt]="preview.file.name"
-                    class="proofUpload__preview-image"
-                  />
+                  @if (preview.file.type === "application/pdf") {
+                    <div
+                      class="proofUpload__preview-pdf"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        height: 100%;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                      "
+                    >
+                      <i
+                        class="pi pi-file-pdf"
+                        style="
+                          font-size: 2.5rem;
+                          color: var(--primary-color, #1e3a8a);
+                        "
+                      ></i>
+                    </div>
+                  } @else {
+                    <img
+                      [src]="preview.previewUrl"
+                      [alt]="preview.file.name"
+                      class="proofUpload__preview-image"
+                    />
+                  }
 
                   <button
                     class="proofUpload__preview-remove"
@@ -96,12 +119,18 @@
       }
     </div>
 
+    @if (fileValidationError) {
+      <small class="proofUpload__validation-error">
+        {{ fileValidationError }}
+      </small>
+    }
+
     <!-- Existing Images Section -->
     <div class="proofUpload__existing-section">
       <div class="proofUpload__section-header">
         <span class="proofUpload__section-title">
-          <i class="pi pi-images"></i>
-          Existing ID Proof Images
+          <i class="pi pi-folder-open"></i>
+          Existing ID Proof Files
         </span>
       </div>
 
@@ -111,7 +140,7 @@
             [style]="{ width: '40px', height: '40px' }"
             strokeWidth="4"
           ></p-progressSpinner>
-          <p class="proofUpload__loader-text">Loading images...</p>
+          <p class="proofUpload__loader-text">Loading files...</p>
         </div>
       } @else {
         @if (
@@ -123,11 +152,35 @@
                 class="proofUpload__preview-card proofUpload__preview-card--existing"
               >
                 <div class="proofUpload__preview-image-wrapper">
-                  <img
-                    [src]="imgUrl"
-                    alt="Existing ID proof"
-                    class="proofUpload__preview-image"
-                  />
+                  @if (isPdf(uploadedFileUrl[i])) {
+                    <div
+                      class="proofUpload__preview-pdf"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        height: 100%;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                      "
+                    >
+                      <i
+                        class="pi pi-file-pdf"
+                        style="
+                          font-size: 2.5rem;
+                          color: var(--primary-color, #1e3a8a);
+                        "
+                      ></i>
+                    </div>
+                  } @else {
+                    <img
+                      [src]="imgUrl"
+                      alt="Existing ID proof"
+                      class="proofUpload__preview-image"
+                    />
+                  }
                   <button
                     class="proofUpload__preview-remove"
                     (click)="onDeleteImage(i)"
@@ -143,7 +196,7 @@
         } @else {
           <div class="proofUpload__empty-state">
             <i class="pi pi-inbox"></i>
-            <p>No existing images</p>
+            <p>No existing files</p>
           </div>
         }
       }
@@ -157,7 +210,7 @@
             [style]="{ width: '60px', height: '60px' }"
             strokeWidth="4"
           ></p-progressSpinner>
-          <p class="proofUpload__upload-progress-text">Uploading images...</p>
+          <p class="proofUpload__upload-progress-text">Uploading files...</p>
           <p class="proofUpload__upload-progress-percent">
             {{ uploadProgress }}%
           </p>
@@ -165,20 +218,20 @@
       </div>
     }
   </div>
-    <footer class="proofUpload__actions">
-      <app-button
-        buttonLabel="Cancel"
-        [buttonVariant]="'outlined'"
-        [buttonSize]="'medium'"
-        [disabled]="isUploading"
-        (btnClick)="onClose()"
-      ></app-button>
-      <app-button
-        buttonLabel="Upload Images"
-        [buttonSize]="'medium'"
-        [isLoading]="isUploading"
-        [disabled]="!fGroup.valid || previewImages.length === 0 || isUploading"
-        (btnClick)="onSubmit()"
-      ></app-button>
+  <footer class="proofUpload__actions">
+    <app-button
+      buttonLabel="Cancel"
+      [buttonVariant]="'outlined'"
+      [buttonSize]="'medium'"
+      [disabled]="isUploading"
+      (btnClick)="onClose()"
+    ></app-button>
+    <app-button
+      buttonLabel="Upload Files"
+      [buttonSize]="'medium'"
+      [isLoading]="isUploading"
+      [disabled]="!fGroup.valid || previewImages.length === 0 || isUploading"
+      (btnClick)="onSubmit()"
+    ></app-button>
   </footer>
 </div>
