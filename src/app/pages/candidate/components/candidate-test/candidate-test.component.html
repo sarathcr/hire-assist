@@ -51,7 +51,7 @@
       {{ data.questions ? data.questions.indexOf(activeQuestion) + 1 : "" }}
     </p>
     <div class="assessment__header_end">
-      <app-timer (notifyWarning)="onTimerWarning($event)" (timesUp)="onTimeUp()"></app-timer>
+    <app-timer (timesUp)="onTimeUp($event)"></app-timer>
     </div>
   </div>
 

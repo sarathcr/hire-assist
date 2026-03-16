@@ -23,6 +23,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { Observable, catchError, of, switchMap, throwError } from 'rxjs';
 import { BaseComponent } from '../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { CountdownTimerComponent } from "../../../../shared/components/countdown-timer/countdown-timer.component";
 import { DialogFooterComponent } from '../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogHeaderComponent } from '../../../../shared/components/dialog-header/dialog-header.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
@@ -81,7 +82,7 @@ interface CandidateAnswer {
     CandidateTestSkeletonComponent,
     ImageComponent,
     ImageSkeletonComponent,
-  ],
+],
   templateUrl: './candidate-test.component.html',
   styleUrl: './candidate-test.component.scss',
 })
@@ -99,6 +100,7 @@ export class CandidateTestComponent
   public isSubmitting = false;
   public isFullScreen = false;
   public isNavigationIntercepted = false;
+  public isTestEnded = false;
   public activeButtonId: number | null = null;
   public selecteArray: string[] = []; // Declare and initialize the array
   public activeQuestion: any = null;
@@ -212,7 +214,7 @@ export class CandidateTestComponent
   @HostListener('document:fullscreenchange')
   public onFullscreenChange(): void {
     this.isFullScreen = !!document.fullscreenElement;
-    if (!this.isFullScreen) {
+    if (!this.isFullScreen && !this.isSubmitting && !this.isTestEnded) {
       this.saveTerminationTime();
 
       if (this.warningCount < (this.data?.maxTerminationCount ?? 2)) {
@@ -225,7 +227,7 @@ export class CandidateTestComponent
 
   @HostListener('document:visibilitychange')
   public onVisibilityChange(): void {
-    if (document.visibilityState === 'hidden') {
+    if (document.visibilityState === 'hidden' && !this.isSubmitting && !this.isTestEnded) {
       this.saveTerminationTime();
 
       if (this.warningCount < (this.data?.maxTerminationCount ?? 2)) {
@@ -656,6 +658,7 @@ export class CandidateTestComponent
     });
     this.ref?.onClose.subscribe((result) => {
       if (result) {
+        this.isTestEnded = true;
         this.exitFullScreenMode();
         this.router.navigate(['candidate/thank-you']);
       }
@@ -749,7 +752,9 @@ export class CandidateTestComponent
     });
   }
 
-  public onTimeUp(): void {
+  public onTimeUp(event: string): void {
+    if (this.isTestEnded) return;
+    this.isTestEnded = true;
     const modalData: DialogData = {
       message: 'Time is up! Your test is being automatically submitted.',
       isChoice: false,
@@ -773,6 +778,11 @@ export class CandidateTestComponent
         footer: DialogFooterComponent,
       },
     });
+    
+    if (!timeUpRef) {
+      this.forceSubmitTest();
+      return;
+    }
 
     timeUpRef.onClose.subscribe(() => {
       if (this.isSubmitting) return;
@@ -969,9 +979,11 @@ export class CandidateTestComponent
   }
 
   private parseTimeToSeconds(timeString: string): number {
-    if (!timeString || timeString === '00:00:00') return 3600; // Default 1 hour fallback
+    if (!timeString) return 3600; // Default 1 hour fallback
+    if (timeString === '00:00:00') return 0;
+
     const parts = timeString.split(':').map(Number);
-    if (parts.length === 3) {
+    if (parts.length === 3 && !parts.some(isNaN)) {
       return parts[0] * 3600 + parts[1] * 60 + parts[2];
     }
     return 3600;
@@ -1001,16 +1013,12 @@ export class CandidateTestComponent
       .subscribe({
         next: (response) => {
           if (this.timerComponent) {
-            if (
-              response?.terminatedTime != null &&
-              response?.terminatedTime != '00:00:00'
-            ) {
+            if (response?.timerDuration != null) {
               const secondsLeft = this.parseTimeToSeconds(
-                response.terminatedTime,
+                response.timerDuration,
               );
               this.timerComponent.setInitialTime(secondsLeft);
-            }
-            else if (this.data?.timerHour) {
+            } else if (this.data?.timerHour) {
               const initialSeconds = this.parseTimeToSeconds(
                 this.data.timerHour,
               );
@@ -1148,8 +1156,9 @@ export class CandidateTestComponent
     });
   }
 
-  private quitAssessment() {
+  public quitAssessment() {
     if (this.isSaving) return;
+    this.isTestEnded = true;
     this.isSaving = true;
     this.exitFullScreenMode();
     this.candidatetestservice

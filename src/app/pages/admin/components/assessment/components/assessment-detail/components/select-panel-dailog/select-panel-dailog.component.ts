@@ -293,11 +293,6 @@ export class SelectPanelDailogComponent implements OnInit {
             },
           });
       } else {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'interviewers are not updated to Panels',
-        });
       }
     });
   }
