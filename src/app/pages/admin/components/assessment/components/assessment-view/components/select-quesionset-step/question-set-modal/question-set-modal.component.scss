@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 .question-set-modal {
@@ -10,8 +12,10 @@
   gap: var(--spacing-20);
   padding: var(--spacing-20) 0 var(--spacing-10);
   flex: 1;
+  min-height: 0;
 
   &__info-banner {
+    flex-shrink: 0;
     display: flex;
     align-items: flex-start;
     gap: var(--spacing-15);
@@ -62,6 +66,7 @@
 .question-set-form {
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
 
   &_field-container {
     display: flex;
@@ -84,7 +89,7 @@
 
 ::ng-deep {
   .p-dialog-content {
-    overflow-y: visible;
+    overflow-y: hidden;
     display: flex;
     flex-direction: column;
   }

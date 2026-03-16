@@ -111,6 +111,7 @@ export class SelectPanelDailogComponent implements OnInit {
   public IsMultiplePanel!: boolean;
   public isLoading = false;
   public isSubmitting = false;
+  public isExistingPanelLoaded = false;
   public selectedPanelForAssignment: PanelSummary | null = null;
   private currentInterviewers: string[] = [];
   private interviewersEdited = false;
@@ -195,6 +196,7 @@ export class SelectPanelDailogComponent implements OnInit {
             this.selectedPanel = [];
             this.existingPanel = [];
           }
+          this.isExistingPanelLoaded = true;
           // Store current interviewers from the existing assignment
           this.currentInterviewers =
             res.interviewer?.map((i: Interviewers) => i.id) ?? [];
@@ -205,6 +207,7 @@ export class SelectPanelDailogComponent implements OnInit {
           this.currentInterviewers = [];
           this.selectedPanel = [];
           this.existingPanel = [];
+          this.isExistingPanelLoaded = true;
         },
       });
   }

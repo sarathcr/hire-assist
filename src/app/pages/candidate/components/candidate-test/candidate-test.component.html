@@ -1,5 +1,5 @@
 <div class="assessment">
-  @if (isLoading || !data.questions.length) {
+  @if (isLoading || !data || !data.questions || data.questions.length === 0) {
   <app-candidate-test-skeleton></app-candidate-test-skeleton>
   } @else {
   <div class="assessment__carousel">
@@ -51,7 +51,7 @@
       {{ data.questions ? data.questions.indexOf(activeQuestion) + 1 : "" }}
     </p>
     <div class="assessment__header_end">
-      <app-timer></app-timer>
+      <app-timer (notifyWarning)="onTimerWarning($event)" (timesUp)="onTimeUp()"></app-timer>
     </div>
   </div>
 

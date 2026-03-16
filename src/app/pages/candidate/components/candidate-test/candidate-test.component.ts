@@ -49,7 +49,7 @@ export interface Payload {
   candidateId: string;
   assessmentId: number;
   questionId: number;
-  answerOptionId: string | number;
+  answerOptionId: string | number | null;
   statusId: number;
   duration: string;
 }
@@ -61,7 +61,7 @@ export interface CandidateTestTermination {
 }
 interface CandidateAnswer {
   questionId: number;
-  answerOptionId: string | number;
+  answerOptionId: string | number | null;
   statusId: number;
 }
 
@@ -88,7 +88,7 @@ interface CandidateAnswer {
 export class CandidateTestComponent
   extends BaseComponent
   implements OnInit, OnDestroy, AfterViewInit {
-  public data!: CandidateTestQuestionSet;
+  public data?: CandidateTestQuestionSet;
   // Service
   private readonly warningService = inject(AssessmentWarningService);
   // Signals
@@ -173,7 +173,7 @@ export class CandidateTestComponent
 
     this.getAllQuestions();
 
-    if (this.warningCount >= this.data?.maxTerminationCount) {
+    if (this.warningCount >= (this.data?.maxTerminationCount ?? 0)) {
       this.showTestTerminationDialog();
     } else this.enterFullScreenMode();
 
@@ -401,7 +401,7 @@ export class CandidateTestComponent
   }
 
   // Private
-  private handleAnswer(statusId: number): Observable<void> {
+  private handleAnswer(statusId: number, skipNavigation = false): Observable<void> {
     if (this.activeButtonId === null || !this.activeQuestion) {
       return of(void 0);
     }
@@ -425,7 +425,9 @@ export class CandidateTestComponent
     return this.saveOrUpdateCandidateAnswer(payload).pipe(
       switchMap(() => {
         this.isSaving = false;
-        this.handleQuestionNavigation();
+        if (!skipNavigation) {
+          this.handleQuestionNavigation();
+        }
         return of(void 0);
       }),
     );
@@ -448,15 +450,8 @@ export class CandidateTestComponent
     }
   }
 
-  private getAnswerOptionId(selectedValue: any): string {
-    if (
-      this.activeQuestion.status === 'skipped' ||
-      this.activeQuestion.status === 'reviewed'
-    ) {
-      return '';
-    }
-
-    let answerOptionId: string;
+  private getAnswerOptionId(selectedValue: any): string | null {
+    let answerOptionId: string | null;
     if (this.activeQuestion.isMultipleChoice) {
       this.onCheckboxChange(
         {
@@ -465,14 +460,14 @@ export class CandidateTestComponent
         } as CheckboxChangeEvent,
         this.activeButtonId as number,
       );
-      answerOptionId = Array.isArray(selectedValue)
+      answerOptionId = Array.isArray(selectedValue) && selectedValue.length > 0
         ? selectedValue.join(',')
-        : '';
+        : null;
     } else {
       if (selectedValue !== null && this.activeButtonId !== null) {
         this.onOptionSelect(this.activeButtonId, selectedValue);
       }
-      answerOptionId = selectedValue ? String(selectedValue) : '';
+      answerOptionId = selectedValue ? String(selectedValue) : null;
     }
     return answerOptionId;
   }
@@ -509,6 +504,7 @@ export class CandidateTestComponent
   }
 
   private handleQuestionNavigation(): void {
+    if (!this.data) return;
     const currentIndex = this.data.questions.findIndex(
       (q) => q.id === this.activeQuestion.id,
     );
@@ -676,7 +672,7 @@ export class CandidateTestComponent
   }
   //if save/review/skip button clicked then the next question will be showing automatically
   private moveToNextQuestion() {
-    if (this.activeButtonId !== null) {
+    if (this.activeButtonId !== null && this.data) {
       const currentIndex = this.data.questions.findIndex(
         (option) => option.id === this.activeButtonId,
       );
@@ -726,6 +722,116 @@ export class CandidateTestComponent
       closeOnNavigation: true,
       acceptButtonText: 'Continue',
     };
+  }
+
+  public onTimerWarning(minutesRemaining: number): void {
+    const modalData: DialogData = {
+      message: `You have ${minutesRemaining} minutes remaining before the test is automatically submitted.`,
+      isChoice: false,
+      acceptButtonText: 'OK',
+      closeOnNavigation: true,
+      disableClose: false,
+    };
+    
+    this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Time Warning',
+      width: '40vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+  }
+
+  public onTimeUp(): void {
+    const modalData: DialogData = {
+      message: 'Time is up! Your test is being automatically submitted.',
+      isChoice: false,
+      acceptButtonText: 'OK',
+      closeOnNavigation: true,
+      disableClose: true,
+    };
+
+    const timeUpRef = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Time Up!',
+      width: '40vw',
+      modal: true,
+      closable: false,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    timeUpRef.onClose.subscribe(() => {
+      if (this.isSubmitting) return;
+
+      if (this.activeButtonId !== null && this.activeQuestion && !this.isSaving) {
+        this.handleAnswer(6, true).subscribe({
+          next: () => {
+            this.forceSubmitTest();
+          },
+          error: () => {
+            this.isSaving = false;
+            this.forceSubmitTest();
+          },
+        });
+      } else {
+        this.forceSubmitTest();
+      }
+    });
+    
+    // Auto-close and submit after 3 seconds in case they don't click OK
+    setTimeout(() => {
+        if (timeUpRef) {
+            timeUpRef.close(true);
+        }
+    }, 3000);
+  }
+
+  private forceSubmitTest(): void {
+    this.isSubmitting = true;
+    this.exitFullScreenMode();
+
+    const terminationPayload: CandidateTestTermination = {
+      candidateId: this.candidateId,
+      assessmentId: this.assessmentId,
+      terminatedTime: new Date().toISOString(),
+      timerDuration: '00:00:00',
+    };
+
+    this.candidatetestservice
+      .addcandidateTestTerminationTime(terminationPayload)
+      .pipe(
+        catchError(() => of(void 0)),
+        switchMap(() =>
+          this.addCandidateScores(
+            this.assessmentId,
+            this.candidateInterview.assessment.assessmentRoundId,
+          ),
+        ),
+      )
+      .subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.router.navigate(['candidate/thank-you']);
+        },
+        error: () => {
+          this.isSubmitting = false;
+          this.router.navigate(['candidate/thank-you']); // Force navigation even on error
+        },
+      });
   }
 
   private getAllQuestions() {

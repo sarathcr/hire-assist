@@ -13,7 +13,7 @@ interface Payload {
   candidateId: string;
   assessmentId: number;
   questionId: number;
-  answerOptionId: string | number;
+  answerOptionId: string | number | null;
   statusId: number;
   duration: string;
 }

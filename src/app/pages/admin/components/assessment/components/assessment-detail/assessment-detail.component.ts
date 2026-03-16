@@ -440,20 +440,21 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
    * Enabled when at least one candidate is selected and all selected candidates have status "Completed"
    */
   public isSelectEnabled(): boolean {
-    // Must have at least one candidate selected
     if (!this.selectedCandidates || this.selectedCandidates.length === 0) {
       return false;
     }
 
-    // Check if all selected candidates have status "Completed", "Selected", or "Rejected"
     return this.selectedCandidates.every((candidate) => {
-      if (!candidate || !candidate.status) {
-        return false;
-      }
+      if (!candidate || !candidate.status) return false;
+
       const status = candidate.status.toLowerCase().trim();
-      return (
-        status === 'completed' || status === 'selected' || status === 'rejected'
-      );
+      const hasValidStatus =
+        status === 'completed' ||
+        status === 'selected' ||
+        status === 'rejected';
+      const isNotScheduled = !candidate.isScheduled; 
+
+      return hasValidStatus && isNotScheduled;
     });
   }
 
@@ -462,28 +463,29 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
    * Enabled when at least one candidate is selected and all selected candidates have status "Completed", "Selected", or "Rejected"
    */
   public isRejectEnabled(): boolean {
-    // Must have at least one candidate selected
     if (!this.selectedCandidates || this.selectedCandidates.length === 0) {
       return false;
     }
 
-    // Check if all selected candidates have status "Completed", "Selected", or "Rejected"
     return this.selectedCandidates.every((candidate) => {
-      if (!candidate || !candidate.status) {
-        return false;
-      }
+      if (!candidate || !candidate.status) return false;
+
       const status = candidate.status.toLowerCase().trim();
+      const isNotScheduled = !candidate.isScheduled;
+
+      let hasValidStatus = false;
       if (this.isAptitudeRound()) {
-        return (
-          status === 'completed' ||
-          status === 'terminated' ||
-          status === 'selected' ||
-          status === 'rejected'
-        );
+        hasValidStatus = [
+          'completed',
+          'terminated',
+          'selected',
+          'rejected',
+        ].includes(status);
+      } else {
+        hasValidStatus = ['completed', 'selected', 'rejected'].includes(status);
       }
-      return (
-        status === 'completed' || status === 'selected' || status === 'rejected'
-      );
+
+      return hasValidStatus && isNotScheduled;
     });
   }
 
@@ -1699,7 +1701,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       },
       pagination: {
         pageNumber: 1,
-        pageSize: -1, 
+        pageSize: -1,
       },
     };
 
@@ -1708,20 +1710,18 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: PaginatedData<CandidateData>) => {
           // Check if ANY candidate is NOT Selected or Rejected
-          const pendingCandidates = res.data.filter(
-            (c) => {
-               const status = c.status?.toLowerCase();
-               return status !== 'selected' && status !== 'rejected';
-            }
-          );
+          const pendingCandidates = res.data.filter((c) => {
+            const status = c.status?.toLowerCase();
+            return status !== 'selected' && status !== 'rejected';
+          });
 
           if (pendingCandidates.length > 0) {
             this.isCompletingRound = false;
-            
+
             // Show Custom Warning Modal
             this.ref = this.dialog.open(RoundCompletionWarningComponent, {
               data: {
-                candidates: pendingCandidates
+                candidates: pendingCandidates,
               },
               header: ' ', // Empty header to let component handle it
               maximizable: false,
@@ -1748,7 +1748,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             summary: 'Error',
             detail: 'Failed to validate candidate statuses. Please try again.',
           });
-        }
+        },
       });
   }
 
@@ -1819,7 +1819,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
   public navigateToSummary(): void {
     if (this.assessmentId) {
-      this.router.navigate(['/admin/recruitments/recruitment-summary', this.assessmentId]);
+      this.router.navigate([
+        '/admin/recruitments/recruitment-summary',
+        this.assessmentId,
+      ]);
     }
   }
 }

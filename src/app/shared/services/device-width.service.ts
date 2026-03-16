@@ -48,7 +48,7 @@ export class DeviceWarningService {
 
   private getDeviceWarningDialogData(): DialogData {
     return {
-      message: `You cannot attend the assessment test from mobile devices. You should at least have a laptop or higher devices.`,
+      message: `This assessment can only be accessed using a laptop or desktop. Please switch to a laptop or desktop device to continue.`,
       isChoice: false,
       closeOnNavigation: true,
       acceptButtonText: 'OK',

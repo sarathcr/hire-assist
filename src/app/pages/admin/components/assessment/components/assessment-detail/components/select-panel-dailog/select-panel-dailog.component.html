@@ -7,14 +7,18 @@
       </div>
       <div class="select-panel-dialog__header-text">
         <h2 class="select-panel-dialog__title">
-          @if (existingPanel.length > 0) {
+          @if (!isExistingPanelLoaded) {
+            Panel Assignment
+          } @else if (existingPanel.length > 0) {
             Update Panel Assignment
           } @else {
             Assign Candidate to Panel
           }
         </h2>
         <p class="select-panel-dialog__description">
-          @if (existingPanel.length > 0) {
+          @if (!isExistingPanelLoaded) {
+            Loading panel assignment details...
+          } @else if (existingPanel.length > 0) {
             Select a panel to update the assignment for this candidate.
           } @else {
             Choose an interview panel from the list below to assign the selected
