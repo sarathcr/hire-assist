@@ -500,8 +500,9 @@ export class SelectQuesionsetStepComponent
     const next = (res: PaginatedData<QuestionSetModel>) => {
       this.questionSets = res.data;
       res.data.forEach((qs) => {
-        if (!this.questionSetAccordionData.has(qs.id.toString())) {
-          this.questionSetAccordionData.set(qs.id.toString(), {
+        const qsId = qs.id.toString();
+        if (!this.questionSetAccordionData.has(qsId)) {
+          this.questionSetAccordionData.set(qsId, {
             questionSet: qs,
             selectedIds: [],
             allSelectedQuestions: [],
@@ -521,28 +522,17 @@ export class SelectQuesionsetStepComponent
             questionFileData: {},
             optionFileData: {},
           });
+          this.loadQuestionsForAccordion(qsId);
         } else {
-          const existingData = this.questionSetAccordionData.get(
-            qs.id.toString(),
-          );
+          const existingData = this.questionSetAccordionData.get(qsId);
           if (existingData) {
-            existingData.allSelectedQuestions = [];
-            existingData.selectedIds = [];
-            existingData.groupedSelectedData = [];
-            existingData.totalScore = 0;
-            existingData.hasLoadedSelectedQuestions = false;
-            existingData.hasLoadedTableData = false;
-            existingData.searchValue = existingData.searchValue || '';
-            existingData.previousIsLoading = false;
-            if (!existingData.currentPayload) {
-              existingData.currentPayload = new PaginatedPayload();
-            }
-            if (!existingData.previousFilterMap) {
-              existingData.previousFilterMap = {};
-            }
-            this.questionSetAccordionData.set(qs.id.toString(), {
+            existingData.questionSet = qs;
+            this.questionSetAccordionData.set(qsId, {
               ...existingData,
             });
+            if (!existingData.hasLoadedSelectedQuestions && !existingData.isLoadingSelectedQuestions) {
+              this.loadQuestionsForAccordion(qsId);
+            }
           }
         }
       });

@@ -1,6 +1,6 @@
 <div class="coordinator-detail">
   <p-toast></p-toast>
-  
+
   <!-- Hero Header Section -->
   <div class="coordinator-detail__hero">
     <div class="coordinator-detail__hero-content">
@@ -23,10 +23,11 @@
         <div
           class="coordinator-detail__stepper-item"
           [ngClass]="{
-            'active': activeStep === step.index,
-            'completed': completedSteps.includes(step.index),
-            'disabled': !isStepEnabled(step.index),
-            'pending': !completedSteps.includes(step.index) && activeStep !== step.index
+            active: activeStep === step.index,
+            completed: completedSteps.includes(step.index),
+            disabled: !isStepEnabled(step.index),
+            pending:
+              !completedSteps.includes(step.index) && activeStep !== step.index,
           }"
         >
           <button
@@ -37,14 +38,18 @@
             [attr.aria-label]="step.label"
           >
             <div class="coordinator-detail__stepper-indicator">
-              @if (completedSteps.includes(step.index) && activeStep !== step.index) {
+              @if (
+                completedSteps.includes(step.index) && activeStep !== step.index
+              ) {
                 <i class="pi pi-check"></i>
               } @else {
                 <i [class]="step.icon"></i>
               }
             </div>
             <div class="coordinator-detail__stepper-content">
-              <span class="coordinator-detail__stepper-label">{{ step.label }}</span>
+              <span class="coordinator-detail__stepper-label">{{
+                step.label
+              }}</span>
             </div>
             @if (activeStep === step.index) {
               <div class="coordinator-detail__stepper-arrow">
@@ -53,9 +58,10 @@
             }
           </button>
           @if (i < stepConfig.length - 1) {
-            <div class="coordinator-detail__stepper-connector"
-                 [ngClass]="{'completed': completedSteps.includes(step.index)}">
-            </div>
+            <div
+              class="coordinator-detail__stepper-connector"
+              [ngClass]="{ completed: completedSteps.includes(step.index) }"
+            ></div>
           }
         </div>
       }
@@ -67,8 +73,8 @@
     <div class="coordinator-detail__progress-bar">
       <div
         class="coordinator-detail__progress-fill"
-        [style.width.%]="getProgressPercentage()">
-      </div>
+        [style.width.%]="getProgressPercentage()"
+      ></div>
     </div>
     <span class="coordinator-detail__progress-text">
       {{ getProgressPercentage() }}% Complete
@@ -95,36 +101,55 @@
       <!-- Step 0: Candidate Selection -->
       @if (activeStep === 0) {
         <app-table
-            [tableData]="data"
-            [columnsData]="candidateColumn"
-            heading="Candidate List"
-            [hasSearch]="true"
-            [parentLoader]="isCandidateLoading"
-            (pageChangeAndSort)="onTablePayloadChange($event)"
-            (selectedIds)="getSelectedcandidateId($event)"
-            [alreadySelected]="selectedCandidate"
+          [tableData]="data"
+          [columnsData]="candidateColumn"
+          heading="Candidate List"
+          [hasSearch]="true"
+          [parentLoader]="isCandidateLoading"
+          (pageChangeAndSort)="onTablePayloadChange($event)"
+          (selectedIds)="getSelectedcandidateId($event)"
+          [alreadySelected]="selectedCandidate"
         ></app-table>
-        <div class="coordinator-detail__step-actions coordinator-detail__step-actions--end">
-            <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="onNextStep(0)"></p-button>
+        <div
+          class="coordinator-detail__step-actions coordinator-detail__step-actions--end"
+        >
+          <p-button
+            label="Next"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            (onClick)="onNextStep(0)"
+          ></p-button>
         </div>
       }
 
       <!-- Step 1: Panel Selection -->
       @if (activeStep === 1) {
         <app-table
-            [tableData]="panelData"
-            [columnsData]="panelColumn"
-            heading="Panel List"
-            [hasSearch]="true"
-            [parentLoader]="isPanelLoading"
-            (edit)="editPanel($event)"
-            (pageChangeAndSort)="onPanelTablePayloadChange($event)"
-            (selectedIds)="getSelectedPanelId($event)"
-            [alreadySelected]="selectedPanel"
+          [tableData]="panelData"
+          [columnsData]="panelColumn"
+          heading="Panel List"
+          [hasSearch]="true"
+          [parentLoader]="isPanelLoading"
+          (edit)="editPanel($event)"
+          (pageChangeAndSort)="onPanelTablePayloadChange($event)"
+          (selectedIds)="getSelectedPanelId($event)"
+          [alreadySelected]="selectedPanel"
         ></app-table>
-        <div class="coordinator-detail__step-actions coordinator-detail__step-actions--between">
-             <p-button label="Back" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="setActiveStep(0)"></p-button>
-             <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="onNextStep(1)"></p-button>
+        <div
+          class="coordinator-detail__step-actions coordinator-detail__step-actions--between"
+        >
+          <p-button
+            label="Back"
+            icon="pi pi-arrow-left"
+            [outlined]="true"
+            (onClick)="setActiveStep(0)"
+          ></p-button>
+          <p-button
+            label="Next"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            (onClick)="onNextStep(1)"
+          ></p-button>
         </div>
       }
 
@@ -135,68 +160,90 @@
             <div class="coordinator-detail__success-section">
               <div class="coordinator-detail__success-content-wrapper">
                 <div class="coordinator-detail__success-icon-large">
-                  <i class="pi pi-check-circle" style="font-size: 4rem;"></i>
+                  <i class="pi pi-check-circle" style="font-size: 4rem"></i>
                 </div>
                 <h3 class="coordinator-detail__success-title-large">
                   Scheduling Successful!
                 </h3>
                 <p class="coordinator-detail__success-message-large">
-                  Candidate has been successfully scheduled for the assessment panel.
+                  Candidate has been successfully scheduled for the assessment
+                  panel.
                 </p>
               </div>
             </div>
           }
-            <p-card class="coordinator-detail__summary-card">
-              <div class="coordinator-detail__summary-content">
-                <div class="coordinator-detail__summary-item">
-                  <div class="coordinator-detail__summary-icon candidate">
-                    <i class="pi pi-user"></i>
-                  </div>
-                  <div class="coordinator-detail__summary-info">
-                    <span class="coordinator-detail__summary-label">Selected Candidate</span>
-                    <span class="coordinator-detail__summary-value">
-                      @if (selectedCandidatesIds.length > 0) {
-                        {{ selectedCandidatesIds[0].name }}
-                      } @else {
-                        <span class="coordinator-detail__summary-placeholder">None selected</span>
-                      }
-                    </span>
-                  </div>
+          <p-card class="coordinator-detail__summary-card">
+            <div class="coordinator-detail__summary-content">
+              <div class="coordinator-detail__summary-item">
+                <div class="coordinator-detail__summary-icon candidate">
+                  <i class="pi pi-user"></i>
                 </div>
-                
-                <p-divider layout="vertical" [style]="{ height: '40px', margin: '0 1.5rem' }"></p-divider>
-                
-                <div class="coordinator-detail__summary-item">
-                  <div class="coordinator-detail__summary-icon panel">
-                    <i class="pi pi-briefcase"></i>
-                  </div>
-                  <div class="coordinator-detail__summary-info">
-                    <span class="coordinator-detail__summary-label">Selected Panel</span>
-                    <span class="coordinator-detail__summary-value">
-                      @if (selectedPanelIds.length > 0) {
-                        {{ selectedPanelIds[0].name }}
-                      } @else {
-                        <span class="coordinator-detail__summary-placeholder">None selected</span>
-                      }
-                    </span>
-                  </div>
-                </div>
-                
-                <div class="coordinator-detail__summary-actions">
-                  <p-button
-                    label="Schedule Panel"
-                    icon="pi pi-calendar-plus"
-                    [disabled]="selectedCandidatesIds.length === 0 || selectedPanelIds.length === 0"
-                    (onClick)="schedule()"
-                    [style]="{ minWidth: '180px' }"
-                    severity="primary"
-                  ></p-button>
+                <div class="coordinator-detail__summary-info">
+                  <span class="coordinator-detail__summary-label"
+                    >Selected Candidate</span
+                  >
+                  <span class="coordinator-detail__summary-value">
+                    @if (selectedCandidatesIds.length > 0) {
+                      {{ selectedCandidatesIds[0].name }}
+                    } @else {
+                      <span class="coordinator-detail__summary-placeholder"
+                        >None selected</span
+                      >
+                    }
+                  </span>
                 </div>
               </div>
-            </p-card>
+
+              <p-divider
+                layout="vertical"
+                [style]="{ height: '40px', margin: '0 1.5rem' }"
+              ></p-divider>
+
+              <div class="coordinator-detail__summary-item">
+                <div class="coordinator-detail__summary-icon panel">
+                  <i class="pi pi-briefcase"></i>
+                </div>
+                <div class="coordinator-detail__summary-info">
+                  <span class="coordinator-detail__summary-label"
+                    >Selected Panel</span
+                  >
+                  <span class="coordinator-detail__summary-value">
+                    @if (selectedPanelIds.length > 0) {
+                      {{ selectedPanelIds[0].name }}
+                    } @else {
+                      <span class="coordinator-detail__summary-placeholder"
+                        >None selected</span
+                      >
+                    }
+                  </span>
+                </div>
+              </div>
+
+              <div class="coordinator-detail__summary-actions">
+                <p-button
+                  label="Schedule Panel"
+                  icon="pi pi-calendar-plus"
+                  [disabled]="
+                    selectedCandidatesIds.length === 0 ||
+                    selectedPanelIds.length === 0
+                  "
+                  (onClick)="schedule()"
+                  [style]="{ minWidth: '180px' }"
+                  severity="primary"
+                ></p-button>
+              </div>
+            </div>
+          </p-card>
         </div>
-        <div class="coordinator-detail__step-actions coordinator-detail__step-actions--start">
-             <p-button label="Back" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="setActiveStep(1)"></p-button>
+        <div
+          class="coordinator-detail__step-actions coordinator-detail__step-actions--start"
+        >
+          <p-button
+            label="Back"
+            icon="pi pi-arrow-left"
+            [outlined]="true"
+            (onClick)="setActiveStep(1)"
+          ></p-button>
         </div>
       }
     </div>
