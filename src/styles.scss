@@ -55,17 +55,17 @@
   --spacing-percentage-90: 90%;
   --spacing-percentage-50--spacing-percentage-50: 50%;
   // Font Size
-  --font-size-extra-small: 10px;
-  --font-size-small: 12px;
-  --font-size-base: 14px;
-  --font-size-16: 16px;
-  --font-size-18: 18px;
-  --font-size-20: 20px;
-  --font-size-22: 22px;
-  --font-size-24: 24px;
-  --font-size-28: 28px;
-  --font-size-0_9rem: 0.9rem;
-  --font-size-0_85rem: 0.85rem;
+  --font-size-extra-small: 9px;
+  --font-size-small: 11px;
+  --font-size-base: 13px;
+  --font-size-16: 14px;
+  --font-size-18: 16px;
+  --font-size-20: 18px;
+  --font-size-22: 20px;
+  --font-size-24: 22px;
+  --font-size-28: 24px;
+  --font-size-0_9rem: 0.8rem;
+  --font-size-0_85rem: 0.75rem;
   //radius
   --border-radius-20: 20px;
   --border-radius-15: 15px;
@@ -123,10 +123,10 @@ html {
 .p-popover .p-popover-content {
   .p-button {
     padding: 0.3rem 0.6rem;
-    font-size: 12px;
+    font-size: 11px;
 
     .p-button-icon {
-      font-size: 12px;
+      font-size: 11px;
     }
 
     &:hover:not(:disabled) {
