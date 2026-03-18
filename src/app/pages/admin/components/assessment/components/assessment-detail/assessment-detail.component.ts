@@ -162,6 +162,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public stepperConfig!: recruitment[];
   public currentStep!: number;
   public selectedCandidates: InterviewSummary[] = [];
+  public selectedCandidateIds: string[] = [];
   public isCompleteDisabled = false;
   public assessmentRoundList!: AssessmentRound[] | null;
   public filterMap!: FilterMap;
@@ -214,6 +215,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   // Public Methods
 
   public getSelectedCandidatesOnTable(selectedIds: { id: string }[]) {
+    // Keep the flat ID list in sync so [alreadySelected] binding preserves
+    // checkbox state across pagination page changes.
+    this.selectedCandidateIds = selectedIds.map((s) => String(s.id));
+
     // Map selected IDs to full candidate objects from tableData
     // The table component emits only { id } objects, so we need to look up the full data
     this.selectedCandidates = selectedIds

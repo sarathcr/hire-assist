@@ -259,16 +259,20 @@ export class CoordinatorAssignmentComponent implements OnInit {
         this.selectedCandidatesIds = [];
         this.selectedPanel = [];
         this.selectedCandidate = [];
+        this.selectedPanelIds = [];
+        this.lastSelectedPanelId = null;
         // Reset stepper state if candidate not found
-        this.completedSteps = this.completedSteps.filter(step => step !== 0);
+        this.completedSteps = this.completedSteps.filter((step) => step !== 0);
       }
     } else {
       this.selectedCandidatesIds = [];
       this.selectedPanel = [];
       this.selectedCandidate = [];
+      this.selectedPanelIds = [];
+      this.lastSelectedPanelId = null;
       // Reset stepper state on deselection
-      this.completedSteps = this.completedSteps.filter(step => step !== 0);
-      
+      this.completedSteps = this.completedSteps.filter((step) => step !== 0);
+
       // If we are currently on a later step (which shouldn't happen via this method normally, but for safety)
       // logic remains same.
     }
@@ -278,7 +282,21 @@ export class CoordinatorAssignmentComponent implements OnInit {
       .getinterviewPanles(InterviewId.toString())
       .subscribe({
         next: (res: GetInterviewPanelsResponse) => {
-          this.selectedPanel = [String(res.panelId)];
+          if (res && res.panelId != null) {
+            const panelId = String(res.panelId);
+            this.selectedPanel = [panelId];
+            this.lastSelectedPanelId = panelId;
+            this.updateSelectedPanelFromData(panelId);
+          } else {
+            this.selectedPanel = [];
+            this.lastSelectedPanelId = null;
+            this.selectedPanelIds = [];
+          }
+        },
+        error: () => {
+          this.selectedPanel = [];
+          this.lastSelectedPanelId = null;
+          this.selectedPanelIds = [];
         },
       });
   }

@@ -218,6 +218,7 @@
           [hasRowEdit]="false"
           [hasSearch]="true"
           [parentLoader]="isLoading"
+          [alreadySelected]="selectedCandidateIds"
           (selectedIds)="getSelectedCandidatesOnTable($event)"
           (delete)="deleteCandidate($event)"
           (view)="onView($event)"
