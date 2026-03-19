@@ -1,20 +1,28 @@
 <div class="interview-candidate">
-  <!-- Hero Header Section -->
-  <div class="interview-candidate__header">
-    <div class="interview-candidate__header-content">
-      <div class="interview-candidate__header-icon">
-        <i class="pi pi-users"></i>
-      </div>
-      <div class="interview-candidate__header-text">
-        <h1 class="interview-candidate__title">Candidate List</h1>
-        <p class="interview-candidate__subtitle">
-          Manage and track your interview candidates
-        </p>
+  <!-- Modern Standard Header -->
+  <header class="interview-candidate__header">
+    <div class="interview-candidate__header-left">
+      <div class="interview-candidate__title-area">
+        <h1 class="interview-candidate__title">Candidate Interview List</h1>
+        <p class="interview-candidate__subtitle">Manage and track your scheduled interview candidates</p>
       </div>
     </div>
-  </div>
+    
+    <div class="interview-candidate__header-right">
+      <div class="interview-candidate__stats">
+        <div class="stat-badge stat-badge--today">
+          <span class="stat-label">Today</span>
+          <span class="stat-value">{{ summaryCounts.today }}</span>
+        </div>
+        <div class="stat-badge stat-badge--total">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">{{ summaryCounts.total }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
 
-  @if ((loading$ | async) === false) {
+  @if (!isInitialLoad) {
     <!-- Summary Statistics Cards -->
     <div class="interview-candidate__summary">
       <p-card
@@ -88,118 +96,17 @@
 
     <!-- Tabs Section -->
 
-    <div class="interview-candidate__tabs-section">
-      <p-tabs value="0" class="interview-candidate__tabs">
-        <p-tablist class="interview-candidate__tablist">
-          <p-tab value="0" class="interview-candidate__tab">
-            <div class="interview-candidate__tab-content">
-              <i class="pi pi-clock interview-candidate__tab-icon"></i>
-              <span>Today's Interviews</span>
-              @if (todayCount > 0) {
-                <p-badge
-                  [value]="todayCount"
-                  severity="info"
-                  class="interview-candidate__tab-badge"
-                ></p-badge>
-              }
-            </div>
-          </p-tab>
-          <p-tab value="1" class="interview-candidate__tab">
-            <div class="interview-candidate__tab-content">
-              <i class="pi pi-calendar-plus interview-candidate__tab-icon"></i>
-              <span>Upcoming Interviews</span>
-              @if (upcomingCount > 0) {
-                <p-badge
-                  [value]="upcomingCount"
-                  severity="success"
-                  class="interview-candidate__tab-badge"
-                ></p-badge>
-              }
-            </div>
-          </p-tab>
-          <p-tab value="2" class="interview-candidate__tab">
-            <div class="interview-candidate__tab-content">
-              <i class="pi pi-history interview-candidate__tab-icon"></i>
-              <span>Previous Interviews</span>
-              @if (previousCount > 0) {
-                <p-badge
-                  [value]="previousCount"
-                  severity="secondary"
-                  class="interview-candidate__tab-badge"
-                ></p-badge>
-              }
-            </div>
-          </p-tab>
-        </p-tablist>
-        <p-tabpanels>
-          <p-tabpanel value="0" class="interview-candidate__tabpanel">
-            @if (todayTableData && todayTableData.data.length > 0) {
-              <app-table
-                [tableData]="todayTableData"
-                [columnsData]="columns"
-                [hasSearch]="true"
-                (btnClick)="onStartInterview($event)"
-                (buttonClick)="onButtonClick($event)"
-                (pageChangeAndSort)="onTablePayloadChange($event)"
-              ></app-table>
-            } @else {
-              <div class="interview-candidate__empty-state">
-                <i class="pi pi-inbox interview-candidate__empty-icon"></i>
-                <h3 class="interview-candidate__empty-title">
-                  No interviews scheduled for today
-                </h3>
-                <p class="interview-candidate__empty-message">
-                  There are no interviews scheduled for today.
-                </p>
-              </div>
-            }
-          </p-tabpanel>
-          <p-tabpanel value="1" class="interview-candidate__tabpanel">
-            @if (upComingTableData && upComingTableData.data.length > 0) {
-              <app-table
-                [tableData]="upComingTableData"
-                [columnsData]="columns"
-                [hasSearch]="true"
-                (btnClick)="onStartInterview($event)"
-                (buttonClick)="onButtonClick($event)"
-                (pageChangeAndSort)="onTablePayloadChange($event)"
-              ></app-table>
-            } @else {
-              <div class="interview-candidate__empty-state">
-                <i class="pi pi-calendar interview-candidate__empty-icon"></i>
-                <h3 class="interview-candidate__empty-title">
-                  No upcoming interviews scheduled
-                </h3>
-                <p class="interview-candidate__empty-message">
-                  There are no upcoming interviews scheduled.
-                </p>
-              </div>
-            }
-          </p-tabpanel>
-          <p-tabpanel value="2" class="interview-candidate__tabpanel">
-            @if (PreviousTableData && PreviousTableData.data.length > 0) {
-              <app-table
-                [tableData]="PreviousTableData"
-                [columnsData]="columns"
-                [hasSearch]="true"
-                (btnClick)="onStartInterview($event)"
-                (buttonClick)="onButtonClick($event)"
-                (pageChangeAndSort)="onTablePayloadChange($event)"
-              ></app-table>
-            } @else {
-              <div class="interview-candidate__empty-state">
-                <i class="pi pi-history interview-candidate__empty-icon"></i>
-                <h3 class="interview-candidate__empty-title">
-                  No previous interviews found
-                </h3>
-                <p class="interview-candidate__empty-message">
-                  There are no previous interviews available.
-                </p>
-              </div>
-            }
-          </p-tabpanel>
-        </p-tabpanels>
-      </p-tabs>
+    <!-- Table Section -->
+    <div class="interview-candidate__table-section">
+      <app-table
+        [tableData]="tableData"
+        [parentLoader]="(loading$ | async) === true"
+        [columnsData]="columns"
+        [hasSearch]="true"
+        (btnClick)="onStartInterview($event)"
+        (buttonClick)="onButtonClick($event)"
+        (pageChangeAndSort)="onTablePayloadChange($event)"
+      ></app-table>
     </div>
     } @else {
         <app-interviewer-candidate-list-skeleton></app-interviewer-candidate-list-skeleton>

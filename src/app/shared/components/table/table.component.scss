@@ -1,12 +1,6 @@
 .table {
   font-size: var(--font-size-base);
 
-  :host ::ng-deep .p-paginator {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
   &.table-loading {
     ::ng-deep {
       .p-paginator-rpp-options {
@@ -20,8 +14,7 @@
       }
 
       .p-paginator {
-        display: block;
-        width: 100%;
+        width: 100% !important;
       }
 
       .p-paginator-pages {
@@ -44,27 +37,12 @@
     pointer-events: none;
   }
 
-  @media (max-width: 440px) {
-    ::ng-deep {
-      .p-paginator p-component {
-        .p-button {
-          min-width: 2rem;
-          height: 2rem;
-        }
-
-        .p-paginator-content-start {
-          display: none !important;
-        }
-      }
-    }
-  }
-
   ::ng-deep {
 
+    // Component specific UI elements
     .p-badge,
     .p-tag,
-    .p-button,
-    .p-inputtext {
+    .p-button {
       font-size: var(--font-size-small);
     }
 
@@ -77,103 +55,62 @@
       min-width: 1200px;
     }
 
-    .p-datatable-thead>tr>th.p-datatable-column-sorted {
-      background-color: rgb(255, 255, 255);
-      color: rgb(0, 0, 0);
-    }
-
-    p-paginator {
-      display: flex;
-      width: 100%;
-      justify-content: center;
-      background: var(--color-white);
+    // Body overrides for specific table behavior
+    .p-datatable-tbody>tr {
+      &>td {
+        white-space: wrap !important;
+      }
     }
 
     .p-paginator-content-start {
       display: none;
     }
 
-    .p-paginator-page,
-    .p-paginator-next,
-    .p-paginator-last,
-    .p-paginator-first,
-    .p-paginator-prev {
-      min-width: 2rem;
-      height: 2rem !important;
-    }
-  }
-
-  &_skeleton {
-    min-width: 100%;
-  }
-
-  &__expanded {
-    &__correctAnswer {
-      color: rgb(8, 135, 8);
-      width: fit-content;
-      font-weight: bold;
-    }
-
-    &__optionList {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      list-style-type: lower-alpha;
-    }
-
-    &__optionListForImage {
+    // Standardize height for search and filter elements
+    .p-inputtext,
+    .table__globalFilters_clear .p-button {
+      height: 40px !important;
       display: flex;
-      flex-direction: column;
-      gap: 12px;
-      list-style-type: lower-alpha;
+      align-items: center;
+      border-radius: 10px;
     }
-  }
 
-  &_isAlready {
-    background-color: rgb(255, 255, 237);
-    box-shadow: inset 4px 0 0 #ff9800;
+    .p-inputtext {
+      padding: 0.5rem 1rem;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
 
-    &:hover {
-      background-color: rgb(255, 255, 237) !important;
+      &::placeholder {
+        font-size: 0.75rem;
+      }
+
+      &:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.06);
+      }
     }
-  }
 
-  &_isDuplicate {
-    background-color: rgb(255, 182, 182);
+    // Ensure icon field doesn't overlap text and is clickable
+    .p-iconfield {
+      width: 100%;
 
-    &:hover {
-      background-color: rgb(255, 182, 182) !important;
+      .p-inputtext {
+        padding-right: 2.5rem !important; // Prevent text from going under the icon
+        width: 100%;
+        cursor: text;
+        pointer-events: auto;
+      }
+
+      .p-inputicon {
+        color: #94a3b8;
+        pointer-events: none !important; // Ensure clicks pass through to the input
+      }
     }
-  }
 
-  &__row--batch-assigned {
-    background-color: #e8f5e9 !important;
-    box-shadow: inset 4px 0 0 #4caf50;
-
-    &:hover {
-      background-color: #c8e6c9 !important;
+    .p-datatable-filter-overlay,
+    .p-datatable-filter-buttonbar {
+      font-size: var(--font-size-small);
     }
-  }
-
-  &__row--not-scheduled {
-    background-color: #fff3e0 !important;
-    box-shadow: inset 4px 0 0 #ff9800;
-
-    &:hover {
-      background-color: #ffe0b2 !important;
-    }
-  }
-
-  &__custom-paginator {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    background: var(--p-paginator-background);
-    color: var(--p-paginator-color);
-    padding: var(--p-paginator-padding);
-    border-radius: var(--p-paginator-border-radius);
-    gap: var(--p-paginator-gap);
   }
 
   &__globalFilters {
@@ -183,6 +120,7 @@
     width: 100%;
     gap: 1rem;
     flex-wrap: nowrap;
+    margin-bottom: 1rem;
 
     &_filters {
       display: flex;
@@ -195,7 +133,6 @@
     }
 
     &_search {
-      // display: flex;
       justify-content: flex-end;
     }
 
@@ -217,11 +154,6 @@
     }
   }
 
-  &__buttonColumn {
-    display: flex;
-    flex-direction: row;
-  }
-
   @media screen and (max-width: 470px) {
     &__globalFilters>div {
       width: 100%;
@@ -232,6 +164,16 @@
     ::ng-deep {
       .hideOnMobile {
         display: none;
+      }
+
+      .p-datatable-thead {
+        display: none;
+      }
+
+      .p-paginator-page {
+        max-width: 30px;
+        min-width: 30px;
+        height: 30px;
       }
     }
 
@@ -252,260 +194,26 @@
         }
       }
     }
-  }
 
-  &__previewImage {
-    margin-top: 10px;
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin-left: 6%;
-    position: relative;
-    cursor: pointer;
-
-    &--placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 100px;
-      height: 70px;
-      border: 2px dashed #ccc;
-      border-radius: 8px;
-      background-color: #f9f9f9;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-        border-color: #999;
-        background-color: #f0f0f0;
-
-        i {
-          color: #999 !important;
-        }
-      }
-    }
-  }
-
-  @media screen and (max-width: 375px) {
-    &__globalFilters {
-      &_search input {
-        text-overflow: ellipsis;
-        flex-grow: 1;
-        width: 100%;
-      }
-    }
-  }
-
-  @media screen and (min-width: 470px) {
-
-    .table__globalFilters_filters {
-      flex-direction: row !important;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .table__globalFilters_search,
-    .table__globalFilters_clear {
-      width: auto !important;
-      justify-content: flex-start;
-    }
-  }
-
-  :host ::ng-deep .p-paginator {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  :host ::ng-deep .p-skeleton {
-    border-radius: 8px;
-  }
-
-  ::ng-deep {
-
-    .p-datatable-filter-overlay,
-    .p-datatable-filter-buttonbar {
-      font-size: var(--font-size-small);
-    }
-
-    .p-datatable-tbody>tr>td {
-      white-space: wrap !important;
-    }
-  }
-
-  :host ::ng-deep {
-    .p-datatable-loading-overlay {
-      background: transparent !important;
-    }
-
-    @media (max-width: 768px) {
-      .p-paginator-page {
-        max-width: 30px;
-        min-width: 30px;
-        height: 30px;
-      }
+    &__row-skeleton {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      padding: 1rem;
     }
   }
 
   .button-group {
     display: flex;
-    gap: 1rem;
-
-    app-button {
-      margin: 0;
-    }
+    gap: 0.75rem;
 
     @media (max-width: 768px) {
       gap: 0.5rem;
       justify-content: center;
     }
   }
-
-  &__header-no-pointer {
-    pointer-events: none;
-    cursor: default;
-    user-select: none;
-    right: 0 !important;
-  }
 }
 
-:host ::ng-deep th.table__header-no-pointer {
-  z-index: 5 !important;
-  pointer-events: none !important;
-}
-
-// Tooltip styles for desktop (PrimeNG tooltip) to match mobile custom tooltip exactly
 :host ::ng-deep {
-
-  // Style PrimeNG tooltips on table rows - target with highest specificity
-  .table-row-tooltip.p-tooltip,
-  .p-tooltip.table-row-tooltip,
-  .table-row-tooltip {
-    max-width: 300px !important;
-    min-width: 150px !important;
-    word-wrap: break-word !important;
-
-    .p-tooltip-text {
-      background-color: #ffffff !important;
-      color: #000000 !important;
-      font-size: 12px !important;
-      padding: 8px 12px !important;
-      border-radius: 4px !important;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2) !important;
-      white-space: normal !important;
-      line-height: 1.4 !important;
-      display: block !important;
-      visibility: visible !important;
-      border: none !important;
-      margin: 0 !important;
-    }
-
-    &.p-tooltip-bottom {
-      .p-tooltip-arrow {
-        position: absolute !important;
-        bottom: 100% !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 0 !important;
-        height: 0 !important;
-        border-left: 8px solid transparent !important;
-        border-right: 8px solid transparent !important;
-        border-bottom: 8px solid #ffffff !important;
-        border-top: none !important;
-        margin-bottom: -1px !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        margin-top: 0 !important;
-      }
-    }
-
-    &.p-tooltip-top {
-      .p-tooltip-arrow {
-        position: absolute !important;
-        top: 100% !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        width: 0 !important;
-        height: 0 !important;
-        border-left: 8px solid transparent !important;
-        border-right: 8px solid transparent !important;
-        border-top: 8px solid #ffffff !important;
-        border-bottom: none !important;
-        margin-top: -1px !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        margin-bottom: 0 !important;
-      }
-    }
-
-    &.p-tooltip-left .p-tooltip-arrow {
-      border-left-color: #ffffff !important;
-      border-top-color: transparent !important;
-      border-bottom-color: transparent !important;
-      border-right-color: transparent !important;
-    }
-
-    &.p-tooltip-right .p-tooltip-arrow {
-      border-right-color: #ffffff !important;
-      border-top-color: transparent !important;
-      border-bottom-color: transparent !important;
-      border-left-color: transparent !important;
-    }
-  }
-
-  // Fallback: target all tooltips that appear near table rows with tabindex
-  .p-datatable-tbody tr[tabindex="0"]~.p-tooltip,
-  .p-datatable-tbody tr[tabindex="0"]+.p-tooltip,
-  .p-tooltip {
-    max-width: 300px !important;
-    min-width: 150px !important;
-    word-wrap: break-word !important;
-
-    .p-tooltip-text {
-      background-color: #ffffff !important;
-      color: #000000 !important;
-      font-size: 12px !important;
-      padding: 8px 12px !important;
-      border-radius: 4px !important;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2) !important;
-      white-space: normal !important;
-      line-height: 1.4 !important;
-      display: block !important;
-      visibility: visible !important;
-      border: none !important;
-      margin: 0 !important;
-    }
-
-    &.p-tooltip-bottom .p-tooltip-arrow {
-      border-bottom-color: #ffffff !important;
-      border-top-color: transparent !important;
-      border-left-color: transparent !important;
-      border-right-color: transparent !important;
-    }
-
-    &.p-tooltip-top .p-tooltip-arrow {
-      border-top-color: #ffffff !important;
-      border-bottom-color: transparent !important;
-      border-left-color: transparent !important;
-      border-right-color: transparent !important;
-    }
-
-    &.p-tooltip-left .p-tooltip-arrow {
-      border-left-color: #ffffff !important;
-      border-top-color: transparent !important;
-      border-bottom-color: transparent !important;
-      border-right-color: transparent !important;
-    }
-
-    &.p-tooltip-right .p-tooltip-arrow {
-      border-right-color: #ffffff !important;
-      border-top-color: transparent !important;
-      border-bottom-color: transparent !important;
-      border-left-color: transparent !important;
-    }
-  }
-
   .p-datatable-thead>tr>th p-columnfilter {
     pointer-events: all;
     cursor: pointer;

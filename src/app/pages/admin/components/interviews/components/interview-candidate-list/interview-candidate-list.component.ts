@@ -125,6 +125,15 @@ export class InterviewCandidateListComponent implements OnInit {
     return this.todayCount + this.upcomingCount + this.previousCount;
   }
 
+  get summaryCounts() {
+    return {
+      today: this.todayCount,
+      upcoming: this.upcomingCount,
+      previous: this.previousCount,
+      total: this.totalCount,
+    };
+  }
+
   constructor(
     private readonly interviewService: InterviewService,
     private readonly router: Router,

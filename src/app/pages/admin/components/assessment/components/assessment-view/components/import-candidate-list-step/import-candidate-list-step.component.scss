@@ -307,41 +307,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 
-    // Scope styles to only the candidate-table class to prevent affecting other tables
-    ::ng-deep app-table.candidate-table {
-      .p-datatable {
-        .p-datatable-header {
-          background: transparent;
-          border: none;
-          padding: 0 0 var(--spacing-15) 0;
-        }
-
-        .p-datatable-thead > tr > th {
-          background: linear-gradient(
-            135deg,
-            rgba(33, 150, 243, 0.05) 0%,
-            rgba(21, 101, 192, 0.05) 100%
-          );
-          border-color: rgba(33, 150, 243, 0.1);
-          font-weight: 600;
-          color: #1f2937;
-          padding: var(--spacing-15) var(--spacing-20);
-        }
-
-        .p-datatable-tbody > tr {
-          transition: all 0.2s ease;
-
-          &:hover {
-            background: rgba(33, 150, 243, 0.03);
-          }
-
-          > td {
-            padding: var(--spacing-15) var(--spacing-20);
-            border-color: rgba(33, 150, 243, 0.1);
-          }
-        }
-      }
-    }
+    // Scope styles to only the candidate-table class if needed
   }
 
   // ============================================

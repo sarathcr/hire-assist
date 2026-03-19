@@ -1,22 +1,32 @@
 <div class="interview-candidate">
-  <!-- Hero Header Section -->
-  <div class="interview-candidate__header">
-    <div class="interview-candidate__header-content">
-      <div class="interview-candidate__header-icon">
-        <i class="pi pi-calendar-times"></i>
-      </div>
-      <div class="interview-candidate__header-text">
+  <!-- Modern Standard Header -->
+  <header class="interview-candidate__header">
+    <div class="interview-candidate__header-left">
+      <div class="interview-candidate__title-area">
         <h1 class="interview-candidate__title">Interview Schedules</h1>
         <p class="interview-candidate__subtitle">
           @if (assessmentName && panelName) {
             {{ assessmentName }} - {{ panelName }}
           } @else {
-            Manage and track interview schedules
+            Manage and track scheduled interview rounds
           }
         </p>
       </div>
     </div>
-  </div>
+    
+    <div class="interview-candidate__header-right">
+      <div class="interview-candidate__stats">
+        <div class="stat-badge stat-badge--today">
+          <span class="stat-label">Today</span>
+          <span class="stat-value">{{ summaryCounts.today }}</span>
+        </div>
+        <div class="stat-badge stat-badge--total">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">{{ summaryCounts.total }}</span>
+        </div>
+      </div>
+    </div>
+  </header>
 
   <!-- Summary Statistics Cards -->
   <div class="interview-candidate__summary">

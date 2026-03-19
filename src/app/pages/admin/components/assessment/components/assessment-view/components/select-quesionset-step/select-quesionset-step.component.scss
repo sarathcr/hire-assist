@@ -670,59 +670,7 @@
       width: 100%;
     }
 
-    ::ng-deep .p-datatable {
-      width: 100%;
-      overflow: visible;
-
-      .p-datatable-wrapper {
-        overflow: visible !important;
-      }
-
-      .p-datatable-table {
-        width: 100%;
-        table-layout: auto;
-      }
-
-      .p-datatable-thead > tr > th {
-        background: linear-gradient(
-          135deg,
-          rgba(102, 126, 234, 0.1),
-          rgba(118, 75, 162, 0.08)
-        );
-        color: var(--color-dune);
-        font-weight: 700;
-        padding: var(--spacing-20) var(--spacing-25);
-        border: none;
-        font-size: var(--font-size-small);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        white-space: nowrap;
-      }
-
-      .p-datatable-tbody > tr {
-        transition: background-color 0.2s ease;
-        border-bottom: 1px solid rgba(102, 126, 234, 0.06);
-
-        &:hover {
-          background: linear-gradient(
-            90deg,
-            rgba(102, 126, 234, 0.06),
-            rgba(118, 75, 162, 0.04)
-          );
-        }
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        > td {
-          padding: var(--spacing-20) var(--spacing-25);
-          border: none;
-          border-bottom: 1px solid rgba(21, 101, 192, 0.06);
-          white-space: nowrap;
-        }
-      }
-    }
+    // Global table styles will be applied here
   }
 
   &__summary-knob {
@@ -1742,17 +1690,7 @@
       width: 100%;
       border-radius: 12px;
 
-      ::ng-deep .p-datatable {
-        .p-datatable-thead > tr > th {
-          padding: 10px 12px;
-          font-size: var(--font-size-small);
-        }
-
-        .p-datatable-tbody > tr > td {
-          padding: 10px 12px;
-          font-size: var(--font-size-small);
-        }
-      }
+      // Global table styles will apply
     }
 
     &__summary-knob {
@@ -2014,17 +1952,7 @@
     }
 
     &__summary-table {
-      ::ng-deep .p-datatable {
-        .p-datatable-thead > tr > th {
-          padding: 8px 10px;
-          font-size: 10px;
-        }
-
-        .p-datatable-tbody > tr > td {
-          padding: 8px 10px;
-          font-size: var(--font-size-small);
-        }
-      }
+      padding: 0; // Inherits global table styles
     }
 
     &__summary-knob {

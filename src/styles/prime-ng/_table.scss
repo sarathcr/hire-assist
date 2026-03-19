@@ -1,0 +1,108 @@
+// ============================================
+// Global PrimeNG Table Customization
+// ============================================
+
+.p-datatable {
+  border: none;
+  background: transparent;
+
+  .p-datatable-thead>tr>th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    padding: 1rem 1.25rem;
+    border: none;
+    border-bottom: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+
+    &:first-child {
+      border-top-left-radius: 12px;
+    }
+
+    &:last-child {
+      border-top-right-radius: 12px;
+    }
+
+    &.p-datatable-column-sorted {
+      background-color: #f1f5f9;
+      color: #1e293b;
+    }
+
+    .p-column-filter-menu-button {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+
+      &:hover {
+        background: #e2e8f0;
+      }
+    }
+  }
+
+  .p-datatable-tbody>tr {
+    background: #ffffff;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #f8fafc !important;
+    }
+
+    &>td {
+      padding: 1rem 1.25rem;
+      border: none;
+      border-bottom: 1px solid #f1f5f9;
+      color: #334155;
+      font-size: 0.8rem;
+      line-height: 1.5;
+
+      @media screen and (max-width: 768px) {
+        padding: 0.75rem 1rem;
+      }
+
+      @media screen and (max-width: 480px) {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.7rem;
+      }
+    }
+
+    &:last-child>td {
+      &:first-child {
+        border-bottom-left-radius: 12px;
+      }
+
+      &:last-child {
+        border-bottom-right-radius: 12px;
+      }
+    }
+  }
+
+  .p-datatable-loading-overlay {
+    background: rgba(255, 255, 255, 0.6) !important;
+    backdrop-filter: blur(2px);
+  }
+}
+
+// Filter overlay customization
+.p-column-filter-overlay {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+
+  .p-column-filter-operator {
+    padding: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .p-column-filter-add-rule {
+    padding: 0.75rem 1rem;
+  }
+
+  .p-column-filter-buttonbar {
+    padding: 1rem;
+    border-top: 1px solid #f1f5f9;
+  }
+}

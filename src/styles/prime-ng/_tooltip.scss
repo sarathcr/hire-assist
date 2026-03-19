@@ -1,98 +1,46 @@
-.assessment-card__tooltip,
-.assessment-card__footer_rounds__status {
-  .p-tooltip-text {
-    background-color: var(--color-white) !important;
-    color: var(--color-black);
-    font-size: var(--font-size-small);
-  }
-  &.p-tooltip-bottom {
-    .p-tooltip-arrow {
-      border-bottom-color: var(--color-white) !important;
-    }
-  }
-  &.p-tooltip-top {
-    .p-tooltip-arrow {
-      border-top-color: var(--color-white) !important;
-    }
-  }
-  &.p-tooltip-left {
-    .p-tooltip-arrow {
-      border-left-color: var(--color-white) !important;
-    }
-  }
-  &.p-tooltip-right {
-    .p-tooltip-arrow {
-      border-right-color: var(--color-white) !important;
-    }
-  }
-
-  .p-tooltip-text,
-  .p-tooltip-arrow {
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1) !important;
-  }
-}
-.sidebar-tooltip {
-  font-size: var(--font-size-small) !important;
-  .p-tooltip-text {
-    font-size: var(--font-size-small) !important;
-    padding: 6px 10px !important;
-    line-height: 1.3 !important;
-  }
-}
-
-.sidebar-tooltip-hide {
-  display: none !important;
-  visibility: hidden !important;
-}
-
-// Table row tooltip styles to match mobile custom tooltip
-.table-row-tooltip,
-.table-row-tooltip.p-tooltip,
-.p-tooltip.table-row-tooltip {
-  max-width: 300px !important;
-  min-width: 150px !important;
-  word-wrap: break-word !important;
-
+.p-tooltip {
   .p-tooltip-text {
     background-color: #ffffff !important;
-    color: #000000 !important;
-    font-size: 12px !important;
-    padding: 8px 12px !important;
-    border-radius: 4px !important;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2) !important;
-    white-space: normal !important;
-    line-height: 1.4 !important;
-    display: block !important;
-    visibility: visible !important;
-    border: none !important;
-    margin: 0 !important;
+    color: #0f172a !important;
+    font-size: 0.75rem !important;
+    padding: 0.625rem 0.875rem !important;
+    border-radius: 10px !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid #e2e8f0 !important;
+    line-height: 1.5 !important;
+    max-width: 300px !important;
   }
 
   &.p-tooltip-bottom .p-tooltip-arrow {
-    position: absolute !important;
-    bottom: 100% !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 0 !important;
-    height: 0 !important;
-    border-left: 8px solid transparent !important;
-    border-right: 8px solid transparent !important;
-    border-bottom: 8px solid #ffffff !important;
-    border-top: none !important;
-    margin-bottom: -1px !important;
+    border-bottom-color: #ffffff !important;
+    &::after {
+      content: "";
+      position: absolute;
+      border-bottom: 8px solid #e2e8f0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      top: -1px;
+      left: -8px;
+      z-index: -1;
+    }
   }
+}
 
-  &.p-tooltip-top .p-tooltip-arrow {
-    position: absolute !important;
-    top: 100% !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    width: 0 !important;
-    height: 0 !important;
-    border-left: 8px solid transparent !important;
-    border-right: 8px solid transparent !important;
-    border-top: 8px solid #ffffff !important;
-    border-bottom: none !important;
-    margin-top: -1px !important;
+.table-row-tooltip {
+  @extend .p-tooltip;
+}
+
+.assessment-card__tooltip,
+.assessment-card__footer_rounds__status {
+  @extend .p-tooltip;
+}
+
+.sidebar-tooltip {
+  .p-tooltip-text {
+    font-size: 0.7rem !important;
+    padding: 0.4rem 0.75rem !important;
+    background: #1e293b !important;
+    color: #ffffff !important;
+    border: none !important;
   }
 }

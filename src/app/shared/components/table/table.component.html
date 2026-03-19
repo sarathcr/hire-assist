@@ -11,6 +11,7 @@
     (onLazyLoad)="onLazyLoad($event)"
     (onFilter)="onFilterApplied($event)"
     [rowsPerPageOptions]="[5, 10, 15]"
+    [paginatorDropdownAppendTo]="'body'"
     [showCurrentPageReport]="false"
     [rowHover]="true"
     dataKey="id"
@@ -34,6 +35,7 @@
         <div class="table__globalFilters_filters">
           <div class="table__globalFilters_clear">
             <p-button
+              type="button"
               label="Clear"
               [outlined]="true"
               [icon]="
@@ -41,7 +43,7 @@
               "
               [disabled]="!isAnyFilterActive"
               iconPosition="left"
-              (click)="onClear()"
+              (onClick)="onClear()"
               (onKeyDown)="onClear()"
             />
           </div>
@@ -64,6 +66,9 @@
         </div>
       </div>
     </ng-template>
+
+    <ng-template pTemplate="paginatorleft"></ng-template>
+    <ng-template pTemplate="paginatorright"></ng-template>
 
     <ng-template pTemplate="header" let-columns>
       <tr>
@@ -346,12 +351,13 @@
                   headerColumn.actions?.includes(PaginatedDataActions.Edit)
                 ) {
                   <p-button
+                    type="button"
                     icon="pi pi-pencil"
                     class="mr-2"
                     [rounded]="true"
                     [outlined]="true"
                     [disabled]="product.isSelf"
-                    (click)="onEdit(product)"
+                    (onClick)="onEdit(product)"
                     pTooltip="Edit record"
                     tooltipPosition="bottom"
                     (keydown.enter)="onEdit(product); $event.preventDefault()"
@@ -362,12 +368,13 @@
                   headerColumn.actions?.includes(PaginatedDataActions.Delete)
                 ) {
                   <p-button
+                    type="button"
                     icon="pi pi-trash"
                     severity="danger"
                     [rounded]="true"
                     [outlined]="true"
                     [disabled]="product.isSelf"
-                    (click)="onDelete(product.id)"
+                    (onClick)="onDelete(product.id)"
                     pTooltip="Delete record"
                     tooltipPosition="bottom"
                   />
@@ -656,30 +663,6 @@
         </tr>
       }
     </ng-template>
-    <ng-template pTemplate="paginatorleft">
-      <div class="table__custom-paginator">
-        @if (isLoading()) {
-          <!-- Skeleton Loader -->
-          <div class="flex justify-center items-center gap-1 p-2">
-            <p-skeleton
-              class="hideOnMobile"
-              width="2rem"
-              height="2rem"
-            ></p-skeleton>
-            <p-skeleton width="2rem" height="2rem"></p-skeleton>
-            <p-skeleton width="2rem" height="2rem" shape="circle"></p-skeleton>
-            <p-skeleton width="2rem" height="2rem" shape="circle"></p-skeleton>
-            <p-skeleton width="2rem" height="2rem"></p-skeleton>
-            <p-skeleton
-              class="hideOnMobile"
-              width="2rem"
-              height="2rem"
-            ></p-skeleton>
-          </div>
-        }
-      </div>
-    </ng-template>
-    <ng-template pTemplate="paginatorright"></ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
         <td [attr.colspan]="(columnsData()?.columns?.length || 0) + 2">

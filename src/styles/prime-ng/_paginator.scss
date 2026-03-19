@@ -1,5 +1,96 @@
-.p-paginator-page.p-paginator-page-selected,
-.p-select-option.p-select-option-selected.p-focus,
-.p-select-option.p-select-option-selected {
-  background: var(--primary-color) !important;
+.p-paginator {
+  background: white !important;
+  border-radius: 12px !important;
+  padding: 0.75rem 1rem !important;
+  border-top: 1px solid #f1f5f9 !important;
+  gap: 0.25rem !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+
+  > * {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    flex-grow: 0 !important;
+  }
+
+  .p-paginator-pages {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 !important;
+  }
+
+  .p-paginator-page,
+  .p-paginator-next,
+  .p-paginator-last,
+  .p-paginator-first,
+  .p-paginator-prev,
+  .p-link,
+  .p-element {
+    min-width: 2.25rem !important;
+    height: 2.25rem !important;
+    border-radius: 8px !important;
+    margin: 0 2px !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #f8fafc !important; // Subtle background for all buttons
+    color: #1565c0 !important; // Primary blue text
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    &:hover:not(.p-disabled):not(.p-highlight) {
+      background: rgba(21, 101, 192, 0.15) !important;
+      color: #1565c0 !important;
+      border-color: #1565c0 !important;
+    }
+
+    &.p-highlight,
+    &.p-paginator-page-selected {
+      background: #1565c0 !important; // Solid primary blue background
+      color: #ffffff !important;
+      border-color: #1565c0 !important;
+      font-weight: 700 !important;
+      box-shadow: 0 4px 12px rgba(21, 101, 192, 0.3) !important;
+    }
+    
+    &.p-disabled {
+      opacity: 0.5 !important;
+      background: #f1f5f9 !important;
+      color: #94a3b8 !important;
+      border-color: #e2e8f0 !important;
+      cursor: not-allowed !important;
+    }
+  }
+
+  .p-paginator-current {
+    font-size: 0.75rem !important;
+    color: #64748b !important;
+    font-weight: 500 !important;
+  }
+}
+
+// Global styles for PrimeNG select/dropdown panels (e.g., page size dropdown)
+.p-select-overlay, 
+.p-dropdown-panel {
+  .p-select-option, 
+  .p-dropdown-item {
+    &.p-highlight, 
+    &.p-select-option-selected {
+      background: #1565c0 !important;
+      color: #ffffff !important;
+    }
+  }
+}
+
+// Ensure the table-specific paginator container is also centered
+.p-datatable-paginator-bottom,
+.p-datatable-paginator-top {
+  display: flex !important;
+  justify-content: center !important;
+  background: white !important;
+  border: none !important;
 }

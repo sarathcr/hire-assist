@@ -293,7 +293,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const invalidCandidates = this.selectedCandidates.filter(
       (candidate: InterviewSummary) => {
         const status = candidate.status?.toLowerCase().trim();
-        const validStatuses = ['completed', 'selected', 'rejected'];
+        const validStatuses = ['completed', 'selected'];
 
         if (this.isAptitudeRound()) {
           return !validStatuses.includes(status) && status !== 'terminated';
@@ -307,8 +307,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         severity: 'warn',
         summary: 'Warning',
         detail: this.isAptitudeRound()
-          ? 'Only candidates with "Completed", "Selected", "Rejected" or "Terminated" status can be processed.'
-          : 'Only candidates with "Completed", "Selected" or "Rejected" status can be processed.',
+          ? 'Only candidates with "Completed", "Selected" or "Terminated" status can be processed.'
+          : 'Only candidates with "Completed" or "Selected" status can be processed.',
       });
       return;
     }
@@ -374,7 +374,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       (candidate: InterviewSummary) => {
         const status = candidate.status?.toLowerCase().trim();
         return (
-          status !== 'completed' && status !== 'selected' && status !== 'rejected'
+          status !== 'completed' && status !== 'rejected'
         );
       },
     );
@@ -384,7 +384,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         severity: 'warn',
         summary: 'Warning',
         detail:
-          'Only candidates with "Completed", "Selected" or "Rejected" status can be processed.',
+          'Only candidates with "Completed" or "Rejected" status can be processed.',
       });
       return;
     }
@@ -455,7 +455,6 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       const status = candidate.status.toLowerCase().trim();
       const hasValidStatus =
         status === 'completed' ||
-        status === 'selected' ||
         status === 'rejected';
       const isNotScheduled = !candidate.isScheduled; 
 
@@ -484,10 +483,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           'completed',
           'terminated',
           'selected',
-          'rejected',
         ].includes(status);
       } else {
-        hasValidStatus = ['completed', 'selected', 'rejected'].includes(status);
+        hasValidStatus = ['completed', 'selected'].includes(status);
       }
 
       return hasValidStatus && isNotScheduled;
