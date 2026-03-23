@@ -1511,6 +1511,15 @@ $white: #ffffff;
         border: 1.5px solid $slate-200;
         border-radius: 12px 12px 0 0;
         padding: 8px 12px;
+
+        // Provide enough width for the dropdown so text doesn't overlap the SVG arrow
+        .ql-picker.ql-header {
+          width: 140px !important;
+          
+          .ql-picker-label {
+            padding-right: 24px !important;
+          }
+        }
       }
 
       .p-editor-content {
