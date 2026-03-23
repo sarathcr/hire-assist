@@ -724,8 +724,13 @@ export class InterviewerFeedbackComponent
   public validateScore(feedback: AccordionData) {
     feedback.isScoreInValid =
       feedback.score != null &&
-      feedback.maxScore != null &&
-      feedback.score > feedback.maxScore;
+      (feedback.score < 0 || (feedback.maxScore != null && feedback.score > feedback.maxScore));
+  }
+
+  public preventInvalidInput(event: KeyboardEvent): void {
+    if (['e', 'E', '+', '-'].includes(event.key)) {
+      event.preventDefault();
+    }
   }
   public onsave(feedback: AccordionData): void {
     // If this is attachments section and there are pending files, upload them first
@@ -895,6 +900,9 @@ export class InterviewerFeedbackComponent
           ? this.uploadedFile
           : [],
     };
+    
+    this.calculateTotalFeedbackScore();
+    
     feedback.isSaved = true; // Ensure it stays true during edit to prevent button flicker
     const next = () => {
       this.messageService.add({
@@ -931,6 +939,10 @@ export class InterviewerFeedbackComponent
   }
 
   public hasChanges(feedback: AccordionData): boolean {
+    if (feedback.isScoreInValid) {
+      return false;
+    }
+
     // For attachments, we rely on duplicate checks in file upload, so button enabled if there are pending files
     if (feedback.title === 'Attachments') {
       return this.pendingFiles.length > 0;

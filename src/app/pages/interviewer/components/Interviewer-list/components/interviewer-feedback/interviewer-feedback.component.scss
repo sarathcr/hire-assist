@@ -43,21 +43,7 @@ $white: #ffffff;
   }
 }
 
-@keyframes orbFloat {
 
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  33% {
-    transform: translate(30px, -20px) scale(1.05);
-  }
-
-  66% {
-    transform: translate(-20px, 15px) scale(0.97);
-  }
-}
 
 @keyframes successPop {
   0% {
@@ -165,148 +151,99 @@ $white: #ffffff;
   }
 
   // ════════════════════════════════════════════════════
-  //  HERO HEADER
+  //  PAGE HEADER
   // ════════════════════════════════════════════════════
-  &__hero {
-    position: relative;
-    border-radius: 20px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #1565C0 0%, #1976D2 50%, #2196F3 100%);
-    box-shadow: 0 6px 20px rgba($indigo-500, 0.22);
-    animation: fadeSlideUp 0.4s ease both;
-  }
-
-  &__hero-bg {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  &__hero-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.3;
-    animation: orbFloat 12s ease-in-out infinite;
-
-    &--1 {
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, #7dd3fc, transparent);
-      top: -100px;
-      right: -50px;
-      animation-delay: 0s;
-    }
-
-    &--2 {
-      width: 300px;
-      height: 300px;
-      background: radial-gradient(circle, #90CAF9, transparent); // Material Blue 200
-      bottom: -80px;
-      left: 10%;
-      animation-delay: -4s;
-    }
-
-    &--3 {
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, #6ee7f7, transparent);
-      top: 20%;
-      left: 40%;
-      animation-delay: -8s;
-    }
-  }
-
-  &__hero-content {
-    position: relative;
-    z-index: 2;
+  &__page-header {
+    background: $white;
+    border-radius: 12px;
+    border: 1px solid $slate-200;
+    box-shadow: 0 1px 3px rgba($slate-900, 0.05);
+    padding: 24px 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 32px 40px;
     gap: 24px;
-  }
-
-  &__hero-left {
-    display: flex;
-    align-items: center;
-    gap: 24px;
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__hero-icon {
-    width: 72px;
-    height: 72px;
-    flex-shrink: 0;
-    background: rgba($white, 0.15);
-    border: 1.5px solid rgba($white, 0.35);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba($white, 0.2);
-
-    i {
-      font-size: 34px;
-      color: $white;
+    animation: fadeSlideUp 0.4s ease both;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 20px;
     }
   }
 
-  &__hero-text {
+  &__page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
     flex: 1;
     min-width: 0;
   }
 
-  &__hero-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: rgba($white, 0.7);
-    margin-bottom: 6px;
+  &__page-header-icon {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    background: rgba($indigo-500, 0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+      font-size: 24px;
+      color: $indigo-500;
+    }
   }
 
-  &__hero-title {
-    margin: 0 0 10px 0;
-    font-size: clamp(22px, 3vw, 32px);
-    font-weight: 800;
-    color: $white;
-    letter-spacing: -0.5px;
+  &__page-header-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__page-header-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: $slate-400;
+  }
+
+  &__page-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: $slate-800;
     line-height: 1.2;
     word-break: break-word;
   }
 
-  &__hero-round {
+  &__page-round {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    background: rgba($white, 0.15);
-    border: 1px solid rgba($white, 0.25);
-    border-radius: 30px;
+    gap: 6px;
     font-size: 13px;
-    font-weight: 600;
-    color: rgba($white, 0.95);
-    backdrop-filter: blur(8px);
+    font-weight: 500;
+    color: $slate-500;
 
     i {
       font-size: 13px;
     }
   }
 
-  &__hero-right {
+  &__page-header-right {
     flex-shrink: 0;
   }
 
-  &__hero-status {
+  &__page-status {
     ::ng-deep .p-tag {
       font-size: 12px;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: 20px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 6px;
     }
   }
 
@@ -328,10 +265,10 @@ $white: #ffffff;
 
   &__candidate-card {
     background: $white;
-    border-radius: 18px;
+    border-radius: 12px;
     border: 1px solid $slate-200;
-    box-shadow: 0 4px 20px rgba($slate-900, 0.06);
-    padding: 28px;
+    box-shadow: 0 1px 3px rgba($slate-900, 0.05);
+    padding: 24px;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -443,10 +380,10 @@ $white: #ffffff;
   // ── Score Card ─────────────────────────────────────
   &__score-card {
     background: $white;
-    border-radius: 18px;
+    border-radius: 12px;
     border: 1px solid $slate-200;
-    box-shadow: 0 4px 20px rgba($slate-900, 0.06);
-    padding: 28px 32px;
+    box-shadow: 0 1px 3px rgba($slate-900, 0.05);
+    padding: 24px 32px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -497,10 +434,10 @@ $white: #ffffff;
   // ════════════════════════════════════════════════════
   &__card {
     background: $white;
-    border-radius: 18px;
+    border-radius: 12px;
     border: 1px solid $slate-200;
-    box-shadow: 0 4px 20px rgba($slate-900, 0.06);
-    padding: 28px 32px;
+    box-shadow: 0 1px 3px rgba($slate-900, 0.05);
+    padding: 24px 32px;
     transition: box-shadow 0.25s ease;
 
     &:hover {
@@ -610,45 +547,23 @@ $white: #ffffff;
       }
 
       .p-accordionheader {
-        border-radius: 14px;
+        border-radius: 12px;
         padding: 0 20px 0 0;
-        border: none !important; // no borders anywhere
+        border: 1px solid $slate-200 !important;
         background: $white;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
+        transition: all 0.2s ease;
         position: relative;
-        box-shadow: 0 2px 10px rgba($slate-900, 0.08);
-
-        &::before {
-          content: '';
-          position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
-          width: 4px;
-          background: linear-gradient(180deg, $indigo-500, #7c3aed);
-          opacity: 0;
-          transition: opacity 0.25s ease;
-          border-radius: 4px 0 0 4px;
-        }
+        box-shadow: 0 1px 2px rgba($slate-900, 0.02);
 
         &:hover {
           background: $slate-50;
-          transform: translateY(-1px);
-
-          &::before {
-            opacity: 1;
-          }
+          border-color: $slate-300 !important;
         }
 
         &[aria-expanded='true'] {
-          background: $white;
-          border-radius: 14px 14px 0 0;
-          box-shadow: 0 4px 20px rgba($indigo-500, 0.14);
-
-          &::before {
-            opacity: 1;
-          }
+          background: $slate-50;
+          border-radius: 12px 12px 0 0;
+          border-bottom-color: transparent !important;
         }
 
         // Button wrapping content + chevron
@@ -682,9 +597,9 @@ $white: #ffffff;
       .p-accordion-content {
         padding: 0;
         background: $white;
-        border-radius: 0 0 14px 14px;
-        border: none !important; // no borders
-        box-shadow: 0 6px 16px rgba($slate-900, 0.07);
+        border-radius: 0 0 12px 12px;
+        border: 1px solid $slate-200 !important;
+        border-top: none !important;
 
         .p-accordion-content-container {
           padding: 0;
@@ -699,28 +614,16 @@ $white: #ffffff;
     }
   }
 
-  // Saved panel override (green theme) — no borders, tint + shadow only
+  // Saved panel override
   &-saved-panel {
     ::ng-deep {
       .p-accordionheader {
-        background: rgba($green-500, 0.06) !important;
-
-        &::before {
-          background: linear-gradient(180deg, $green-500, #059669) !important;
-          opacity: 1 !important;
-        }
+        border-left: 3px solid $green-500 !important;
+        background: rgba($green-500, 0.02) !important;
 
         &:hover {
-          background: rgba($green-500, 0.1) !important;
+          background: rgba($green-500, 0.05) !important;
         }
-
-        &[aria-expanded='true'] {
-          box-shadow: 0 4px 20px rgba($green-500, 0.15) !important;
-        }
-      }
-
-      .p-accordion-content {
-        box-shadow: 0 6px 16px rgba($green-500, 0.07) !important;
       }
     }
   }
@@ -1525,49 +1428,17 @@ $white: #ffffff;
   // ════════════════════════════════════════════════════
   &__success-banner {
     position: relative;
-    border-radius: 20px;
+    border-radius: 12px;
     overflow: hidden;
-    background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
-    box-shadow: 0 12px 40px rgba($green-500, 0.35);
-    padding: 40px;
-  }
-
-  &__success-orbs {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  &__success-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(50px);
-    opacity: 0.25;
-
-    &--1 {
-      width: 350px;
-      height: 350px;
-      background: radial-gradient(circle, #6ee7b7, transparent);
-      top: -80px;
-      right: -80px;
-    }
-
-    &--2 {
-      width: 250px;
-      height: 250px;
-      background: radial-gradient(circle, #a7f3d0, transparent);
-      bottom: -60px;
-      left: 5%;
-    }
+    background: rgba($green-500, 0.05);
+    border: 1px solid rgba($green-500, 0.2);
+    padding: 24px 32px;
   }
 
   &__success-content {
-    position: relative;
-    z-index: 2;
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 20px;
     flex-wrap: wrap;
   }
 
@@ -1575,18 +1446,16 @@ $white: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: rgba($white, 0.2);
-    border: 2px solid rgba($white, 0.4);
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba($green-500, 0.1);
     flex-shrink: 0;
-    animation: successPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   }
 
   &__success-icon {
-    font-size: 44px;
-    color: $white;
+    font-size: 24px;
+    color: $green-500;
   }
 
   &__success-text {
@@ -1595,19 +1464,17 @@ $white: #ffffff;
   }
 
   &__success-title {
-    margin: 0 0 8px 0;
-    font-size: 24px;
-    font-weight: 800;
-    color: $white;
-    letter-spacing: -0.3px;
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: $slate-800;
   }
 
   &__success-message {
     margin: 0;
-    font-size: 15px;
-    color: rgba($white, 0.9);
-    font-weight: 400;
-    line-height: 1.5;
+    font-size: 14px;
+    color: $slate-600;
+    line-height: 1.4;
   }
 
   // ════════════════════════════════════════════════════
@@ -1664,6 +1531,81 @@ $white: #ffffff;
           line-height: 1.65;
           color: $slate-700;
           padding: 16px;
+
+          // Restore text formatting styles suppressed by CSS resets (e.g. Tailwind)
+          strong, b, em, i, u, s, span {
+            display: inline; // Prevent any layout reset from blocking parent text-decorations
+          }
+          strong, b { 
+            font-weight: 700 !important; 
+            font-style: inherit; 
+          }
+          em, i { 
+            font-style: italic !important; 
+            font-weight: inherit; 
+          }
+          u { 
+            text-decoration: underline !important; 
+            font-style: inherit; 
+            font-weight: inherit; 
+          }
+          s { 
+            text-decoration: line-through !important; 
+            font-style: inherit; 
+            font-weight: inherit; 
+          }
+
+          // Restore Code Blocks (Tailwind strips grey backgrounds and padding)
+          pre, .ql-code-block-container {
+            background-color: $slate-100 !important;
+            color: $slate-800 !important;
+            padding: 0.75rem !important;
+            border-radius: 0.375rem !important;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+            white-space: pre-wrap !important;
+            margin-bottom: 0.5rem !important;
+            
+            .ql-code-block {
+              font-family: inherit !important;
+            }
+          }
+          
+          // Tailwind completely breaks Quill's complex pseudo-element bullet rendering.
+          // Instead, we will forcefully kill Quill's fake ::before bullets 
+          // and use pure native browser bullets tied to Quill's data attributes.
+          ul, ol {
+            padding-left: 1.5rem !important;
+            margin-bottom: 0.5rem !important;
+          }
+          
+          li {
+            display: list-item !important; // Bring back native list rendering
+            padding-left: 0.25rem !important; // Override Quill's 1.5em default gap
+            margin-bottom: 0.25rem !important;
+            
+            &::before {
+              display: none !important; // Kill Quill's fake bullets
+              content: none !important;
+            }
+          }
+          
+          ul, ul li, li[data-list="bullet"] {
+            list-style-type: disc !important;
+          }
+          
+          ol, ol li, li[data-list="ordered"], li[data-list="1"] {
+            list-style-type: decimal !important;
+          }
+          
+          ol > li[data-list="bullet"] {
+            list-style-type: disc !important; // Safety override for Quill nesting bullets inside <ol>
+          }
+
+          h1, h2, h3, h4, h5, h6 { font-weight: 700 !important; margin-bottom: 0.5rem; color: $slate-900; }
+          h1 { font-size: 2em; }
+          h2 { font-size: 1.5em; }
+          h3 { font-size: 1.17em; }
+          p { margin-bottom: 0.5rem; }
 
           &.ql-blank::before {
             color: $slate-300;

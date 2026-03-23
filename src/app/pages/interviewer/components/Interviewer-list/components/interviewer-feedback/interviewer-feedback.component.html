@@ -29,37 +29,30 @@
   <div class="ifb">
 
     <!-- ═══════════════════════════════════
-         HERO HEADER CARD
+         PAGE HEADER
     ═══════════════════════════════════ -->
-    <div class="ifb__hero">
-      <div class="ifb__hero-bg">
-        <div class="ifb__hero-orb ifb__hero-orb--1"></div>
-        <div class="ifb__hero-orb ifb__hero-orb--2"></div>
-        <div class="ifb__hero-orb ifb__hero-orb--3"></div>
+    <div class="ifb__page-header">
+      <div class="ifb__page-header-left">
+        <div class="ifb__page-header-icon">
+          <i class="pi pi-briefcase"></i>
+        </div>
+        <div class="ifb__page-header-text">
+          <div class="ifb__page-header-label">Interview Session</div>
+          <h1 class="ifb__page-title">{{ responseData.assessmentName }}</h1>
+          <div class="ifb__page-round">
+            <i class="pi pi-tags"></i>
+            <span>{{ responseData.roundName }}</span>
+          </div>
+        </div>
       </div>
-      <div class="ifb__hero-content">
-        <div class="ifb__hero-left">
-          <div class="ifb__hero-icon">
-            <i class="pi pi-video"></i>
-          </div>
-          <div class="ifb__hero-text">
-            <div class="ifb__hero-label">Interview Session</div>
-            <h1 class="ifb__hero-title">{{ responseData.assessmentName }}</h1>
-            <div class="ifb__hero-round">
-              <i class="pi pi-layers"></i>
-              <span>{{ responseData.roundName }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="ifb__hero-right">
-          @if (responseData.statusId) {
-            <p-tag
-              [value]="getStatusText(responseData.statusId)"
-              [severity]="getStatusSeverity(responseData.statusId)"
-              class="ifb__hero-status"
-            />
-          }
-        </div>
+      <div class="ifb__page-header-right">
+        @if (responseData.statusId) {
+          <p-tag
+            [value]="getStatusText(responseData.statusId)"
+            [severity]="getStatusSeverity(responseData.statusId)"
+            class="ifb__page-status"
+          />
+        }
       </div>
     </div>
 
@@ -501,6 +494,7 @@
                         [(ngModel)]="feedback.score"
                         class="ifb__score-input"
                         (ngModelChange)="validateScore(feedback)"
+                        (keydown)="preventInvalidInput($event)"
                         [pTooltip]="'Max score is ' + feedback.maxScore"
                         [tooltipPosition]="'bottom'"
                         [max]="feedback.maxScore"
@@ -577,10 +571,6 @@
     ═══════════════════════════════════ -->
     @if (isSubmitted) {
       <div class="ifb__success-banner anim-slide-up">
-        <div class="ifb__success-orbs">
-          <div class="ifb__success-orb ifb__success-orb--1"></div>
-          <div class="ifb__success-orb ifb__success-orb--2"></div>
-        </div>
         <div class="ifb__success-content">
           <div class="ifb__success-icon-wrap">
             <i class="pi pi-check-circle ifb__success-icon"></i>
