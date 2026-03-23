@@ -737,27 +737,6 @@ export class CoordinatorAssignmentComponent implements OnInit {
     return this.completedSteps.includes(step - 1);
   }
 
-  public getProgressPercentage(): number {
-    const totalSteps = this.stepConfig.length;
-    // Count steps that are completed (in completedSteps array)
-    // Note: completedSteps includes 0 initially, so logic might need adjustment depending on how we want to show 0%
-    // If we want "Select Candidate" to be 0% complete until selected, we check logic.
-    // Let's assume progress based on completed steps count / total steps
-    // But we want visual progress.
-    // If active step is 0, progress 0%. If active 1, progress 33%.
-    // Matches assessment-view logic:
-    const stepsCompletedCount = this.completedSteps.filter(s => s < this.stepConfig.length).length;
-    // However, assessment-view used API status keys. Here we use local state.
-    // Let's base it on active step index for linear progression visualization or completed count.
-    // assessment-view: Math.round((completedSteps / totalSteps) * 100);
-    
-    // Adjust for our 0-based index and simple linear flow
-    // If we completed step 0 (selected candidate), we have 1/3 done?
-    // Let's use logic: (activeStep / (totalSteps -1)) * 100 ??
-    // Or just strictly based on completed steps.
-    return Math.round((this.completedSteps.length / totalSteps) * 100); 
-  }
-
   public isStepEnabled(stepIndex: number): boolean {
       return this.canActivateStep(stepIndex);
   }
