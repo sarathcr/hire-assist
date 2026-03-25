@@ -605,7 +605,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
     const payloaddata: InterviewPanelsResponse = {
       assessmentId: this.assessmentId,
       interviewId: Number(payload.interviewId),
-      panel: this.selectedPanelIds[0].panelName,
+      panelId: Number(payload.panelId),
       interviewer: payload.interviewers,
     };
     this.interviewService.updateinterviewpanel(payloaddata).subscribe({

@@ -19,7 +19,8 @@ export interface GetInterviewPanelsResponse {
 }
 
 export interface InterviewPanelsResponse {
-  panel: string;
+  panel?: string;
+  panelId?: number;
   assessmentId: number;
   interviewId: number;
   interviewer: string[];
