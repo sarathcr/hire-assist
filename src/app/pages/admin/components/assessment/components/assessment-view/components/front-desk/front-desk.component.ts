@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, input, NgZone, OnInit } from '@angular/core';
+import { Component, effect, input, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -51,6 +51,7 @@ export class FrontDeskComponent implements OnInit {
   public hasCoordinatorChanges = false;
 
   public assessmentId = input<number>();
+  public isReadOnly = input<boolean>(false);
 
   constructor(
     private storeService: StoreService,
@@ -61,6 +62,13 @@ export class FrontDeskComponent implements OnInit {
   ) {
     this.fGroup = buildFormGroup(this.assessmentSchedule);
     this.frontDesk = [];
+    effect(() => {
+      if (this.isReadOnly()) {
+        this.fGroup.disable({ emitEvent: false });
+      } else {
+        this.fGroup.enable({ emitEvent: false });
+      }
+    });
   }
   ngOnInit(): void {
     this.loadCollections();

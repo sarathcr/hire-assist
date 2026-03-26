@@ -1,15 +1,16 @@
 import {
+  AfterViewChecked,
+  AfterViewInit,
+  ChangeDetectorRef,
   Component,
+  effect,
+  ElementRef,
   EventEmitter,
-  input,
   OnDestroy,
   OnInit,
   Output,
   ViewChild,
-  ElementRef,
-  AfterViewInit,
-  AfterViewChecked,
-  ChangeDetectorRef,
+  input,
 } from '@angular/core';
 import Sortable from 'sortablejs';
 import {
@@ -82,6 +83,7 @@ export class AssessmentRoundComponent
   public roundConfigForms = new FormArray<FormGroup>([]);
 
   public assessmentId = input<number>();
+  public isReadOnly = input<boolean>(false);
   private dialogRef: DynamicDialogRef | undefined;
   private assessmentRoundSubscription?: Subscription;
   private isDataLoaded = false;
@@ -99,6 +101,15 @@ export class AssessmentRoundComponent
     private readonly stepsStatusService: StepsStatusService,
   ) {
     this.fGroup = buildFormGroup(this.assessmentSchedule);
+    effect(() => {
+      if (this.isReadOnly()) {
+        this.fGroup.disable({ emitEvent: false });
+        this.roundConfigForms.disable({ emitEvent: false });
+      } else {
+        this.fGroup.enable({ emitEvent: false });
+        this.roundConfigForms.enable({ emitEvent: false });
+      }
+    });
   }
   ngOnInit(): void {
     this.loadCollections();
@@ -197,6 +208,11 @@ export class AssessmentRoundComponent
   private initSortable(): void {
     this.destroySortable();
 
+    // Never allow drag-to-reorder when in read-only mode
+    if (this.isReadOnly()) {
+      return;
+    }
+
     if (this.submittedData.length === 0 || this.isLoading) {
       return;
     }
@@ -267,6 +283,10 @@ export class AssessmentRoundComponent
             this.submittedData.splice(evt.oldIndex, 1);
             this.submittedData.splice(evt.newIndex, 0, movedItem);
             this.submittedData = [...this.submittedData];
+
+            const movedControl = this.roundConfigForms.at(evt.oldIndex);
+            this.roundConfigForms.removeAt(evt.oldIndex);
+            this.roundConfigForms.insert(evt.newIndex, movedControl);
           }
         },
       });
@@ -429,6 +449,11 @@ export class AssessmentRoundComponent
       });
 
       this.roundConfigForms.push(group);
+    }
+
+    // Disable ALL config form controls if in read-only mode
+    if (this.isReadOnly()) {
+      this.roundConfigForms.disable({ emitEvent: false });
     }
   }
 
@@ -642,9 +667,11 @@ export class AssessmentRoundComponent
               maxTerminationCount: item.maxTerminationCount || 0,
             };
           });
-          this.fGroup.patchValue({
-            round: this.submittedData.map((item) => item.id),
-          });
+          this.fGroup.patchValue(
+            { round: this.submittedData.map((item) => item.id) },
+            { emitEvent: false },
+          );
+          this.buildRoundConfigForms();
           this.assessmentRoundSubscription = undefined;
           this.roundsUpdated.emit(this.submittedData.length);
           this.cdr.detectChanges();

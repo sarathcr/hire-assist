@@ -1,11 +1,11 @@
 import {
   Component,
-  input,
   Input,
   OnChanges,
   OnDestroy,
   OnInit,
   SimpleChanges,
+  input,
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -56,12 +56,24 @@ export class InputMultiselectComponent
     this.inputTextConfig = this.config as CustomSelectConfig;
     this.options = (this.config as CustomSelectConfig).options || [];
     this.formControl = this.formGroup.get(this.config.id) as FormControl;
+    // Apply disabled state immediately on first render
+    if (this.disabled) {
+      this.formControl?.disable({ emitEvent: false });
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['config']?.currentValue) {
       this.options = changes['config'].currentValue.options;
       this.formControl = this.formGroup.get(this.config.id) as FormControl;
+    }
+    // React to disabled input changes
+    if (changes['disabled'] !== undefined) {
+      if (this.disabled) {
+        this.formControl?.disable({ emitEvent: false });
+      } else {
+        this.formControl?.enable({ emitEvent: false });
+      }
     }
   }
 

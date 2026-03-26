@@ -37,6 +37,7 @@
                 [formGroup]="fGroup"
                 [config]="configMap['users']"
                 [selectedItems]=""
+                [disabled]="isReadOnly()"
               />
             </div>
 
@@ -80,7 +81,7 @@
         <app-button
           [icon]="'pi pi-check'"
           [buttonLabel]="'Save Assignment'"
-          [disabled]="!fGroup.valid || !hasCoordinatorChanges"
+          [disabled]="isReadOnly() || !fGroup.valid || !hasCoordinatorChanges"
           (btnClick)="onSubmit()"
           class="frontdesk__submit-btn"
         ></app-button>

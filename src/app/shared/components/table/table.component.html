@@ -74,7 +74,7 @@
       <tr>
         @if (hasCheckbox) {
           <th scope="col" class="table__headerCheckbox">
-            <p-tableHeaderCheckbox />
+            <p-tableHeaderCheckbox [disabled]="selectionDisabled()" />
           </th>
         }
         @if (columnsData()?.hasExpanded) {
@@ -280,7 +280,7 @@
           <td>
             <p-tableCheckbox
               [value]="product"
-              [disabled]="product.isSelf || product.isDisabled"
+              [disabled]="product.isSelf || product.isDisabled || selectionDisabled()"
             ></p-tableCheckbox>
           </td>
         }

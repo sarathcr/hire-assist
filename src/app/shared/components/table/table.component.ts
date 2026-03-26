@@ -126,6 +126,7 @@ export class TableComponent<
   public hasRowEdit = input<boolean>(true);
   public alreadySelected = input<string[]>([]);
   public clearSelectionIds = input<string[] | null>(null);
+  public selectionDisabled = input<boolean>(false);
   public selectedItems: { id: string }[] = [];
   private readonly persistedSelectedIds = new Set<string>();
   public expandedRows: Record<string, boolean> = {};
@@ -655,6 +656,14 @@ export class TableComponent<
   }
 
   public onSelectionChange(newSelection: { id: string }[]): void {
+    // Block any selection changes when selectionDisabled is true
+    if (this.selectionDisabled()) {
+      // Revert to the currently persisted selection so checkboxes snap back
+      this.selectedItems = (this.tableData()?.data || []).filter((item) =>
+        this.persistedSelectedIds.has(String(item.id)),
+      );
+      return;
+    }
     const currentPageIds = (this.tableData()?.data || []).map((d) =>
       String(d.id),
     );

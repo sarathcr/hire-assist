@@ -1,4 +1,4 @@
-import { Component, input, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, effect, input, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
   FormArray,
@@ -133,6 +133,7 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
   private valueChangesSub?: Subscription;
 
   public assessmentId = input<number>();
+  public isReadOnly = input<boolean>(false);
 
   get assessmentRoundsDetailsFormArray(): FormArray<FormGroup<RoundFormGroup>> {
     return this.fGroup.get('assessmentRoundsDetails') as FormArray<
@@ -153,6 +154,7 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
     this.fGroup = this.fb.group({
       assessmentRoundsDetails: this.fb.array([], [uniqueRoundValidator]),
     });
+    if (this.isReadOnly()) { this.fGroup.disable({ emitEvent: false }); }
     this.getCordinators();
 
     this.valueChangesSub =
@@ -437,3 +439,4 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
     }
   }
 }
+

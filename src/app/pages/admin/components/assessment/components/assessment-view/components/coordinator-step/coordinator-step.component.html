@@ -53,6 +53,7 @@
                     [formGroup]="roundGroup"
                     [config]="assessmentRoundConfigs[$index]"
                     [selectedItems]="[]"
+                    [disabled]="isReadOnly()"
                   />
                 </div>
                 <div
@@ -67,6 +68,7 @@
                     [formGroup]="roundGroup"
                     [config]="configMap['coordinator']"
                     [selectedItems]="[]"
+                    [disabled]="isReadOnly()"
                   />
                 </div>
                 <div class="coordinator__card-actions">
@@ -76,6 +78,7 @@
                     [buttonVariant]="'outlined'"
                     [buttonLabel]="'Remove'"
                     [buttonSeverity]="'danger'"
+                    [disabled]="isReadOnly()"
                     (btnClick)="removeRound($index)"
                     type="button"
                   ></app-button>
@@ -112,6 +115,7 @@
           [icon]="'pi pi-plus'"
           buttonLabel="Assign Coordinator"
           [buttonSize]="'small'"
+          [disabled]="isReadOnly()"
           (btnClick)="addRound()"
           type="button"
           class="coordinator__add-btn"
@@ -121,7 +125,7 @@
           (btnClick)="onSubmit()"
           [icon]="'pi pi-check'"
           [buttonSize]="'small'"
-          [disabled]="fGroup.pristine || fGroup.invalid"
+          [disabled]="isReadOnly() || fGroup.pristine || fGroup.invalid"
           class="coordinator__submit-btn"
         ></app-button>
       </footer>

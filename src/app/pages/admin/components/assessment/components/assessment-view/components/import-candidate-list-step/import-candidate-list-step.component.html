@@ -13,14 +13,14 @@
         </p>
       </div>
       <div class="candidate__header-actions">
-        <app-button
-          class="candidate__schedule-btn"
-          tooltipPosition="top"
-          [buttonLabel]="'Schedule Assessment'"
-          [icon]="'pi pi-calendar-times'"
-          [disabled]="disableScheduleButton"
-          (btnClick)="scheduleAssessment()"
-        ></app-button>
+          <app-button
+            class="candidate__schedule-btn"
+            tooltipPosition="top"
+            [buttonLabel]="'Schedule Assessment'"
+            [icon]="'pi pi-calendar-times'"
+            [disabled]="disableScheduleButton || isReadOnly()"
+            (btnClick)="scheduleAssessment()"
+          ></app-button>
       </div>
     </div>
   </div>
@@ -29,7 +29,7 @@
   <div class="candidate__toolbar">
     <div class="candidate__toolbar-group">
       <p-fileUpload
-        [disabled]="importStatus || isUploading"
+        [disabled]="importStatus || isUploading || isReadOnly()"
         mode="basic"
         accept=".csv"
         [maxFileSize]="1000000"
@@ -43,7 +43,7 @@
       />
       <app-button
         class="candidate__action-btn"
-        [disabled]="newStatus || isLoading"
+        [disabled]="newStatus || isLoading || isReadOnly()"
         [buttonLabel]="'Add New'"
         [icon]="'pi pi-plus'"
         (btnClick)="addNewCandidate()"
@@ -55,14 +55,14 @@
         [buttonLabel]="'Delete Selected'"
         [buttonSeverity]="'danger'"
         [icon]="'pi pi-trash'"
-        [disabled]="!selectedUsers || selectedUsers.length === 0"
+        [disabled]="!selectedUsers || selectedUsers.length === 0 || isReadOnly()"
         (btnClick)="deleteSelectedCandidates()"
       ></app-button>
       <app-button
         class="candidate__action-btn"
         [buttonLabel]="'Add to Batch'"
         [icon]="'pi pi-layer-group'"
-        [disabled]="!selectedUsers || selectedUsers.length === 0"
+        [disabled]="!selectedUsers || selectedUsers.length === 0 || isReadOnly()"
         (btnClick)="createBatchSelectedCandidates()"
       ></app-button>
     </div>
@@ -97,11 +97,12 @@
     <app-table
       class="candidate-table"
       [tableData]="data"
-      [columnsData]="columns"
+      [columnsData]="columns()"
       [hasSearch]="true"
       [parentLoader]="isLoading"
       [alreadySelected]="alreadySelectedCandidates"
       [enableCandidateStyling]="true"
+      [selectionDisabled]="isReadOnly()"
       (delete)="deleteCandidate($event)"
       (selectedIds)="getSelectedItems($event)"
       (pageChangeAndSort)="onTablePayloadChange($event)"

@@ -29,12 +29,14 @@
               [formGroup]="fGroup"
               [config]="configMap['round']"
               [selectedItems]=""
+              [disabled]="isReadOnly()"
             />
             <app-button
               class="assessment-round__create-button"
               [icon]="'pi pi-plus'"
               [buttonLabel]="'Create New'"
               [buttonSize]="'small'"
+              [disabled]="isReadOnly()"
               (btnClick)="openCreateRoundModal()"
             ></app-button>
           </div>
@@ -75,9 +77,10 @@
                   <button
                     type="button"
                     class="assessment-round__remove-button"
-                    (click)="onRemoveRound(data.id); $event.stopPropagation()"
+                    (click)="!isReadOnly() && onRemoveRound(data.id); $event.stopPropagation()"
                     tabindex="0"
                     aria-label="Remove round"
+                    [disabled]="isReadOnly()"
                   >
                     <i class="pi pi-times"></i>
                   </button>
@@ -148,6 +151,7 @@
                           "
                           min="1"
                           placeholder="1"
+                          [attr.disabled]="isReadOnly() ? true : null"
                         />
                         @if (
                           getRoundFormGroup(idx).get("maxTerminationCount")
@@ -178,6 +182,7 @@
                         placeholder="00:00"
                         appendTo="body"
                         styleClass="assessment-round__duration-picker"
+                        [disabled]="isReadOnly()"
                       ></p-datepicker>
                       @if (
                         getRoundFormGroup(idx).get("duration")?.touched &&
@@ -202,7 +207,7 @@
           class="assessment-round__submit-button"
           [buttonLabel]="'Complete Rounds'"
           [isLoading]="isLoading"
-          [disabled]="!submittedData || submittedData.length === 0"
+          [disabled]="isReadOnly() || !submittedData || submittedData.length === 0"
           [buttonSize]="'small'"
           (btnClick)="onSubmitAll()"
         ></app-button>

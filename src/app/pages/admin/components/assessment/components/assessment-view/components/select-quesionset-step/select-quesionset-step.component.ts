@@ -136,6 +136,7 @@ export class SelectQuesionsetStepComponent
   implements OnInit
 {
   public assessmentId = input<number>();
+  public isReadOnly = input<boolean>(false);
 
   public data!: QuestionSetForm;
   public metadata!: Metadata[];

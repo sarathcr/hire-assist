@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, input, OnInit, ViewChild } from '@angular/core';
+import { Component, computed, input, OnInit, ViewChild } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
@@ -101,11 +101,11 @@ export class ImportCandidateListStepComponent implements OnInit {
 
   public url = `${ASSESSMENT_URL}/candidates/all`;
   public data!: PaginatedData<CandidateModel>;
-  public columns: TableColumnsData = tableColumns;
   public fGroup!: FormGroup;
   public duplicateRecords: unknown[] = [];
   public isUploading = false;
   public assessmentId = input<number>();
+  public isReadOnly = input<boolean>(false);
   public selectedUsers: (string | undefined)[] = [];
   public selectedCandidates: CandidateModel[] = [];
   public disableScheduleButton = true;
@@ -117,6 +117,26 @@ export class ImportCandidateListStepComponent implements OnInit {
   public isLoading = false;
   public alreadySelectedCandidates: string[] = [];
   private skipAutoSelection = false;
+
+  public columns = computed(() => {
+    if (this.isReadOnly()) {
+      return {
+        ...tableColumns,
+        columns: tableColumns.columns.map((col) => {
+          if (col.field === 'actions') {
+            return {
+              ...col,
+              actions: col.actions?.filter(
+                (action) => action !== PaginatedDataActions.Delete,
+              ),
+            };
+          }
+          return col;
+        }),
+      };
+    }
+    return tableColumns;
+  });
 
   private batches!: PaginatedData<BatchSummaryModel>;
   private questionSets!: QuestionSetModel[];
@@ -133,7 +153,9 @@ export class ImportCandidateListStepComponent implements OnInit {
     private readonly questionSetStateService: QuestionSetStateService,
     private readonly storeService: StoreService,
     private readonly stepsStatusService: StepsStatusService,
-  ) {}
+  ) {
+    // Inject computed values if needed or handle logic
+  }
   ngOnInit(): void {
     this.setPaginationEndpoint();
     this.getAllCandidates(new PaginatedPayload());

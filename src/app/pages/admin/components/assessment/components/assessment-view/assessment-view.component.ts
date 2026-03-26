@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -17,6 +17,7 @@ import {
   StepStatus,
   StepsStatusService,
 } from '../../services/steps-status.service';
+import { AssessmentScheduleService } from '../../services/assessment-schedule.service';
 import { AssessmentRoundComponent } from './components/assessment-round/assessment-round.component';
 import { CoordinatorStepComponent } from './components/coordinator-step/coordinator-step.component';
 import { FrontDeskComponent } from './components/front-desk/front-desk.component';
@@ -85,6 +86,7 @@ export class AssessmentViewComponent
   public visitedSteps: number[] = [];
   public isdisableCompleted = false;
   public coordinatorData!: CordinatorData;
+  public assessmentRounds: RoundModel[] = [];
   public stepsStatus: StepStatus = {
     rounds: 'Pending',
     questionSets: 'Pending',
@@ -145,6 +147,8 @@ export class AssessmentViewComponent
     private router: Router,
     public dialog: DialogService,
     private stepsStatusService: StepsStatusService,
+    @Inject(AssessmentScheduleService)
+    private assessmentScheduleService: AssessmentScheduleService,
     private messageService: MessageService,
   ) {
     super();
@@ -195,16 +199,20 @@ export class AssessmentViewComponent
   }
 
   public setActiveStep(step: number): void {
-    // If we are currently on the Question Set step and trying to navigate away
+    // Block ANY navigation away from the Question Set step (step 1)
+    // when there are question sets created but not all have been submitted.
     if (this.activeStep === 1 && step !== 1) {
-      if (
-        this.questionSetStepComponent &&
-        !this.questionSetStepComponent.hasSubmittedQuestionSets()
-      ) {
+      const comp = this.questionSetStepComponent;
+      const hasUnsubmittedSets =
+        comp &&
+        comp.questionSets.length > 0 &&
+        !comp.hasSubmittedQuestionSets();
+
+      if (hasUnsubmittedSets) {
         this.messageService.add({
           severity: 'warn',
           summary: 'Warning',
-          detail: 'Please select questions for all created Question Sets before proceeding.',
+          detail: 'Please select questions for all created Question Sets before proceeding to other steps.',
         });
         return; // Prevent navigation
       }
@@ -276,6 +284,7 @@ export class AssessmentViewComponent
           next: (response) => {
             this.stepsStatus = response;
             this.stepsLoaded = true;
+            this.loadAssessmentRounds();
             // Set active step based on API response
             this.setActiveStepFromStatus();
           },
@@ -316,6 +325,21 @@ export class AssessmentViewComponent
     }
   }
 
+  public loadAssessmentRounds(): void {
+    if (this.assessmentId) {
+      this.assessmentScheduleService
+        .GetAssessmentRound(this.assessmentId)
+        .subscribe({
+          next: (response: RoundModel[]) => {
+            this.assessmentRounds = response;
+          },
+          error: () => {
+            // Error handling
+          },
+        });
+    }
+  }
+
   public moveToNextStep(): void {
     if (this.assessmentId) {
       // Reload step status to get updated status
@@ -324,6 +348,7 @@ export class AssessmentViewComponent
         .subscribe({
           next: (response) => {
             this.stepsStatus = response;
+            this.loadAssessmentRounds();
             // Find the next active step
             this.setActiveStepFromStatus();
           },
@@ -385,6 +410,20 @@ export class AssessmentViewComponent
     }
 
     return null;
+  }
+
+  public get isSchedulingConfigReadOnly(): boolean {
+    return this.stepsLoaded && this.stepsStatus?.schedule === 'Completed';
+  }
+
+  public get isCandidateSchedulingReadOnly(): boolean {
+    const areAllRoundsFinished =
+      this.assessmentRounds.length > 0 &&
+      this.assessmentRounds.every(
+        (r) => r.status?.toLowerCase() === 'completed',
+      );
+
+    return this.isSchedulingConfigReadOnly && areAllRoundsFinished;
   }
 
   public getProgressPercentage(): number {
