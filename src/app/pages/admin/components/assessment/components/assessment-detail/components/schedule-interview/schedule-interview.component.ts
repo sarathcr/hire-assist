@@ -39,6 +39,8 @@ export class ScheduleInterviewComponent
   public isLoading = false;
   public isLoadingPanelData = false;
   public isPanelValidationError = false;
+  public minDate!: Date;
+  public maxDate!: Date;
   public onSubmitCallback?: (formValue: { scheduleDate: Date }) => void;
   public setComponentInstance?: (instance: ScheduleInterviewComponent) => void;
 
@@ -58,6 +60,21 @@ export class ScheduleInterviewComponent
     this.onSubmitCallback = this.config.data?.onSubmit;
     this.setComponentInstance = this.config.data?.setComponentInstance;
     this.isLoadingPanelData = this.config.data?.isLoadingPanelData || false;
+
+    // Set min and max dates from recruitment range
+    if (this.config.data?.startDateTime) {
+      this.minDate = new Date(this.config.data.startDateTime);
+    }
+    if (this.config.data?.endDateTime) {
+      this.maxDate = new Date(this.config.data.endDateTime);
+    }
+
+    // Ensure minDate is at least today for scheduling
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (!this.minDate || this.minDate < today) {
+      this.minDate = today;
+    }
 
     if (this.setComponentInstance) {
       this.setComponentInstance(this);
@@ -139,9 +156,15 @@ export class ScheduleInterviewComponent
         dateControl.setErrors({ required: true });
       } else {
         const dateTime = new Date(dateValue);
-        if (!isValidStartDate(dateTime)) {
+        dateTime.setHours(0, 0, 0, 0);
+
+        if (this.minDate && dateTime < this.minDate) {
           dateControl.setErrors({
-            errorMessage: 'Schedule Date must be today or later.',
+            errorMessage: `Schedule Date must be on or after ${this.minDate.toLocaleDateString()}.`,
+          });
+        } else if (this.maxDate && dateTime > this.maxDate) {
+          dateControl.setErrors({
+            errorMessage: `Schedule Date must be on or before ${this.maxDate.toLocaleDateString()}.`,
           });
         }
       }

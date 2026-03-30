@@ -13,7 +13,6 @@ import {
 
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ToastModule } from 'primeng/toast';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogComponent } from '../../../../../../../../shared/components/dialog/dialog.component';
@@ -102,7 +101,6 @@ export const uniquePanelValidator: ValidatorFn = (
     InputMultiselectComponent,
     InputSelectComponent,
     ButtonComponent,
-    ToastModule,
     AssignPanelInterviewerSkeletonComponent,
   ],
   templateUrl: './assign-panel-interviewer.component.html',

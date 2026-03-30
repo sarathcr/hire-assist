@@ -2,7 +2,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Toast } from 'primeng/toast';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
@@ -65,7 +64,7 @@ const tableColumns: TableColumnsData = {
 };
 @Component({
   selector: 'app-roles-access',
-  imports: [TableComponent, Toast, ButtonComponent],
+  imports: [TableComponent, ButtonComponent],
   providers: [TableDataSourceService],
   templateUrl: './roles-access.component.html',
   styleUrl: './roles-access.component.scss',

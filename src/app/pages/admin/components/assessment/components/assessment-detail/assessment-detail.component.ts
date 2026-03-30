@@ -144,7 +144,6 @@ export interface AssesmentRoundResponse {
     MenuModule,
     TableComponent,
     ButtonComponent,
-    Toast,
     NgClass,
     TooltipModule,
   ],
@@ -188,9 +187,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private interviewService: InterviewService,
     private dataSourceService: TableDataSourceService<InterviewSummary>,
-    private messagesService: MessageService,
     public dialog: DialogService,
-    public interviewservice: InterviewService,
     private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
     private readonly cdr: ChangeDetectorRef,
     private readonly candidateService: CandidateService,
@@ -218,13 +215,18 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     // Keep the flat ID list in sync so [alreadySelected] binding preserves
     // checkbox state across pagination page changes.
     this.selectedCandidateIds = selectedIds.map((s) => String(s.id));
+    this.syncSelectedCandidates();
+  }
 
-    // Map selected IDs to full candidate objects from tableData
-    // The table component emits only { id } objects, so we need to look up the full data
-    this.selectedCandidates = selectedIds
-      .map((selected) => {
+  /**
+   * Syncs the selectedCandidates array with the selectedCandidateIds
+   * Matches the IDs with current table data to get full candidate objects
+   */
+  private syncSelectedCandidates() {
+    this.selectedCandidates = this.selectedCandidateIds
+      .map((id) => {
         const fullCandidate = this.tableData?.data?.find(
-          (candidate) => String(candidate.id) === String(selected.id),
+          (candidate) => String(candidate.id) === String(id),
         );
         if (fullCandidate) {
           // Map CandidateData to InterviewSummary format
@@ -277,7 +279,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     // Check if any candidates are selected
     if (this.selectedCandidates.length === 0) {
-      this.messagesService.add({
+      this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
         detail: 'No selected Candidate to reject.',
@@ -303,7 +305,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     );
 
     if (invalidCandidates.length > 0) {
-      this.messagesService.add({
+      this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
         detail: this.isAptitudeRound()
@@ -360,7 +362,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     // Check if any candidates are selected
     if (this.selectedCandidates.length === 0) {
-      this.messagesService.add({
+      this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
         detail: 'No selected Candidate to mark as select.',
@@ -380,7 +382,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     );
 
     if (invalidCandidates.length > 0) {
-      this.messagesService.add({
+      this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
         detail:
@@ -667,7 +669,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const selected = this.selectedCandidates || [];
 
     if (!selected.length) {
-      this.messagesService.add({
+      this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
         detail: 'Please select at least one candidate to schedule.',
@@ -680,7 +682,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     );
 
     if (hasInvalidStatus) {
-      this.messagesService.add({
+      this.messageService.add({
         severity: 'warn',
         summary: 'Invalid Selection',
         detail: 'Only candidates with status "Selected" can be scheduled.',
@@ -754,7 +756,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public OnPanelClick(): void {
     // Don't allow panel assignment for aptitude rounds
     if (this.isAptitudeRound()) {
-      this.messagesService.add({
+      this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
         detail: 'Panel assignment is not available for aptitude rounds.',
@@ -763,7 +765,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
 
     if (this.selectedCandidates.length !== 1) {
-      this.messagesService.add({
+      this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
         detail:
@@ -1258,7 +1260,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             detail: 'Deletion is failed',
           });
         };
-        this.interviewservice.DeleteCandidate(id).subscribe({ next, error });
+        this.interviewService.deleteEntityById(id).subscribe({ next, error });
       }
     });
   }
@@ -1286,7 +1288,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           });
 
           this.tableData = { ...res, data: resData };
-          this.selectedCandidates = [];
+          this.syncSelectedCandidates();
 
           this.isCompleteDisabled =
             this.tableData.data.length !== 0 &&
@@ -1475,7 +1477,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     if (!allHavePanels) {
       // Stop loading and show error
       componentInstance.handlePanelValidationError();
-      this.messagesService.add({
+      this.messageService.add({
         severity: 'warn',
         summary: 'Invalid Selection',
         detail:
@@ -1577,7 +1579,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         }
       };
 
-      this.interviewservice.createEntity(payload).subscribe({ next, error });
+      this.interviewService.createEntity(payload).subscribe({ next, error });
     };
 
     this.ref = this.dialog.open(ScheduleInterviewComponent, {
@@ -1585,6 +1587,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         candidateIds: selectedCandidateIds,
         onSubmit: handleSubmit,
         isLoadingPanelData: isLoadingPanelData,
+        startDateTime: this.data.startDateTime,
+        endDateTime: this.data.endDateTime,
         setComponentInstance: (instance: ScheduleInterviewComponent) => {
           componentInstance = instance;
           if (updateComponentInstance) {

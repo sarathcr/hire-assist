@@ -138,6 +138,45 @@
     .p-datatable-filter-buttonbar {
       font-size: var(--font-size-small);
     }
+
+    // Selection styling with custom left accent
+    .p-datatable-tbody > tr.p-highlight {
+      position: relative;
+      transition: all 0.2s ease;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #0284c7 !important;
+        z-index: 10;
+      }
+
+      td {
+        font-weight: 500;
+        border-bottom: 1px solid #bae6fd !important; // Add subtle border for definition
+
+        i, span, div, a {
+          color: inherit !important;
+        }
+
+        // Highlight tags and badges should stand out
+        .p-tag, .p-badge {
+          .p-tag-label, .p-tag-value, .p-badge-value, span {
+            color: #ffffff !important;
+          }
+        }
+      }
+
+      &:hover,
+      &:hover > td {
+        // Theme preset handles this, but we can refinement if needed
+        background: #bae6fd !important;
+      }
+    }
   }
 
   &__globalFilters {

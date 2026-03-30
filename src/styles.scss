@@ -134,3 +134,13 @@ html {
     }
   }
 }
+// ============================================
+// Reassign Panel Dialog — Global (appended to body)
+// =========================================
+// ============================================
+// Global Dialog Overrides for DynamicDialog
+// ============================================
+.reassign-dialog-wrapper {
+  .p-dialog-header { display: none !important; }
+  .p-dialog-content { padding: 0 !important; border-radius: 20px !important; overflow: hidden; }
+}

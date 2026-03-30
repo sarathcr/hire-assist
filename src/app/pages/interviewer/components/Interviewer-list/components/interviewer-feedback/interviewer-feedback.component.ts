@@ -304,7 +304,22 @@ export class InterviewerFeedbackComponent
   }
 
   public get savedCriteriaCount(): number {
-    return this.feedbackcriteria.filter((fb) => fb.isSaved).length;
+    return this.feedbackcriteria.filter((fb) => this.isFeedbackComplete(fb)).length;
+  }
+
+  public isFeedbackComplete(fb: AccordionData): boolean {
+    if (fb.title === 'Attachments') {
+      return !!fb.isSaved;
+    }
+    return !!(
+      fb.isSaved &&
+      !this.hasChanges(fb) &&
+      fb.score !== null &&
+      fb.score !== undefined &&
+      fb.content &&
+      this.stripHtml(fb.content).trim() !== '' &&
+      !fb.isScoreInValid
+    );
   }
 
   public get isAllCriteriaMarked(): boolean {
@@ -313,16 +328,7 @@ export class InterviewerFeedbackComponent
     }
     return this.feedbackcriteria
       .filter((fb) => fb.title !== 'Attachments')
-      .every(
-        (fb) =>
-          fb.isSaved &&
-          !this.hasChanges(fb) &&
-          fb.score !== null &&
-          fb.score !== undefined &&
-          fb.content &&
-          this.stripHtml(fb.content).trim() !== '' &&
-          !fb.isScoreInValid,
-      );
+      .every((fb) => this.isFeedbackComplete(fb));
   }
 
   public getStatusText(statusId: number): string {

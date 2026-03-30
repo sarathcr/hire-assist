@@ -309,7 +309,7 @@
         @for (feedback of feedbackcriteria; track $index; let idx = $index) {
           <p-accordion-panel
             [value]="feedback.value"
-            [ngClass]="{ 'ifb-saved-panel': feedback.isSaved }"
+            [ngClass]="{ 'ifb-saved-panel': isFeedbackComplete(feedback) }"
           >
             <p-accordion-header
               class="ifb__acc-header ifb__acc-header--feedback"
@@ -329,7 +329,7 @@
                       class="ifb__criteria-score-tag"
                     />
                   }
-                  @if (feedback.isSaved) {
+                  @if (isFeedbackComplete(feedback)) {
                     <div class="ifb__saved-pill">
                       <i class="pi pi-check-circle"></i>
                       <span>Saved</span>
@@ -546,11 +546,11 @@
             @for (feedback of feedbackcriteria; track $index) {
               <div
                 class="ifb__submit-chip"
-                [ngClass]="feedback.isSaved ? 'ifb__submit-chip--done' : 'ifb__submit-chip--pending'"
+                [ngClass]="isFeedbackComplete(feedback) ? 'ifb__submit-chip--done' : 'ifb__submit-chip--pending'"
                 [pTooltip]="feedback.title"
                 tooltipPosition="top"
               >
-                <i [class]="feedback.isSaved ? 'pi pi-check' : 'pi pi-clock'"></i>
+                <i [class]="isFeedbackComplete(feedback) ? 'pi pi-check' : 'pi pi-clock'"></i>
               </div>
             }
           </div>

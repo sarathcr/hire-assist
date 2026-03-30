@@ -5,7 +5,7 @@
     [columns]="columnsData()?.columns"
     [rows]="tableData()?.pageSize"
     [totalRecords]="tableData()?.totalRecords || 0"
-    [paginator]="(tableData()?.totalRecords || 0) > 0"
+    [paginator]="hasPaginator && (tableData()?.totalRecords || 0) > 0"
     [lazy]="true"
     [first]="firstIndex()"
     (onLazyLoad)="onLazyLoad($event)"
@@ -16,7 +16,7 @@
     [rowHover]="true"
     dataKey="id"
     filterOn="input"
-    [(selection)]="selectedItems"
+    [selection]="selectionMode === 'single' ? selectedItems[0] : selectedItems"
     [resizableColumns]="true"
     [scrollable]="true"
     [scrollDirection]="'both'"
@@ -25,6 +25,7 @@
     [globalFilterFields]=""
     [loading]="isLoading()"
     [showLoader]="false"
+    [selectionMode]="selectionMode"
     (selectionChange)="onSelectionChange($event)"
   >
     <ng-template #caption>
@@ -275,6 +276,8 @@
         (touchstart)="onTouchStart($event)"
         (touchmove)="onTouchMove($event)"
         (touchend)="onTouchEnd($event, rowElement, product)"
+        [pSelectableRow]="product"
+        [pSelectableRowDisabled]="product.isSelf || product.isDisabled || selectionDisabled()"
       >
         @if (hasCheckbox) {
           <td>

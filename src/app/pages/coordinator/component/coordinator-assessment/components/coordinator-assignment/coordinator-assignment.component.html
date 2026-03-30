@@ -1,5 +1,6 @@
 <div class="coordinator-detail">
-  <p-toast></p-toast>
+
+
 
   <!-- Hero Header Section -->
   <div class="coordinator-detail__hero">
@@ -93,6 +94,9 @@
           heading="Candidate List"
           [hasSearch]="true"
           [parentLoader]="isCandidateLoading"
+          [hasCheckbox]="false"
+          selectionMode="single"
+          [hasPaginator]="false"
           (pageChangeAndSort)="onTablePayloadChange($event)"
           (selectedIds)="getSelectedcandidateId($event)"
           [alreadySelected]="selectedCandidate"
@@ -117,6 +121,9 @@
           heading="Panel List"
           [hasSearch]="true"
           [parentLoader]="isPanelLoading"
+          [hasCheckbox]="false"
+          selectionMode="single"
+          [hasPaginator]="false"
           (edit)="editPanel($event)"
           (pageChangeAndSort)="onPanelTablePayloadChange($event)"
           (selectedIds)="getSelectedPanelId($event)"
@@ -143,96 +150,159 @@
       <!-- Step 2: Schedule (Summary) -->
       @if (activeStep === 2) {
         <div class="coordinator-detail__summary">
+
+          <!-- ✅ SUCCESS STATE -->
           @if (isSchedulingSuccessful) {
-            <div class="coordinator-detail__success-section">
-              <div class="coordinator-detail__success-content-wrapper">
-                <div class="coordinator-detail__success-icon-large">
-                  <i class="pi pi-check-circle" style="font-size: 4rem"></i>
+            <div class="sched-success">
+
+              <!-- Decorative top strip -->
+              <div class="sched-success__strip">
+                <div class="sched-success__strip-orb sched-success__strip-orb--1"></div>
+                <div class="sched-success__strip-orb sched-success__strip-orb--2"></div>
+                <div class="sched-success__strip-orb sched-success__strip-orb--3"></div>
+              </div>
+
+              <!-- Main content -->
+              <div class="sched-success__content">
+                <!-- Animated check -->
+                <div class="sched-success__check-ring">
+                  <div class="sched-success__check-inner">
+                    <i class="pi pi-check sched-success__check-icon"></i>
+                  </div>
                 </div>
-                <h3 class="coordinator-detail__success-title-large">
-                  Scheduling Successful!
-                </h3>
-                <p class="coordinator-detail__success-message-large">
-                  Candidate has been successfully scheduled for the assessment
-                  panel.
+
+                <h2 class="sched-success__title">Scheduling Successful!</h2>
+                <p class="sched-success__subtitle">
+                  The interview has been confirmed. Both the candidate and panel have been notified.
                 </p>
+
+                <!-- Summary chips -->
+                <div class="sched-success__chips">
+                  <div class="sched-success__chip sched-success__chip--candidate">
+                    <div class="sched-success__chip-icon">
+                      <i class="pi pi-user"></i>
+                    </div>
+                    <div class="sched-success__chip-body">
+                      <span class="sched-success__chip-label">Candidate</span>
+                      <span class="sched-success__chip-value">
+                        @if (selectedCandidatesIds.length > 0) {
+                          {{ selectedCandidatesIds[0].name }}
+                        } @else { — }
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="sched-success__chip-divider">
+                    <i class="pi pi-arrow-right"></i>
+                  </div>
+
+                  <div class="sched-success__chip sched-success__chip--panel">
+                    <div class="sched-success__chip-icon">
+                      <i class="pi pi-briefcase"></i>
+                    </div>
+                    <div class="sched-success__chip-body">
+                      <span class="sched-success__chip-label">Assigned Panel</span>
+                      <span class="sched-success__chip-value">
+                        @if (selectedPanelIds.length > 0) {
+                          {{ selectedPanelIds[0].name }}
+                        } @else { — }
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Status pills -->
+                <div class="sched-success__status-row">
+                  <span class="sched-success__pill sched-success__pill--green">
+                    <i class="pi pi-check-circle"></i> Interview Scheduled
+                  </span>
+                  <span class="sched-success__pill sched-success__pill--blue">
+                    <i class="pi pi-bell"></i> Notification Sent
+                  </span>
+                </div>
+
+                <!-- Action -->
+                <div class="sched-success__actions">
+                  <button class="sched-success__btn-done" (click)="resetAndGoToStart()">
+                    <i class="pi pi-home"></i>
+                    Schedule Another
+                  </button>
+                </div>
               </div>
             </div>
+
+          <!-- ⏳ PRE-SCHEDULE STATE -->
+          } @else {
+            <p-card class="coordinator-detail__summary-card">
+              <div class="coordinator-detail__summary-content">
+                <div class="coordinator-detail__summary-item">
+                  <div class="coordinator-detail__summary-icon candidate">
+                    <i class="pi pi-user"></i>
+                  </div>
+                  <div class="coordinator-detail__summary-info">
+                    <span class="coordinator-detail__summary-label">Selected Candidate</span>
+                    <span class="coordinator-detail__summary-value">
+                      @if (selectedCandidatesIds.length > 0) {
+                        {{ selectedCandidatesIds[0].name }}
+                      } @else {
+                        <span class="coordinator-detail__summary-placeholder">None selected</span>
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <p-divider
+                  layout="vertical"
+                  [style]="{ height: '40px', margin: '0 1.5rem' }"
+                ></p-divider>
+
+                <div class="coordinator-detail__summary-item">
+                  <div class="coordinator-detail__summary-icon panel">
+                    <i class="pi pi-briefcase"></i>
+                  </div>
+                  <div class="coordinator-detail__summary-info">
+                    <span class="coordinator-detail__summary-label">Selected Panel</span>
+                    <span class="coordinator-detail__summary-value">
+                      @if (selectedPanelIds.length > 0) {
+                        {{ selectedPanelIds[0].name }}
+                      } @else {
+                        <span class="coordinator-detail__summary-placeholder">None selected</span>
+                      }
+                    </span>
+                  </div>
+                </div>
+
+                <div class="coordinator-detail__summary-actions">
+                  <p-button
+                    label="Schedule Panel"
+                    icon="pi pi-calendar-plus"
+                    [disabled]="
+                      selectedCandidatesIds.length === 0 ||
+                      selectedPanelIds.length === 0
+                    "
+                    (onClick)="schedule()"
+                    [style]="{ minWidth: '180px' }"
+                    severity="primary"
+                  ></p-button>
+                </div>
+              </div>
+            </p-card>
           }
-          <p-card class="coordinator-detail__summary-card">
-            <div class="coordinator-detail__summary-content">
-              <div class="coordinator-detail__summary-item">
-                <div class="coordinator-detail__summary-icon candidate">
-                  <i class="pi pi-user"></i>
-                </div>
-                <div class="coordinator-detail__summary-info">
-                  <span class="coordinator-detail__summary-label"
-                    >Selected Candidate</span
-                  >
-                  <span class="coordinator-detail__summary-value">
-                    @if (selectedCandidatesIds.length > 0) {
-                      {{ selectedCandidatesIds[0].name }}
-                    } @else {
-                      <span class="coordinator-detail__summary-placeholder"
-                        >None selected</span
-                      >
-                    }
-                  </span>
-                </div>
-              </div>
-
-              <p-divider
-                layout="vertical"
-                [style]="{ height: '40px', margin: '0 1.5rem' }"
-              ></p-divider>
-
-              <div class="coordinator-detail__summary-item">
-                <div class="coordinator-detail__summary-icon panel">
-                  <i class="pi pi-briefcase"></i>
-                </div>
-                <div class="coordinator-detail__summary-info">
-                  <span class="coordinator-detail__summary-label"
-                    >Selected Panel</span
-                  >
-                  <span class="coordinator-detail__summary-value">
-                    @if (selectedPanelIds.length > 0) {
-                      {{ selectedPanelIds[0].name }}
-                    } @else {
-                      <span class="coordinator-detail__summary-placeholder"
-                        >None selected</span
-                      >
-                    }
-                  </span>
-                </div>
-              </div>
-
-              <div class="coordinator-detail__summary-actions">
-                <p-button
-                  label="Schedule Panel"
-                  icon="pi pi-calendar-plus"
-                  [disabled]="
-                    selectedCandidatesIds.length === 0 ||
-                    selectedPanelIds.length === 0
-                  "
-                  (onClick)="schedule()"
-                  [style]="{ minWidth: '180px' }"
-                  severity="primary"
-                ></p-button>
-              </div>
-            </div>
-          </p-card>
         </div>
-        <div
-          class="coordinator-detail__step-actions coordinator-detail__step-actions--start"
-        >
-          <p-button
-            label="Back"
-            icon="pi pi-arrow-left"
-            [outlined]="true"
-            (onClick)="setActiveStep(1)"
-          ></p-button>
-        </div>
+        @if (!isSchedulingSuccessful) {
+          <div
+            class="coordinator-detail__step-actions coordinator-detail__step-actions--start"
+          >
+            <p-button
+              label="Back"
+              icon="pi pi-arrow-left"
+              [outlined]="true"
+              (onClick)="setActiveStep(1)"
+            ></p-button>
+          </div>
+        }
       }
     </div>
   </div>
 </div>
+

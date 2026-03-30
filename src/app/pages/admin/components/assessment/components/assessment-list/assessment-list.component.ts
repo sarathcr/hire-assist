@@ -37,7 +37,6 @@ import { SearchBarComponent } from '../../../../../../shared/components/search-b
     AssessmentCardComponent,
     ButtonComponent,
     PaginationComponent,
-    ToastModule,
     NgClass,
     SkeletonComponent,
     AsyncPipe,

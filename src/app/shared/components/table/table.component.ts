@@ -127,6 +127,8 @@ export class TableComponent<
   public alreadySelected = input<string[]>([]);
   public clearSelectionIds = input<string[] | null>(null);
   public selectionDisabled = input<boolean>(false);
+  @Input() selectionMode: 'single' | 'multiple' | undefined = 'multiple';
+  @Input() hasPaginator = true;
   public selectedItems: { id: string }[] = [];
   private readonly persistedSelectedIds = new Set<string>();
   public expandedRows: Record<string, boolean> = {};
@@ -655,7 +657,7 @@ export class TableComponent<
     this.import.emit(file);
   }
 
-  public onSelectionChange(newSelection: { id: string }[]): void {
+  public onSelectionChange(newSelection: any): void {
     // Block any selection changes when selectionDisabled is true
     if (this.selectionDisabled()) {
       // Revert to the currently persisted selection so checkboxes snap back
@@ -664,15 +666,27 @@ export class TableComponent<
       );
       return;
     }
-    const currentPageIds = (this.tableData()?.data || []).map((d) =>
-      String(d.id),
-    );
 
-    for (const id of currentPageIds) {
-      this.persistedSelectedIds.delete(id);
+    // Normalize newSelection to array (PrimeNG emits object for single selection, array for multiple)
+    const selectionArray = Array.isArray(newSelection)
+      ? newSelection
+      : newSelection
+        ? [newSelection]
+        : [];
+
+    if (this.selectionMode === 'single') {
+      this.persistedSelectedIds.clear();
+    } else {
+      const currentPageIds = (this.tableData()?.data || []).map((d) =>
+        String(d.id),
+      );
+
+      for (const id of currentPageIds) {
+        this.persistedSelectedIds.delete(id);
+      }
     }
 
-    for (const item of newSelection || []) {
+    for (const item of selectionArray) {
       if (item?.id) {
         this.persistedSelectedIds.add(String(item.id));
       }

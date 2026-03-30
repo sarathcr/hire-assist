@@ -3,7 +3,7 @@ import { Component, effect, input, NgZone, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
+
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
@@ -33,7 +33,6 @@ import { StepsStatusService } from '../../../../services/steps-status.service';
     ButtonComponent,
     ReactiveFormsModule,
     FrontdeskSkeletonComponent,
-    ToastModule,
   ],
   templateUrl: './front-desk.component.html',
   styleUrl: './front-desk.component.scss',

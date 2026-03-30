@@ -33,7 +33,7 @@ import { finalize } from 'rxjs/operators';
 import { ASSESSMENT_URL } from '../../../../../../shared/constants/api';
 import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
-import { Toast } from 'primeng/toast';
+
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 const tableColumns: TableColumnsData = {
   columns: [
@@ -76,7 +76,7 @@ const tableColumns: TableColumnsData = {
 
 @Component({
   selector: 'app-departments',
-  imports: [TableComponent, Toast, ButtonComponent],
+  imports: [TableComponent, ButtonComponent],
   providers: [TableDataSourceService],
   templateUrl: './departments.component.html',
   styleUrl: './departments.component.scss',

@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { FileUpload, FileUploadHandlerEvent } from 'primeng/fileupload';
-import { ToastModule } from 'primeng/toast';
+
 import { TooltipModule } from 'primeng/tooltip';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../../../../../shared/components/dialog-footer/dialog-footer.component';
@@ -89,7 +89,6 @@ const tableColumns: TableColumnsData = {
     TableComponent,
     FileUpload,
     ButtonComponent,
-    ToastModule,
     TooltipModule,
   ],
   templateUrl: './import-candidate-list-step.component.html',

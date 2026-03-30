@@ -37,6 +37,7 @@ export class InputTextCalenderComponent
 
   @Input() showTime = false;
   @Input() maxDate!: Date;
+  @Input() minDate!: Date;
   @Input() hasDateError!: string;
 
   public formControl!: FormControl<Date | string | null>;

@@ -5,6 +5,7 @@ import { FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AccordionModule } from 'primeng/accordion';
 import { MenuItem, MessageService } from 'primeng/api';
+import { DialogModule } from 'primeng/dialog';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -12,7 +13,8 @@ import { ChipModule } from 'primeng/chip';
 import { CommonModule } from '@angular/common';
 import { DividerModule } from 'primeng/divider';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ToastModule } from 'primeng/toast';
+import { ReassignPanelComponent } from '../reassign-panel/reassign-panel.component';
+
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
 import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
@@ -110,7 +112,6 @@ type payload = Record<string, any>;
   imports: [
     AccordionModule,
     TableComponent,
-    ToastModule,
     CardModule,
     DividerModule,
     BadgeModule,
@@ -170,6 +171,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
   public panelTableFilterMap!: FilterMap;
   public interview!: GetInterviewPanelsResponse;
   public fGroup!: FormGroup;
+
+  // Reassign Dialog Result
   public configMap!: ConfigMap;
   public assessmentId!: number;
   public assessmentRoundId!: number;
@@ -222,6 +225,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       assessmentId: this.assessmentId,
       ...payload.filterMap,
     };
+    payload.pagination.pageSize = 1000;
     this.loadCandidateData(payload);
   }
 
@@ -233,6 +237,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
         ...payload.filterMap,
       };
     }
+    payload.pagination.pageSize = 1000;
     this.loadPanelData(payload);
   }
 
@@ -343,7 +348,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       filterMap: data || {},
       pagination: {
         pageNumber: 1,
-        pageSize: 5,
+        pageSize: 1000,
       },
     };
 
@@ -384,7 +389,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       filterMap: {},
       pagination: {
         pageNumber: 1,
-        pageSize: 5,
+        pageSize: 1000,
       },
     };
 
@@ -696,6 +701,17 @@ export class CoordinatorAssignmentComponent implements OnInit {
 
     if (currentStep === 0) {
       if (this.selectedCandidatesIds.length > 0) {
+        const candidate = this.selectedCandidatesIds[0];
+        const isAlreadyScheduled =
+          candidate.status?.toLowerCase() === 'scheduled' ||
+          candidate.status?.toLowerCase() === 'selected' ||
+          (candidate as any).isScheduled === 'Scheduled' ||
+          (candidate as any).isScheduled === true;
+
+        if (isAlreadyScheduled) {
+          this.openReassignDialog(currentStep);
+          return;
+        }
         canProceed = true;
       } else {
         this.messageService.add({
@@ -717,12 +733,16 @@ export class CoordinatorAssignmentComponent implements OnInit {
     }
 
     if (canProceed) {
-      const nextStep = currentStep + 1;
-      this.onCompleteStep(currentStep);
-      this.activeStep = nextStep;
-      if (!this.visitedSteps.includes(nextStep)) {
-        this.visitedSteps.push(nextStep);
-      }
+      this.proceedToNextStep(currentStep);
+    }
+  }
+
+  private proceedToNextStep(currentStep: number): void {
+    const nextStep = currentStep + 1;
+    this.onCompleteStep(currentStep);
+    this.activeStep = nextStep;
+    if (!this.visitedSteps.includes(nextStep)) {
+      this.visitedSteps.push(nextStep);
     }
   }
 
@@ -739,5 +759,41 @@ export class CoordinatorAssignmentComponent implements OnInit {
 
   public isStepEnabled(stepIndex: number): boolean {
       return this.canActivateStep(stepIndex);
+  }
+
+  private openReassignDialog(currentStep: number): void {
+    const candidate = this.selectedCandidatesIds[0];
+    const ref = this.dialog.open(ReassignPanelComponent, {
+      data: {
+        candidateName: candidate.name ?? ''
+      },
+      header: 'Reassign Panel',
+      width: '450px',
+      modal: true,
+      showHeader: false, // We use custom header in component
+      contentStyle: { padding: '0' },
+      styleClass: 'reassign-dialog-wrapper'
+    });
+
+    ref.onClose.subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.proceedToNextStep(currentStep);
+      }
+    });
+  }
+
+  public resetAndGoToStart(): void {
+    // Clear selections
+    this.selectedCandidatesIds = [];
+    this.selectedCandidate = [];
+    this.selectedPanelIds = [];
+    this.selectedPanel = [];
+    this.lastSelectedPanelId = null;
+
+    // Reset state
+    this.isSchedulingSuccessful = false;
+    this.completedSteps = [];
+    this.visitedSteps = [0];
+    this.activeStep = 0;
   }
 }

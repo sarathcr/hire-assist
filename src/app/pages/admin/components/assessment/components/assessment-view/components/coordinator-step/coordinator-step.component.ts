@@ -1,4 +1,4 @@
-﻿import { Component, effect, input, OnDestroy, OnInit } from '@angular/core';
+import { Component, effect, input, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
   FormArray,
@@ -10,7 +10,7 @@ import {
   ValidatorFn,
 } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
+
 import { Subscription } from 'rxjs';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
@@ -112,7 +112,6 @@ export const uniqueRoundValidator: ValidatorFn = (
     ReactiveFormsModule,
     InputMultiselectComponent,
     ButtonComponent,
-    ToastModule,
     CoordinatorSkeletonComponent,
   ],
   templateUrl: './coordinator-step.component.html',

@@ -3,7 +3,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Toast } from 'primeng/toast';
+
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
@@ -74,7 +74,7 @@ export interface interviewerEditResponse {
 }
 @Component({
   selector: 'app-interviewer-panel-assignment',
-  imports: [TableComponent, ButtonComponent, Toast],
+  imports: [TableComponent, ButtonComponent],
   providers: [TableDataSourceService],
   templateUrl: './interviewer-panel-assignment.component.html',
   styleUrl: './interviewer-panel-assignment.component.scss',

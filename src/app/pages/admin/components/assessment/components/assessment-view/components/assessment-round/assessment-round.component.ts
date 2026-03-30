@@ -22,7 +22,6 @@ import {
 } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ToastModule } from 'primeng/toast';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { DatePickerModule } from 'primeng/datepicker';
@@ -59,7 +58,6 @@ import { StepsStatusService } from '../../../../services/steps-status.service';
     ButtonComponent,
     ReactiveFormsModule,
     AssessmentRoundSkeletonComponent,
-    ToastModule,
     InputTextModule,
     FloatLabelModule,
     FormsModule,

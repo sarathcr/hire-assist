@@ -17,7 +17,7 @@ import { InputText } from 'primeng/inputtext';
 import { Knob } from 'primeng/knob';
 import { Message } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
+
 import { Tooltip } from 'primeng/tooltip';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
@@ -61,7 +61,6 @@ import { FilterMap } from '../../../../../../shared/models/pagination.models';
     ButtonComponent,
     CardModule,
     FileUpload,
-    ToastModule,
     ButtonModule,
     Knob,
     InterviewDetailSkeletonComponent,

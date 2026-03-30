@@ -1,0 +1,49 @@
+<div class="reassign-dialog">
+  <!-- Custom Header -->
+  <div class="reassign-dialog__header">
+    <div class="reassign-dialog__header-icon">
+      <i class="pi pi-arrows-h"></i>
+    </div>
+    <div class="reassign-dialog__header-text">
+      <h2 class="reassign-dialog__title">Reassign Panel</h2>
+      <p class="reassign-dialog__subtitle">Panel assignment override</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="reassign-dialog__body">
+    <div class="reassign-dialog__warning-badge">
+      <i class="pi pi-exclamation-triangle"></i>
+      Already Assigned
+    </div>
+    <div class="reassign-dialog__candidate-card">
+      <div class="reassign-dialog__candidate-avatar">
+        <i class="pi pi-user"></i>
+      </div>
+      <div class="reassign-dialog__candidate-info">
+        <span class="reassign-dialog__candidate-label">Candidate</span>
+        <span class="reassign-dialog__candidate-name">{{ reassignCandidateName }}</span>
+      </div>
+    </div>
+    <p class="reassign-dialog__message">
+      This candidate is already assigned to a panel. Proceeding will
+      <strong>overwrite</strong> the current assignment with the new selection.
+    </p>
+    <div class="reassign-dialog__confirmation-note">
+      <i class="pi pi-info-circle"></i>
+      <span>This action cannot be undone automatically.</span>
+    </div>
+  </div>
+
+  <!-- Custom Footer -->
+  <div class="reassign-dialog__footer">
+    <button class="reassign-dialog__btn reassign-dialog__btn--cancel" (click)="cancel()">
+      <i class="pi pi-times"></i>
+      Cancel
+    </button>
+    <button class="reassign-dialog__btn reassign-dialog__btn--confirm" (click)="confirm()">
+      <i class="pi pi-check"></i>
+      Reassign Panel
+    </button>
+  </div>
+</div>
