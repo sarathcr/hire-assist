@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, ParamMap } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AccordionModule } from 'primeng/accordion';
 import { MessageService } from 'primeng/api';
@@ -130,6 +130,7 @@ export class InterviewerFeedbackComponent
     private readonly storeService: StoreService,
     public readonly dialog: DialogService,
     private readonly stepsStatusService: StepsStatusService,
+    private readonly router: Router,
   ) {
     super();
     this.fGroup = buildFormGroup(this.score);
@@ -1006,6 +1007,7 @@ export class InterviewerFeedbackComponent
       if (assessmentId && this.stepsStatusService) {
         this.stepsStatusService.notifyStepStatusUpdate(assessmentId);
       }
+      this.router.navigate([`/interviewer/`]);
     };
     const error = () => {
       this.messageService.add({
