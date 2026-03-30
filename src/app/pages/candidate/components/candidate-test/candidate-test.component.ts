@@ -411,7 +411,12 @@ export class CandidateTestComponent
     const selectedValue = this.selectedValues[this.activeButtonId] ?? null;
     this.activeQuestion.status = this.getStatusFromId(statusId);
 
-    const answerOptionId = this.getAnswerOptionId(selectedValue);
+    let answerOptionId = this.getAnswerOptionId(selectedValue);
+
+    if (statusId === 5) {
+      answerOptionId = null;
+      this.selectedValues[this.activeButtonId] = this.activeQuestion.isMultipleChoice ? [] : null;
+    }
 
     const payload: Payload = {
       interviewId: this.candidateInterview.assessment?.interviewId,

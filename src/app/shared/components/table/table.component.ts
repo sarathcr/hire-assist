@@ -57,6 +57,8 @@ export const uniqueStatuses = [
   { label: 'Completed', value: 'Completed' },
   { label: 'Rejected', value: 'Rejected' },
   { label: 'Active', value: 'Active' },
+  { label: 'Terminated', value: 'Terminated' },
+  { label: 'Quit', value: 'Quit' },
 ];
 
 export const uniqueStatusesForIsSchedule = [

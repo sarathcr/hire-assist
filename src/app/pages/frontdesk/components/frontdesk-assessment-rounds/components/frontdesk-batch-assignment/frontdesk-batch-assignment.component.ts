@@ -46,7 +46,7 @@ const tableColumns: TableColumnsData = {
     },
     {
       field: 'reportingTime',
-      displayName: 'Reporting Time',
+      displayName: 'Reported Time',
       sortedColumn: true,
       hasChip: false,
       fieldType: FieldType.StringToDateTime,
@@ -356,32 +356,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     const next = (res: PaginatedData<Candidate>) => {
       const updatedRes: PaginatedData<Candidate> = {
         ...res,
-        data: res.data.map((candidate) => {
-          const isAllowed =
-            this.ALLOWED_ACTION_STATUSES.includes(candidate.statusId!) ||
-            ['active', 'pending', 'scheduled'].includes(candidate.status || '');
-          // Candidate is present if statusId is Active (1) or status is 'Active'
-          const isPresent =
-            candidate.statusId === StatusEnum.Active ||
-            candidate.status?.toLowerCase() === 'active';
-            
-          return {
-            ...candidate,
-            // 0 -> Mark as Present, 1 -> Mark as Absent
-            // If present, show 'Mark as Absent' (1), otherwise show 'Mark as Present' (0)
-            toggleTooltipIconIndex: isPresent ? 1 : 0, 
-            
-            // We always want to show all dropdown actions to the user instead of hiding them
-            // [0/1 (Presence Toggle), 2 (Assign Batch), 3 (Upload ID)]
-            visibleButtonIndices: isPresent ? [1, 2, 3] : [0, 2, 3],
-            
-            // Disable everything if the overall status doesn't allow actions.
-            // Even if allowed, "Upload ID" (3) and "Assign to Batch" (2) might only make 
-            // sense if they are marked Present, but the requirement specifically states that 
-            // for inactive/other status they should be disabled.
-            disabledButtonIndices: !isAllowed ? (isPresent ? [1, 2, 3] : [0, 2, 3]) : [],
-          };
-        }),
+        data: res.data.map((candidate) => this.mapCandidateData(candidate)),
       };
       this.candidatesByBatch[batchId] = updatedRes;
       this.loadingBatches[batchId] = false;
@@ -426,26 +401,57 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
         next: (response: PaginatedData<Candidate>) => {
           const updatedRes: PaginatedData<Candidate> = {
             ...response,
-            data: response.data.map((candidate) => {
-              // Candidate is present if statusId is Active (1) or status is 'Active'
-              const isPresent =
-                candidate.statusId === StatusEnum.Active ||
-                candidate.status?.toLowerCase() === 'active';
-                
-              const isAllowed =
-                this.ALLOWED_ACTION_STATUSES.includes(candidate.statusId!) ||
-                ['active', 'pending', 'scheduled'].includes(candidate.status?.toLowerCase() || '');
-
-              return {
-                ...candidate,
-                toggleTooltipIconIndex: isPresent ? 1 : 0, 
-                visibleButtonIndices: isPresent ? [1, 2, 3] : [0, 2, 3],
-                disabledButtonIndices: !isAllowed ? (isPresent ? [1, 2, 3] : [0, 2, 3]) : [],
-              };
-            }),
+            data: response.data.map((candidate) =>
+              this.mapCandidateData(candidate),
+            ),
           };
           this.candidatesByBatch[batchId] = updatedRes;
         },
       });
+  }
+
+  /**
+   * Common data mapping logic for candidate records
+   */
+  private mapCandidateData(candidate: Candidate): Candidate {
+    const statusLower = candidate.status?.toLowerCase() || '';
+
+    // Statuses that imply the candidate HAS NOT reported yet
+    const isNotReported =
+      candidate.statusId === StatusEnum.Scheduled ||
+      candidate.statusId === StatusEnum.NotAttended ||
+      candidate.statusId === StatusEnum.Pending ||
+      ['scheduled', 'not attended', 'absent', 'pending'].includes(statusLower);
+
+    // Candidate is present if statusId is Active (1) or status is 'Active'
+    const isPresent =
+      candidate.statusId === StatusEnum.Active || statusLower === 'active';
+
+    const isAllowed =
+      this.ALLOWED_ACTION_STATUSES.includes(candidate.statusId!) ||
+      ['active', 'pending', 'scheduled', 'absent', 'not attended'].includes(
+        statusLower,
+      );
+
+    return {
+      ...candidate,
+      // If candidate is not reported, set reporting time to the sentinel value for "Not Reported"
+      reportingTime: isNotReported
+        ? '0001-01-01T00:00:00'
+        : candidate.reportingTime,
+
+      // 0 -> Mark as Present, 1 -> Mark as Absent
+      toggleTooltipIconIndex: isPresent ? 1 : 0,
+
+      // dropdown actions: [0/1 (Presence Toggle), 2 (Assign Batch), 3 (Upload ID)]
+      visibleButtonIndices: isPresent ? [1, 2, 3] : [0, 2, 3],
+
+      // Disable actions if the status doesn't allow it.
+      disabledButtonIndices: !isAllowed
+        ? isPresent
+          ? [1, 2, 3]
+          : [0, 2, 3]
+        : [],
+    };
   }
 }
