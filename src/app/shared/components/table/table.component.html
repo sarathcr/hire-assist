@@ -20,6 +20,7 @@
     [resizableColumns]="true"
     [scrollable]="true"
     [scrollDirection]="'both'"
+    [scrollHeight]="scrollHeight() || 'Flex'"
     [autoLayout]="true"
     paginatorPosition="bottom"
     [globalFilterFields]=""
@@ -240,7 +241,7 @@
         [ngClass]="{
           table_isAlready: enableCandidateStyling() && product.isAlreadyExist,
           table_isDuplicate: enableCandidateStyling() && product.isDuplicate,
-          'table__row--disabled': product.isSelf,
+          'table__row--disabled': product.isSelf || product.isDisabled,
           'table__row--batch-assigned':
             enableCandidateStyling() && product.batchId && product.batchId > 0,
           'table__row--not-scheduled':
@@ -251,28 +252,16 @@
               product.batchId === 0 ||
               product.batchId === null),
         }"
-        [attr.tabindex]="enableCandidateStyling() ? 0 : null"
+        [attr.tabindex]="(enableCandidateStyling() || product.isDisabled) ? 0 : null"
         tooltipPosition="bottom"
         tooltipStyleClass="table-row-tooltip"
         [tooltipEvent]="tooltipEvent()"
-        [life]="isTouchDevice() && enableCandidateStyling() ? 3000 : undefined"
+        [life]="isTouchDevice() && (enableCandidateStyling() || product.isDisabled) ? 3000 : undefined"
         [showDelay]="
-          isTouchDevice() && enableCandidateStyling() ? 0 : undefined
+          isTouchDevice() && (enableCandidateStyling() || product.isDisabled) ? 0 : undefined
         "
-        [pTooltip]="
-          enableCandidateStyling()
-            ? product.isAlreadyExist
-              ? 'We already have this record in our records.'
-              : product.isDuplicate
-                ? 'Duplicate records were discovered in the sheet.'
-                : product.batchId && product.batchId > 0
-                  ? `Scheduled - Assigned to : ${product.batchName || 'Batch ' + product.batchId}`
-                  : !product.isAlreadyExist && !product.isDuplicate && (!product.batchId || product.batchId === 0 || product.batchId === null)
-                    ? 'Not scheduled - Candidate has not been scheduled for assessment'
-                    : ''
-            : ''
-        "
-        (click)="onRowClick()"
+        [pTooltip]="getTooltipText(product)"
+        (click)="onRowClick(product)"
         (touchstart)="onTouchStart($event)"
         (touchmove)="onTouchMove($event)"
         (touchend)="onTouchEnd($event, rowElement, product)"

@@ -1,36 +1,62 @@
-<div class="interviewer">
-  <form [formGroup]="fGroup">
-    @if (isEdit) {
-      <div class="interviewer__panel-names">{{ getPanelNames() }}</div>
-    } @else {
-      <app-input-select
-        class="interviewer_field"
-        [formGroup]="fGroup"
-        [config]="configMap['panels']"
-      />
-    }
-    <app-input-multiselect
-      class="interviewer_field"
-      [formGroup]="fGroup"
-      [config]="configMap['interviewers']"
-      [selectedItems]=""
-    />
+<div class="interviewer-modal">
+  <div class="interviewer-modal__hero">
+    <div class="interviewer-modal__hero-content">
+      <div class="interviewer-modal__hero-icon">
+        <i class="pi pi-users"></i>
+      </div>
+      <div class="interviewer-modal__hero-text">
+        <h2 class="interviewer-modal__hero-title">
+          {{ isEdit ? 'Update Panel Assignment' : 'Assign New Panel' }}
+        </h2>
+        <p class="interviewer-modal__hero-subtitle">
+          Manage interviewers and panel associations for this assessment.
+        </p>
+      </div>
+    </div>
+  </div>
 
-    <footer class="dialog-footer">
-      <div class="dialog-footer__btn-wrapper">
-        <app-button
-          buttonLabel="Cancel"
-          [buttonVariant]="'outlined'"
-          (btnClick)="onClose()"
-        ></app-button>
+  <form [formGroup]="fGroup" class="interviewer-modal__form">
+    <div class="interviewer-modal__fields">
+      @if (isEdit) {
+        <div class="interviewer-modal__panel-info">
+          <label class="interviewer-modal__field-label">Assigned Panel</label>
+          <div class="interviewer-modal__panel-name">
+            <i class="pi pi-id-card"></i>
+            {{ getPanelNames() }}
+          </div>
+        </div>
+      } @else {
+        <div class="interviewer-modal__field">
+          <app-input-select
+            [formGroup]="fGroup"
+            [config]="configMap['panels']"
+          />
+        </div>
+      }
+
+      <div class="interviewer-modal__field">
+        <app-input-multiselect
+          [formGroup]="fGroup"
+          [config]="configMap['interviewers']"
+        />
       </div>
-      <div class="dialog-footer__btn-wrapper">
-        <app-button
-          buttonLabel="Submit"
-          [disabled]="!fGroup.valid"
-          (btnClick)="onSubmit()"
-        ></app-button>
-      </div>
+    </div>
+
+    <footer class="interviewer-modal__footer">
+      <p-button
+        label="Cancel"
+        [outlined]="true"
+        severity="secondary"
+        (onClick)="onClose()"
+        class="interviewer-modal__footer-btn"
+      ></p-button>
+      <p-button
+        label="Confirm & Update"
+        [disabled]="!fGroup.valid"
+        severity="primary"
+        (onClick)="onSubmit()"
+        class="interviewer-modal__footer-btn"
+      ></p-button>
     </footer>
   </form>
 </div>

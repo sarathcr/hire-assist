@@ -8,7 +8,7 @@ import {
   DynamicDialogRef,
 } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
-import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
+import { ButtonModule } from 'primeng/button';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
@@ -30,10 +30,10 @@ import { CoordinatorPanelBridgeService } from '../../../../../../../coordinator/
   selector: 'app-assign-interviewers-dialogue',
   imports: [
     InputMultiselectComponent,
-    ButtonComponent,
     ReactiveFormsModule,
     InputSelectComponent,
     ToastModule,
+    ButtonModule,
   ],
   templateUrl: './assign-interviewers-dialogue.component.html',
   styleUrl: './assign-interviewers-dialogue.component.scss',
@@ -83,8 +83,9 @@ export class AssignInterviewersDialogueComponent implements OnInit {
     this.setOptions();
 
     if (this.isEdit) {
+      // In coordinator view, the ID of the PanelSummary is the panel's ID
       const panelId =
-        this.data.formData.panelId || this.data.formData.panelName;
+        this.data.formData.panelId || this.data.formData.id || this.data.formData.panelName;
       const interviewers = this.data.formData.interviewers;
       this.fGroup.patchValue({
         interviewers: interviewers || [],
@@ -171,11 +172,12 @@ export class AssignInterviewersDialogueComponent implements OnInit {
                 });
                 this.ref.close({ ...this.fGroup.value, submitted: true });
               },
-              error: (error: CustomErrorResponse) => {
+              error: (error: any) => {
                 const errorMessage =
                   error?.error?.type ||
                   error?.error?.errorValue ||
                   error?.error?.message ||
+                  error?.message ||
                   'Failed to assign interview panel';
                 this.messageService.add({
                   severity: 'error',
@@ -185,11 +187,12 @@ export class AssignInterviewersDialogueComponent implements OnInit {
               },
             });
           },
-          error: (error: CustomErrorResponse) => {
+          error: (error: any) => {
             const errorMessage =
-              error.error?.type ||
-              error.error?.errorValue ||
-              error.error?.message ||
+              error?.error?.type ||
+              error?.error?.errorValue ||
+              error?.error?.message ||
+              error?.message ||
               'Failed to update interviewers into panels';
             this.messageService.add({
               severity: 'error',

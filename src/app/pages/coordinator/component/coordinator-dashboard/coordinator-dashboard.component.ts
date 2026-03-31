@@ -29,6 +29,10 @@ export class CoordinatorDashboardComponent
   public filterMap!: KeyValueMap<string>;
   public isLoading = false;
   public skeletonCards = [1, 2, 3]; // For rendering 3 skeleton cards
+  public sortRef: { active: string; direction: 'asc' | 'desc' } = {
+    active: 'isActive',
+    direction: 'desc',
+  };
 
   constructor(
     public router: Router,
@@ -61,15 +65,8 @@ export class CoordinatorDashboardComponent
     const { metadata } = new AssessmentForm();
     this.configMap = metadata.configMap || {};
   }
-
   private subscribeToPaginatedData() {
-    const payload = this.dataSource.getPayloadData();
-    payload.sortedColumn = {
-      active: 'isActive',
-      direction: 'desc',
-    };
-
-    this.dataSource.connect(payload).subscribe((data) => {
+    this.dataSource.connect().subscribe((data) => {
       this.assessmentDataSource = data;
     });
 

@@ -164,7 +164,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       styleClass: 'interviewerPanels__dialog',
       breakpoints: {
         '960px': '75vw',
-        '640px': '90vw',
+        '640px': '98vw',
       },
     });
     this.ref.onClose.subscribe((formData: interviewerResponse) => {
@@ -241,7 +241,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       modal: true,
       breakpoints: {
         '960px': '75vw',
-        '640px': '90vw',
+        '640px': '98vw',
       },
       templates: {
         footer: DialogFooterComponent,
@@ -342,7 +342,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       styleClass: 'interviewerPanels__dialog',
       breakpoints: {
         '960px': '75vw',
-        '640px': '90vw',
+        '640px': '98vw',
       },
     });
 

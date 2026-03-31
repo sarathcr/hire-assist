@@ -14,7 +14,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { FilterMatchMode, SelectItem } from 'primeng/api';
+import { FilterMatchMode, MessageService, SelectItem } from 'primeng/api';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { ChipModule } from 'primeng/chip';
@@ -148,6 +148,7 @@ export class TableComponent<
   private readonly paginationSubject = new Subject<PaginatedPayload>();
   private pendingDebounce = false;
 
+  public scrollHeight = input<string>();
   public parentLoader = input<boolean>(false);
   private readonly internalIsLoading = signal<boolean>(false);
   public isLoading = computed(
@@ -195,12 +196,19 @@ export class TableComponent<
   private tooltipTimeout: any = null;
   private clickTimeout: any = null;
   private lastClickTime = 0;
+  public onRowClick(product: any): void {
+    if (product.isDisabled) {
+      const status = product?.status || '';
+      const isEmptyPanel = product?.interviewers && product.interviewers.length === 0;
 
-  public onRowClick(): void {
-    // Only handle clicks on mobile devices
-    // On desktop, we use PrimeNG's hover tooltip only
-    // This function is kept for template compatibility but doesn't need parameters
-    // as mobile uses touchend and desktop uses hover tooltip
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Read-only',
+        detail: isEmptyPanel
+          ? 'This panel has no interviewers assigned and cannot be selected.'
+          : `This candidate is already ${status} and cannot be selected.`,
+      });
+    }
   }
 
   private touchMoved = false;
@@ -209,7 +217,7 @@ export class TableComponent<
 
   public onTouchStart(event: TouchEvent): void {
     // Reset touch moved flag and track position when touch starts
-    if (this.isTouchDevice() && this.enableCandidateStyling()) {
+    if (this.isTouchDevice()) {
       this.touchMoved = false;
       if (event.touches && event.touches.length > 0) {
         this.touchStartX = event.touches[0].clientX;
@@ -220,7 +228,7 @@ export class TableComponent<
 
   public onTouchMove(event: TouchEvent): void {
     // Mark that touch moved (user is scrolling)
-    if (this.isTouchDevice() && this.enableCandidateStyling()) {
+    if (this.isTouchDevice()) {
       if (event.touches && event.touches.length > 0) {
         const deltaX = Math.abs(event.touches[0].clientX - this.touchStartX);
         const deltaY = Math.abs(event.touches[0].clientY - this.touchStartY);
@@ -242,7 +250,7 @@ export class TableComponent<
 
   public onTouchEnd(event: TouchEvent, rowElement: HTMLElement, product: any): void {
     // On touch end, show tooltip directly if it was a tap (not scroll)
-    if (this.isTouchDevice() && this.enableCandidateStyling()) {
+    if (this.isTouchDevice() && (this.enableCandidateStyling() || product.isDisabled)) {
       const target = event.target as HTMLElement;
 
       // Don't trigger if clicking on interactive elements (buttons, checkboxes, etc.)
@@ -290,7 +298,18 @@ export class TableComponent<
     }
   }
 
-  private getTooltipText(product: any): string {
+  public getTooltipText(product: any): string {
+    if (product.isDisabled) {
+      const status = product?.status?.toLowerCase() || '';
+      if (product?.interviewers && product.interviewers.length === 0) {
+        return 'This panel has no interviewers assigned and cannot be selected.';
+      }
+      if (status === 'selected' || status === 'rejected' || status === 'completed') {
+        return `This candidate is already ${product.status} and cannot be selected.`;
+      }
+      return 'This row is currently disabled and cannot be selected.';
+    }
+
     if (!this.enableCandidateStyling()) {
       return '';
     }
@@ -459,7 +478,10 @@ export class TableComponent<
     }
   }
 
-  constructor(@Inject(PLATFORM_ID) private readonly platformId: object) {
+  constructor(
+    @Inject(PLATFORM_ID) private readonly platformId: object,
+    private readonly messageService: MessageService,
+  ) {
     super();
     effect(() => {
       const currentTableData = this.tableData();

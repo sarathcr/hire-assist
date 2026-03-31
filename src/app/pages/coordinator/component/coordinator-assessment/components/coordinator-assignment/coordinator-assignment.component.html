@@ -88,19 +88,22 @@
     <div class="coordinator-detail__content">
       <!-- Step 0: Candidate Selection -->
       @if (activeStep === 0) {
-        <app-table
-          [tableData]="data"
-          [columnsData]="candidateColumn"
-          heading="Candidate List"
-          [hasSearch]="true"
-          [parentLoader]="isCandidateLoading"
-          [hasCheckbox]="false"
-          selectionMode="single"
-          [hasPaginator]="false"
-          (pageChangeAndSort)="onTablePayloadChange($event)"
-          (selectedIds)="getSelectedcandidateId($event)"
-          [alreadySelected]="selectedCandidate"
-        ></app-table>
+        <div class="coordinator-detail__table-container">
+          <app-table
+            [tableData]="data"
+            [columnsData]="candidateColumn"
+            heading="Candidate List"
+            [hasSearch]="true"
+            [parentLoader]="isCandidateLoading"
+            [hasCheckbox]="false"
+            selectionMode="single"
+            [hasPaginator]="false"
+            (pageChangeAndSort)="onTablePayloadChange($event)"
+            (selectedIds)="getSelectedcandidateId($event)"
+            [alreadySelected]="selectedCandidate"
+            scrollHeight="400px"
+          ></app-table>
+        </div>
         <div
           class="coordinator-detail__step-actions coordinator-detail__step-actions--end"
         >
@@ -108,6 +111,7 @@
             label="Next"
             icon="pi pi-arrow-right"
             iconPos="right"
+            [disabled]="selectedCandidatesIds.length === 0"
             (onClick)="onNextStep(0)"
           ></p-button>
         </div>
@@ -115,20 +119,23 @@
 
       <!-- Step 1: Panel Selection -->
       @if (activeStep === 1) {
-        <app-table
-          [tableData]="panelData"
-          [columnsData]="panelColumn"
-          heading="Panel List"
-          [hasSearch]="true"
-          [parentLoader]="isPanelLoading"
-          [hasCheckbox]="false"
-          selectionMode="single"
-          [hasPaginator]="false"
-          (edit)="editPanel($event)"
-          (pageChangeAndSort)="onPanelTablePayloadChange($event)"
-          (selectedIds)="getSelectedPanelId($event)"
-          [alreadySelected]="selectedPanel"
-        ></app-table>
+        <div class="coordinator-detail__table-container">
+          <app-table
+            [tableData]="panelData"
+            [columnsData]="panelColumn"
+            heading="Panel List"
+            [hasSearch]="true"
+            [parentLoader]="isPanelLoading"
+            [hasCheckbox]="false"
+            selectionMode="single"
+            [hasPaginator]="false"
+            (edit)="editPanel($event)"
+            (pageChangeAndSort)="onPanelTablePayloadChange($event)"
+            (selectedIds)="getSelectedPanelId($event)"
+            [alreadySelected]="selectedPanel"
+            scrollHeight="400px"
+          ></app-table>
+        </div>
         <div
           class="coordinator-detail__step-actions coordinator-detail__step-actions--between"
         >
@@ -142,6 +149,7 @@
             label="Next"
             icon="pi pi-arrow-right"
             iconPos="right"
+            [disabled]="selectedPanelIds.length === 0 || !isPanelValid(selectedPanelIds[0])"
             (onClick)="onNextStep(1)"
           ></p-button>
         </div>
@@ -278,7 +286,8 @@
                     icon="pi pi-calendar-plus"
                     [disabled]="
                       selectedCandidatesIds.length === 0 ||
-                      selectedPanelIds.length === 0
+                      selectedPanelIds.length === 0 ||
+                      !isPanelValid(selectedPanelIds[0])
                     "
                     (onClick)="schedule()"
                     [style]="{ minWidth: '180px' }"

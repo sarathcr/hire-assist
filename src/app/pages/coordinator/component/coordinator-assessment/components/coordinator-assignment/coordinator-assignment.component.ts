@@ -121,7 +121,6 @@ type payload = Record<string, any>;
   ],
   providers: [
     TableDataSourceService,
-    MessageService,
     { provide: CANDIDATE_TABLE, useClass: TableDataSourceService },
     { provide: PANEL_TABLE, useClass: TableDataSourceService },
   ],
@@ -319,10 +318,22 @@ export class CoordinatorAssignmentComponent implements OnInit {
     // Map IDs to full panel objects
     if (selectedIds.length > 0) {
       const selectedId = selectedIds[0].id;
+      // Preliminary check for panel validity
+      const panel = this.panelData.data?.find((p) => String(p.id) === String(selectedId));
+      if (!this.isPanelValid(panel)) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Information',
+          detail: `Interviewers must be assigned in "${panel?.name || 'the panel'}" to proceed. You can add them using the Edit action.`,
+        });
+        // Clear selection to prevent blue background
+        this.selectedPanel = [];
+        this.selectedPanelIds = [];
+        this.lastSelectedPanelId = null;
+        return;
+      }
       this.lastSelectedPanelId = selectedId;
-      // Update selectedPanel array to match the selection
       this.selectedPanel = [selectedId];
-      // Try to find panel by matching id (handle both string and number comparison)
       this.updateSelectedPanelFromData(selectedId);
     } else {
       this.selectedPanelIds = [];
@@ -337,7 +348,16 @@ export class CoordinatorAssignmentComponent implements OnInit {
         (p) => String(p.id) === String(panelId),
       );
       if (panel) {
-        this.selectedPanelIds = [panel];
+        if (!this.isPanelValid(panel)) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Information',
+            detail: `Interviewers must be assigned in "${panel.name}" to proceed. You can add them using the Edit action.`,
+          });
+          this.selectedPanelIds = [];
+        } else {
+          this.selectedPanelIds = [panel];
+        }
       }
     }
   }
@@ -361,6 +381,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
             return {
               ...item,
               isScheduled: item.isScheduled ? 'Scheduled' : '',
+              isDisabled: !this.isCandidateSelectable(item),
             };
           });
 
@@ -368,7 +389,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
 
           this.isCompleteDisabled = this.data.data.some(
             (candidate: InterviewSummary) =>
-              candidate.status === 'Pending' || candidate.isScheduled === false,
+              candidate.status === 'Pending' ||
+              (candidate as any).isScheduled === false,
           );
           this.isCandidateLoading = false;
         },
@@ -475,7 +497,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
-        '640px': '90vw',
+        '640px': '98vw',
       },
     });
 
@@ -546,13 +568,20 @@ export class CoordinatorAssignmentComponent implements OnInit {
               });
               this.isSchedulingSuccessful = true;
             },
+            error: (error: CustomErrorResponse) => {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: error.error?.type || 'Failed to update interview status.',
+              });
+            }
           });
       },
-      error: () => {
+      error: (error: CustomErrorResponse) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to add interview panel.',
+          detail: error.error?.type || 'Failed to add interview panel.',
         });
       },
     });
@@ -590,14 +619,15 @@ export class CoordinatorAssignmentComponent implements OnInit {
       this.updateInterviewPanels(payload);
     };
 
-    const error = (error: HttpErrorResponse) => {
-      if (error?.status === 422 && error?.error?.businessError === 3102) {
+    const error = (error: CustomErrorResponse) => {
+      // business error code 3102 might imply we need to add instead of update
+      if ((error as any)?.status === 422 && error.error?.businessError === 3102) {
         this.addInterviewPanels(payload);
       } else {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `Failed to get interview panels.`,
+          detail: error.error?.type || 'Failed to get interview panels.',
         });
       }
     };
@@ -622,11 +652,11 @@ export class CoordinatorAssignmentComponent implements OnInit {
         });
         this.isSchedulingSuccessful = true;
       },
-      error: () => {
+      error: (error: CustomErrorResponse) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to Update interview panel.',
+          detail: error.error?.type || 'Failed to Update interview panel.',
         });
       },
     });
@@ -648,6 +678,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
           return {
             ...item,
             isScheduled: item.isScheduled ? 'Scheduled' : '',
+            isDisabled: !this.isCandidateSelectable(item),
           };
         });
 
@@ -721,7 +752,15 @@ export class CoordinatorAssignmentComponent implements OnInit {
         });
       }
     } else if (currentStep === 1) {
-       if (this.selectedPanelIds.length > 0) {
+      if (this.selectedPanelIds.length > 0) {
+        if (!this.isPanelValid(this.selectedPanelIds[0])) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Warning',
+            detail: 'Please select a panel with interviewers to proceed.',
+          });
+          return;
+        }
         canProceed = true;
       } else {
         this.messageService.add({
@@ -772,7 +811,10 @@ export class CoordinatorAssignmentComponent implements OnInit {
       modal: true,
       showHeader: false, // We use custom header in component
       contentStyle: { padding: '0' },
-      styleClass: 'reassign-dialog-wrapper'
+      styleClass: 'reassign-dialog-wrapper',
+      breakpoints: {
+        '640px': '95vw',
+      }
     });
 
     ref.onClose.subscribe((confirmed: boolean) => {
@@ -795,5 +837,27 @@ export class CoordinatorAssignmentComponent implements OnInit {
     this.completedSteps = [];
     this.visitedSteps = [0];
     this.activeStep = 0;
+  }
+
+  /**
+   * Helper to determine if a candidate is selectable for assignment
+   * Only Scheduled or Pending (In Progress) candidates can be assigned
+   */
+  private isCandidateSelectable(candidate: any): boolean {
+    const status = candidate?.status?.trim().toLowerCase() || '';
+    // Mapped statuses: Scheduled and Pending (sometimes mapped to In Progress)
+    // Selected, Rejected, and Completed should be disabled
+    return (
+      status === 'scheduled' ||
+      status === 'pending' ||
+      status === 'in progress'
+    );
+  }
+
+  /**
+   * Helper to determine if a panel is valid (has interviewers)
+   */
+  public isPanelValid(panel: any): boolean {
+    return !!(panel && panel.interviewers && panel.interviewers.length > 0);
   }
 }
