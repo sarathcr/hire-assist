@@ -79,7 +79,6 @@ import { FilterMap } from '../../../../../../shared/models/pagination.models';
   styleUrl: './interview-detail.component.scss',
 })
 export class InterviewDetailComponent extends BaseComponent implements OnInit {
-  public name = 'test';
   public previousRounds: RoundsAccordion[] = [];
   public text!: string;
   public score = new Score();
@@ -98,7 +97,6 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
   public candidateid!: string | null;
   public assessmentRoundId!: string | null;
   public interviewerId!: string;
-  public interview!: Interview;
   public hasfile = false;
   public isSubmitted = false;
   public responseData!: InterviewerCandidate;
@@ -309,32 +307,13 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
     this.scorevalue = newScore;
   }
   public onSubmit() {
-    this.interview = {
-      id: Number(this.interviewId),
-      statusId: 7,
-      hasAttachment: this.uploadedFile.length ? true : false,
-      score: this.totalFeedbackScore,
-    };
-    const next = (res: Interview) => {
-      this.messageService.add({
-        severity: 'Success',
-        summary: 'success',
-        detail: 'Submitted Successfully',
-      });
-      this.isSubmitted = res.statusId == 7 ? true : false;
-      this.getAssessmentDetails(this.requestData);
-    };
-    const error = () => {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'No data Found',
-      });
-      this.isLoading = false;
-    };
-    this.interviewService
-      .UpdateInterview(Number(this.interviewId), this.interview)
-      .subscribe({ next, error });
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Submitted Successfully',
+    });
+    this.isSubmitted = true;
+    this.getAssessmentDetails(this.requestData);
   }
   public validateScore(feedback: AccordionData) {
     feedback.isScoreInValid =

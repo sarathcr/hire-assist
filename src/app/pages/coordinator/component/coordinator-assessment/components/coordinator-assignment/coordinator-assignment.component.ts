@@ -18,7 +18,7 @@ import { ReassignPanelComponent } from '../reassign-panel/reassign-panel.compone
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
 import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
-import { StatusEnum } from '../../../../../../shared/enums/status.enum';
+
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import {
   FilterMap,
@@ -39,7 +39,7 @@ import {
   Interviewer,
   PanelSummary,
 } from '../../../../../admin/models/assessment-schedule.model';
-import { Interview } from '../../../../../admin/models/interviewer.model';
+
 import { interviewerInterface } from '../../../../../admin/models/interviewers-model';
 import {
   GetInterviewPanelsResponse,
@@ -177,7 +177,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
   public assessmentRoundId!: number;
   public selectedPanel: string[] = [];
   public existingPanel: string[] = [];
-  public updateInterview!: Interview;
+
   public combinedPayloadData: any;
   public isCandidateLoading = false;
   public isPanelLoading = false;
@@ -548,34 +548,14 @@ export class CoordinatorAssignmentComponent implements OnInit {
   private addInterviewPanels(payload: InterviewPanels): void {
     this.interviewService.addinterviewpanel(payload).subscribe({
       next: () => {
-        this.updateInterview = {
-          id: Number(this.selectedCandidatesIds[0].id),
-          statusId: StatusEnum.Scheduled,
-        };
-        this.interviewService
-          .UpdateInterview(
-            Number(this.selectedCandidatesIds[0].id),
-            this.updateInterview,
-          )
-          .subscribe({
-            next: () => {
-              this.getPaginatedCandidateData(this.combinedPayloadData);
-              this.getPaginatedPanelData();
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Interview panel assigned successfully.',
-              });
-              this.isSchedulingSuccessful = true;
-            },
-            error: (error: CustomErrorResponse) => {
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: error.error?.type || 'Failed to update interview status.',
-              });
-            }
-          });
+        this.getPaginatedCandidateData(this.combinedPayloadData);
+        this.getPaginatedPanelData();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Interview panel assigned successfully.',
+        });
+        this.isSchedulingSuccessful = true;
       },
       error: (error: CustomErrorResponse) => {
         this.messageService.add({
