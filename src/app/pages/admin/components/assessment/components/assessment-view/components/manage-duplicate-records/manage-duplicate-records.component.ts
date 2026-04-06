@@ -47,6 +47,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   public selectedPanelId = signal<number | null>(null);
   public assessmentId!: string;
   public isLoading = signal(false);
+  private activeGroupId: string | null = null;
 
   // Helper method to get initials for avatar
   public getInitials(name: string): string {
@@ -72,7 +73,9 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   // Public Events
-  public onDuplicateRecordClick(candidates: CandidateData[]) {
+  public onDuplicateRecordClick(candidates: CandidateData[], groupId: string) {
+    this.activeGroupId = groupId;
+    this.selectedPanelId.set(null);
     this.splitPanelRendered.set(false);
 
     setTimeout(() => {
@@ -107,7 +110,8 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     const configData = this.config.data as DialogData;
     this.data = configData.duplicateRecords;
     this.assessmentId = configData.assessmentId;
-    if (this.data) {
+    if (this.data && this.data.length > 0) {
+      this.activeGroupId = this.data[0].groupId;
       this.setPanelListData(this.data);
     }
   }
@@ -160,7 +164,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
         summary: 'Success',
         detail: 'Created the User Successfully',
       });
-      this.getSelectedCandidateEmail(selectedCandidate);
+      this.updateModifiedCandidateData();
     };
     const error = (error: CustomErrorResponse) => {
       this.isLoading.set(false);
@@ -179,19 +183,14 @@ export class ManageDuplicateRecordsComponent implements OnInit {
       .subscribe({ next, error });
   }
 
-  private getSelectedCandidateEmail(selectedCandidate: CandidateData) {
-    const selectedEmail = (
-      selectedCandidate as unknown as Record<string, unknown>
-    )['Email Id'];
+  private updateModifiedCandidateData() {
+    if (!this.activeGroupId) return;
 
-    this.updateModifiedCandidateData(String(selectedEmail));
-  }
-
-  private updateModifiedCandidateData(selectedEmail: string) {
-    this.data = this.data['filter'](
-      (item: CandidateData) =>
-        item['key'].toLowerCase() !== selectedEmail.toLowerCase(),
+    this.data = this.data.filter(
+      (item: CandidateData) => item.groupId !== this.activeGroupId,
     );
+    this.activeGroupId = null;
+    this.splitPanelList.set([]);
     this.closeDialog();
   }
 

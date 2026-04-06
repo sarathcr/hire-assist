@@ -63,6 +63,23 @@
                       </div>
                     }
                   </div>
+                  <div class="QuestionSet__accordion-item-actions" (click)="$event.stopPropagation()">
+                    <app-button
+                      [buttonVariant]="'text'"
+                      [buttonSize]="'small'"
+                      [icon]="'pi pi-pencil'"
+                      (btnClick)="onEditQuestionSet(questionSet)"
+                      [disabled]="isReadOnly()"
+                    ></app-button>
+                    <app-button
+                      [buttonVariant]="'text'"
+                      [buttonSize]="'small'"
+                      [buttonSeverity]="'danger'"
+                      [icon]="'pi pi-trash'"
+                      (btnClick)="onDeleteQuestionSet(questionSet)"
+                      [disabled]="isReadOnly()"
+                    ></app-button>
+                  </div>
                 </div>
               </p-accordion-header>
               <p-accordion-content>

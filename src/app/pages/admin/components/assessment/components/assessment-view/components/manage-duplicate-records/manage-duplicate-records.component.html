@@ -43,8 +43,8 @@
                     class="duplicates__candidate-card"
                     [class.duplicates__candidate-card--clickable]="true"
                     tabindex="0"
-                    (click)="onDuplicateRecordClick(group.candidates)"
-                    (keyup.enter)="onDuplicateRecordClick(group.candidates)"
+                    (click)="onDuplicateRecordClick(group.candidates, group.groupId)"
+                    (keyup.enter)="onDuplicateRecordClick(group.candidates, group.groupId)"
                     role="button"
                     aria-pressed="false"
                   >

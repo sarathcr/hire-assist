@@ -138,3 +138,9 @@ export interface FileRequest {
   file: File;
   files?: File[];
 }
+
+export interface InterviewerRefreshRequest {
+  assessmentId: number;
+  interviewId: number;
+  terminatedTimer: string;
+}

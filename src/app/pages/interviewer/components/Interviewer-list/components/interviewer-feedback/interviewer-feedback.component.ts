@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -1084,6 +1084,47 @@ export class InterviewerFeedbackComponent
     document.addEventListener('mouseup', this._timerUpHandler);
     document.addEventListener('touchmove', this._timerMoveHandler as any, { passive: false });
     document.addEventListener('touchend', this._timerUpHandler);
+  }
+
+  @HostListener('window:beforeunload')
+  public onBeforeUnload(): void {
+    if (this.isSubmitted || !this.assessmentId || !this.interviewId) {
+      return;
+    }
+
+    const remainingSeconds = Math.max(
+      0,
+      this.durationMinutes * 60 - this.elapsedSeconds,
+    );
+    const h = Math.floor(remainingSeconds / 3600);
+    const m = Math.floor((remainingSeconds % 3600) / 60);
+    const s = remainingSeconds % 60;
+    const terminatedTimer = `${h.toString().padStart(2, '0')}:${m
+      .toString()
+      .padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+    const url = `${INTERVIEW_URL}/InterviewerRefresh`;
+    const payload = {
+      assessmentId: Number(this.assessmentId),
+      interviewId: Number(this.interviewId),
+      terminatedTimer: terminatedTimer,
+    };
+
+    const token = this.storeService.getTokenData()?.accessToken;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Use fetch with keepalive to ensure the request is sent even during unload
+    fetch(url, {
+      method: 'PUT',
+      headers: headers,
+      body: JSON.stringify(payload),
+      keepalive: true,
+    });
   }
 
   public override ngOnDestroy(): void {

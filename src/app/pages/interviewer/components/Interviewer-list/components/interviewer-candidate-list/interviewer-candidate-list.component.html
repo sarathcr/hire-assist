@@ -103,6 +103,8 @@
         [parentLoader]="(loading$ | async) === true"
         [columnsData]="columns"
         [hasSearch]="true"
+        [hasCheckbox]="false"
+        [selectionMode]="undefined"
         (btnClick)="onStartInterview($event)"
         (buttonClick)="onButtonClick($event)"
         (pageChangeAndSort)="onTablePayloadChange($event)"

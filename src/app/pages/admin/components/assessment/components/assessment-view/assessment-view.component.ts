@@ -23,6 +23,10 @@ import { CoordinatorStepComponent } from './components/coordinator-step/coordina
 import { FrontDeskComponent } from './components/front-desk/front-desk.component';
 import { ImportCandidateListStepComponent } from './components/import-candidate-list-step/import-candidate-list-step.component';
 import { SelectQuesionsetStepComponent } from './components/select-quesionset-step/select-quesionset-step.component';
+import { AssessmentService } from '../../../../services/assessment.service';
+import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
+import { forkJoin, of } from 'rxjs';
+import { switchMap, map } from 'rxjs/operators';
 
 export interface AssessmentViewModel {
   id?: string;
@@ -103,6 +107,7 @@ export class AssessmentViewComponent
     'frontDesk',
     'schedule',
   ];
+  private isQuestionSetIncomplete = false;
 
   public stepConfig = [
     {
@@ -149,6 +154,7 @@ export class AssessmentViewComponent
     private stepsStatusService: StepsStatusService,
     @Inject(AssessmentScheduleService)
     private assessmentScheduleService: AssessmentScheduleService,
+    private assessmentService: AssessmentService,
     private messageService: MessageService,
   ) {
     super();
@@ -258,6 +264,12 @@ export class AssessmentViewComponent
     if (step === 1) {
       return true;
     }
+
+    // If question set is incomplete, block any step beyond index 1
+    if (this.isQuestionSetIncomplete && step > 1) {
+      return false;
+    }
+
     const canActivate = this.completedSteps.includes(step - 1);
     return canActivate;
   }
@@ -280,12 +292,56 @@ export class AssessmentViewComponent
     if (this.assessmentId) {
       this.stepsStatusService
         .getAssessmentStepsStatus(this.assessmentId)
-        .subscribe({
-          next: (response) => {
+        .pipe(
+          switchMap((response) => {
             this.stepsStatus = response;
             this.stepsLoaded = true;
+
+            // If questionSets is marked as Completed, verify it's actually finished
+            if (this.stepsStatus.questionSets === 'Completed') {
+              const payload = new PaginatedPayload();
+              payload.filterMap = { assessmentId: this.assessmentId };
+              payload.pagination.pageSize = -1;
+
+              return this.assessmentService.paginationEntity<any>('QuestionSetSummary', payload).pipe(
+                switchMap((res) => {
+                  const questionSets = res.data || [];
+                  if (questionSets.length === 0) {
+                    this.isQuestionSetIncomplete = true;
+                    return of(null);
+                  }
+
+                  // For each set, check if it has questions
+                  const questionChecks = questionSets.map((set: any) =>
+                    this.assessmentService.getQuestionsBySet(set.id.toString())
+                  );
+
+                  return forkJoin(questionChecks).pipe(
+                    map((results: any[]) => {
+                      this.isQuestionSetIncomplete = results.some(
+                        (res) => !res.questions || res.questions.length === 0
+                      );
+                      if (this.isQuestionSetIncomplete) {
+                        this.stepsStatus.questionSets = 'Active';
+                        // Force later steps back to Pending to land on Question Set and block navigation
+                        this.stepsStatus.coordinators = 'Pending';
+                        this.stepsStatus.frontDesk = 'Pending';
+                        this.stepsStatus.schedule = 'Pending';
+                      }
+                      return null;
+                    })
+                  );
+                })
+              );
+            } else {
+              this.isQuestionSetIncomplete = false;
+              return of(null);
+            }
+          })
+        )
+        .subscribe({
+          next: () => {
             this.loadAssessmentRounds();
-            // Set active step based on API response
             this.setActiveStepFromStatus();
           },
           error: () => {
@@ -364,6 +420,12 @@ export class AssessmentViewComponent
 
   public isStepEnabled(stepIndex: number): boolean {
     if (!this.stepsLoaded || !this.stepsStatus) return false;
+
+    // If question set is incomplete, block all steps after index 1
+    if (this.isQuestionSetIncomplete && stepIndex > 1) {
+      return false;
+    }
+
     const key = this.stepKeys[stepIndex];
     if (!key) return false;
     const status = this.stepsStatus[key];

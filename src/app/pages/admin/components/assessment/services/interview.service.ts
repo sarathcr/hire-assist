@@ -19,6 +19,7 @@ import {
   Interview,
   InterviewerCandidate,
   InterviewerFeedback,
+  InterviewerRefreshRequest,
 } from '../../../models/interviewer.model';
 
 @Injectable({
@@ -203,6 +204,13 @@ export class InterviewService extends ApiService<any> {
   }) {
     return this.httpClient.post(
       `${this.getResourceUrl()}/InterviewPanel`,
+      payload,
+    );
+  }
+
+  public InterviewerRefresh(payload: InterviewerRefreshRequest) {
+    return this.httpClient.put(
+      `${this.getResourceUrl()}/InterviewerRefresh`,
       payload,
     );
   }

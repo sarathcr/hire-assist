@@ -1,15 +1,13 @@
+import { HttpClient } from '@angular/common/http';
 import {
+  ChangeDetectorRef,
   Component,
   input,
-  OnInit,
-  computed,
-  signal,
-  ChangeDetectorRef,
+  OnInit
 } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
 import { AccordionModule, AccordionTabOpenEvent } from 'primeng/accordion';
+import { MessageService } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
 import { Knob } from 'primeng/knob';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -17,10 +15,13 @@ import { TableModule } from 'primeng/table';
 
 import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
+import { DialogFooterComponent } from '../../../../../../../../shared/components/dialog-footer/dialog-footer.component';
+import { DialogComponent } from '../../../../../../../../shared/components/dialog/dialog.component';
 import { TableDataSourceService } from '../../../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../../../shared/components/table/table.component';
 import { ASSESSMENT_URL } from '../../../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
+import { DialogData } from '../../../../../../../../shared/models/dialog.models';
 import {
   PaginatedData,
   PaginatedPayload,
@@ -37,6 +38,7 @@ import {
   QuestionSetFormModal,
 } from '../../../../../../models/assessment-schedule.model';
 import {
+  FileDto,
   GetSelectedQuestionsForSet,
   OptionsForQuestionSetInterface,
   QuestionSetModel,
@@ -46,12 +48,11 @@ import {
 } from '../../../../../../models/question.model';
 import { AssessmentService } from '../../../../../../services/assessment.service';
 import { QuestionService } from '../../../../../../services/question.service';
+import { InterviewService } from '../../../../services/interview.service';
 import { QuestionSetStateService } from '../../../../services/question-set-state.service';
+import { StepsStatusService } from '../../../../services/steps-status.service';
 import { QuestionSetModalComponent } from './question-set-modal/question-set-modal.component';
 import { QuestionSetStepSkeletonComponent } from './questionSet-skeleton';
-import { StepsStatusService } from '../../../../services/steps-status.service';
-import { InterviewService } from '../../../../services/interview.service';
-import { FileDto } from '../../../../../../models/question.model';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -182,27 +183,14 @@ export class SelectQuesionsetStepComponent
     this.setConfigMaps();
     this.getAllQuestionSets(new PaginatedPayload());
   }
-  public onUpdateQuestionSet(): void {
-    const selectedId = this.fGroup.get('questionSet')?.value;
-    const selectedSet = this.questionSets.find(
-      (qs: QuestionSetModel) => qs.id.toString() === selectedId,
-    );
 
-    if (!selectedSet) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'No valid question set selected for update.',
-      });
-      return;
-    }
-
+  public onEditQuestionSet(questionSet: QuestionSetModel): void {
     const data = {
       configMap: this.configMap || {},
       formData: {
-        id: selectedSet.id,
-        title: selectedSet.title,
-        description: selectedSet.description || '',
+        id: questionSet.id,
+        title: questionSet.title,
+        description: questionSet.description || '',
         assessmentId: Number(this.assessmentId()),
       },
     };
@@ -210,7 +198,7 @@ export class SelectQuesionsetStepComponent
     const childRef = this.dialog.open(QuestionSetModalComponent, {
       data: data,
       header: 'Update Question Set',
-      width: '50vw',
+      width: '30vw',
       modal: true,
       focusOnShow: false,
       breakpoints: {
@@ -219,7 +207,74 @@ export class SelectQuesionsetStepComponent
       },
     });
 
-    childRef.onClose.subscribe();
+    childRef.onClose.subscribe(
+      (result: { isCreateSuccess?: boolean } | undefined) => {
+        if (result?.isCreateSuccess !== false) {
+          this.getAllQuestionSets(new PaginatedPayload());
+        }
+      },
+    );
+  }
+  public onDeleteQuestionSet(questionSet: QuestionSetModel): void {
+    const modalData: DialogData = {
+      message: `Are you sure you want to delete the question set "${questionSet.title}"?`,
+      isChoice: true,
+      closeOnNavigation: true,
+      acceptButtonText: 'Yes',
+      cancelButtonText: 'Cancel',
+    };
+
+    const ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Warning',
+      width: '35vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    ref.onClose.subscribe((res: boolean) => {
+      if (res) {
+        this.deleteQuestionSet(questionSet.id);
+      }
+    });
+  }
+
+  private deleteQuestionSet(id: number): void {
+    this.isLoading = true;
+    const next = () => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Deleted Question Set Successfully',
+      });
+      this.getAllQuestionSets(new PaginatedPayload());
+      this.isLoading = false;
+    };
+    const error = (error: CustomErrorResponse) => {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: `Error : ${error.error.type}`,
+      });
+      this.isLoading = false;
+    };
+
+    this.assessmentService
+      .deleteQuestionSet(id, Number(this.assessmentId()))
+      .subscribe({
+        next: () => {
+          next();
+          this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
+        },
+        error,
+      });
   }
 
   public onSelectedIds(newIds: QuestionsModel[], questionSetId: string) {
@@ -290,11 +345,11 @@ export class SelectQuesionsetStepComponent
       // Restore original state
       accordionData.allSelectedQuestions = [...originalAllSelectedQuestions];
       accordionData.selectedIds = [];
-      
+
       // Temporarily clear selectedIds to force table reset
       this.questionSetAccordionData.set(questionSetId, { ...accordionData });
       this.cdr.markForCheck();
-      
+
       // Then restore the original selectedIds to sync the table
       setTimeout(() => {
         accordionData.selectedIds = [...originalSelectedIds];
@@ -407,10 +462,16 @@ export class SelectQuesionsetStepComponent
         detail: 'Questions and set save failed',
       });
     };
-      this.assessmentService
-        .createEntity(this.questionSetSubmittedData, 'questionsetquestions')
-        .subscribe({ next, error });
-    }
+    this.assessmentService
+      .createEntity(this.questionSetSubmittedData, 'questionsetquestions')
+      .subscribe({
+        next: () => {
+          next();
+          this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
+        },
+        error,
+      });
+  }
 
   public onUpdate(questionSetId: string) {
     const accordionData = this.questionSetAccordionData.get(questionSetId);
@@ -444,7 +505,13 @@ export class SelectQuesionsetStepComponent
     };
     this.assessmentService
       .updateEntity('', this.questionSetSubmittedData, 'questionsetquestions')
-      .subscribe({ next, error });
+      .subscribe({
+        next: () => {
+          next();
+          this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
+        },
+        error,
+      });
   }
   public onCreateQuestionSet() {
     const data = {
@@ -467,6 +534,7 @@ export class SelectQuesionsetStepComponent
       (result: { isCreateSuccess?: boolean } | undefined) => {
         if (result?.isCreateSuccess !== false) {
           this.getAllQuestionSets(new PaginatedPayload());
+          this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
         }
       },
     );
@@ -1013,14 +1081,14 @@ export class SelectQuesionsetStepComponent
 
   public hasSubmittedQuestionSets(): boolean {
 
-      if (this.questionSets.length === 0) {
-        return false;
-      }
+    if (this.questionSets.length === 0) {
+      return false;
+    }
 
-        return this.questionSets.every((set) => {
+    return this.questionSets.every((set) => {
         const accordionData = this.questionSetAccordionData.get(set.id.toString());
         return accordionData && accordionData.isUpdate && accordionData.selectedIds.length > 0;
-      });
+    });
   }
 
   private restoreSearchValueOnly(questionSetId: string): void {

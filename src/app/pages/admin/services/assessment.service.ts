@@ -16,7 +16,8 @@ import {
 } from '../models/assessment.model';
 import {
   CandidateBatchCheckRequest,
-  CandidateBatchCheckResponse,candidateDetails
+  CandidateBatchCheckResponse,
+  candidateDetails,
 } from '../models/candidate-data.model';
 import {
   frontDeskInterface,
@@ -176,7 +177,13 @@ export class AssessmentService extends ApiService<any> {
     };
     return this.httpClient.post<any>(
       `${this.getResourceUrl()}/assessmentsummary`,
-      payload
+      payload,
+    );
+  }
+
+  public deleteQuestionSet(id: number, assessmentId: number) {
+    return this.httpClient.delete(
+      `${ASSESSMENT_URL}/QuestionSetDelete?questionSetId=${id}&assessmentId=${assessmentId}`,
     );
   }
 }
