@@ -9,7 +9,6 @@ import { BaseComponent } from '../../../../../../../../shared/components/base/ba
 import { ErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import {
   candidateDetails,
-  candidatePreviousAssessments,
 } from '../../../../../../models/candidate-data.model';
 import { InterviewerCandidate } from '../../../../../../models/interviewer.model';
 import { TagModule } from 'primeng/tag';
@@ -17,8 +16,8 @@ import { ChipModule } from 'primeng/chip';
 import { DividerModule } from 'primeng/divider';
 import { AssessmentService } from '../../../../../../services/assessment.service';
 import { InterviewService } from '../../../../services/interview.service';
-import { CandidateDetailPreviousAssessmentSkeletonComponent } from './candidate-detail-previous-assessment-skeleton';
 import { CandidateDetailViewSkeletonComponent } from './candidate-detail-view-skeleton';
+import { CandidateDetailPreviousAssessmentSkeletonComponent } from './candidate-detail-previous-assessment-skeleton';
 import { CandidateDetailHeaderSkeletonComponent } from './candidate-detail-header-skeleton';
 import { EmptyStateComponent } from "../../../../../../../../shared/components/empty-state/empty-state/empty-state.component";
 
@@ -48,12 +47,10 @@ export class CandidateDetailViewComponent
   public assessmentId!: number;
   public candidateId!: string;
   public candidateDetailsDataSource!: candidateDetails;
-  public candidateAssessmentDataSource!: candidatePreviousAssessments[];
   public interviewFeedbacksDataSource?: InterviewerCandidate;
   public url = 'assessmentsummary';
   public editorStatus = true;
   public isLoading = true;
-  public isLoadingPreviousAssessments = true;
   public isLoadingInterviewFeedbacks = true;
   public isCoverImageLoading = false;
   public interviewId!: number;
@@ -70,7 +67,6 @@ export class CandidateDetailViewComponent
   ngOnInit(): void {
     // Ensure loading state is set before fetching data
     this.isLoading = true;
-    this.isLoadingPreviousAssessments = true;
     
     this.assessmentId = Number(
       this.activatedRoute.snapshot.paramMap.get('recruitmentId'),
@@ -85,9 +81,7 @@ export class CandidateDetailViewComponent
   }
 
   public onTabChange(value: string | number): void {
-    if (String(value) === '1' && !this.candidateAssessmentDataSource) {
-      this.getPreviousAssessmentDetails();
-    } else if (String(value) === '2') {
+    if (String(value) === '1') {
       this.getInterviewFeedbacks();
     }
   }
@@ -103,19 +97,6 @@ export class CandidateDetailViewComponent
     };
     this.assessmentService
       .getCandidateDetails(this.candidateId, this.assessmentId)
-      .subscribe({ next, error });
-  }
-
-  private getPreviousAssessmentDetails(): void {
-    const next = (res: candidatePreviousAssessments[]) => {
-      this.candidateAssessmentDataSource = res;
-      this.isLoadingPreviousAssessments = false;
-    };
-    const error = () => {
-      this.isLoadingPreviousAssessments = false;
-    };
-    this.interviewService
-      .GetCandidateAssessmentDetails(this.candidateId, this.assessmentId)
       .subscribe({ next, error });
   }
 

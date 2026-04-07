@@ -57,6 +57,7 @@ export enum PaginatedDataActions {
   StartInterview = 'StartInterview',
   Unlock = 'unlock',
   History = 'history',
+  PreviousAssessment = 'previousAssessment'
 }
 
 export type ActionConfig = Record<string, BaseActionConfig>;

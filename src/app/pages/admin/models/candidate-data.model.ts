@@ -103,6 +103,8 @@ export interface CandidateModel {
   isAlreadyExist?: boolean;
   endDateTime?: string;
   startDateTime?: string;
+  visibleButtonIndices?: number[];
+  disabledButtonIndices?: number[];
 }
 
 export interface CandidateApplicationQuestions {

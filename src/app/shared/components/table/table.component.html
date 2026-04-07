@@ -429,6 +429,21 @@
                     "
                   />
                 }
+                @if (
+                  headerColumn.actions?.includes(PaginatedDataActions.PreviousAssessment)
+                ) {
+                  <p-button
+                    icon="pi pi-history"
+                    class="mr-2"
+                    [rounded]="true"
+                    [outlined]="true"
+                    severity="info"
+                    pTooltip="View Previous Recruitment"
+                    tooltipPosition="bottom"
+                    [disabled]="product.isSelf || !product.isAlreadyExist"
+                    (onClick)="onPreviousAssessment(product)"
+                  />
+                }
               </div>
             </td>
           } @else if (headerColumn.hasChip) {
@@ -478,7 +493,7 @@
                 <p-popover #op appendTo="body">
                   <div
                     class="flex flex-column gap-1 p-1"
-                    style="display: flex; flex-direction: column"
+                    style="display: flex; flex-direction: column; align-items: flex-start;"
                   >
                     @for (
                       icon of headerColumn.buttonIcons;

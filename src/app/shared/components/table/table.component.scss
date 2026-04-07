@@ -41,33 +41,6 @@
     }
   }
 
-  &__row--batch-assigned {
-    border-left: 3px solid #10b981 !important;
-    background-color: #e8f5e9 !important;
-    
-    &:hover {
-      background-color: #dceddd !important;
-    }
-  }
-
-  &__row--not-scheduled {
-    border-left: 3px solid #f59e0b !important;
-    background-color: #fff3e0 !important;
-    
-    &:hover {
-      background-color: #ffe3c2 !important;
-    }
-  }
-
-  &_isAlready {
-    border-left: 3px solid #3b82f6 !important;
-  }
-
-  &_isDuplicate {
-    border-left: 3px solid #ef4444 !important;
-    background-color: rgba(239, 68, 68, 0.02) !important;
-  }
-
   ::ng-deep {
 
     // Component specific UI elements

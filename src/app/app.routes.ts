@@ -8,6 +8,7 @@ import { AssessmentListComponent } from './pages/admin/components/assessment/com
 
 import { AssessmentViewComponent } from './pages/admin/components/assessment/components/assessment-view/assessment-view.component';
 import { CandidateDetailViewComponent } from './pages/admin/components/assessment/components/assessment-view/components/candidate-detail-view/candidate-detail-view.component';
+import { CandidatePreviousAssessmentComponent } from './pages/admin/components/assessment/components/assessment-view/components/candidate-previous-assessment/candidate-previous-assessment.component';
 import { AssessmentSummaryComponent } from './pages/admin/components/interviews/components/assessment-summary/assessment-summary.component';
 import { RecruitmentSummaryComponent } from './pages/admin/components/assessment/components/recruitment-summary/recruitment-summary.component';
 import { InterviewCandidateListComponent } from './pages/admin/components/interviews/components/interview-candidate-list/interview-candidate-list.component';
@@ -81,6 +82,10 @@ export const routes: Routes = [
           {
             path: 'candidateDetail/:recruitmentId/:candidateId',
             component: CandidateDetailViewComponent,
+          },
+          {
+            path: 'previousAssessments/:recruitmentId/:candidateId',
+            component: CandidatePreviousAssessmentComponent,
           },
           {
             path: 'recruitment-summary/:id',

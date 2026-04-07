@@ -1,0 +1,228 @@
+<div class="candidate-detail p-4">
+  <div class="flex justify-content-between align-items-center mb-4">
+    <h2><i class="pi pi-history mr-2"></i> Previous Recruitments</h2>
+  </div>
+
+  <div class="candidate-detail__content">
+    @if (!isLoadingPreviousAssessments) {
+      @if (candidateAssessmentDataSource !== undefined) {
+        @if (candidateAssessmentDataSource.length > 0) {
+          <div class="candidate-detail__assessments">
+            @for (
+              assessment of candidateAssessmentDataSource;
+              track assessment.assessmentId
+            ) {
+              <div
+                class="candidate-detail__assessment-card border-1 border-gray-300 border-round p-3 mb-4 bg-white"
+              >
+                <div class="candidate-detail__assessment-header mb-3">
+                  <h3
+                    class="candidate-detail__assessment-title m-0 text-xl text-800"
+                  >
+                    <i class="pi pi-briefcase mr-2"></i>
+                    {{ assessment.assessmentName }}
+                  </h3>
+                </div>
+
+                <p-accordion
+                  [multiple]="true"
+                  class="candidate-detail__rounds-accordion"
+                >
+                  @for (
+                    round of assessment.roundsDetails;
+                    track round.roundId
+                  ) {
+                    <p-accordion-panel [value]="round.roundId">
+                      <p-accordion-header>
+                        <div
+                          class="candidate-detail__round-header flex w-full justify-content-between align-items-center pr-4"
+                        >
+                          <span
+                            class="candidate-detail__round-name font-semibold"
+                          >
+                            <i class="pi pi-sitemap mr-2"></i>
+                            {{ round.roundName }}
+                          </span>
+                          <span
+                            class="candidate-detail__round-status text-sm font-medium px-2 py-1 border-round bg-gray-100"
+                          >
+                            {{ round.status }}
+                          </span>
+                        </div>
+                      </p-accordion-header>
+                      <p-accordion-content>
+                        <!-- Aptitude Round Details -->
+                        @if (round.roundId === 1) {
+                          @if (
+                            round.assessmentDetails &&
+                            round.assessmentDetails.length > 0
+                          ) {
+                            <div class="candidate-detail__round-details">
+                              <div class="candidate-detail__details-grid grid">
+                                <div
+                                  class="candidate-detail__detail-item col-6 md:col-4 mb-3"
+                                >
+                                  <span
+                                    class="candidate-detail__detail-label text-500 block text-sm mb-1"
+                                    >Question Set</span
+                                  >
+                                  <span
+                                    class="candidate-detail__detail-value font-medium"
+                                    >{{
+                                      round.assessmentDetails[0].questionSet
+                                    }}</span
+                                  >
+                                </div>
+                                <div
+                                  class="candidate-detail__detail-item col-6 md:col-4 mb-3"
+                                >
+                                  <span
+                                    class="candidate-detail__detail-label text-500 block text-sm mb-1"
+                                    >Batch</span
+                                  >
+                                  <span
+                                    class="candidate-detail__detail-value font-medium"
+                                    >{{
+                                      round.assessmentDetails[0].batch
+                                    }}</span
+                                  >
+                                </div>
+                                <div
+                                  class="candidate-detail__detail-item col-6 md:col-4 mb-3"
+                                >
+                                  <span
+                                    class="candidate-detail__detail-label text-500 block text-sm mb-1"
+                                    >Total Questions</span
+                                  >
+                                  <span
+                                    class="candidate-detail__detail-value font-medium"
+                                    >{{
+                                      round.assessmentDetails[0].totalQuestions
+                                    }}</span
+                                  >
+                                </div>
+                                <div
+                                  class="candidate-detail__detail-item col-6 md:col-4 mb-3"
+                                >
+                                  <span
+                                    class="candidate-detail__detail-label text-500 block text-sm mb-1"
+                                    >Attended Questions</span
+                                  >
+                                  <span
+                                    class="candidate-detail__detail-value font-medium"
+                                    >{{
+                                      round.assessmentDetails[0]
+                                        .attendedQuestions
+                                    }}</span
+                                  >
+                                </div>
+                                <div
+                                  class="candidate-detail__detail-item col-6 md:col-4 mb-3"
+                                >
+                                  <span
+                                    class="candidate-detail__detail-label text-500 block text-sm mb-1"
+                                    >Correct Answers</span
+                                  >
+                                  <span
+                                    class="candidate-detail__detail-value font-medium text-green-600"
+                                    >{{
+                                      round.assessmentDetails[0].correctAnswers
+                                    }}</span
+                                  >
+                                </div>
+                                <div
+                                  class="candidate-detail__detail-item col-6 md:col-4 mb-3"
+                                >
+                                  <span
+                                    class="candidate-detail__detail-label text-500 block text-sm mb-1"
+                                    >Skipped</span
+                                  >
+                                  <span
+                                    class="candidate-detail__detail-value font-medium"
+                                    >{{
+                                      round.assessmentDetails[0].skipped
+                                    }}</span
+                                  >
+                                </div>
+                              </div>
+                            </div>
+                          } @else {
+                            <div
+                              class="candidate-detail__empty-state text-center p-4"
+                            >
+                              <i
+                                class="pi pi-info-circle text-4xl text-gray-400 mb-2"
+                              ></i>
+                              <p class="text-600 m-0">
+                                The details of the aptitude round are not
+                                available.
+                              </p>
+                            </div>
+                          }
+                        } @else {
+                          <!-- Interview Round Details -->
+                          @if (
+                            round.assessmentDetails &&
+                            round.assessmentDetails.length > 0
+                          ) {
+                            <p-accordion
+                              [multiple]="true"
+                              class="candidate-detail__interviewers-accordion"
+                            >
+                              @for (
+                                interviewer of round.assessmentDetails;
+                                track interviewer.interviewerId
+                              ) {
+                                <p-accordion-panel
+                                  [value]="interviewer.interviewerId"
+                                >
+                                  <p-accordion-header>
+                                    <div
+                                      class="candidate-detail__interviewer-header flex w-full justify-content-between pr-4"
+                                    >
+                                      <span
+                                        class="candidate-detail__interviewer-name font-semibold"
+                                      >
+                                        <i class="pi pi-user mr-2"></i>
+                                        {{
+                                          interviewer.interviewerName || "N/A"
+                                        }}
+                                      </span>
+                                      <span
+                                        class="candidate-detail__score-badge text-sm bg-blue-50 text-blue-800 px-2 py-1 border-round"
+                                      >
+                                        Score:
+                                        {{ interviewer.totalScore || 0 }}/{{
+                                          interviewer.outofScore || 0
+                                        }}
+                                      </span>
+                                    </div>
+                                  </p-accordion-header>
+                                </p-accordion-panel>
+                              }
+                            </p-accordion>
+                          } @else {
+                            <app-empty-state
+                              icon="pi pi-users"
+                              message="No interviewers available for this round."
+                            ></app-empty-state>
+                          }
+                        }
+                      </p-accordion-content>
+                    </p-accordion-panel>
+                  }
+                </p-accordion>
+              </div>
+            }
+          </div>
+        } @else {
+          <app-empty-state
+            message="No previous recruitments found"
+          ></app-empty-state>
+        }
+      }
+    } @else {
+      <app-candidate-detail-previous-assessment-skeleton />
+    }
+  </div>
+</div>

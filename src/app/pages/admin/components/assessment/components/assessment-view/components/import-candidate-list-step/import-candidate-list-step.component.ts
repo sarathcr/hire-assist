@@ -74,14 +74,20 @@ const tableColumns: TableColumnsData = {
       filterAlias: 'textFilter',
     },
     {
-      field: 'actions',
+      field: 'status',
+      displayName: 'Status',
+      sortedColumn: true,
+      hasChip: false,
+      hasTextFilter: true,
+      filterAlias: 'selectFilter',
+    },
+    {
+      field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [
-        PaginatedDataActions.View,
-        PaginatedDataActions.Delete,
-        PaginatedDataActions.History,
-      ],
+      buttonIcons: ['pi pi-eye', 'pi pi-trash', 'pi pi-history', 'pi pi-calendar-clock'],
+      buttonLabels: ['View', 'Delete', 'History', 'Previous Recruitments'],
+      buttonTooltips: ['View', 'Delete', 'History', 'Previous Recruitments'],
       sortedColumn: false,
       hasChip: false,
     },
@@ -196,6 +202,26 @@ export class ImportCandidateListStepComponent implements OnInit {
     this.getAllCandidatesApplicationQuestions();
   }
 
+  public onButtonClick(event: any) {
+    const action = event.fName;
+    const candidate = event.event;
+
+    switch (action) {
+      case 'View':
+        this.onView(candidate);
+        break;
+      case 'Delete':
+        this.deleteCandidate(candidate.id);
+        break;
+      case 'History':
+        this.viewHistory(candidate);
+        break;
+      case 'Previous Assessment':
+        this.onPreviousAssessment(candidate);
+        break;
+    }
+  }
+
   public deleteCandidate(userId: string) {
     const modalData: DialogData = {
       message: 'Are you sure you want to delete the candidate?',
@@ -250,7 +276,26 @@ export class ImportCandidateListStepComponent implements OnInit {
       assessmentId: Number(this.assessmentId()),
     };
     const next = (res: PaginatedData<CandidateModel>) => {
-      this.data = res;
+      this.data = {
+        ...res,
+        data: res.data.map((candidate) => {
+          const visibleButtonIndices = [0, 1, 2, 3]; 
+
+          const disabledButtonIndices: number[] = [];
+          if (this.isReadOnly()) {
+            disabledButtonIndices.push(1); // Delete
+          }
+          if (!candidate.isAlreadyExist) {
+            disabledButtonIndices.push(3); 
+          }
+
+          return {
+            ...candidate,
+            visibleButtonIndices,
+            disabledButtonIndices,
+          };
+        }),
+      };
       if (this.data.data.length == 0) {
         this.importStatus = false;
         this.newStatus = true;
@@ -297,6 +342,13 @@ export class ImportCandidateListStepComponent implements OnInit {
     this.visible = true;
   }
 
+  public onPreviousAssessment(data: CandidateModel) {
+    const userid = data.email;
+    const assessmentId = this.assessmentId();
+    this.router.navigate([
+      `admin/recruitments/previousAssessments/${assessmentId}/${userid}`,
+    ]);
+  }
   public onImport(event: FileUploadHandlerEvent): void {
     const file = event.files[0];
     this.isLoading = true;

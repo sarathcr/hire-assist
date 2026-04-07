@@ -63,7 +63,7 @@ export const uniqueStatuses = [
 
 export const uniqueStatusesForIsSchedule = [
   { label: 'Scheduled', value: 'Scheduled' },
-  { label: 'NotScheduled', value: 'Not scheduled' },
+  { label: 'Not Scheduled', value: 'Not Scheduled' },
 ];
 export const uniquesActives = [
   { label: 'Active', value: 'Active' },
@@ -135,7 +135,7 @@ export class TableComponent<
   private readonly persistedSelectedIds = new Set<string>();
   public expandedRows: Record<string, boolean> = {};
   public matchModeOptions: SelectItem[] = matchOptions;
-  public activeStatusOptions: SelectItem[] = uniquesActives;
+  public activeStatusOptions: SelectItem[] = uniqueStatusesForIsSchedule;
   public statusOptions: SelectItem[] = uniqueStatuses;
   public statusOptionsForSchedule: SelectItem[] = uniqueStatusesForIsSchedule;
   public hasSearch = input<boolean>(false);
@@ -160,6 +160,7 @@ export class TableComponent<
   public delete = output<any>();
   public unlock = output<any>();
   public selectedIds = output<any>();
+  public previousAssessmentAction = output<any>();
   public select = output<string[]>();
   public reject = output<string[]>();
   public import = output<File>();
@@ -200,7 +201,8 @@ export class TableComponent<
   public onRowClick(product: any): void {
     if (product.isDisabled) {
       const status = product?.status || '';
-      const isEmptyPanel = product?.interviewers && product.interviewers.length === 0;
+      const isEmptyPanel =
+        product?.interviewers && product.interviewers.length === 0;
 
       this.messageService.add({
         severity: 'warn',
@@ -249,9 +251,16 @@ export class TableComponent<
     }
   }
 
-  public onTouchEnd(event: TouchEvent, rowElement: HTMLElement, product: any): void {
+  public onTouchEnd(
+    event: TouchEvent,
+    rowElement: HTMLElement,
+    product: any,
+  ): void {
     // On touch end, show tooltip directly if it was a tap (not scroll)
-    if (this.isTouchDevice() && (this.enableCandidateStyling() || product.isDisabled)) {
+    if (
+      this.isTouchDevice() &&
+      (this.enableCandidateStyling() || product.isDisabled)
+    ) {
       const target = event.target as HTMLElement;
 
       // Don't trigger if clicking on interactive elements (buttons, checkboxes, etc.)
@@ -305,7 +314,11 @@ export class TableComponent<
       if (product?.interviewers && product.interviewers.length === 0) {
         return 'This panel has no interviewers assigned and cannot be selected.';
       }
-      if (status === 'selected' || status === 'rejected' || status === 'completed') {
+      if (
+        status === 'selected' ||
+        status === 'rejected' ||
+        status === 'completed'
+      ) {
         return `This candidate is already ${product.status} and cannot be selected.`;
       }
       return 'This row is currently disabled and cannot be selected.';
@@ -321,16 +334,7 @@ export class TableComponent<
     if (product.isDuplicate) {
       return 'Duplicate records were discovered in the sheet.';
     }
-    if (product.batchId && product.batchId > 0) {
-      return `Scheduled - Assigned to : ${product.batchName || 'Batch ' + product.batchId}`;
-    }
-    if (
-      !product.isAlreadyExist &&
-      !product.isDuplicate &&
-      (!product.batchId || product.batchId === 0 || product.batchId === null)
-    ) {
-      return 'Not scheduled - Candidate has not been scheduled for assessment';
-    }
+
     return '';
   }
 
@@ -422,11 +426,15 @@ export class TableComponent<
     }, 100);
   }
 
-  private positionTooltip(tooltip: HTMLElement, targetElement: HTMLElement): void {
+  private positionTooltip(
+    tooltip: HTMLElement,
+    targetElement: HTMLElement,
+  ): void {
     const rect = targetElement.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+    const scrollLeft =
+      window.pageXOffset || document.documentElement.scrollLeft;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const padding = 10;
@@ -437,13 +445,19 @@ export class TableComponent<
     let showAbove = false;
 
     // Check if tooltip would go off bottom
-    if (rect.bottom + tooltipRect.height + 8 > viewportHeight + scrollTop - padding) {
+    if (
+      rect.bottom + tooltipRect.height + 8 >
+      viewportHeight + scrollTop - padding
+    ) {
       showAbove = true;
       top = rect.top + scrollTop - tooltipRect.height - 8;
     }
 
     // Ensure tooltip stays within viewport horizontally
-    left = Math.max(padding, Math.min(left, viewportWidth - tooltipRect.width - padding));
+    left = Math.max(
+      padding,
+      Math.min(left, viewportWidth - tooltipRect.width - padding),
+    );
 
     // Update arrow position if showing above
     const arrow = tooltip.querySelector('.p-tooltip-arrow') as HTMLElement;
@@ -673,6 +687,9 @@ export class TableComponent<
   public onUnlock(data: any): void {
     this.unlock.emit(data);
   }
+  public onPreviousAssessment(data: any): void {
+    this.previousAssessmentAction.emit(data);
+  }
   public onStartInterview(data: any): void {
     this.btnClick.emit(data);
   }
@@ -819,7 +836,7 @@ export class TableComponent<
     if (filtersChanged) {
       this.appliedFilters = structuredClone(eventFilters);
       this.filterApplicationTimestamp.set(Date.now());
-      
+
       // Manually trigger the debounced processLazyLoad here so we have explicit control
       // over filter changes, rather than relying solely on Primeng's implicit onLazyLoad
       const lazyLoadEvent = this.createLazyLoadEvent();

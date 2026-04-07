@@ -31,10 +31,6 @@ import { TabsModule } from 'primeng/tabs';
             <i class="pi pi-user mr-2"></i>
             Candidate Details
           </p-tab>
-          <p-tab>
-            <i class="pi pi-history mr-2"></i>
-            Previous Recruitments
-          </p-tab>
         </p-tablist>
 
         <p-tabpanels>
@@ -43,7 +39,6 @@ import { TabsModule } from 'primeng/tabs';
               <!-- Basic Details Section -->
               <div class="candidate-skeleton__section">
                 <div class="candidate-skeleton__section-title">
-                 
                   <p-skeleton width="180px" height="24px" />
                 </div>
                 <div class="candidate-skeleton__card">
@@ -72,7 +67,6 @@ import { TabsModule } from 'primeng/tabs';
               <!-- Application Details Section -->
               <div class="candidate-skeleton__section">
                 <div class="candidate-skeleton__section-title">
-                  
                   <p-skeleton width="200px" height="24px" />
                 </div>
                 <div class="candidate-skeleton__card">
