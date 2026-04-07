@@ -1,0 +1,20 @@
+<p-drawer
+  [header]="header()"
+  [(visible)]="visible"
+  position="right"
+  styleClass="history-drawer-sidebar"
+  [style]="{ width: '30rem' }"
+>
+  <p-timeline [value]="events()">
+    <ng-template #marker let-event>
+      <span class="history-drawer__marker">
+        <i [class]="event.icon"></i>
+      </span>
+    </ng-template>
+    <ng-template #content let-event>
+      <p class="history-drawer__action">{{ event.status }}</p>
+      <p class="history-drawer__user">{{ event.user }}</p>
+      <p class="history-drawer__date">{{ event.date }}</p>
+    </ng-template>
+  </p-timeline>
+</p-drawer>

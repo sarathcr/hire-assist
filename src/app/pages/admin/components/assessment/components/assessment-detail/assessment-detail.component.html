@@ -224,10 +224,16 @@
           (view)="onView($event)"
           (pageChangeAndSort)="onTablePayloadChange($event)"
           (unlock)="unlockCandidate($event)"
+          (history)="viewHistory($event)"
         >
         </app-table>
       }
     </div>
   </div>
 
+  <app-history-drawer
+    [visible]="visible"
+    [events]="events"
+    (visibleChange)="visible = $event"
+  ></app-history-drawer>
 </div>

@@ -11,6 +11,7 @@
     [hasCheckbox]="false"
     (edit)="editBatch($event)"
     (delete)="deleteBatch($event)"
+    (history)="viewHistory($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
   >
     <div class="batch__button">
@@ -21,4 +22,8 @@
       ></app-button>
     </div>
   </app-table>
+  <app-history-drawer
+    [(visible)]="visible"
+    [events]="events"
+  ></app-history-drawer>
 </div>

@@ -163,6 +163,7 @@ export class TableComponent<
   public select = output<string[]>();
   public reject = output<string[]>();
   public import = output<File>();
+  public history = output<any>();
   public pageChangeAndSort = output<PaginatedPayload>();
   public buttonClick = output<any>();
   public PaginatedDataActions: any = PaginatedDataActions;

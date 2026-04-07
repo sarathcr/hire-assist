@@ -107,7 +107,14 @@
       (selectedIds)="getSelectedItems($event)"
       (pageChangeAndSort)="onTablePayloadChange($event)"
       (view)="onView($event)"
+      (history)="viewHistory($event)"
     >
     </app-table>
   </div>
+
+  <app-history-drawer
+    [visible]="visible"
+    [events]="events"
+    (visibleChange)="visible = $event"
+  ></app-history-drawer>
 </div>

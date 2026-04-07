@@ -35,6 +35,7 @@ import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
 
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 const tableColumns: TableColumnsData = {
   columns: [
     {
@@ -66,7 +67,11 @@ const tableColumns: TableColumnsData = {
       field: 'actions',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.Edit, PaginatedDataActions.Delete],
+      actions: [
+        PaginatedDataActions.Edit,
+        PaginatedDataActions.Delete,
+        PaginatedDataActions.History,
+      ],
       sortedColumn: false,
       hasChip: false,
     },
@@ -76,7 +81,7 @@ const tableColumns: TableColumnsData = {
 
 @Component({
   selector: 'app-departments',
-  imports: [TableComponent, ButtonComponent],
+  imports: [TableComponent, ButtonComponent, HistoryDrawerComponent],
   providers: [TableDataSourceService],
   templateUrl: './departments.component.html',
   styleUrl: './departments.component.scss',
@@ -92,6 +97,33 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
   public departmentFormData = new DepartmentForm();
   public configMap!: ConfigMap;
   public isLoading = true;
+  public visible: boolean = false;
+  events = [
+    {
+      status: 'Created',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 10:30',
+      icon: 'pi pi-plus',
+    },
+    {
+      status: 'Updated',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 14:00',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Steve Jose',
+      date: '15/10/2025 16:15',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Lakshmipriya',
+      date: '16/10/2025 10:00',
+      icon: 'pi pi-pencil',
+    },
+  ];
   private currentPayload: PaginatedPayload = new PaginatedPayload();
   private previousFilterMap: any = {};
 
@@ -220,6 +252,10 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       }
       this.fGroup.reset();
     });
+  }
+
+  public viewHistory(id: any) {
+    this.visible = true;
   }
 
   public getAllPaginateddepartmentes(payload: PaginatedPayload) {

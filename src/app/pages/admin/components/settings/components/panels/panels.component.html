@@ -10,6 +10,7 @@
     [hasCheckbox]="false"
     (edit)="editPanel($event)"
     (delete)="deletePanel($event)"
+    (history)="viewHistory($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
   >
     <div class="panel__button">
@@ -20,4 +21,8 @@
       ></app-button>
     </div>
   </app-table>
+  <app-history-drawer
+    [(visible)]="visible"
+    [events]="events"
+  ></app-history-drawer>
 </div>

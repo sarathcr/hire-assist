@@ -12,6 +12,7 @@ import { DialogFooterComponent } from '../../../../../../../../shared/components
 import { DialogComponent } from '../../../../../../../../shared/components/dialog/dialog.component';
 import { TableDataSourceService } from '../../../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../../../shared/components/table/table.component';
+import { HistoryDrawerComponent } from '../../../../../../../../shared/components/history-drawer/history-drawer.component';
 import { ASSESSMENT_URL } from '../../../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../../../../../shared/models/dialog.models';
@@ -76,7 +77,11 @@ const tableColumns: TableColumnsData = {
       field: 'actions',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.View, PaginatedDataActions.Delete],
+      actions: [
+        PaginatedDataActions.View,
+        PaginatedDataActions.Delete,
+        PaginatedDataActions.History,
+      ],
       sortedColumn: false,
       hasChip: false,
     },
@@ -87,6 +92,7 @@ const tableColumns: TableColumnsData = {
   selector: 'app-import-candidate-list-step',
   imports: [
     TableComponent,
+    HistoryDrawerComponent,
     FileUpload,
     ButtonComponent,
     TooltipModule,
@@ -115,6 +121,33 @@ export class ImportCandidateListStepComponent implements OnInit {
   public UnassignedCandidate = '';
   public isLoading = false;
   public alreadySelectedCandidates: string[] = [];
+  public visible: boolean = false;
+  events = [
+    {
+      status: 'Created',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 10:30',
+      icon: 'pi pi-plus',
+    },
+    {
+      status: 'Updated',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 14:00',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Steve Jose',
+      date: '15/10/2025 16:15',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Lakshmipriya',
+      date: '16/10/2025 10:00',
+      icon: 'pi pi-pencil',
+    },
+  ];
   private skipAutoSelection = false;
 
   public columns = computed(() => {
@@ -259,6 +292,11 @@ export class ImportCandidateListStepComponent implements OnInit {
       `admin/recruitments/candidateDetail/${assessmentId}/${userid}`,
     ]);
   }
+
+  public viewHistory(id: any) {
+    this.visible = true;
+  }
+
   public onImport(event: FileUploadHandlerEvent): void {
     const file = event.files[0];
     this.isLoading = true;

@@ -12,6 +12,7 @@
     [hasCheckbox]="false"
     (edit)="editDepartment($event)"
     (delete)="deleteDepartment($event)"
+    (history)="viewHistory($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
   >
     <div class="department__button">
@@ -22,4 +23,8 @@
       ></app-button>
     </div>
   </app-table>
+  <app-history-drawer
+    [(visible)]="visible"
+    [events]="events"
+  ></app-history-drawer>
 </div>

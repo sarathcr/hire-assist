@@ -30,6 +30,7 @@ import { Batch } from '../../../../models/batch.model';
 import { BatchService } from '../../../../services/batch.service';
 import { BatchDialogComponent } from './components/batch-dialog/batch-dialog.component';
 import { finalize } from 'rxjs/operators';
+import { HistoryDrawerComponent } from "../../../../../../shared/components/history-drawer/history-drawer.component";
 import { CollectionService } from '../../../../../../shared/services/collection.service';
 
 const tableColumns: TableColumnsData = {
@@ -63,16 +64,20 @@ const tableColumns: TableColumnsData = {
       field: 'actions',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.Edit, PaginatedDataActions.Delete],
+      actions: [
+        PaginatedDataActions.Edit,
+        PaginatedDataActions.Delete,
+        PaginatedDataActions.History,
+      ],
       sortedColumn: false,
       hasChip: false,
     },
   ],
-  displayedColumns: ['title', 'descriptionNew', 'active', 'actions'],
+  displayedColumns: ['title', 'description', 'active', 'actions'],
 };
 @Component({
   selector: 'app-batches',
-  imports: [TableComponent, ButtonComponent],
+  imports: [TableComponent, ButtonComponent, HistoryDrawerComponent],
   providers: [TableDataSourceService],
   templateUrl: './batches.component.html',
   styleUrl: './batches.component.scss',
@@ -87,6 +92,33 @@ export class BatchesComponent implements OnInit, OnDestroy {
   public batchFormData = new BatchForm();
   public configMap!: ConfigMap;
   public isLoading = true;
+  public visible: boolean = false;
+  events = [
+    {
+      status: 'Created',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 10:30',
+      icon: 'pi pi-plus',
+    },
+    {
+      status: 'Updated',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 14:00',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Steve Jose',
+      date: '15/10/2025 16:15',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Lakshmipriya',
+      date: '16/10/2025 10:00',
+      icon: 'pi pi-pencil',
+    },
+  ];
   private currentPayload: PaginatedPayload = new PaginatedPayload();
 
   private ref: DynamicDialogRef | undefined;
@@ -213,6 +245,10 @@ export class BatchesComponent implements OnInit, OnDestroy {
       }
       this.fGroup.reset();
     });
+  }
+
+  public viewHistory(id: any) {
+    this.visible = true;
   }
 
   public getAllPaginatedBatches(payload: PaginatedPayload) {

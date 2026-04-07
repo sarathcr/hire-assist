@@ -4,6 +4,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
@@ -53,7 +54,11 @@ const tableColumns: TableColumnsData = {
       field: 'actions',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.Edit, PaginatedDataActions.Delete],
+      actions: [
+        PaginatedDataActions.Edit,
+        PaginatedDataActions.Delete,
+        PaginatedDataActions.History,
+      ],
       sortedColumn: false,
       hasChip: false,
       hasTextFilter: false,
@@ -64,7 +69,12 @@ const tableColumns: TableColumnsData = {
 };
 @Component({
   selector: 'app-questions',
-  imports: [TableComponent, CommonModule, ButtonComponent],
+  imports: [
+    TableComponent,
+    CommonModule,
+    ButtonComponent,
+    HistoryDrawerComponent,
+  ],
   providers: [TableDataSourceService],
   templateUrl: './questions.component.html',
   styleUrl: './questions.component.scss',
@@ -88,8 +98,35 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   public isLoading = true;
   public questionFileData: Record<number, FileDto> = {};
   public optionFileData: Record<number, FileDto> = {};
+  public visible: boolean = false;
   private previousFilterMap: any = {};
   private currentPayload: PaginatedPayload = new PaginatedPayload();
+  events = [
+    {
+      status: 'Created',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 10:30',
+      icon: 'pi pi-plus',
+    },
+    {
+      status: 'Updated',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 14:00',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Steve Jose',
+      date: '15/10/2025 16:15',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Lakshmipriya',
+      date: '16/10/2025 10:00',
+      icon: 'pi pi-pencil',
+    },
+  ];
   // Flag to prevent recursive calls when updating data programmatically
   private isUpdatingData = false;
   constructor(
@@ -305,7 +342,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       }
     });
   }
-
+  public viewQuestionHistory(id: any) {
+    this.visible = true;
+  }
   public getByIdQuestion(data: number | any) {
     this.questionId = data.id;
     // Open modal immediately with loading state
@@ -412,10 +451,10 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         next: (res: any) => {
           if (res && Array.isArray(res.data)) {
             const transformedData = res.data.map((item: Questionsinterface) => ({
-              ...item,
-              options: this.transformOptions(item.options),
-              isExpanded: false,
-              questionUrl: item.file?.url,
+                ...item,
+                options: this.transformOptions(item.options),
+                isExpanded: false,
+                questionUrl: item.file?.url,
             }));
             res.data.forEach((response: any) => {
               if (response.hasAttachment && response.files) {

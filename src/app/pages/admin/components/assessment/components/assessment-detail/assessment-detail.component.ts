@@ -16,6 +16,7 @@ import { DialogFooterComponent } from '../../../../../../shared/components/dialo
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../../../shared/models/dialog.models';
@@ -117,6 +118,7 @@ const tableColumns: TableColumnsData = {
         PaginatedDataActions.View,
         PaginatedDataActions.Delete,
         PaginatedDataActions.Unlock,
+        PaginatedDataActions.History,
       ],
       sortedColumn: false,
       hasChip: false,
@@ -143,6 +145,7 @@ export interface AssesmentRoundResponse {
     ButtonModule,
     MenuModule,
     TableComponent,
+    HistoryDrawerComponent,
     ButtonComponent,
     NgClass,
     TooltipModule,
@@ -173,6 +176,33 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public isLoading = false;
   public isCompletingRound = false;
   public actionItems: MenuItem[] = [];
+  public visible: boolean = false;
+  events = [
+    {
+      status: 'Created',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 10:30',
+      icon: 'pi pi-plus',
+    },
+    {
+      status: 'Updated',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 14:00',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Steve Jose',
+      date: '15/10/2025 16:15',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Lakshmipriya',
+      date: '16/10/2025 10:00',
+      icon: 'pi pi-pencil',
+    },
+  ];
 
   private nextRoundId!: number | null;
   private candidatePanelAssignments = new Map<string, boolean>();
@@ -272,6 +302,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
 
     this.loadData(payload);
+  }
+
+  public viewHistory(id: any) {
+    this.visible = true;
   }
 
   public rejectCandidate() {

@@ -100,7 +100,11 @@
             "
             [style.minWidth.px]="150"
             [ngClass]="
-              headerColumn.field === 'actions' || headerColumn.field === 'button' || headerColumn.field === 'active' ? 'table__header-no-pointer' : ''
+              headerColumn.field === 'actions' ||
+              headerColumn.field === 'button' ||
+              headerColumn.field === 'active'
+                ? 'table__header-no-pointer'
+                : ''
             "
           >
             {{ headerColumn.displayName }}
@@ -255,13 +259,21 @@
               product.batchId === 0 ||
               product.batchId === null),
         }"
-        [attr.tabindex]="(enableCandidateStyling() || product.isDisabled) ? 0 : null"
+        [attr.tabindex]="
+          enableCandidateStyling() || product.isDisabled ? 0 : null
+        "
         tooltipPosition="bottom"
         tooltipStyleClass="table-row-tooltip"
         [tooltipEvent]="tooltipEvent()"
-        [life]="isTouchDevice() && (enableCandidateStyling() || product.isDisabled) ? 3000 : undefined"
+        [life]="
+          isTouchDevice() && (enableCandidateStyling() || product.isDisabled)
+            ? 3000
+            : undefined
+        "
         [showDelay]="
-          isTouchDevice() && (enableCandidateStyling() || product.isDisabled) ? 0 : undefined
+          isTouchDevice() && (enableCandidateStyling() || product.isDisabled)
+            ? 0
+            : undefined
         "
         [pTooltip]="getTooltipText(product)"
         (click)="onRowClick(product)"
@@ -269,7 +281,9 @@
         (touchmove)="onTouchMove($event)"
         (touchend)="onTouchEnd($event, rowElement, product)"
         [pSelectableRow]="product"
-        [pSelectableRowDisabled]="product.isSelf || product.isDisabled || selectionDisabled()"
+        [pSelectableRowDisabled]="
+          product.isSelf || product.isDisabled || selectionDisabled()
+        "
       >
         @if (hasCheckbox) {
           <td>
@@ -325,7 +339,7 @@
                     PaginatedDataActions.StartInterview
                   )
                 ) {
-                  @if (product.status === 'Completed') {
+                  @if (product.status === "Completed") {
                     <p-button
                       icon="pi pi-eye"
                       [label]="'View'"
@@ -368,6 +382,7 @@
                   <p-button
                     type="button"
                     icon="pi pi-trash"
+                    class="mr-2"
                     severity="danger"
                     [rounded]="true"
                     [outlined]="true"
@@ -391,8 +406,27 @@
                     tooltipPosition="bottom"
                     [disabled]="product.isSelf"
                     (onClick)="onUnlock(product)"
-                    (keydown.enter)="onDelete(product.id); $event.preventDefault()"
-                    (keydown.space)="onDelete(product.id); $event.preventDefault()"
+                  />
+                }
+                @if (
+                  headerColumn.actions?.includes(PaginatedDataActions.History)
+                ) {
+                  <p-button
+                    icon="pi pi-history"
+                    class="mr-2"
+                    [rounded]="true"
+                    [outlined]="true"
+                    severity="warn"
+                    pTooltip="View history"
+                    tooltipPosition="bottom"
+                    [disabled]="product.isSelf"
+                    (onClick)="history.emit(product)"
+                    (keydown.enter)="
+                      onDelete(product.id); $event.preventDefault()
+                    "
+                    (keydown.space)="
+                      onDelete(product.id); $event.preventDefault()
+                    "
                   />
                 }
               </div>
@@ -442,7 +476,10 @@
                 </p-button>
               } @else {
                 <p-popover #op appendTo="body">
-                  <div class="flex flex-column gap-1 p-1" style="display: flex; flex-direction: column;">
+                  <div
+                    class="flex flex-column gap-1 p-1"
+                    style="display: flex; flex-direction: column"
+                  >
                     @for (
                       icon of headerColumn.buttonIcons;
                       let i = $index;
@@ -451,17 +488,25 @@
                       @if (
                         (product.visibleButtonIndices
                           ? product.visibleButtonIndices.includes(i)
-                          : product.toggleTooltipIconIndex !== i) || 
-                          product.disabledButtonIndices?.includes(i)
+                          : product.toggleTooltipIconIndex !== i) ||
+                        product.disabledButtonIndices?.includes(i)
                       ) {
                         <p-button
                           [icon]="headerColumn.buttonLabels?.[i] ? icon : icon"
                           [label]="headerColumn.buttonLabels?.[i] ?? ''"
                           [text]="true"
                           [plain]="true"
-                          [disabled]="product.disabledButtonIndices?.includes(i)"
+                          [disabled]="
+                            product.disabledButtonIndices?.includes(i)
+                          "
                           styleClass="w-full text-left justify-content-start"
-                          (onClick)="op.hide(); onButtonClick(product, headerColumn.buttonTooltips?.[i] ?? '')"
+                          (onClick)="
+                            op.hide();
+                            onButtonClick(
+                              product,
+                              headerColumn.buttonTooltips?.[i] ?? ''
+                            )
+                          "
                         ></p-button>
                       }
                     }

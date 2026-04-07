@@ -10,6 +10,7 @@ import {
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { TableDataSourceService } from '../../../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../../../shared/components/table/table.component';
+import { HistoryDrawerComponent } from '../../../../../../../../shared/components/history-drawer/history-drawer.component';
 import {
   FilterMap,
   PaginatedData,
@@ -70,7 +71,7 @@ const tableColumns: TableColumnsData = {
       field: 'actions',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.Edit],
+      actions: [PaginatedDataActions.Edit, PaginatedDataActions.History],
       sortedColumn: false,
       hasChip: false,
     },
@@ -80,7 +81,7 @@ const tableColumns: TableColumnsData = {
 
 @Component({
   selector: 'app-select-panel-dailog',
-  imports: [TableComponent, ButtonComponent],
+  imports: [TableComponent, ButtonComponent, HistoryDrawerComponent],
   templateUrl: './select-panel-dailog.component.html',
   styleUrl: './select-panel-dailog.component.scss',
   providers: [TableDataSourceService],
@@ -110,6 +111,33 @@ export class SelectPanelDailogComponent implements OnInit {
   public intrviewid!: number;
   public IsMultiplePanel!: boolean;
   public isLoading = false;
+  public visible: boolean = false;
+  events = [
+    {
+      status: 'Created',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 10:30',
+      icon: 'pi pi-plus',
+    },
+    {
+      status: 'Updated',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 14:00',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Steve Jose',
+      date: '15/10/2025 16:15',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Lakshmipriya',
+      date: '16/10/2025 10:00',
+      icon: 'pi pi-pencil',
+    },
+  ];
   public isSubmitting = false;
   public isExistingPanelLoaded = false;
   public selectedPanelForAssignment: PanelSummary | null = null;
@@ -586,6 +614,10 @@ export class SelectPanelDailogComponent implements OnInit {
         // Keep modal open on error
       },
     });
+  }
+
+  public viewHistory(id: any) {
+    this.visible = true;
   }
 
   public onClose() {

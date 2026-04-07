@@ -1,6 +1,6 @@
 export interface TableColumnsData {
   columns: ColumnField[];
-  displayedColumns: string[];
+  displayedColumns?: string[];
   hasExpanded?: boolean;
 }
 
@@ -55,7 +55,8 @@ export enum PaginatedDataActions {
   Manage = 'manage',
   Preview = 'visibility',
   StartInterview = 'StartInterview',
-  Unlock = 'unlock'
+  Unlock = 'unlock',
+  History = 'history',
 }
 
 export type ActionConfig = Record<string, BaseActionConfig>;

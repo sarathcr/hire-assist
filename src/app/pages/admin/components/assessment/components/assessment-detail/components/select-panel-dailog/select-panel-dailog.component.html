@@ -56,8 +56,15 @@
       (pageChangeAndSort)="onPanelTablePayloadChange($event)"
       (selectedIds)="getSelectedPanelId($event)"
       [alreadySelected]="selectedPanel"
+      (history)="viewHistory($event)"
     ></app-table>
   </div>
+
+  <app-history-drawer
+    [visible]="visible"
+    [events]="events"
+    (visibleChange)="visible = $event"
+  ></app-history-drawer>
 
   <!-- Footer with Actions -->
   <footer class="select-panel-dialog__footer">

@@ -153,6 +153,7 @@
             (btnClick)="onStartInterview($event)"
             (buttonClick)="onButtonClick($event)"
             (pageChangeAndSort)="onTablePayloadChange($event)"
+            (history)="viewHistory($event)"
           ></app-table>
         </p-tabpanel>
         <p-tabpanel value="1" class="interview-candidate__tabpanel">
@@ -164,6 +165,7 @@
             (btnClick)="onStartInterview($event)"
             (buttonClick)="onButtonClick($event)"
             (pageChangeAndSort)="onTablePayloadChange($event)"
+            (history)="viewHistory($event)"
           ></app-table>
         </p-tabpanel>
         <p-tabpanel value="2" class="interview-candidate__tabpanel">
@@ -175,9 +177,16 @@
             (btnClick)="onStartInterview($event)"
             (buttonClick)="onButtonClick($event)"
             (pageChangeAndSort)="onTablePayloadChange($event)"
+            (history)="viewHistory($event)"
           ></app-table>
         </p-tabpanel>
       </p-tabpanels>
     </p-tabs>
   </div>
 </div>
+
+<app-history-drawer
+  [visible]="visible"
+  [events]="events"
+  (visibleChange)="visible = $event"
+></app-history-drawer>

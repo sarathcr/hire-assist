@@ -10,6 +10,7 @@
     [hasSearch]="true"
     [hasCheckbox]="false"
     (delete)="deleteQuestion($event)"
+    (history)="viewQuestionHistory($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
     (edit)="getByIdQuestion($event)"
     [previewImageUrls]="previewImageUrls"
@@ -25,4 +26,5 @@
       ></app-button>
     </div>
   </app-table>
+  <app-history-drawer [(visible)]="visible" [events]="events"></app-history-drawer>
 </div>

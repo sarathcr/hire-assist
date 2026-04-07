@@ -11,6 +11,7 @@
     (delete)="deleteUser($event)"
     (selectedIds)="getSelectedItems($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
+    (history)="viewHistory($event)"
   >
     <div class="roles-access__button">
       <app-button [buttonLabel]="'New'" (btnClick)="AddNewUser()"></app-button>
@@ -23,5 +24,9 @@
     </div>
   </app-table>
 
-
+  <app-history-drawer
+    [visible]="visible"
+    [events]="events"
+    (visibleChange)="visible = $event"
+  ></app-history-drawer>
 </div>

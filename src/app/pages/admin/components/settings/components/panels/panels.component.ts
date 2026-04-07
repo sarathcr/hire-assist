@@ -7,6 +7,7 @@ import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
@@ -61,7 +62,11 @@ const tableColumns: TableColumnsData = {
       field: 'actions',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.Edit, PaginatedDataActions.Delete],
+      actions: [
+        PaginatedDataActions.Edit,
+        PaginatedDataActions.Delete,
+        PaginatedDataActions.History,
+      ],
       sortedColumn: false,
       hasChip: false,
     },
@@ -76,7 +81,7 @@ const tableColumns: TableColumnsData = {
 };
 @Component({
   selector: 'app-panels',
-  imports: [TableComponent, ButtonComponent],
+  imports: [TableComponent, ButtonComponent, HistoryDrawerComponent],
   providers: [TableDataSourceService],
   templateUrl: './panels.component.html',
   styleUrl: './panels.component.scss',
@@ -91,6 +96,33 @@ export class PanelsComponent implements OnInit, OnDestroy {
   public PanelFormData = new PanelForm();
   public configMap!: ConfigMap;
   public isLoading = true;
+  public visible: boolean = false;
+  events = [
+    {
+      status: 'Created',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 10:30',
+      icon: 'pi pi-plus',
+    },
+    {
+      status: 'Updated',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 14:00',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Steve Jose',
+      date: '15/10/2025 16:15',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Lakshmipriya',
+      date: '16/10/2025 10:00',
+      icon: 'pi pi-pencil',
+    },
+  ];
   private currentPayload: PaginatedPayload = new PaginatedPayload();
   private previousFilterMap: any = {};
 
@@ -221,6 +253,10 @@ export class PanelsComponent implements OnInit, OnDestroy {
       }
       this.fGroup.reset();
     });
+  }
+
+  public viewHistory(id: any) {
+    this.visible = true;
   }
 
   public getAllPaginatedPanels(payload: PaginatedPayload) {

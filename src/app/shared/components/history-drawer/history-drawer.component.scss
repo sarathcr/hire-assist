@@ -1,0 +1,45 @@
+.history-drawer-sidebar {
+  width: 30rem;
+  @media screen and (max-width: 768px) {
+    width: 100% !important;
+  }
+}
+
+.history-drawer {
+  &__marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 50%;
+    border: 2px solid rgb(226 232 240);
+  }
+  &__action {
+    margin: 0;
+  }
+  &__user {
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    margin: 0;
+  }
+
+  &__date {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: var(--color-primary);
+    margin: 0;
+  }
+}
+
+.p-timeline-event-opposite {
+  flex: 0 !important;
+}
+
+.ng-star-inserted {
+  margin: 0;
+}
+
+.p-timeline{
+  margin-top: 1rem;
+}

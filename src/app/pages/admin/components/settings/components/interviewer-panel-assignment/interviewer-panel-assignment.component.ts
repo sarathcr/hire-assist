@@ -7,6 +7,7 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
 import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
@@ -54,7 +55,11 @@ const panelTable: TableColumnsData = {
       field: 'actions',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.Edit, PaginatedDataActions.Delete],
+      actions: [
+        PaginatedDataActions.Edit,
+        PaginatedDataActions.Delete,
+        PaginatedDataActions.History,
+      ],
       sortedColumn: false,
       hasChip: false,
     },
@@ -74,7 +79,7 @@ export interface interviewerEditResponse {
 }
 @Component({
   selector: 'app-interviewer-panel-assignment',
-  imports: [TableComponent, ButtonComponent],
+  imports: [TableComponent, ButtonComponent, HistoryDrawerComponent],
   providers: [TableDataSourceService],
   templateUrl: './interviewer-panel-assignment.component.html',
   styleUrl: './interviewer-panel-assignment.component.scss',
@@ -87,6 +92,33 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
   public fGroup!: FormGroup;
   public configMap!: ConfigMap;
   public isCompleteDisabled = false;
+  public visible: boolean = false;
+  events = [
+    {
+      status: 'Created',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 10:30',
+      icon: 'pi pi-plus',
+    },
+    {
+      status: 'Updated',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 14:00',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Steve Jose',
+      date: '15/10/2025 16:15',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Lakshmipriya',
+      date: '16/10/2025 10:00',
+      icon: 'pi pi-pencil',
+    },
+  ];
   private ref: DynamicDialogRef | undefined;
   public interviewersData!: interviewerFormGroup[];
   public isLoading = true;
@@ -255,6 +287,10 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
         this.deletePanelAssignmentById(id);
       }
     });
+  }
+
+  public viewHistory(id: any) {
+    this.visible = true;
   }
 
   private setPaginationEndpoint() {

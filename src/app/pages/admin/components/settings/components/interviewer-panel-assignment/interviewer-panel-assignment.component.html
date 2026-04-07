@@ -11,6 +11,7 @@
       [hasCheckbox]="false"
       (edit)="editPanel($event)"
       (delete)="deletePanelAssignment($event)"
+      (history)="viewHistory($event)"
       (pageChangeAndSort)="onTablePayloadChange($event)"
     >
       <div class="interviewerPanels__button">
@@ -21,4 +22,8 @@
         ></app-button></div
     ></app-table>
   </div>
+  <app-history-drawer
+    [(visible)]="visible"
+    [events]="events"
+  ></app-history-drawer>
 </div>

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import {
@@ -67,7 +68,10 @@ const tableColumns: TableColumnsData = {
       field: 'actions',
       displayName: '',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.StartInterview],
+      actions: [
+        PaginatedDataActions.StartInterview,
+        PaginatedDataActions.History,
+      ],
       sortedColumn: false,
       hasChip: false,
     },
@@ -79,6 +83,7 @@ const tableColumns: TableColumnsData = {
   selector: 'app-interview-candidate-list',
   imports: [
     TableComponent,
+    HistoryDrawerComponent,
     TabPanel,
     TabPanels,
     Tab,
@@ -107,6 +112,33 @@ export class InterviewCandidateListComponent implements OnInit {
   public isLoading = false;
   public assessmentName = '';
   public panelName = '';
+  public visible: boolean = false;
+  events = [
+    {
+      status: 'Created',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 10:30',
+      icon: 'pi pi-plus',
+    },
+    {
+      status: 'Updated',
+      user: 'Sarath Cheerakkadan',
+      date: '15/10/2025 14:00',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Steve Jose',
+      date: '15/10/2025 16:15',
+      icon: 'pi pi-pencil',
+    },
+    {
+      status: 'Updated',
+      user: 'Lakshmipriya',
+      date: '16/10/2025 10:00',
+      icon: 'pi pi-pencil',
+    },
+  ];
 
   // Computed counts for summary cards
   get todayCount(): number {
@@ -235,6 +267,10 @@ export class InterviewCandidateListComponent implements OnInit {
     this.router.navigate([
       `admin/interviews/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
     ]);
+  }
+
+  public viewHistory(id: any) {
+    this.visible = true;
   }
 
   // Private Methods
