@@ -334,7 +334,7 @@ export class CandidateTestComponent
         'Your about to submit the exam. Once you submitted, you cannot go back to the exam page. Do you still want to continue?',
       isChoice: true,
       acceptButtonText: 'Submit',
-      cancelButtonText: 'cancel',
+      cancelButtonText: 'Cancel',
       disableClose: true,
     };
     this.ref = this.dialog.open(DialogComponent, {
@@ -942,7 +942,7 @@ export class CandidateTestComponent
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: 'Successfully completed ',
+            detail: 'Successfully Completed ',
           });
           return of(void 0);
         }),

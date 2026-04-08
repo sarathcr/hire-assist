@@ -512,12 +512,13 @@ export class ImportCandidateListStepComponent implements OnInit {
           this.getAllCandidates(new PaginatedPayload(), true);
           this.checkIsAllCandidatesAssigned();
         };
-        const error = () => {
+        const error = (error: CustomErrorResponse) => {
           this.isLoading = false;
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Deletion failed',
+            detail:
+              error?.error?.message || error?.error?.type || 'Deletion failed',
           });
         };
         this.candidateService
