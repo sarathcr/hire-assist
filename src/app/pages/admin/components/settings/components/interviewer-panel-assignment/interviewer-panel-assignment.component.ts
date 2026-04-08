@@ -52,14 +52,12 @@ const panelTable: TableColumnsData = {
       filterAlias: 'textFilter',
     },
     {
-      field: 'actions',
+      field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [
-        PaginatedDataActions.Edit,
-        PaginatedDataActions.Delete,
-        PaginatedDataActions.History,
-      ],
+      buttonIcons: ['pi pi-pencil', 'pi pi-trash', 'pi pi-history'],
+      buttonLabels: ['Edit', 'Delete', 'History'],
+      buttonTooltips: ['Edit', 'Delete', 'History'],
       sortedColumn: false,
       hasChip: false,
     },
@@ -189,14 +187,15 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
     document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(AssignInterviewersDialogueComponent, {
       data: data,
-      header: 'Select Interviewer and Panels',
       width: '50vw',
       modal: true,
+      showHeader: false,
+      contentStyle: { padding: '0' },
       focusOnShow: false,
       styleClass: 'interviewerPanels__dialog',
       breakpoints: {
         '960px': '75vw',
-        '640px': '98vw',
+        '98vw': '98vw',
       },
     });
     this.ref.onClose.subscribe((formData: interviewerResponse) => {
@@ -293,6 +292,23 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
     this.visible = true;
   }
 
+  public onButtonClick(data: { event: any; fName: string }): void {
+    const { event, fName } = data;
+    switch (fName) {
+      case 'Edit':
+        this.editPanel(event);
+        break;
+      case 'Delete':
+        this.deletePanelAssignment(event.id);
+        break;
+      case 'History':
+        this.viewHistory(event.id);
+        break;
+      default:
+        break;
+    }
+  }
+
   private setPaginationEndpoint() {
     this.dataSourceService.setEndpoint(`${INTERVIEW_URL}/InterviewSummary`);
   }
@@ -371,14 +387,15 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
     document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(AssignInterviewersDialogueComponent, {
       data,
-      header: 'Update Panel Assignment',
       width: '50vw',
       modal: true,
+      showHeader: false,
+      contentStyle: { padding: '0' },
       focusOnShow: false,
       styleClass: 'interviewerPanels__dialog',
       breakpoints: {
         '960px': '75vw',
-        '640px': '98vw',
+        '98vw': '98vw',
       },
     });
 

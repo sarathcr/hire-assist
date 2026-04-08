@@ -80,10 +80,12 @@ const tableColumns: TableColumnsData = {
       hasChip: false,
     },
     {
-      field: 'actions',
+      field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.History],
+      buttonIcons: ['pi pi-history'],
+      buttonLabels: ['History'],
+      buttonTooltips: ['History'],
       sortedColumn: false,
       hasChip: false,
     },
@@ -474,6 +476,17 @@ export class SelectQuesionsetStepComponent
 
   public viewHistory(id: any) {
     this.visible = true;
+  }
+
+  public onButtonClick(data: { event: any; fName: string }): void {
+    const { event, fName } = data;
+    switch (fName) {
+      case 'History':
+        this.viewHistory(event.id);
+        break;
+      default:
+        break;
+    }
   }
 
   public onSubmit(questionSetId: string) {

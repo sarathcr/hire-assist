@@ -12,6 +12,7 @@
     (selectedIds)="getSelectedItems($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
     (history)="viewHistory($event)"
+    (buttonClick)="onButtonClick($event)"
   >
     <div class="roles-access__button">
       <app-button [buttonLabel]="'New'" (btnClick)="AddNewUser()"></app-button>

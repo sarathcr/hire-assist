@@ -53,14 +53,12 @@ const tableColumns: TableColumnsData = {
     },
 
     {
-      field: 'actions',
+      field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [
-        PaginatedDataActions.Edit,
-        PaginatedDataActions.Delete,
-        PaginatedDataActions.History,
-      ],
+      buttonIcons: ['pi pi-pencil', 'pi pi-trash', 'pi pi-history'],
+      buttonLabels: ['Edit', 'Delete', 'History'],
+      buttonTooltips: ['Edit', 'Delete', 'History'],
       sortedColumn: false,
       hasChip: false,
     },
@@ -304,6 +302,23 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
 
   public viewHistory(id: any) {
     this.visible = true;
+  }
+
+  public onButtonClick(data: { event: any; fName: string }): void {
+    const { event, fName } = data;
+    switch (fName) {
+      case 'Edit':
+        this.editUser(event);
+        break;
+      case 'Delete':
+        this.deleteUser(event.id);
+        break;
+      case 'History':
+        this.viewHistory(event.id);
+        break;
+      default:
+        break;
+    }
   }
 
   public getSelectedItems(selectedUsersIds: RolesAccess[]) {

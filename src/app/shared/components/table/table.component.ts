@@ -53,6 +53,7 @@ export const matchOptions = [
 export const uniqueStatuses = [
   { label: 'Scheduled', value: 'Scheduled' },
   { label: 'Pending', value: 'Pending' },
+  { label: 'Assigned to Panel', value: 'Assigned to Panel' },
   { label: 'Selected', value: 'Selected' },
   { label: 'Completed', value: 'Completed' },
   { label: 'Rejected', value: 'Rejected' },
@@ -791,6 +792,12 @@ export class TableComponent<
         return 'info';
       case 'rejected':
         return 'danger';
+      case 'terminated':
+        return 'danger';
+      case 'quit':
+        return 'warn';
+      case 'not scheduled':
+        return 'warn';
       case 'assigned':
         return 'success';
       default:

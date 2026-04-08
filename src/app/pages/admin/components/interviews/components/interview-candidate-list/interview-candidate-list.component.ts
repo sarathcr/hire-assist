@@ -65,13 +65,12 @@ const tableColumns: TableColumnsData = {
       hasMultiStatus: true,
     },
     {
-      field: 'actions',
-      displayName: '',
+      field: 'button',
+      displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [
-        PaginatedDataActions.StartInterview,
-        PaginatedDataActions.History,
-      ],
+      buttonIcons: ['pi pi-play', 'pi pi-history'],
+      buttonLabels: ['Start Interview', 'History'],
+      buttonTooltips: ['Start Interview', 'History'],
       sortedColumn: false,
       hasChip: false,
     },
@@ -245,8 +244,18 @@ export class InterviewCandidateListComponent implements OnInit {
   }
 
   // Public Methods
-  public onButtonClick(data: any): void {
-    this.router.navigate([`interviewer/${this.assessmentId}/${data.email}`]);
+  public onButtonClick(data: { event: any; fName: string }): void {
+    const { event, fName } = data;
+    switch (fName) {
+      case 'Start Interview':
+        this.onStartInterview(event);
+        break;
+      case 'History':
+        this.viewHistory(event.id);
+        break;
+      default:
+        break;
+    }
   }
 
   public onTablePayloadChange(payload: PaginatedPayload): void {

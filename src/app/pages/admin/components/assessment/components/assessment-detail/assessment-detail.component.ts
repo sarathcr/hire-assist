@@ -120,15 +120,12 @@ const tableColumns: TableColumnsData = {
       fieldType: FieldType.StringToDate,
     },
     {
-      field: 'actions',
+      field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [
-        PaginatedDataActions.View,
-        PaginatedDataActions.Delete,
-        PaginatedDataActions.Unlock,
-        PaginatedDataActions.History,
-      ],
+      buttonIcons: ['pi pi-eye', 'pi pi-trash', 'pi pi-unlock', 'pi pi-history'],
+      buttonLabels: ['View', 'Delete', 'Unlock', 'History'],
+      buttonTooltips: ['View', 'Delete', 'Unlock', 'History'],
       sortedColumn: false,
       hasChip: false,
     },
@@ -315,6 +312,26 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   public viewHistory(id: any) {
     this.visible = true;
+  }
+
+  public onButtonClick(data: { event: any; fName: string }): void {
+    const { event, fName } = data;
+    switch (fName) {
+      case 'View':
+        this.onView(event);
+        break;
+      case 'Delete':
+        this.deleteCandidate(event.id);
+        break;
+      case 'Unlock':
+        this.unlockCandidate(event);
+        break;
+      case 'History':
+        this.viewHistory(event.id);
+        break;
+      default:
+        break;
+    }
   }
 
   public rejectCandidate() {
@@ -1242,11 +1259,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     });
 
     // 1. Remove Delete button from all rounds
-    const actionsCol = newColumns.find((c) => c.field === 'actions');
-    if (actionsCol && actionsCol.actions) {
-      actionsCol.actions = actionsCol.actions.filter(
-        (a) => a !== PaginatedDataActions.Delete,
-      );
+    const actionsCol = newColumns.find((c) => c.field === 'button');
+    if (actionsCol && actionsCol.buttonLabels && actionsCol.buttonIcons && actionsCol.buttonTooltips) {
+      const deleteIndex = actionsCol.buttonLabels.indexOf('Delete');
+      if (deleteIndex !== -1) {
+        actionsCol.buttonLabels.splice(deleteIndex, 1);
+        actionsCol.buttonIcons.splice(deleteIndex, 1);
+        actionsCol.buttonTooltips.splice(deleteIndex, 1);
+      }
     }
 
     // 2. Hide "Proceed to next round" for the last round

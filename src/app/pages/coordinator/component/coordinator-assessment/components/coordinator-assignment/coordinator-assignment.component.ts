@@ -320,6 +320,19 @@ export class CoordinatorAssignmentComponent implements OnInit {
       const selectedId = selectedIds[0].id;
       // Preliminary check for panel validity
       const panel = this.panelData.data?.find((p) => String(p.id) === String(selectedId));
+
+      if (panel?.status?.toLowerCase() === 'assigned') {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Information',
+          detail: `The panel "${panel.name}" is already assigned and cannot be selected.`,
+        });
+        this.selectedPanel = [];
+        this.selectedPanelIds = [];
+        this.lastSelectedPanelId = null;
+        return;
+      }
+
       if (!this.isPanelValid(panel)) {
         this.messageService.add({
           severity: 'warn',
@@ -426,6 +439,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
               interviewerNames:
                 item.interviewers?.map((i) => i.name).join(', ') ?? '',
               interviewers: item.interviewers ?? [],
+              isDisabled: !this.isPanelSelectable(item),
             };
           });
           this.panelData = { ...res, data: resData };
@@ -491,13 +505,14 @@ export class CoordinatorAssignmentComponent implements OnInit {
     };
     this.ref = this.dialog.open(AssignInterviewersDialogueComponent, {
       data: data,
-      header: 'Update Panel',
       width: '50vw',
       modal: true,
+      showHeader: false,
+      contentStyle: { padding: '0' },
       focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
-        '640px': '98vw',
+        '98vw': '98vw',
       },
     });
 
@@ -681,6 +696,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
               item.interviewers?.map((i: Interviewer) => i.name).join(', ') ??
               '',
             interviewers: item.interviewers ?? [],
+            isDisabled: !this.isPanelSelectable(item),
           };
         });
 
@@ -839,5 +855,13 @@ export class CoordinatorAssignmentComponent implements OnInit {
    */
   public isPanelValid(panel: any): boolean {
     return !!(panel && panel.interviewers && panel.interviewers.length > 0);
+  }
+
+  /**
+   * Helper to determine if a panel can be selected
+   * Panels in "Assigned" status should be blocked
+   */
+  private isPanelSelectable(panel: any): boolean {
+    return panel?.status?.toLowerCase() !== 'assigned';
   }
 }

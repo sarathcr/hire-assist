@@ -10,9 +10,34 @@
   overflow: hidden;
 
   &__hero {
+    position: relative;
     background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
     padding: 24px;
     color: #ffffff;
+  }
+
+  &__hero-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
   }
 
   &__hero-content {

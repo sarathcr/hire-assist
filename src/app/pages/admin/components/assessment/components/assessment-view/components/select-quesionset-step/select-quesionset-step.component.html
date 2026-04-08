@@ -258,6 +258,7 @@
                     "
                     [selectionDisabled]="isReadOnly()"
                     (history)="viewHistory($event)"
+                    (buttonClick)="onButtonClick($event)"
                 ></app-table>
                 </div>
                 @if (!isLoadingContent && !isLoadingSummary) {

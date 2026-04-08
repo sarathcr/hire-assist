@@ -51,14 +51,12 @@ const tableColumns: TableColumnsData = {
       filterAlias: 'textFilter',
     },
     {
-      field: 'actions',
+      field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [
-        PaginatedDataActions.Edit,
-        PaginatedDataActions.Delete,
-        PaginatedDataActions.History,
-      ],
+      buttonIcons: ['pi pi-pencil', 'pi pi-trash', 'pi pi-history'],
+      buttonLabels: ['Edit', 'Delete', 'History'],
+      buttonTooltips: ['Edit', 'Delete', 'History'],
       sortedColumn: false,
       hasChip: false,
       hasTextFilter: false,
@@ -344,6 +342,23 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   }
   public viewQuestionHistory(id: any) {
     this.visible = true;
+  }
+
+  public onButtonClick(data: { event: any; fName: string }): void {
+    const { event, fName } = data;
+    switch (fName) {
+      case 'Edit':
+        this.getByIdQuestion(event);
+        break;
+      case 'Delete':
+        this.deleteQuestion(event.id);
+        break;
+      case 'History':
+        this.viewQuestionHistory(event.id);
+        break;
+      default:
+        break;
+    }
   }
   public getByIdQuestion(data: number | any) {
     this.questionId = data.id;

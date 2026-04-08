@@ -68,10 +68,12 @@ const tableColumns: TableColumnsData = {
     },
 
     {
-      field: 'actions',
+      field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      actions: [PaginatedDataActions.Edit, PaginatedDataActions.History],
+      buttonIcons: ['pi pi-pencil', 'pi pi-history'],
+      buttonLabels: ['Edit', 'History'],
+      buttonTooltips: ['Edit', 'History'],
       sortedColumn: false,
       hasChip: false,
     },
@@ -269,13 +271,14 @@ export class SelectPanelDailogComponent implements OnInit {
     };
     const dialogRef = this.dialog.open(AssignInterviewersDialogueComponent, {
       data: data,
-      header: 'Update Panel',
       width: '50vw',
       modal: true,
+      showHeader: false,
+      contentStyle: { padding: '0' },
       focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
-        '640px': '90vw',
+        '90vw': '90vw',
       },
     });
 
@@ -618,6 +621,20 @@ export class SelectPanelDailogComponent implements OnInit {
 
   public viewHistory(id: any) {
     this.visible = true;
+  }
+
+  public onButtonClick(data: { event: any; fName: string }): void {
+    const { event, fName } = data;
+    switch (fName) {
+      case 'Edit':
+        this.editPanel(event);
+        break;
+      case 'History':
+        this.viewHistory(event.id);
+        break;
+      default:
+        break;
+    }
   }
 
   public onClose() {

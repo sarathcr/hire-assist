@@ -13,6 +13,7 @@
     (history)="viewQuestionHistory($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
     (edit)="getByIdQuestion($event)"
+    (buttonClick)="onButtonClick($event)"
     [previewImageUrls]="previewImageUrls"
     [isImageLoadings]="isImageLoadings"
     [onLoadQuestionImage]="loadQuestionImage.bind(this)"

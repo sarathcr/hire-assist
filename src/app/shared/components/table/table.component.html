@@ -329,6 +329,7 @@
                     class="mr-2"
                     [rounded]="true"
                     [outlined]="true"
+                    [disabled]="product.isDisabled"
                     (onClick)="onView(product)"
                     pTooltip="View details"
                     tooltipPosition="bottom"
@@ -368,7 +369,7 @@
                     class="mr-2"
                     [rounded]="true"
                     [outlined]="true"
-                    [disabled]="product.isSelf"
+                    [disabled]="product.isSelf || product.isDisabled"
                     (onClick)="onEdit(product)"
                     pTooltip="Edit record"
                     tooltipPosition="bottom"
@@ -386,7 +387,7 @@
                     severity="danger"
                     [rounded]="true"
                     [outlined]="true"
-                    [disabled]="product.isSelf"
+                    [disabled]="product.isSelf || product.isDisabled"
                     (onClick)="onDelete(product.id)"
                     pTooltip="Delete record"
                     tooltipPosition="bottom"
@@ -404,7 +405,7 @@
                     severity="warn"
                     pTooltip="Unlock Assessment"
                     tooltipPosition="bottom"
-                    [disabled]="product.isSelf"
+                    [disabled]="product.isSelf || product.isDisabled"
                     (onClick)="onUnlock(product)"
                   />
                 }
@@ -419,7 +420,7 @@
                     severity="warn"
                     pTooltip="View history"
                     tooltipPosition="bottom"
-                    [disabled]="product.isSelf"
+                    [disabled]="product.isSelf || product.isDisabled"
                     (onClick)="history.emit(product)"
                     (keydown.enter)="
                       onDelete(product.id); $event.preventDefault()
@@ -440,7 +441,7 @@
                     severity="info"
                     pTooltip="View Previous Recruitment"
                     tooltipPosition="bottom"
-                    [disabled]="product.isSelf || !product.isAlreadyExist"
+                    [disabled]="product.isSelf || product.isDisabled || !product.isAlreadyExist"
                     (onClick)="onPreviousAssessment(product)"
                   />
                 }
@@ -493,8 +494,7 @@
                 <p-popover #op appendTo="body">
                   <div
                     class="flex flex-column gap-1 p-1"
-                    [style.align-items]="enableCandidateStyling() ? 'stretch' : 'flex-start'"
-                    style="display: flex; flex-direction: column; justify-content: flex-start;"
+                    style="display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch;"
                   >
                     @for (
                       icon of headerColumn.buttonIcons;
@@ -513,7 +513,9 @@
                           [text]="true"
                           [plain]="true"
                           [disabled]="
-                            product.disabledButtonIndices?.includes(i)
+                            (product.disabledButtonIndices?.includes(i) ||
+                              product.isDisabled) ??
+                            false
                           "
                           styleClass="w-full text-left justify-content-start"
                           (onClick)="
