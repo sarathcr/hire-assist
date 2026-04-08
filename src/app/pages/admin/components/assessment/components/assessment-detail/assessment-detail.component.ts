@@ -86,6 +86,15 @@ const tableColumns: TableColumnsData = {
       filterAlias: 'scoreFilter',
     },
     {
+      field: 'batch',
+      displayName: 'Batch',
+      sortedColumn: true,
+      hasChip: false,
+      hasTextFilter: true,
+      filterAlias: 'textFilter',
+      hasMultiStatus: true,
+    },
+    {
       field: 'status',
       displayName: 'Status',
       sortedColumn: true,
@@ -96,7 +105,7 @@ const tableColumns: TableColumnsData = {
     },
     {
       field: 'isScheduled',
-      displayName: 'Proceed to Next Round',
+      displayName: 'Next Round Status',
       sortedColumn: true,
       hasChip: false,
       hasTextFilter: true,
@@ -492,7 +501,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       const hasValidStatus =
         status === 'completed' ||
         status === 'rejected';
-      const isNotScheduled = !candidate.isScheduled; 
+      const isNotScheduled = !candidate.isScheduled;
 
       return hasValidStatus && isNotScheduled;
     });
@@ -1245,6 +1254,22 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       const lastRoundId = this.step[this.step.length - 1].id;
       if (this.currentStep === lastRoundId) {
         newColumns = newColumns.filter((c) => c.field !== 'isScheduled');
+      }
+    }
+
+    // 3. Make Batch/Panel column conditional
+    const isAptitude = this.isAptitudeRound();
+    const batchPanelCol = newColumns.find(
+      (c) => c.field === 'batch' || c.field === 'panel',
+    );
+
+    if (batchPanelCol) {
+      if (isAptitude) {
+        batchPanelCol.field = 'batch';
+        batchPanelCol.displayName = 'Batch';
+      } else {
+        batchPanelCol.field = 'panel';
+        batchPanelCol.displayName = 'Panel';
       }
     }
 
