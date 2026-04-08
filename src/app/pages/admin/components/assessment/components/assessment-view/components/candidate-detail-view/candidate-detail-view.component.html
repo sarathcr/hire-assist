@@ -27,7 +27,11 @@
     }
 
     <!-- Tabs Section -->
-    <p-tabs value="0" class="candidate-detail__tabs" (valueChange)="onTabChange($event)">
+    <p-tabs
+      value="0"
+      class="candidate-detail__tabs"
+      (valueChange)="onTabChange($event)"
+    >
       <p-tablist>
         <p-tab value="0">
           <i class="pi pi-user mr-2"></i>
@@ -142,8 +146,6 @@
           </div>
         </p-tabpanel>
 
-
-
         <!-- Interview Feedbacks Tab -->
         <!-- Interview Feedbacks Tab -->
         @if (interviewId > 0) {
@@ -152,17 +154,14 @@
               @if (isLoadingInterviewFeedbacks) {
                 <app-candidate-detail-previous-assessment-skeleton />
               } @else {
-                @if (
-                  (interviewFeedbacksDataSource?.previousInterviews?.length ??
-                    0) > 0
-                ) {
+                @if ((interviewFeedbacksDataSource?.length ?? 0) > 0) {
                   <div class="candidate-detail__assessments">
                     <p-accordion
                       [multiple]="true"
                       class="candidate-detail__rounds-accordion"
                     >
                       @for (
-                        round of interviewFeedbacksDataSource!.previousInterviews;
+                        round of interviewFeedbacksDataSource!;
                         track round.roundId
                       ) {
                         <p-accordion-panel [value]="round.sequence">
@@ -196,39 +195,229 @@
                                     <div class="candidate-detail__details-grid">
                                       <!-- Panel Name -->
                                       @if (hasValue(detail.panelName)) {
-                                        <div class="candidate-detail__detail-item">
-                                          <div class="candidate-detail__detail-icon">
+                                        <div
+                                          class="candidate-detail__detail-item"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
                                             <i class="pi pi-users"></i>
                                           </div>
-                                          <div class="candidate-detail__detail-content">
-                                            <span class="candidate-detail__detail-label">Panel</span>
-                                            <span class="candidate-detail__detail-value">{{ detail.panelName }}</span>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >Panel</span
+                                            >
+                                            <span
+                                              class="candidate-detail__detail-value"
+                                              >{{ detail.panelName }}</span
+                                            >
                                           </div>
                                         </div>
                                       }
 
                                       <!-- Interviewer Name -->
                                       @if (hasValue(detail.interviewerName)) {
-                                        <div class="candidate-detail__detail-item">
-                                          <div class="candidate-detail__detail-icon">
+                                        <div
+                                          class="candidate-detail__detail-item"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
                                             <i class="pi pi-user"></i>
                                           </div>
-                                          <div class="candidate-detail__detail-content">
-                                            <span class="candidate-detail__detail-label">Interviewer</span>
-                                            <span class="candidate-detail__detail-value">{{ detail.interviewerName }}</span>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >Interviewer</span
+                                            >
+                                            <span
+                                              class="candidate-detail__detail-value"
+                                              >{{
+                                                detail.interviewerName
+                                              }}</span
+                                            >
                                           </div>
                                         </div>
                                       }
 
                                       <!-- Date -->
                                       @if (getDetailDate(detail)) {
-                                        <div class="candidate-detail__detail-item">
-                                          <div class="candidate-detail__detail-icon">
+                                        <div
+                                          class="candidate-detail__detail-item"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
                                             <i class="pi pi-calendar"></i>
                                           </div>
-                                          <div class="candidate-detail__detail-content">
-                                            <span class="candidate-detail__detail-label">Date</span>
-                                            <span class="candidate-detail__detail-value">{{ getDetailDate(detail) }}</span>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >Date</span
+                                            >
+                                            <span
+                                              class="candidate-detail__detail-value"
+                                              >{{ getDetailDate(detail) }}</span
+                                            >
+                                          </div>
+                                        </div>
+                                      }
+
+                                      <!-- Question Set -->
+                                      @if (hasValue(detail.questionSet)) {
+                                        <div
+                                          class="candidate-detail__detail-item"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
+                                            <i class="pi pi-file-edit"></i>
+                                          </div>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >Question Set</span
+                                            >
+                                            <span
+                                              class="candidate-detail__detail-value"
+                                              >{{ detail.questionSet }}</span
+                                            >
+                                          </div>
+                                        </div>
+                                      }
+
+                                      <!-- Batch -->
+                                      @if (hasValue(detail.batch)) {
+                                        <div
+                                          class="candidate-detail__detail-item"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
+                                            <i class="pi pi-tag"></i>
+                                          </div>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >Batch</span
+                                            >
+                                            <span
+                                              class="candidate-detail__detail-value"
+                                              >{{ detail.batch }}</span
+                                            >
+                                          </div>
+                                        </div>
+                                      }
+
+                                      <!-- Total Questions -->
+                                      @if (hasValue(detail.totalQuestions)) {
+                                        <div
+                                          class="candidate-detail__detail-item"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
+                                            <i class="pi pi-list"></i>
+                                          </div>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >Total Questions</span
+                                            >
+                                            <span
+                                              class="candidate-detail__detail-value"
+                                              >{{ detail.totalQuestions }}</span
+                                            >
+                                          </div>
+                                        </div>
+                                      }
+
+                                      <!-- Attended Questions -->
+                                      @if (hasValue(detail.attendedQuestions)) {
+                                        <div
+                                          class="candidate-detail__detail-item"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
+                                            <i class="pi pi-pencil"></i>
+                                          </div>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >Attended</span
+                                            >
+                                            <span
+                                              class="candidate-detail__detail-value"
+                                              >{{
+                                                detail.attendedQuestions
+                                              }}</span
+                                            >
+                                          </div>
+                                        </div>
+                                      }
+
+                                      <!-- Correct Answers -->
+                                      @if (hasValue(detail.correctAnswers)) {
+                                        <div
+                                          class="candidate-detail__detail-item"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
+                                            <i class="pi pi-check-circle"></i>
+                                          </div>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >Correct</span
+                                            >
+                                            <span
+                                              class="candidate-detail__detail-value text-success"
+                                              >{{ detail.correctAnswers }}</span
+                                            >
+                                          </div>
+                                        </div>
+                                      }
+
+                                      <!-- Skipped -->
+                                      @if (hasValue(detail.skipped)) {
+                                        <div
+                                          class="candidate-detail__detail-item"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
+                                            <i class="pi pi-step-forward"></i>
+                                          </div>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >Skipped</span
+                                            >
+                                            <span
+                                              class="candidate-detail__detail-value"
+                                              >{{ detail.skipped }}</span
+                                            >
                                           </div>
                                         </div>
                                       }
@@ -305,9 +494,9 @@
                     </p-accordion>
                   </div>
                 } @else {
-                  <app-empty-state 
+                  <app-empty-state
                     icon="pi pi-comments"
-                    message="No interview feedbacks found" 
+                    message="No interview feedbacks found"
                   />
                 }
               }

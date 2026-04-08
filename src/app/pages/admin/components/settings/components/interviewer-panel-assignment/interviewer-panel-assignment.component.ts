@@ -162,6 +162,11 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
               interviewerNames:
                 item.interviewers?.map((i) => i.name).join(', ') ?? '',
               interviewers: item.interviewers ?? [],
+              name:
+                item.name ||
+                (item as any).panelName ||
+                (item as any).panel ||
+                (item as any).title,
             };
           });
           this.panelData = { ...res, data: resData };
@@ -330,6 +335,11 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
             interviewerNames:
               item.interviewers?.map((i) => i.name).join(', ') ?? '',
             interviewers: item.interviewers ?? [],
+            name:
+              item.name ||
+              (item as any).panelName ||
+              (item as any).panel ||
+              (item as any).title,
           };
         });
         this.panelData = { ...response, data: resData };

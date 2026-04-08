@@ -20,6 +20,7 @@ import {
   InterviewerCandidate,
   InterviewerFeedback,
   InterviewerRefreshRequest,
+  PreviousInterview,
 } from '../../../models/interviewer.model';
 
 @Injectable({
@@ -212,6 +213,16 @@ export class InterviewService extends ApiService<any> {
     return this.httpClient.put(
       `${this.getResourceUrl()}/InterviewerRefresh`,
       payload,
+    );
+  }
+
+  public GetCurrentAndPreviousRounds(
+    candidateId: string,
+    assessmentId: number,
+    assessmentRoundId: number,
+  ) {
+    return this.httpClient.get<PreviousInterview[]>(
+      `${this.getResourceUrl()}/Feedback/CurrentAndPreviousRounds/${candidateId}/${assessmentId}/${assessmentRoundId}`,
     );
   }
 }

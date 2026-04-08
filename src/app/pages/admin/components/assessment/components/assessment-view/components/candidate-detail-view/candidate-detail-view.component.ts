@@ -10,7 +10,7 @@ import { ErrorResponse } from '../../../../../../../../shared/models/custom-erro
 import {
   candidateDetails,
 } from '../../../../../../models/candidate-data.model';
-import { InterviewerCandidate } from '../../../../../../models/interviewer.model';
+import { InterviewerCandidate, PreviousInterview } from '../../../../../../models/interviewer.model';
 import { TagModule } from 'primeng/tag';
 import { ChipModule } from 'primeng/chip';
 import { DividerModule } from 'primeng/divider';
@@ -47,13 +47,14 @@ export class CandidateDetailViewComponent
   public assessmentId!: number;
   public candidateId!: string;
   public candidateDetailsDataSource!: candidateDetails;
-  public interviewFeedbacksDataSource?: InterviewerCandidate;
+  public interviewFeedbacksDataSource?: PreviousInterview[];
   public url = 'assessmentsummary';
   public editorStatus = true;
   public isLoading = true;
   public isLoadingInterviewFeedbacks = true;
   public isCoverImageLoading = false;
   public interviewId!: number;
+  public assessmentRoundId!: number;
 
   constructor(
     public activatedRoute: ActivatedRoute,
@@ -76,6 +77,9 @@ export class CandidateDetailViewComponent
     );
     this.interviewId = Number(
       this.activatedRoute.snapshot.paramMap.get('interviewId'),
+    );
+    this.assessmentRoundId = Number(
+      this.activatedRoute.snapshot.queryParamMap.get('assessmentRoundId'),
     );
     this.getCandidateDetails();
   }
@@ -102,20 +106,21 @@ export class CandidateDetailViewComponent
 
   private getInterviewFeedbacks(): void {
     this.isLoadingInterviewFeedbacks = true;
-    const payload = {
-      assessmentId: this.assessmentId,
-      candidateId: this.candidateId,
-      interviewId: this.interviewId || 0,
-    };
-    this.interviewService.GetCandidateDetails(payload).subscribe({
-      next: (res: InterviewerCandidate) => {
-        this.interviewFeedbacksDataSource = res;
-        this.isLoadingInterviewFeedbacks = false;
-      },
-      error: () => {
-        this.isLoadingInterviewFeedbacks = false;
-      },
-    });
+    this.interviewService
+      .GetCurrentAndPreviousRounds(
+        this.candidateId,
+        this.assessmentId,
+        this.assessmentRoundId || 0,
+      )
+      .subscribe({
+        next: (res: PreviousInterview[]) => {
+          this.interviewFeedbacksDataSource = res;
+          this.isLoadingInterviewFeedbacks = false;
+        },
+        error: () => {
+          this.isLoadingInterviewFeedbacks = false;
+        },
+      });
   }
 
   public getStatusSeverity(status: string): 'success' | 'danger' | 'warn' | 'info' | undefined {

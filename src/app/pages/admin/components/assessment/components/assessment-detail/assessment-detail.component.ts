@@ -292,11 +292,16 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   public onView(data: CandidateData): void {
     this.router.navigate([
-      'admin/recruitments/candidateDetail',
-      String(this.assessmentId),
-      data.email,
-      data.interviewId ? String(data.interviewId) : String(data.id || '0'),
-    ]);
+        'admin/recruitments/candidateDetail',
+        String(this.assessmentId),
+        data.email,
+        data.interviewId ? String(data.interviewId) : String(data.id || '0'),
+      ],
+      {
+        queryParams: { assessmentRoundId: data.assessmentRoundId || 0 },
+        queryParamsHandling: 'merge',
+      },
+    );
   }
 
   public onTablePayloadChange(payload: PaginatedPayload): void {
@@ -841,12 +846,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         assessmentid: this.assessmentId,
         interviewId: this.selectedCandidates[0].id,
       },
-      header: '',
+      showHeader: false,
       maximizable: false,
       width: '60vw',
       modal: true,
       focusOnShow: false,
-      closable: true,
+      closable: false,
       dismissableMask: true,
       styleClass: 'select-panel-dialog-wrapper',
       breakpoints: {
@@ -1675,11 +1680,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           }
         },
       },
-      header: '',
+      showHeader: false,
       width: '50vw',
       modal: true,
       focusOnShow: false,
-      closable: true,
+      closable: false,
       dismissableMask: true,
       styleClass: 'schedule-interview-dialog',
       breakpoints: {
@@ -1809,7 +1814,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               data: {
                 candidates: pendingCandidates,
               },
-              header: ' ', // Empty header to let component handle it
+              showHeader: false,
               maximizable: false,
               width: '40vw',
               modal: true,

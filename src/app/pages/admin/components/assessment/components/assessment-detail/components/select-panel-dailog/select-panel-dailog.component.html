@@ -58,6 +58,8 @@
       [alreadySelected]="selectedPanel"
       (history)="viewHistory($event)"
       (buttonClick)="onButtonClick($event)"
+      [hasCheckbox]="false"
+      [selectionMode]="'single'"
     ></app-table>
   </div>
 
@@ -83,9 +85,7 @@
           [buttonSize]="'medium'"
           [icon]="'pi pi-check'"
           (btnClick)="onSubmit()"
-          [disabled]="
-            IsMultiplePanel || selectedPanelIds.length === 0 || isSubmitting
-          "
+          [disabled]="selectedPanelIds.length === 0 || isSubmitting"
           class="select-panel-dialog__submit-btn"
         ></app-button>
       } @else {
@@ -94,9 +94,7 @@
           [buttonSize]="'medium'"
           [icon]="'pi pi-user-plus'"
           (btnClick)="onSubmit()"
-          [disabled]="
-            IsMultiplePanel || selectedPanelIds.length === 0 || isSubmitting
-          "
+          [disabled]="selectedPanelIds.length === 0 || isSubmitting"
           class="select-panel-dialog__submit-btn"
         ></app-button>
       }

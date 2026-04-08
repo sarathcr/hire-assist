@@ -282,7 +282,10 @@
         (touchend)="onTouchEnd($event, rowElement, product)"
         [pSelectableRow]="product"
         [pSelectableRowDisabled]="
-          product.isSelf || product.isDisabled || selectionDisabled()
+          product.isSelf ||
+          product.isDisabled ||
+          product.isSelectionDisabled ||
+          selectionDisabled()
         "
       >
         @if (hasCheckbox) {
@@ -291,7 +294,10 @@
               [value]="product"
               (click)="$event.stopPropagation()"
               [disabled]="
-                product.isSelf || product.isDisabled || selectionDisabled()
+                product.isSelf ||
+                product.isDisabled ||
+                product.isSelectionDisabled ||
+                selectionDisabled()
               "
             ></p-tableCheckbox>
           </td>
@@ -535,6 +541,7 @@
                   [rounded]="true"
                   [text]="true"
                   [plain]="true"
+                  [disabled]="product.isDisabled"
                   (onClick)="op.toggle($event)"
                 ></p-button>
               }

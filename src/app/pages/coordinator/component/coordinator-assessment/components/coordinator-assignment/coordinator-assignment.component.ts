@@ -322,10 +322,11 @@ export class CoordinatorAssignmentComponent implements OnInit {
       const panel = this.panelData.data?.find((p) => String(p.id) === String(selectedId));
 
       if (panel?.status?.toLowerCase() === 'assigned') {
+        const pName = panel?.name || (panel as any)?.panelName || (panel as any)?.panel || (panel as any)?.title || (selectedIds[0] as any)?.name || (selectedIds[0] as any)?.panelName || 'the panel';
         this.messageService.add({
           severity: 'warn',
           summary: 'Information',
-          detail: `The panel "${panel.name}" is already assigned and cannot be selected.`,
+          detail: `The panel "${pName}" is already assigned and cannot be selected.`,
         });
         this.selectedPanel = [];
         this.selectedPanelIds = [];
@@ -334,10 +335,11 @@ export class CoordinatorAssignmentComponent implements OnInit {
       }
 
       if (!this.isPanelValid(panel)) {
+        const pName = panel?.name || (panel as any)?.panelName || (panel as any)?.panel || (panel as any)?.title || (selectedIds[0] as any)?.name || (selectedIds[0] as any)?.panelName || 'the panel';
         this.messageService.add({
           severity: 'warn',
           summary: 'Information',
-          detail: `Interviewers must be assigned in "${panel?.name || 'the panel'}" to proceed. You can add them using the Edit action.`,
+          detail: `Please add interviewers to the panel "${pName}" before selecting it. You can add them using the Edit action.`,
         });
         // Clear selection to prevent blue background
         this.selectedPanel = [];
@@ -439,6 +441,11 @@ export class CoordinatorAssignmentComponent implements OnInit {
               interviewerNames:
                 item.interviewers?.map((i) => i.name).join(', ') ?? '',
               interviewers: item.interviewers ?? [],
+              name:
+                item.name ||
+                (item as any).panelName ||
+                (item as any).panel ||
+                (item as any).title,
               isDisabled: !this.isPanelSelectable(item),
             };
           });
@@ -696,6 +703,11 @@ export class CoordinatorAssignmentComponent implements OnInit {
               item.interviewers?.map((i: Interviewer) => i.name).join(', ') ??
               '',
             interviewers: item.interviewers ?? [],
+            name:
+              item.name ||
+              (item as any).panelName ||
+              (item as any).panel ||
+              (item as any).title,
             isDisabled: !this.isPanelSelectable(item),
           };
         });

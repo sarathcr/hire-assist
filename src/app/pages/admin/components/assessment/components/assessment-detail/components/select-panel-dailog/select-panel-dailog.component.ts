@@ -111,7 +111,6 @@ export class SelectPanelDailogComponent implements OnInit {
   public selectedPanel: string[] = [];
   public existingPanel: string[] = [];
   public intrviewid!: number;
-  public IsMultiplePanel!: boolean;
   public isLoading = false;
   public visible: boolean = false;
   events = [
@@ -190,6 +189,8 @@ export class SelectPanelDailogComponent implements OnInit {
               interviewerNames:
                 item.interviewers?.map((i) => i.name).join(', ') ?? '',
               interviewers: item.interviewers ?? [],
+              name: item.name || (item as any).panelName || (item as any).panel,
+              isDisabled: !this.isPanelSelectable(item),
             };
           });
           this.panelData = { ...res, data: resData };
@@ -339,6 +340,8 @@ export class SelectPanelDailogComponent implements OnInit {
               interviewerNames:
                 item.interviewers?.map((i) => i.name).join(', ') ?? '',
               interviewers: item.interviewers ?? [],
+              name: item.name || (item as any).panelName || (item as any).panel,
+              isDisabled: !this.isPanelSelectable(item),
             };
           });
           this.panelData = { ...res, data: resData };
@@ -355,19 +358,53 @@ export class SelectPanelDailogComponent implements OnInit {
       });
   }
   public getSelectedPanelId(selectedIds: PanelSummary[]) {
-    if (selectedIds.length > 1) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'Only one panel can be selected at a time.',
-      });
-      this.IsMultiplePanel = true;
-      return;
+
+    if (selectedIds.length > 0) {
+      const basicPanel = selectedIds[0];
+      // Resolve full panel details from the current loaded data using the ID
+      // This is necessary because the table might only emit sparse objects
+      const panel =
+        this.panelData.data.find(
+          (p) => String(p.id) === String(basicPanel.id),
+        ) || basicPanel;
+
+      const pName =
+        (panel as any)?.name ||
+        (panel as any)?.panelName ||
+        (panel as any)?.panel ||
+        (panel as any)?.title ||
+        'the panel';
+
+      if (panel.status?.toLowerCase() === 'assigned') {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Information',
+          detail: `The panel "${pName}" is already assigned and cannot be selected.`,
+        });
+        this.selectedPanelIds = [];
+        return;
+      }
+
+      if (!this.isPanelValid(panel)) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Information',
+          detail: `Please add interviewers to the panel "${pName}" before selecting it. You can add them using the Edit action.`,
+        });
+        this.selectedPanelIds = [];
+        return;
+      }
     }
-    this.IsMultiplePanel = false;
+
     const previousPanelId =
       this.selectedPanelIds.length > 0 ? this.selectedPanelIds[0].id : null;
-    this.selectedPanelIds = selectedIds.map((item: PanelSummary) => item);
+
+    // Store full objects for the selected IDs
+    this.selectedPanelIds = selectedIds.map((item: PanelSummary) => {
+      return (
+        this.panelData.data.find((p) => String(p.id) === String(item.id)) || item
+      );
+    });
 
     // Reset interviewersEdited flag when a different panel is selected
     // This ensures we use current interviewers for newly selected unassigned panels
@@ -390,11 +427,21 @@ export class SelectPanelDailogComponent implements OnInit {
       return;
     }
 
+    const selectedPanel = this.selectedPanelIds[0];
+    const pName = (selectedPanel as any)?.name || (selectedPanel as any)?.panelName || (selectedPanel as any)?.panel || (selectedPanel as any)?.title || 'the panel';
+    if (selectedPanel.status?.toLowerCase() === 'assigned') {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Information',
+        detail: `The panel "${pName}" is already assigned and cannot be selected.`,
+      });
+      return;
+    }
+
     if (this.isSubmitting) {
       return; // Prevent multiple submissions
     }
 
-    const selectedPanel = this.selectedPanelIds[0];
     this.selectedPanelForAssignment = selectedPanel;
     const isAdd = this.existingPanel.length === 0;
 
@@ -639,5 +686,21 @@ export class SelectPanelDailogComponent implements OnInit {
 
   public onClose() {
     this.ref.close(false);
+  }
+
+  /**
+   * Helper to determine if a panel can be selected
+   * Panels in "Assigned" status should be blocked
+   */
+  private isPanelSelectable(panel: any): boolean {
+    const status = panel?.status?.trim().toLowerCase() || '';
+    return status !== 'assigned';
+  }
+
+  /**
+   * Helper to determine if a panel is valid (has interviewers)
+   */
+  public isPanelValid(panel: any): boolean {
+    return !!(panel && panel.interviewers && panel.interviewers.length > 0);
   }
 }
