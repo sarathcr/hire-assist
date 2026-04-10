@@ -108,7 +108,7 @@ export class InterviewerFeedbackComponent
   public isDragOver = false;
 
   public interview!: Interview;
-  public durationMinutes = 0;
+  public durationSeconds = 0;
   public warningThresholds = [10, 5];
   private ref: any;
 
@@ -462,7 +462,8 @@ export class InterviewerFeedbackComponent
 
       this.isSubmitted = res.isActive == false ? true : false;
       if (res.timerHour) {
-        this.durationMinutes = this.convertTimerHourToMinutes(res.timerHour);
+        this.responseData.timerHour = res.timerHour;
+        this.durationSeconds = this.convertTimerHourToSeconds(res.timerHour);
       }
     };
     const error = () => {
@@ -926,20 +927,24 @@ export class InterviewerFeedbackComponent
     }
   }
 
-  private convertTimerHourToMinutes(timerHour: number | string): number {
+  private convertTimerHourToSeconds(timerHour: number | string): number {
     if (!timerHour) return 0;
 
     if (typeof timerHour === 'string') {
-      const parts = timerHour.split(':');
+      const isOvertime = timerHour.includes('+');
+      const cleanHour = timerHour.replace('+', '').trim();
+      const parts = cleanHour.split(':');
       const hours = parseInt(parts[0] || '0', 10);
       const minutes = parseInt(parts[1] || '0', 10);
-      return hours * 60 + minutes;
+      const seconds = parseInt(parts[2] || '0', 10);
+      const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+      return isOvertime ? -totalSeconds : totalSeconds;
     }
 
     const hours = Math.floor(timerHour);
     const minutes = Math.round((timerHour - hours) * 100);
 
-    return hours * 60 + minutes;
+    return hours * 3600 + minutes * 60;
   }
 
   public hasChanges(feedback: AccordionData): boolean {
@@ -1089,16 +1094,19 @@ export class InterviewerFeedbackComponent
       return;
     }
 
-    const remainingSeconds = Math.max(
-      0,
-      this.durationMinutes * 60 - this.elapsedSeconds,
-    );
-    const h = Math.floor(remainingSeconds / 3600);
-    const m = Math.floor((remainingSeconds % 3600) / 60);
-    const s = remainingSeconds % 60;
-    const terminatedTimer = `${h.toString().padStart(2, '0')}:${m
+    const remainingSeconds = this.durationSeconds - this.elapsedSeconds;
+    const isOvertime = remainingSeconds < 0;
+    const absSeconds = Math.abs(remainingSeconds);
+
+    const h = Math.floor(absSeconds / 3600);
+    const m = Math.floor((absSeconds % 3600) / 60);
+    const s = absSeconds % 60;
+
+    const timeStr = `${h.toString().padStart(2, '0')}:${m
       .toString()
       .padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    
+    const terminatedTimer = isOvertime ? `+ ${timeStr}` : timeStr;
 
     const url = `${INTERVIEW_URL}/InterviewerRefresh`;
     const payload = {

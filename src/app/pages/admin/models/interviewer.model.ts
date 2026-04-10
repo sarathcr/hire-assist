@@ -10,6 +10,8 @@ export interface InterviewerCandidate {
   previousInterviews: PreviousInterview[];
   isActive: boolean;
   timerHour: number | string;
+  adminTimerHour?: number | string;
+  timeHour?: number | string;
 }
 
 export interface PreviousInterview {

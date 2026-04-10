@@ -53,12 +53,21 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
         let totalSeconds = 0;
 
         if (typeof rawHour === 'string') {
+          // Detect overtime from '+' prefix
+          const isOvertime = rawHour.includes('+');
+          const cleanHour = rawHour.replace('+', '').trim();
+          
           // Parse HH:mm:ss
-          const parts = rawHour.split(':');
+          const parts = cleanHour.split(':');
           const hours = parseInt(parts[0] || '0', 10);
           const minutes = parseInt(parts[1] || '0', 10);
           const seconds = parseInt(parts[2] || '0', 10);
+          
           totalSeconds = hours * 3600 + minutes * 60 + seconds;
+          
+          if (isOvertime) {
+            totalSeconds = -totalSeconds;
+          }
         } else if (typeof rawHour === 'number') {
           const hours = Math.floor(rawHour);
           const minutes = Math.round((rawHour - hours) * 100);
