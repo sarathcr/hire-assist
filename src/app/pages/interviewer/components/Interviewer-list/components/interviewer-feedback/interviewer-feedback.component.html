@@ -8,6 +8,7 @@
     #timerEl
     class="ifb__timer"
     [class.ifb__timer--dragging]="isDraggingTimer"
+    [class.ifb__timer--moved]="!!timerPos"
     [style.left.px]="timerPos?.x ?? null"
     [style.top.px]="timerPos?.y ?? null"
     [style.right]="timerPos ? 'auto' : null"
@@ -46,7 +47,7 @@
         </div>
       </div>
       <div class="ifb__page-header-right">
-        @if (responseData.statusId) {
+        @if (getStatusText(responseData.statusId)) {
           <p-tag
             [value]="getStatusText(responseData.statusId)"
             [severity]="getStatusSeverity(responseData.statusId)"
@@ -354,39 +355,37 @@
                     name="feedbackFiles[]"
                     [multiple]="false"
                     accept="image/*"
-                    maxFileSize="10000000"
                     [auto]="false"
+                    customUpload
                     [showUploadButton]="false"
                     [showCancelButton]="false"
                     (onSelect)="onFileChange($event)"
                     [disabled]="isSubmitted"
                     mode="advanced"
                   >
-                    <!-- ── Custom drop zone template ── -->
-                    <ng-template #header let-choose="chooseCallback">
+                    <!-- ── Custom Drop Zone in Content Template ── -->
+                    <ng-template pTemplate="header">
                       <div
                         class="ifb__drop-zone"
-                        [class.ifb__drop-zone--over]="isDragOver"
                         [class.ifb__drop-zone--disabled]="isSubmitted"
-                        (click)="!isSubmitted && choose && choose()"
-                        (dragover)="$event.preventDefault(); isDragOver = true"
-                        (dragleave)="isDragOver = false"
-                        (drop)="isDragOver = false"
+                        [class.ifb__drop-zone--over]="isDragOver"
+                        (click)="!isSubmitted && fileUpload.choose()"
+                        (dragover)="onDragOver($event)"
+                        (dragleave)="onDragLeave($event)"
+                        (drop)="onDrop($event)"
                       >
                         <div class="ifb__drop-zone-icon">
                           <i class="pi pi-cloud-upload"></i>
                         </div>
-                        <p class="ifb__drop-zone-title">
-                          Drop your image here
-                        </p>
+                        <p class="ifb__drop-zone-title">Drop your image here</p>
                         <p class="ifb__drop-zone-sub">
-                          or click to browse — PNG, JPG up to 10MB
+                          or click to browse — PNG, JPG up to 5MB
                         </p>
                         @if (!isSubmitted) {
                           <button
                             type="button"
                             class="ifb__drop-zone-btn"
-                            (click)="$event.stopPropagation(); choose && choose()"
+                            (click)="$event.stopPropagation(); fileUpload.choose()"
                           >
                             <i class="pi pi-folder-open"></i>
                             Browse Files
@@ -395,8 +394,7 @@
                       </div>
                     </ng-template>
 
-                    <!-- Hide PrimeNG's default file list — we render our own grid -->
-                    <ng-template #content></ng-template>
+                    <!-- Hide default PrimeNG toolbar -->
                   </p-fileupload>
 
                   <div class="ifb__attachment-grid">
@@ -520,7 +518,7 @@
                           [buttonLabel]="'Save'"
                           [icon]="'pi pi-save'"
                           [disabled]="!hasChanges(feedback)"
-                          (btnClick)="feedback.isSaved ? onEdit(feedback) : onsave(feedback)"
+                          (btnClick)="onsave(feedback)"
                         >
                         </app-button>
                       } @else {

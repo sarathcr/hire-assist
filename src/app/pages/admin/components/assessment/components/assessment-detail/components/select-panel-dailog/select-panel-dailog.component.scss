@@ -248,31 +248,6 @@
     }
   }
 
-  &__cancel-btn {
-    min-width: 120px;
-
-    ::ng-deep .p-button {
-      border-radius: 8px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-      height: 44px;
-      border: 2px solid #e5e7eb;
-      color: #6b7280;
-      background: white;
-
-      &:hover:not(:disabled) {
-        background: #f3f4f6;
-        border-color: #d1d5db;
-        color: #374151;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      &:active {
-        transform: translateY(0);
-      }
-    }
-  }
 
   &__submit-btn {
     min-width: 160px;

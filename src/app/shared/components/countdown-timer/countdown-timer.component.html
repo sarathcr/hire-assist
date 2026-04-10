@@ -3,8 +3,9 @@
     class="pi"
     [ngClass]="isOvertime() ? 'pi-exclamation-circle' : 'pi-clock'"
   ></i>
-  <span>{{ displayTime() }}</span>
-  @if (isOvertime()) {
-    <span class="overtime-label">OVERTIME</span>
-  }
+  <div class="time-container">
+    <span class="overtime-prefix" [style.visibility]="isOvertime() ? 'visible' : 'hidden'">+</span>
+    <span class="time-value">{{ displayTime() }}</span>
+  </div>
+  <span class="overtime-label" [style.visibility]="isOvertime() ? 'visible' : 'hidden'">OVERTIME</span>
 </div>

@@ -1,15 +1,29 @@
 <div class="batch-detail">
   <div class="batch-detail__header-wrapper">
     <h1 class="batch-detail__title">
-      <i class="pi pi-calendar-times"></i>
-      Batches Details
+      @if (isAptitudeRound === true) {
+        <i class="pi pi-calendar-times"></i>
+        Batches Details
+      } @else if (isAptitudeRound === false) {
+        <i class="pi pi-users"></i>
+        {{ currentRoundName }}
+      } @else {
+        <i class="pi pi-spin pi-spinner"></i>
+        Loading...
+      }
     </h1>
   </div>
+
   <div class="batch-detail__view">
     <div class="batch-detail__view__content">
+
+      <!-- ── Detecting round type ── -->
       @if (isLoading) {
         <app-frontdesk-batch-assignment-skeleton></app-frontdesk-batch-assignment-skeleton>
-      } @else {
+      }
+
+      <!-- ── APTITUDE ROUND: Batch-wise accordion ── -->
+      @else if (isAptitudeRound === true) {
         <p-accordion [value]="0" (onOpen)="onAccordionOpen($event)" class="batch-detail__accordion">
           @if (batchList && batchList.length === 0) {
             <p-accordion-panel [disabled]="true">
@@ -21,20 +35,16 @@
               <p-accordion-header class="batch-detail__acc-header">
                 <div class="batch-detail__acc-header-content">
                   <span class="batch-detail__acc-name">{{ item.name }}</span>
-                  <p-chip
-                    label="{{ item.scheduledTime }}"
-                    icon="pi pi-calendar"
-                  />
+                  <p-chip label="{{ item.scheduledTime }}" icon="pi pi-calendar" />
                 </div>
               </p-accordion-header>
               <p-accordion-content class="batch-detail__acc-content">
-
                 @if (loadingBatches[item.id] && !candidatesByBatch[item.id]) {
                   <app-table-skeleton></app-table-skeleton>
                 } @else {
                   <app-table
                     [tableData]="candidatesByBatch[item.id]"
-                    [columnsData]="columns"
+                    [columnsData]="aptitudeColumns"
                     [hasCheckbox]="false"
                     [hasSearch]="true"
                     [parentLoader]="loadingBatches[item.id] || false"
@@ -47,6 +57,24 @@
           }
         </p-accordion>
       }
+
+      <!-- ── NON-APTITUDE ROUND: Flat candidate table ── -->
+      @else if (isAptitudeRound === false) {
+        @if (isNonAptitudeLoading && !nonAptitudeCandidates) {
+          <app-table-skeleton></app-table-skeleton>
+        } @else {
+          <app-table
+            [tableData]="nonAptitudeCandidates"
+            [columnsData]="nonAptitudeColumns"
+            [hasCheckbox]="false"
+            [hasSearch]="true"
+            [parentLoader]="isNonAptitudeLoading"
+            (pageChangeAndSort)="onNonAptitudeTablePayloadChange($event)"
+            (buttonClick)="onButtonClick($event, 'flat_view')"
+          ></app-table>
+        }
+      }
+
     </div>
   </div>
 </div>

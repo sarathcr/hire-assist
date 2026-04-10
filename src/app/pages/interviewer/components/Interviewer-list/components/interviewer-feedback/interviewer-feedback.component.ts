@@ -346,8 +346,9 @@ export class InterviewerFeedbackComponent
       [StatusEnum.Scheduled]: 'Scheduled',
       [StatusEnum.Paused]: 'Paused',
       [StatusEnum.Terminated]: 'Terminated',
+      [StatusEnum.Quit]: 'Quit',
     };
-    return statusMap[statusId] || 'Unknown';
+    return statusMap[statusId] || '';
   }
 
   public getStatusSeverity(
@@ -369,6 +370,7 @@ export class InterviewerFeedbackComponent
       [StatusEnum.Scheduled]: 'warn',
       [StatusEnum.Paused]: 'secondary',
       [StatusEnum.Terminated]: 'danger',
+      [StatusEnum.Quit]: 'secondary',
     };
     return severityMap[statusId] || 'secondary';
   }
@@ -476,13 +478,23 @@ export class InterviewerFeedbackComponent
       .GetCandidateDetails(payload)
       .subscribe({ next, error });
   }
-  public onFileChange(event: FileSelectEvent): void {
-    const files = event.currentFiles;
+  public onFileChange(event: any): void {
+    const files = event.files || event.currentFiles || [];
     if (files && files.length > 0) {
       const newFiles: File[] = [];
+      let hasLargeFile = false;
 
-      files.forEach((file) => {
-        if (file && file instanceof File) {
+      // 5MB limit: 5 * 1024 * 1024 = 5242880 bytes
+      const MAX_SIZE = 5242880;
+
+      Array.from(files).forEach((file: any) => {
+        if (file) {
+          // Validation: 5MB limit
+          if (file.size > MAX_SIZE) {
+            hasLargeFile = true;
+            return;
+          }
+
           const isDuplicate = this.pendingFiles.some(
             (pendingFile) =>
               pendingFile.name === file.name &&
@@ -513,6 +525,15 @@ export class InterviewerFeedbackComponent
         }
       });
 
+      if (hasLargeFile) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'File Too Large',
+          detail: 'One or more files exceed the 5MB limit and were skipped.',
+          life: 5000,
+        });
+      }
+
       // Clear file upload component after a short delay
       setTimeout(() => {
         const fileUploadElement = document.querySelector('p-fileupload');
@@ -531,9 +552,12 @@ export class InterviewerFeedbackComponent
       }, 100);
 
       // Auto-save: Upload pending files immediately
-      this.uploadAndSaveAttachments();
+      if (newFiles.length > 0) {
+        this.uploadAndSaveAttachments();
+      }
     }
   }
+
 
   private uploadAndSaveAttachments(): void {
     // Guard against concurrent uploads
@@ -740,6 +764,47 @@ export class InterviewerFeedbackComponent
     }
   }
   public onsave(feedback: AccordionData): void {
+    const textContent = this.stripHtml(feedback.content || '').trim();
+    const isCommentEmpty = !textContent;
+    // Handle null, undefined, 0 (number), "0" (string), NaN, etc.
+    const isScoreEmpty = !feedback.score || Number(feedback.score) === 0;
+    const isAttachments = feedback.title?.toLowerCase() === 'attachments';
+
+    if (!isAttachments && isCommentEmpty && isScoreEmpty) {
+      const modalData: DialogData = {
+        message:
+          'Are you sure you want to save without adding any comments or score?',
+        isChoice: true,
+        cancelButtonText: 'No',
+        acceptButtonText: 'Yes, Save',
+      };
+
+      this.ref = this.dialog.open(DialogComponent, {
+        data: modalData,
+        header: 'Save Confirmation',
+        width: '30vw',
+        modal: true,
+        focusOnShow: false,
+        breakpoints: {
+          '960px': '75vw',
+          '640px': '90vw',
+        },
+        templates: {
+          footer: DialogFooterComponent,
+        },
+      });
+
+      this.ref.onClose.subscribe((result: boolean) => {
+        if (result) {
+          this.executeSave(feedback);
+        }
+      });
+    } else {
+      this.executeSave(feedback);
+    }
+  }
+
+  private executeSave(feedback: AccordionData): void {
     // If this is attachments section and there are pending files, upload them first
     if (feedback.title === 'Attachments' && this.pendingFiles.length > 0) {
       this.uploadPendingFiles()
@@ -766,12 +831,6 @@ export class InterviewerFeedbackComponent
             // Save only the new unique files
             this.saveFeedback(feedback, newUniqueFiles);
           } else {
-            // If all were duplicates or none uploaded (though uploadPendingFiles checks non-empty),
-            // we might not need to save if nothing changed,
-            // but if user just wants to ensure state or if there were other changes...
-            // safest is to save with empty list if we only intended to link new files.
-            // If this was just an upload-triggered save, and no new files, maybe skip?
-            // But let's call save with empty list to be safe / consistent with "onsave" intent.
             this.saveFeedback(feedback, []);
           }
         })
@@ -784,13 +843,6 @@ export class InterviewerFeedbackComponent
         });
     } else {
       // No pending files, save directly
-      const existingFiles =
-        feedback.title === 'Attachments' ? this.uploadedFile : [];
-      // Note: passing existingFiles here might re-send them?
-      // saveFeedback logic: `feedback.title === 'Attachments' && filesToSave.length > 0 ? filesToSave : []`
-      // If we pass existing files, it might try to save them again?
-      // Usually "filesToSave" implies NEW files to link.
-      // If no new files, we pass [].
       this.saveFeedback(feedback, []);
     }
   }
@@ -888,61 +940,6 @@ export class InterviewerFeedbackComponent
     const minutes = Math.round((timerHour - hours) * 100);
 
     return hours * 60 + minutes;
-  }
-  public onEdit(feedback: AccordionData) {
-    // When editing, don't change isSaved status - user can modify and save again
-    // Clear any existing feedback request
-    this.feedbackRequest = {
-      assessmentId: Number(this.assessmentId),
-      candidateId: this.candidateid ?? '',
-      feedbackCriteriaId: feedback.value,
-      interviewerId: this.interviewerId ?? '',
-      id: feedback.id,
-      feedbackDetails: feedback.content ?? '',
-      feedbackScore: feedback.score ?? 0,
-      assessmentRoundId: Number(this.assessmentRoundId),
-      interviewId: Number(this.interviewId),
-      fileDto:
-        feedback.title === 'Attachments' && this.uploadedFile.length
-          ? this.uploadedFile
-          : [],
-    };
-    
-    this.calculateTotalFeedbackScore();
-    
-    feedback.isSaved = true; // Ensure it stays true during edit to prevent button flicker
-    const next = () => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Feedback Updated Successfully',
-      });
-      this.isLoading = false;
-      feedback.isSaved = true;
-
-      // Update original values to match current saved values
-      feedback.originalContent = feedback.content;
-      feedback.originalScore = feedback.score;
-
-      this.isImageLoading = true;
-      if (feedback.fileDto && feedback.fileDto.length > 0) {
-        this.GetfeedbackCriteria();
-      }
-    };
-    const error = (error: CustomErrorResponse) => {
-      const businerssErrorCode = error.error.businessError;
-      if (businerssErrorCode === 4003) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Invalid Score',
-        });
-      }
-      this.isLoading = false;
-    };
-    this.interviewService
-      .updateFeedback(this.feedbackRequest)
-      .subscribe({ next, error });
   }
 
   public hasChanges(feedback: AccordionData): boolean {
@@ -1135,6 +1132,33 @@ export class InterviewerFeedbackComponent
     if (this._timerUpHandler) {
       document.removeEventListener('mouseup', this._timerUpHandler);
       document.removeEventListener('touchend', this._timerUpHandler);
+    }
+  }
+
+  // ── Drag & Drop Handlers ───────────────────────────
+  public onDragOver(event: DragEvent): void {
+    if (this.isSubmitted) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  public onDragLeave(event: DragEvent): void {
+    if (this.isSubmitted) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  public onDrop(event: DragEvent): void {
+    if (this.isSubmitted) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+
+    if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+      const files = event.dataTransfer.files;
+      this.onFileChange({ files });
     }
   }
 }

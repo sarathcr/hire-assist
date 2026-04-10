@@ -60,6 +60,7 @@ export const uniqueStatuses = [
   { label: 'Active', value: 'Active' },
   { label: 'Terminated', value: 'Terminated' },
   { label: 'Quit', value: 'Quit' },
+  { label: 'On Review', value: 'On Review' },
 ];
 
 export const uniqueStatusesForIsSchedule = [
@@ -168,6 +169,7 @@ export class TableComponent<
   public history = output<any>();
   public pageChangeAndSort = output<PaginatedPayload>();
   public buttonClick = output<any>();
+  public rowExpand = output<string>();
   public PaginatedDataActions: any = PaginatedDataActions;
 
   public tooltipEvent = computed(() => {
@@ -758,6 +760,9 @@ export class TableComponent<
     };
     if (item) {
       item.isExpanded = !item.isExpanded;
+      if (item.isExpanded) {
+        this.rowExpand.emit(id);
+      }
     }
   }
 

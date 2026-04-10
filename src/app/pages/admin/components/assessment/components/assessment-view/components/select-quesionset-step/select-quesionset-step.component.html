@@ -259,6 +259,7 @@
                     [selectionDisabled]="isReadOnly()"
                     (history)="viewHistory($event)"
                     (buttonClick)="onButtonClick($event)"
+                    (rowExpand)="onRowExpand($event, questionSet.id.toString())"
                 ></app-table>
                 </div>
                 @if (!isLoadingContent && !isLoadingSummary) {

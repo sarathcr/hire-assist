@@ -609,22 +609,17 @@
                       </div>
                     }
                   } @else {
-                    <button
-                      type="button"
+                    <div
                       class="table__previewImage table__previewImage--placeholder"
-                      (click)="
-                        onLoadQuestionImage && onLoadQuestionImage(product.id)
-                      "
-                      title="Click to load image"
                     >
                       <i
                         class="pi pi-image"
                         style="font-size: 2rem; color: #ccc"
                       ></i>
                       <span style="font-size: 0.75rem; color: #999"
-                        >Click to view</span
+                        >Image area</span
                       >
-                    </button>
+                    </div>
                   }
                 }
               }
@@ -675,22 +670,17 @@
                       </div>
                     }
                   } @else {
-                    <button
-                      type="button"
+                    <div
                       class="table__previewImage table__previewImage--placeholder"
-                      (click)="
-                        onLoadOptionImage && onLoadOptionImage(option.id)
-                      "
-                      title="Click to load image"
                     >
                       <i
                         class="pi pi-image"
                         style="font-size: 2rem; color: #ccc"
                       ></i>
                       <span style="font-size: 0.75rem; color: #999"
-                        >Click to view</span
+                        >Option image</span
                       >
-                    </button>
+                    </div>
                   }
                 }
               }

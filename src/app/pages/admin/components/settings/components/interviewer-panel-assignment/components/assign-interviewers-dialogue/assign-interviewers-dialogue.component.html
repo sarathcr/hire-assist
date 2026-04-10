@@ -43,20 +43,16 @@
     </div>
 
     <footer class="interviewer-modal__footer">
-      <p-button
-        label="Cancel"
-        [outlined]="true"
-        severity="secondary"
-        (onClick)="onClose()"
-        class="interviewer-modal__footer-btn"
-      ></p-button>
-      <p-button
-        label="Confirm & Update"
+      <app-button
+        buttonLabel="Cancel"
+        [buttonVariant]="'outlined'"
+        (btnClick)="onClose()"
+      ></app-button>
+      <app-button
+        [buttonLabel]="isEdit ? 'Update Assignment' : 'Assign Panel'"
         [disabled]="!fGroup.valid"
-        severity="primary"
-        (onClick)="onSubmit()"
-        class="interviewer-modal__footer-btn"
-      ></p-button>
+        (btnClick)="onSubmit()"
+      ></app-button>
     </footer>
   </form>
 </div>

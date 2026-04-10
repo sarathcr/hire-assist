@@ -360,6 +360,24 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         break;
     }
   }
+
+  public onRowExpand(id: string): void {
+    const questionId = Number(id);
+    const question = this.data.data.find((q: any) => q.id === questionId);
+    if (!question) return;
+
+    if (question.hasAttachment) {
+      this.loadQuestionImage(questionId);
+    }
+
+    if (question.options) {
+      question.options.forEach((opt: any) => {
+        if (opt.hasAttachments) {
+          this.loadOptionImage(opt.id);
+        }
+      });
+    }
+  }
   public getByIdQuestion(data: number | any) {
     this.questionId = data.id;
     // Open modal immediately with loading state

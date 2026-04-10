@@ -39,8 +39,7 @@ export class CountdownTimerComponent implements OnInit, OnDestroy {
     const seconds = val % 60;
 
     const formatted = `${this.pad(hours)}:${this.pad(minutes)}:${this.pad(seconds)}`;
-
-    return this.isOvertime() ? `+ ${formatted}` : formatted;
+    return formatted;
   });
 
   private intervalId: any;

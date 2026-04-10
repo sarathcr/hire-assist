@@ -6,6 +6,7 @@
   font-size: 1.15rem;
   font-weight: 800;
   letter-spacing: 0.5px;
+  white-space: nowrap;
   padding: 10px 16px 12px;
   border-radius: 14px;
   // Material Blue tint — matches project primary (#2196F3)
@@ -21,8 +22,26 @@
     flex-shrink: 0;
   }
 
-  span {
+  .time-container {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-width: 105px; // Enough for "00:00:00" in monospace + potential "+"
+    justify-content: center;
+  }
+
+  .overtime-prefix {
+    font-size: 1em;
+    font-weight: 900;
+    width: 12px; // Fixed width for the plus sign
+    display: inline-block;
+    text-align: center;
+  }
+
+  .time-value {
+    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
     font-variant-numeric: tabular-nums;
+    font-size: 1.1rem;
   }
 
   // Overtime state — red pulse

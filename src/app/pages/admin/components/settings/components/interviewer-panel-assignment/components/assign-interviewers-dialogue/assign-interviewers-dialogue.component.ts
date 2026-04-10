@@ -8,7 +8,6 @@ import {
   DynamicDialogRef,
 } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
-import { ButtonModule } from 'primeng/button';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
@@ -26,6 +25,7 @@ import {
 import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
 import { InterviewService } from '../../../../../../services/interview.service';
 import { CoordinatorPanelBridgeService } from '../../../../../../../coordinator/services/coordinator-panel-bridge.service';
+import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 @Component({
   selector: 'app-assign-interviewers-dialogue',
   imports: [
@@ -33,7 +33,7 @@ import { CoordinatorPanelBridgeService } from '../../../../../../../coordinator/
     ReactiveFormsModule,
     InputSelectComponent,
     ToastModule,
-    ButtonModule,
+    ButtonComponent,
   ],
   templateUrl: './assign-interviewers-dialogue.component.html',
   styleUrl: './assign-interviewers-dialogue.component.scss',

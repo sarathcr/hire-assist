@@ -1192,6 +1192,29 @@ export class SelectQuesionsetStepComponent
     }
   }
 
+  public onRowExpand(id: string, questionSetId: string): void {
+    const accordionData = this.questionSetAccordionData.get(questionSetId);
+    if (!accordionData || !accordionData.tabledata) return;
+
+    const questionId = Number(id);
+    const question = accordionData.tabledata.data.find(
+      (q: any) => q.id == questionId,
+    );
+    if (!question) return;
+
+    if (question.hasAttachment) {
+      this.loadQuestionImage(questionId, questionSetId);
+    }
+
+    if (question.options) {
+      question.options.forEach((opt: any) => {
+        if (opt.hasAttachments) {
+          this.loadOptionImage(opt.id, questionSetId);
+        }
+      });
+    }
+  }
+
   public getKnobMaxValue(): number {
     return 200;
   }
