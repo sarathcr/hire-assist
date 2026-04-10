@@ -8,7 +8,11 @@
     <h2>{{ data.title }}</h2>
   </div>
 
-  <p class="dialog__description">{{ data.message }}</p>
+  @if (data.isHtml) {
+    <p class="dialog__description" [innerHTML]="data.message"></p>
+  } @else {
+    <p class="dialog__description">{{ data.message }}</p>
+  }
 
   @if (data.candidateNames && data.candidateNames.length > 0) {
     <div class="dialog__candidates-list">

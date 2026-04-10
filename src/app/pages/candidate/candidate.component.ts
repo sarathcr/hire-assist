@@ -124,9 +124,28 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     this.deviceWarningService.checkDeviceWidth().subscribe((canProceed) => {
       if (canProceed) {
         const modalData: DialogData = {
-          message:
-            'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.',
+          message: `
+            <div class="assessment-instructions">
+              <p>Please read the following instructions carefully before starting the assessment:</p>
+              <ul>
+                <li><strong>Full-Screen Mode:</strong> Upon starting, the assessment will enter full-screen mode. You must remain in this mode throughout the session.</li>
+                <li><strong>Proctoring Rules:</strong> Exiting full-screen mode or switching to other browser tabs or applications will <strong>immediately terminate</strong> your assessment.</li>
+                <li><strong>Locked Assessment:</strong> If your session is terminated unintentionally due to technical issues, please contact the HR manager to unlock it.</li>
+                <li><strong>Navigation:</strong>
+                  <ul>
+                    <li>Select an answer and click <strong>'Next'</strong> to move forward.</li>
+                    <li>Use <strong>'Mark for Review'</strong> if you are unsure and want to revisit the question later.</li>
+                    <li>Click <strong>'Skip'</strong> if you wish to bypass a question.</li>
+                  </ul>
+                </li>
+                <li><strong>Flexibility:</strong> You can return to any question and update your answers at any time until the timer expires.</li>
+                <li><strong>Auto-Submission:</strong> Once the timer runs out, all your attempted answers will be automatically saved and submitted.</li>
+                <li><strong>Assistance:</strong> For any confusion or technical issues, please contact the volunteers present in the room.</li>
+              </ul>
+            </div>
+          `,
           isChoice: true,
+          isHtml: true,
           acceptButtonText: 'Start Assessment',
           cancelButtonText: 'Cancel',
         };

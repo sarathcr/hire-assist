@@ -11,6 +11,7 @@ export interface DialogData {
   warningCount?: number;
   message: string;
   isChoice: boolean;
+  isHtml?: boolean;
   acceptButtonText?: string;
   cancelButtonText?: string;
   disableClose?: boolean;

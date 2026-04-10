@@ -1263,14 +1263,25 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return { ...col };
     });
 
-    // 1. Remove Delete button from all rounds
+    // 1. Remove Delete button from all rounds, and Hide Unlock for non-aptitude rounds
     const actionsCol = newColumns.find((c) => c.field === 'button');
     if (actionsCol && actionsCol.buttonLabels && actionsCol.buttonIcons && actionsCol.buttonTooltips) {
+      // Always remove Delete
       const deleteIndex = actionsCol.buttonLabels.indexOf('Delete');
       if (deleteIndex !== -1) {
         actionsCol.buttonLabels.splice(deleteIndex, 1);
         actionsCol.buttonIcons.splice(deleteIndex, 1);
         actionsCol.buttonTooltips.splice(deleteIndex, 1);
+      }
+
+      // Hide Unlock if not Aptitude round
+      if (!this.isAptitudeRound()) {
+        const unlockIndex = actionsCol.buttonLabels.indexOf('Unlock');
+        if (unlockIndex !== -1) {
+          actionsCol.buttonLabels.splice(unlockIndex, 1);
+          actionsCol.buttonIcons.splice(unlockIndex, 1);
+          actionsCol.buttonTooltips.splice(unlockIndex, 1);
+        }
       }
     }
 
@@ -1364,12 +1375,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: PaginatedData<CandidateData>) => {
           this.isLoading = false;
-          const resData = res.data.map((item: CandidateData) => {
-            return {
-              ...item,
-              isScheduled: item.isScheduled ? 'Scheduled' : 'Not Scheduled',
-            };
-          });
+          const resData = res.data.map((item: CandidateData) =>
+            this.mapCandidateData(item),
+          );
 
           this.tableData = { ...res, data: resData };
           this.syncSelectedCandidates();
@@ -1395,6 +1403,25 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  private mapCandidateData(item: CandidateData) {
+    const mappedItem = {
+      ...item,
+      isScheduled: item.isScheduled ? 'Scheduled' : 'Not Scheduled',
+      disabledButtonIndices: [] as number[],
+    };
+
+    // Handle button enablement (specifically for Unlock)
+    const actionsCol = this.columns.columns.find((c) => c.field === 'button');
+    if (actionsCol && actionsCol.buttonLabels) {
+      const unlockIndex = actionsCol.buttonLabels.indexOf('Unlock');
+      if (unlockIndex !== -1 && item.status !== 'Terminated') {
+        mappedItem.disabledButtonIndices.push(unlockIndex);
+      }
+    }
+
+    return mappedItem;
   }
 
   /**
@@ -1708,12 +1735,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       .getData(payload)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe((response: PaginatedData<any>) => {
-        const resData = response.data.map((item: CandidateData) => {
-          return {
-            ...item,
-            isScheduled: item.isScheduled ? 'Scheduled' : 'Not Scheduled',
-          };
-        });
+        const resData = response.data.map((item: CandidateData) =>
+          this.mapCandidateData(item),
+        );
 
         this.tableData = { ...response, data: resData };
         this.isCompleteDisabled = this.tableData.data.some(
