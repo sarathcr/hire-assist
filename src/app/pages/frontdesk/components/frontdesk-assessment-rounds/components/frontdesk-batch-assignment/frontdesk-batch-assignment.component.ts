@@ -67,7 +67,7 @@ const aptitudeTableColumns: TableColumnsData = {
       fieldType: FieldType.Action,
       buttonTooltips: [
         'Mark as Present',
-        'Unmark Presence',
+        'Mark as Absent',
         'Assign to another batch',
         'Upload Id Proof',
       ],
@@ -130,7 +130,7 @@ const nonAptitudeTableColumns: TableColumnsData = {
       fieldType: FieldType.Action,
       buttonTooltips: [
         'Mark as Present',
-        'Unmark Presence',
+        'Mark as Absent',
         'Assign to another batch',
         'Upload Id Proof',
       ],
@@ -259,7 +259,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
   public onButtonClick($event: ButtonAction, batchId: string) {
     if (
       $event.fName === 'Mark as Present' ||
-      $event.fName === 'Unmark Presence'
+      $event.fName === 'Mark as Absent'
     ) {
       this.markAsPresent($event.event, batchId, $event.fName);
     } else if ($event.fName === 'Assign to another batch') {
@@ -612,37 +612,17 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
   private mapCandidateData(candidate: Candidate): Candidate {
     const statusLower = candidate.status?.toLowerCase() || '';
 
-    // Statuses that imply the candidate HAS NOT reported yet
-    const notReportedStatuses = [
-      'active',
-      'scheduled',
-      'rescheduled',
-      'assigned to batch',
-      'panel not assigned',
-    ];
+    const hasReportedTime =
+      candidate.reportingTime &&
+      candidate.reportingTime !== '0001-01-01T00:00:00' &&
+      !candidate.reportingTime.startsWith('0001-01-01');
 
-    const isNotReported =
-      notReportedStatuses.includes(statusLower) ||
-      !candidate.reportingTime ||
-      candidate.reportingTime === '0001-01-01T00:00:00';
+    // A candidate is "Reported" if they have a non-zero reporting time OR their status is explicitly present/reported
+    const isNotReported = !hasReportedTime && statusLower !== 'reported' && statusLower !== 'present';
 
     // Button indices: 0: Mark as Present, 1: Mark as Absent, 2: Assign to Batch, 3: Upload ID Proof
-    if (isNotReported) {
-      // Show Mark as Present and Assign to Batch (0 and 2)
-      return {
-        ...candidate,
-        visibleButtonIndices: [0, 2, 3],
-        disabledButtonIndices: [1],
-      };
-    } else if (statusLower === 'present' || statusLower === 'reported') {
-      // Can unmark presence (1) or assign to another batch (2)
-      return {
-        ...candidate,
-        visibleButtonIndices: [1, 2, 3],
-        disabledButtonIndices: [0],
-      };
-    } else if (statusLower === 'completed') {
-      // Cannot change status anymore
+    if (statusLower === 'completed') {
+      // Cannot change status anymore for completed assessments
       return {
         ...candidate,
         visibleButtonIndices: [3],
@@ -650,6 +630,28 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       };
     }
 
-    return candidate;
+    if (isNotReported) {
+      // ABSENT / NOT REPORTED STATE:
+      // - Mark as Present (0): Enabled
+      // - Mark as Absent (1): Disabled (already absent)
+      // - Assign to Batch (2): Enabled
+      // - Upload ID Proof (3): Disabled (requires presence)
+      return {
+        ...candidate,
+        visibleButtonIndices: [0, 1, 2, 3],
+        disabledButtonIndices: [1, 3],
+      };
+    } else {
+      // PRESENT / REPORTED STATE:
+      // - Mark as Present (0): Disabled (already present)
+      // - Mark as Absent (1): Enabled (allows undo)
+      // - Assign to Batch (2): Enabled
+      // - Upload ID Proof (3): Enabled
+      return {
+        ...candidate,
+        visibleButtonIndices: [0, 1, 2, 3],
+        disabledButtonIndices: [0],
+      };
+    }
   }
 }
