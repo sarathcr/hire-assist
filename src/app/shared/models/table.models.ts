@@ -36,6 +36,7 @@ export enum FieldType {
   Action = 'action',
   Button = 'button',
   inputtext = 'inputtext',
+  Masked = 'masked',
 }
 
 export enum ColumnType {

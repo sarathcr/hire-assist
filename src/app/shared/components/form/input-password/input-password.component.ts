@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
+import { KeyFilterModule } from 'primeng/keyfilter';
 import {
   CustomFormControlConfig,
   CustomTextInputConfig,
@@ -24,6 +25,7 @@ import { BaseFormComponent } from '../base-form/base-form.component';
     ReactiveFormsModule,
     ButtonModule,
     PasswordModule,
+    KeyFilterModule,
   ],
   templateUrl: './input-password.component.html',
   styleUrl: './input-password.component.scss',

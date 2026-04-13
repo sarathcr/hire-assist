@@ -162,6 +162,7 @@ export class CandidateDialogComponent implements OnInit {
       'dob',
       'gender',
       'phone',
+      'aadhaarNumber',
       'assessmentId',
     ];
     const candidatePayload: any = {};

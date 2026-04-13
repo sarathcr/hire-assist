@@ -168,6 +168,7 @@ export class TableComponent<
   public import = output<File>();
   public history = output<any>();
   public pageChangeAndSort = output<PaginatedPayload>();
+  public unmaskAction = output<{ product: T; field: string }>();
   public buttonClick = output<any>();
   public rowExpand = output<string>();
   public PaginatedDataActions: any = PaginatedDataActions;
@@ -623,6 +624,28 @@ export class TableComponent<
         this.selectedIds.emit(selectedAcrossPages);
       }
     });
+  }
+
+  public unmaskedRows: Record<string, boolean> = {};
+
+  public maskData(val: any): string {
+    if (!val) return 'N/A';
+    const str = String(val);
+    if (str.length <= 4) return str;
+    return 'X'.repeat(str.length - 4) + str.slice(-4);
+  }
+
+  public toggleMask(product: T, field: string): void {
+    const key = String(product.id) + field;
+    if (this.unmaskedRows[key]) {
+      this.unmaskedRows[key] = false;
+    } else {
+      this.unmaskedRows[key] = true;
+      // Only emit if the data looks masked (contains 'X')
+      if (String(product[field]).includes('X')) {
+        this.unmaskAction.emit({ product, field });
+      }
+    }
   }
 
   public displayData = computed(() => {

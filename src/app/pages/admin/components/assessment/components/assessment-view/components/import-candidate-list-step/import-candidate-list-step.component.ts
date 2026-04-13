@@ -33,6 +33,7 @@ import {
   CandidateApplicationQuestions,
   CandidateBatchCheckRequest,
   CandidateBatchCheckResponse,
+  CandidateImportResponseDto,
   CandidateModel,
 } from '../../../../../../models/candidate-data.model';
 import { QuestionSetModel } from '../../../../../../models/question.model';
@@ -60,6 +61,15 @@ const tableColumns: TableColumnsData = {
     {
       field: 'email',
       displayName: 'Email',
+      sortedColumn: true,
+      hasChip: false,
+      hasTextFilter: true,
+      filterAlias: 'textFilter',
+    },
+    {
+      field: 'aadhaarNumber',
+      displayName: 'Aadhaar Number',
+      fieldType: FieldType.Masked,
       sortedColumn: true,
       hasChip: false,
       hasTextFilter: true,
@@ -338,6 +348,27 @@ export class ImportCandidateListStepComponent implements OnInit {
     ]);
   }
 
+  public handleUnmask(event: { product: CandidateModel; field: string }): void {
+    const candidate = event.product;
+    this.candidateService.unmaskAadhaar(candidate.id).subscribe({
+      next: (res) => {
+        candidate.aadhaarNumber = res.aadhaarNumber;
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Aadhaar Unmasked',
+          detail: 'Aadhaar number has been retrieved and logged.',
+        });
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to unmask Aadhaar number.',
+        });
+      },
+    });
+  }
+
   public viewHistory(id: any) {
     this.visible = true;
   }
@@ -357,25 +388,49 @@ export class ImportCandidateListStepComponent implements OnInit {
   }
   public importCandidates(file: File) {
     this.assessmentService
-      .uploadFileAndParseCsv(
+      .uploadFileAndReturnData<CandidateImportResponseDto>(
         file,
         `candidates/import?asessmentId=${this.assessmentId()}`,
       )
       .subscribe({
-        next: (csvString: string) => {
-          const parsedData = parseCsvToJson(csvString);
-          this.duplicateRecords = groupCandidatesByContact(parsedData);
-          if (this.duplicateRecords.length > 0) {
-            this.manageDuplicateRecords(this.duplicateRecords);
+        next: (response: CandidateImportResponseDto) => {
+          let allFailedRecords: unknown[] = [];
+
+          // 1. Handle Duplicates (from Base64 CSV)
+          if (response.duplicateEntries) {
+            try {
+              const csvString = atob(response.duplicateEntries);
+              const parsedDuplicates = parseCsvToJson(csvString);
+              const groupedDuplicates = groupCandidatesByContact(parsedDuplicates);
+              allFailedRecords = [...allFailedRecords, ...groupedDuplicates];
+            } catch (e) {
+              console.error('Error parsing duplicate entries base64', e);
+            }
+          }
+
+          // 2. Handle Invalid Records (Rectification Screen)
+          if (response.invalidRecords && response.invalidRecords.length > 0) {
+            const mappedInvalid = response.invalidRecords.map(record => ({
+              ...JSON.parse(record.originalRowData),
+              groupId: 'invalid-' + Math.random(),
+              isInvalidRecord: true,
+              failureReason: record.reason,
+              candidates: [JSON.parse(record.originalRowData)]
+            }));
+            allFailedRecords = [...allFailedRecords, ...mappedInvalid];
+          }
+
+          if (allFailedRecords.length > 0) {
+            this.manageDuplicateRecords(allFailedRecords);
           } else {
             this.getAllCandidates(new PaginatedPayload(), true);
           }
-          // Refresh application questions after CSV import to get newly added columns
+
           this.getAllCandidatesApplicationQuestions();
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: `Imported candidates successfully.`,
+            detail: `Processing complete.`,
           });
           this.isUploading = false;
         },

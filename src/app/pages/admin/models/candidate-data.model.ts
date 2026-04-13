@@ -12,6 +12,7 @@ export class CandidateDataModel extends FormEntity {
   dob = '';
   gender = '';
   phone = '';
+  aadhaarNumber = '';
   // endDate = '';
   // startDate = '';
   metadata: Metadata = {
@@ -31,6 +32,11 @@ export class CandidateDataModel extends FormEntity {
       dob: [Validators.required, minAgeValidator(18)],
       gender: [Validators.required],
       phone: [Validators.required, Validators.pattern(/^\+?[0-9]{7,15}$/)],
+      aadhaarNumber: [
+        Validators.required,
+        Validators.pattern(/^\d{12}$/),
+        CandidateDataModel.verhoeffValidator,
+      ],
       // startDate: [Validators.required],
       // endDate: [Validators.required],
       // batch: [Validators.required],
@@ -52,10 +58,27 @@ export class CandidateDataModel extends FormEntity {
         ],
       },
       phone: { id: 'phone', labelKey: 'Contact Number' },
-      // startDate: { id: 'startDate', labelKey: 'StartDate' },
-      // endDate: { id: 'endDate', labelKey: 'EndDate' },
+      aadhaarNumber: {
+        id: 'aadhaarNumber',
+        labelKey: 'Aadhaar Number',
+        maxlength: 14,
+        isMaskable: true,
+      },
     },
   };
+
+  private static verhoeffValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+
+    const { validateVerhoeff } = require('../../../shared/utilities/verhoeff.utility');
+    if (!validateVerhoeff(value)) {
+      return { verhoeffInvalid: true };
+    }
+    return null;
+  }
 
   private static noExtraSpacesValidator(
     control: AbstractControl,
@@ -98,6 +121,7 @@ export interface CandidateModel {
   id: string;
   name: string;
   email: string;
+  aadhaarNumber: string;
   batchId: number;
   batchName: string;
   isAlreadyExist?: boolean;
@@ -127,6 +151,7 @@ export interface candidateDetails {
   name: string;
   email: string;
   phoneNumber: string;
+  aadhaarNumber: string;
   gender: string;
   dob: Date;
   answers?: CandidateApplicationAnswers[];
@@ -167,4 +192,18 @@ export interface feedbackList {
   feedbackScore?: number;
   criteria: string;
   maxScore?: number;
+}
+
+export interface CandidateImportResponseDto {
+  duplicateEntries?: string; // base64 string
+  invalidRecords: InvalidCandidateRecordDto[];
+}
+
+export interface InvalidCandidateRecordDto {
+  candidateName: string;
+  emailId: string;
+  mobileNumber: string;
+  aadhaarNumber: string;
+  reason: string;
+  originalRowData: string; // JSON string
 }

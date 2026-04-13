@@ -24,6 +24,52 @@
     font-weight: 300;
     font-size: var(--font-size-base);
   }
+
+  &__wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__input--masked {
+    color: transparent !important;
+    caret-color: transparent !important;
+
+    &::selection {
+      background: transparent !important;
+      color: transparent !important;
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    padding-left: 1rem;
+    pointer-events: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--p-inputtext-color);
+    letter-spacing: 0.1em;
+    width: calc(100% - 40px);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  &__icon {
+    position: absolute;
+    right: 15px;
+    cursor: pointer;
+    color: var(--p-inputtext-icon-color);
+    z-index: 2;
+    padding: 10px;
+    
+    &:hover {
+      color: var(--p-primary-color);
+    }
+  }
 }
 input::-ms-reveal,
 input::-ms-clear {

@@ -11,6 +11,8 @@ import { SplitterModule } from 'primeng/splitter';
 import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import {
@@ -19,6 +21,8 @@ import {
 } from '../../models/manage-duplicate-candidates.model';
 import { ManageDuplicateRecordsService } from '../../services/manage-duplicate-records.service';
 import { CandidateDetailsComponent } from '../candidate-details/candidate-details.component';
+import { CandidateDialogComponent } from '../candidate-dialog/candidate-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 @Component({
   selector: 'app-manage-duplicate-records',
@@ -35,6 +39,8 @@ import { CandidateDetailsComponent } from '../candidate-details/candidate-detail
     TagModule,
     SkeletonModule,
     ProgressSpinnerModule,
+    ButtonModule,
+    TooltipModule,
   ],
   templateUrl: './manage-duplicate-records.component.html',
   styleUrl: './manage-duplicate-records.component.scss',
@@ -65,6 +71,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     private readonly cdr: ChangeDetectorRef,
     private readonly manageDuplicateRecordsService: ManageDuplicateRecordsService,
     private readonly messageService: MessageService,
+    private readonly dialogService: DialogService,
   ) {}
 
   // LifeCycle Hooks
@@ -101,6 +108,75 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     this.updateCandidateData(selectedCandidate);
   }
 
+  public onEditRecord(candidate: CandidateData) {
+    const applicationQuestions = (this.config.data as DialogData).applicationQuestions;
+    
+    // Map CSV header names or direct property names to model field names for the dialog
+    const mappedData = {
+      name: candidate['Candidate Name'] || candidate['name'] || candidate['candidateName'],
+      email: candidate['Email Id'] || candidate['email'] || candidate['emailId'],
+      phone: candidate['Mobile number'] || candidate['phoneNumber'] || candidate['phone'] || candidate['mobileNumber'],
+      aadhaarNumber: candidate['Aadhaar Number'] || candidate['aadhaarNumber'],
+      dob: candidate['Date of Birth'] || candidate['dob'],
+      gender: candidate['Gender'] || candidate['gender'],
+    };
+
+    const editRef = this.dialogService.open(CandidateDialogComponent, {
+      data: {
+        applicationQuestions,
+        candidateData: mappedData,
+        isEdit: true
+      },
+      header: 'Edit Candidate Details',
+      width: '50vw',
+      modal: true,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+    });
+
+    editRef.onClose.subscribe((result) => {
+      if (result) {
+        // Update the candidate in the splitPanelList
+        const updatedList = this.splitPanelList().map(c => {
+          if (c.panelId === candidate.panelId) {
+            return {
+              ...c,
+              'Candidate Name': result.name,
+              'Email Id': result.email,
+              'Mobile number': result.phoneNumber,
+              'Aadhaar Number': result.aadhaarNumber,
+              'Date of Birth': result.dob,
+              'Gender': result.gender,
+              // Update root level names too if they exist
+              name: result.name,
+              email: result.email,
+              phoneNumber: result.phoneNumber,
+              aadhaarNumber: result.aadhaarNumber,
+            };
+          }
+          return c;
+        });
+        this.splitPanelList.set(updatedList);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  public onRejectRecord(candidate: CandidateData) {
+    const updatedList = this.splitPanelList().filter(c => c.panelId !== candidate.panelId);
+    this.splitPanelList.set(updatedList);
+    
+    if (this.selectedPanelId() === candidate.panelId) {
+      this.selectedPanelId.set(null);
+    }
+
+    if (updatedList.length === 0) {
+      this.updateModifiedCandidateData();
+    }
+  }
+
   public onClose() {
     this.ref.close({ refresh: true });
   }
@@ -133,8 +209,12 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   private updateCandidateData(selectedCandidate: CandidateData) {
+    // Determine headers based on available data
+    // If it's an invalid record, it might have internal property names
+    const isInvalid = selectedCandidate['isInvalidRecord'];
+    
     const headers = Object.keys(selectedCandidate).filter(
-      (key) => key !== 'panelId',
+      (key) => !['panelId', 'groupId', 'isInvalidRecord', 'failureReason', 'candidates', 'visibleButtonIndices', 'disabledButtonIndices'].includes(key),
     );
     
     // Helper to escape CSV values

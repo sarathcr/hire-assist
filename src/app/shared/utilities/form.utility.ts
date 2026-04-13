@@ -20,6 +20,8 @@ export interface CustomTextInputConfig extends BaseCustomConfig {
   matPrefix?: string;
   matSuffix?: string;
   readonly?: boolean;
+  keyfilter?: any;
+  isMaskable?: boolean;
 }
 // INPUT TEXTAREA
 export interface CustomTextareaConfig extends BaseCustomConfig {

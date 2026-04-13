@@ -187,6 +187,31 @@ export abstract class ApiService<T> {
     }
   }
 
+  /** Upload file and return JSON response */
+  public uploadFileAndReturnData<T>(file: File, url?: string): Observable<T> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const sanitizedUrl = this.sanitize.sanitize(
+      4,
+      this.sanitize.bypassSecurityTrustResourceUrl(
+        `${this.getResourceUrl()}${url ? '/' + url : ''}`,
+      ),
+    );
+    if (sanitizedUrl) {
+      this.store.setIsLoading(true);
+      return this.http.post<T>(sanitizedUrl, formData).pipe(
+        tap(() => this.store.setIsLoading(false)),
+        catchError((error) => {
+          this.store.setIsLoading(false);
+          return throwError(() => error);
+        }),
+      );
+    } else {
+      throw Error('invalid operation');
+    }
+  }
+
   public uploadFileAndParseCsv(file: File, url?: string): Observable<string> {
     const formData = new FormData();
     formData.append('file', file);

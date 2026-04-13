@@ -4,7 +4,7 @@
     <div class="duplicates__sidebar__header">
       <h3 class="duplicates__sidebar__title">
         <i class="pi pi-exclamation-triangle"></i>
-        Duplicate Groups
+        Failed Records
       </h3>
       <p-tag
         [value]="(data.length || 0).toString()"
@@ -58,6 +58,14 @@
                           size="large"
                           styleClass="duplicates__avatar"
                         ></p-avatar>
+                        @if (candidate['isInvalidRecord']) {
+                          <p-badge
+                            severity="danger"
+                            icon="pi pi-exclamation-circle"
+                            class="duplicates__candidate-card__invalid-badge"
+                            [pTooltip]="candidate['failureReason'] || 'Validation Failed'"
+                          ></p-badge>
+                        }
                       </div>
                       <div class="duplicates__candidate-card__info">
                         <div class="duplicates__candidate-card__name">
@@ -69,6 +77,10 @@
                         <div class="duplicates__candidate-card__phone">
                           <i class="pi pi-phone"></i>
                           <span>{{ candidate["Mobile number"] || "N/A" }}</span>
+                        </div>
+                        <div class="duplicates__candidate-card__aadhaar">
+                          <i class="pi pi-id-card"></i>
+                          <span>{{ candidate["Aadhaar Number"] || "N/A" }}</span>
                         </div>
                       </div>
                     </div>
@@ -90,7 +102,7 @@
         Select Candidate to Keep
       </h3>
       <p class="duplicates__content__subtitle">
-        Click on a candidate card below to select which record to keep
+        Resolve duplicates or correct invalid records before continuing
       </p>
     </div>
 
@@ -127,11 +139,35 @@
                 <p-card class="duplicates__panel__card">
                   <ng-template pTemplate="header">
                     <div class="duplicates__panel__header">
+                      <div class="duplicates__panel__header__actions">
+                        <p-button 
+                          icon="pi pi-pencil" 
+                          [rounded]="true" 
+                          [text]="true" 
+                          severity="info" 
+                          (onClick)="$event.stopPropagation(); onEditRecord(candidate)"
+                          pTooltip="Edit record"
+                        ></p-button>
+                        <p-button 
+                          icon="pi pi-trash" 
+                          [rounded]="true" 
+                          [text]="true" 
+                          severity="danger" 
+                          (onClick)="$event.stopPropagation(); onRejectRecord(candidate)"
+                          pTooltip="Reject record"
+                        ></p-button>
+                      </div>
                       <div class="duplicates__panel__header__badge">
                         @if (selectedPanelId() === candidate.panelId) {
                           <p-tag
                             value="Selected"
                             severity="success"
+                            [rounded]="true"
+                          ></p-tag>
+                        } @else if (candidate['isInvalidRecord']) {
+                          <p-tag
+                            [value]="candidate['failureReason'] || 'Correct Me'"
+                            severity="danger"
                             [rounded]="true"
                           ></p-tag>
                         } @else {

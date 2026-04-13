@@ -569,6 +569,28 @@
                 <p-chip label="Not Reported" />
               </ng-template>
             </td>
+          } @else if (headerColumn.fieldType === 'masked') {
+            <td>
+              <div class="flex align-items-center gap-2">
+                <span>{{
+                  unmaskedRows[product.id + headerColumn.field]
+                    ? product[headerColumn.field]
+                    : maskData(product[headerColumn.field])
+                }}</span>
+                <p-button
+                  [icon]="
+                    unmaskedRows[product.id + headerColumn.field]
+                      ? 'pi pi-eye-slash'
+                      : 'pi pi-eye'
+                  "
+                  [text]="true"
+                  [plain]="true"
+                  [size]="'small'"
+                  [disabled]="!product[headerColumn.field] || product[headerColumn.field] === 'N/A'"
+                  (onClick)="toggleMask(product, headerColumn.field)"
+                ></p-button>
+              </div>
+            </td>
           } @else {
             <td>{{ product[headerColumn.field] }}</td>
           }

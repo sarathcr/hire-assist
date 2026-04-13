@@ -29,4 +29,10 @@ export class CandidateService extends ApiService<any> {
       {},
     );
   }
+
+  public unmaskAadhaar(candidateId: string) {
+    return this.http.get<{ aadhaarNumber: string }>(
+      `${ASSESSMENT_URL}/candidates/unmask/${candidateId}`,
+    );
+  }
 }

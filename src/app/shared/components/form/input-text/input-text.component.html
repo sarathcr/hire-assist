@@ -1,20 +1,37 @@
 <div class="input-text" [formGroup]="formGroup">
   <!-- FLOAT LABEL (DEFAULT) -->
   @if (floatLabel) {
-    <p-floatlabel variant="on">
-      <input
-        [id]="inputTextConfig.id"
-        pInputText
-        [type]="type"
-        [formControlName]="inputTextConfig.id"
-        [readOnly]="inputTextConfig.readonly"
-        (input)="onInputChange($event)"
-        [value]="values"
-      />
-      <label [for]="inputTextConfig.id">
-        {{ inputTextConfig.labelKey }}
-      </label>
-    </p-floatlabel>
+    <div class="input-text__wrapper">
+      <p-floatlabel variant="on">
+        <input
+          #inputField
+          [id]="inputTextConfig.id"
+          pInputText
+          [type]="type"
+          [formControlName]="inputTextConfig.id"
+          [readOnly]="inputTextConfig.readonly"
+          [pKeyFilter]="inputTextConfig.keyfilter ? $any(inputTextConfig.keyfilter) : null"
+          (input)="onInputChange($event)"
+          autocomplete="off"
+          [ngClass]="{ 'input-text__input--masked': isMasked && inputTextConfig.isMaskable && formControl.value }"
+        />
+        <label [for]="inputTextConfig.id">
+          {{ inputTextConfig.labelKey }}
+        </label>
+      </p-floatlabel>
+      @if (isMasked && inputTextConfig.isMaskable && formControl.value) {
+        <div class="input-text__overlay">
+          {{ displayValue }}
+        </div>
+      }
+      @if (inputTextConfig.isMaskable) {
+        <i
+          class="pi input-text__icon"
+          [ngClass]="isMasked ? 'pi-eye' : 'pi-eye-slash'"
+          (click)="toggleMask()"
+        ></i>
+      }
+    </div>
   }
 
   <!-- BASIC VARIANT -->
@@ -24,15 +41,32 @@
         {{ inputTextConfig.labelKey }}
       </label>
 
-      <input
-        [id]="inputTextConfig.id"
-        pInputText
-        [type]="type"
-        [formControlName]="inputTextConfig.id"
-        [readOnly]="inputTextConfig.readonly"
-        (input)="onInputChange($event)"
-        [value]="values"
-      />
+      <div class="input-text__wrapper">
+        <input
+          #inputField
+          [id]="inputTextConfig.id"
+          pInputText
+          [type]="type"
+          [formControlName]="inputTextConfig.id"
+          [readOnly]="inputTextConfig.readonly"
+          [pKeyFilter]="inputTextConfig.keyfilter ? $any(inputTextConfig.keyfilter) : null"
+          (input)="onInputChange($event)"
+          autocomplete="off"
+          [ngClass]="{ 'input-text__input--masked': isMasked && inputTextConfig.isMaskable && formControl.value }"
+        />
+        @if (isMasked && inputTextConfig.isMaskable && formControl.value) {
+          <div class="input-text__overlay">
+            {{ displayValue }}
+          </div>
+        }
+        @if (inputTextConfig.isMaskable) {
+          <i
+            class="pi input-text__icon"
+            [ngClass]="isMasked ? 'pi-eye' : 'pi-eye-slash'"
+            (click)="toggleMask()"
+          ></i>
+        }
+      </div>
     </div>
   }
 

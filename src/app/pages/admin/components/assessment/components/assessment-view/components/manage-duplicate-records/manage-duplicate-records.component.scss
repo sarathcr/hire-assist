@@ -160,14 +160,21 @@
     }
 
     &__avatar {
-      flex-shrink: 0;
+      position: relative;
+    }
+
+    &__invalid-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      transform: scale(0.8);
     }
 
     &__info {
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.25rem;
     }
 
     &__name,
@@ -193,6 +200,20 @@
       font-weight: 600;
       color: #2d3748;
     }
+
+    &__phone {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    &__aadhaar {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
   }
 
   // Avatar Styles
@@ -209,18 +230,22 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
     min-width: 0;
 
     &__header {
-      padding: 1rem 1.5rem;
+      padding: 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
       background: white;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     &__title {
-      margin: 0 0 0.5rem 0;
+      margin: 0;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
       font-size: 1.25rem;
       font-weight: 600;
       color: #2d3748;
