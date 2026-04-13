@@ -11,6 +11,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { StepperModule } from 'primeng/stepper';
 import { Toast } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { CarouselModule } from 'primeng/carousel';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
@@ -123,7 +124,12 @@ const tableColumns: TableColumnsData = {
       field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      buttonIcons: ['pi pi-eye', 'pi pi-trash', 'pi pi-unlock', 'pi pi-history'],
+      buttonIcons: [
+        'pi pi-eye',
+        'pi pi-trash',
+        'pi pi-unlock',
+        'pi pi-history',
+      ],
       buttonLabels: ['View', 'Delete', 'Unlock', 'History'],
       buttonTooltips: ['View', 'Delete', 'Unlock', 'History'],
       sortedColumn: false,
@@ -155,6 +161,7 @@ export interface AssesmentRoundResponse {
     ButtonComponent,
     NgClass,
     TooltipModule,
+    CarouselModule,
   ],
   providers: [TableDataSourceService],
   templateUrl: './assessment-detail.component.html',
@@ -183,6 +190,60 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public isCompletingRound = false;
   public actionItems: MenuItem[] = [];
   public visible: boolean = false;
+  public summaryStats: any = {
+    totalCandidates: 1248,
+    selectedCandidates: 42,
+    rejectedCandidates: 856,
+    pendingCandidates: 350,
+  };
+
+  public statCardsConfig = [
+    {
+      key: 'totalCandidates',
+      label: 'TOTAL CANDIDATES',
+      icon: 'pi pi-users',
+      colorClass: 'blue',
+    },
+    {
+      key: 'selectedCandidates',
+      label: 'TOTAL SELECTED',
+      icon: 'pi pi-check',
+      colorClass: 'green',
+    },
+    {
+      key: 'rejectedCandidates',
+      label: 'TOTAL REJECTED',
+      icon: 'pi pi-times',
+      colorClass: 'red',
+    },
+    {
+      key: 'pendingCandidates',
+      label: 'TOTAL PENDING',
+      icon: 'pi pi-clock',
+      colorClass: 'orange',
+    },
+  ];
+
+  public roundPerformanceData: any[] = [];
+
+  public responsiveOptions = [
+    {
+      breakpoint: '1400px',
+      numVisible: 3,
+      numScroll: 1,
+    },
+    {
+      breakpoint: '1200px',
+      numVisible: 2,
+      numScroll: 1,
+    },
+    {
+      breakpoint: '768px',
+      numVisible: 1,
+      numScroll: 1,
+    },
+  ];
+
   events = [
     {
       status: 'Created',
@@ -291,7 +352,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   public onView(data: CandidateData): void {
-    this.router.navigate([
+    this.router.navigate(
+      [
         'admin/recruitments/candidateDetail',
         String(this.assessmentId),
         data.email,
@@ -440,9 +502,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const invalidCandidates = this.selectedCandidates.filter(
       (candidate: InterviewSummary) => {
         const status = candidate.status?.toLowerCase().trim();
-        return (
-          status !== 'completed' && status !== 'rejected'
-        );
+        return status !== 'completed' && status !== 'rejected';
       },
     );
 
@@ -520,9 +580,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       if (!candidate || !candidate.status) return false;
 
       const status = candidate.status.toLowerCase().trim();
-      const hasValidStatus =
-        status === 'completed' ||
-        status === 'rejected';
+      const hasValidStatus = status === 'completed' || status === 'rejected';
       const isNotScheduled = !candidate.isScheduled;
 
       return hasValidStatus && isNotScheduled;
@@ -546,11 +604,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
       let hasValidStatus = false;
       if (this.isAptitudeRound()) {
-        hasValidStatus = [
-          'completed',
-          'terminated',
-          'selected',
-        ].includes(status);
+        hasValidStatus = ['completed', 'terminated', 'selected'].includes(
+          status,
+        );
       } else {
         hasValidStatus = ['completed', 'selected'].includes(status);
       }
@@ -1174,6 +1230,105 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.assessmentService.getEntityById(id).subscribe({ next, error });
   }
 
+  private updateRoundPerformanceData(rounds: AssessmentRound[]): void {
+    if (!rounds || rounds.length === 0) {
+      this.roundPerformanceData = [];
+      return;
+    }
+
+    const mockStats = [
+      {
+        attended: 820,
+        invited: 950,
+        selected: 450,
+        rejected: 370,
+        pending: '0 candidates',
+        scheduled: '450/450',
+        progress: 86,
+      },
+      {
+        attended: 124,
+        invited: 450,
+        selected: 82,
+        rejected: 42,
+        pending: '326 candidates',
+        scheduled: '180 / 326',
+        progress: 27,
+      },
+      {
+        attended: 82,
+        invited: 82,
+        selected: '-',
+        rejected: '-',
+        pending: '250 candidates',
+        scheduled: '12 / 82',
+        progress: 2,
+      },
+            {
+        attended: 82,
+        invited: 82,
+        selected: '-',
+        rejected: '-',
+        pending: '250 candidates',
+        scheduled: '12 / 82',
+        progress: 2,
+      },
+    ];
+
+    this.roundPerformanceData = rounds.map((round, index) => {
+      // Rotate through mock stats if there are more rounds than mock entries
+      const stats: any = { ...mockStats[index % mockStats.length] };
+      const previousRound = index > 0 ? rounds[index - 1] : null;
+      let statusClass = 'status-queued';
+      let statusSeverity = 'secondary';
+
+      if (round.status === 'Active' || round.status === 'In Progress') {
+        statusClass = 'status-progress';
+        statusSeverity = 'warning';
+      } else if (round.status === 'Completed') {
+        statusClass = 'status-active';
+        statusSeverity = 'info';
+      }
+
+      // Consistent Label across all rounds
+      stats.statLabel = 'Attended / Invited';
+
+      // Handle 'Awaiting' state logic
+      const isAwaiting = statusClass === 'status-queued' && previousRound && previousRound.status !== 'Completed';
+
+      if (isAwaiting) {
+        stats.statValue = '-';
+        stats.scheduled = '-';
+        stats.pending = `Awaiting ${previousRound.round}`;
+      } else {
+        // Show actual Attended / Invited counts
+        stats.statValue = `${stats.attended} / ${stats.invited}`;
+        
+        // Ensure pending status is meaningful
+        if (statusClass === 'status-queued') {
+          stats.pending = `${stats.attended || 0} Candidates Available`;
+        }
+
+        // Manage schedule like before (show counts)
+        const total = (stats.invited || stats.expected || stats.attended || 0).toString().replace(' (Est.)', '');
+        stats.scheduled = `${stats.scheduled && stats.scheduled.includes('/') ? stats.scheduled : '0 / ' + total}`;
+      }
+
+      // Cleanup (Est.) if any remnants
+      if (typeof stats.statValue === 'string') {
+        stats.statValue = stats.statValue.replace(' (Est.)', '');
+      }
+
+      return {
+        ...stats,
+        name: round.round,
+        status: round.status || 'Queued',
+        statusClass: statusClass,
+        statusSeverity: statusSeverity,
+      };
+    });
+  }
+
   private parseDate(date: string): string | null {
     if (!date) return null;
 
@@ -1213,6 +1368,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       }
       this.step = res;
       this.assessmentRoundList = res;
+      this.updateRoundPerformanceData(res);
       if (this.step.length > 0) {
         // Find the first round that is NOT completed
         const activeRoundIndex = this.step.findIndex(

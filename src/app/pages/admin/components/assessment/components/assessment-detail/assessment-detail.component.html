@@ -88,6 +88,170 @@
     </div>
   }
 
+  <!-- Recruitment Overview Sections -->
+  <div class="assessment-detail__overview">
+    <div class="assessment-detail__overview-header">
+      <h2 class="assessment-detail__overview-title">
+        <i class="pi pi-chart-bar"></i>
+        Recruitment Overview
+      </h2>
+    </div>
+
+    @if (isLoading) {
+      <!-- Overall Summary Skeleton -->
+      <div class="assessment-detail__overview-section">
+        <h3 class="assessment-detail__overview-subtitle">Overall Summary</h3>
+        <div class="assessment-detail__stats-grid">
+          @for (i of [1,2,3,4]; track i) {
+            <div class="assessment-detail__stat-card skeleton-card">
+              <div class="assessment-detail__stat-content">
+                <p-skeleton width="6rem" height="0.8rem" marginBottom="1rem" />
+                <p-skeleton width="4rem" height="2rem" />
+              </div>
+              <p-skeleton shape="circle" size="3.5rem" />
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Round-wise Performance Skeleton -->
+      <div class="assessment-detail__overview-section">
+        <h3 class="assessment-detail__overview-subtitle">Round-wise Performance</h3>
+        <div class="assessment-detail__round-grid-skeleton">
+          @for (i of [1,2,3]; track i) {
+            <div class="round-card round-card--skeleton">
+              <div class="round-card__header">
+                <p-skeleton width="8rem" height="1.2rem" />
+                <p-skeleton width="4rem" height="1.2rem" borderRadius="9999px" />
+              </div>
+              <div class="round-card__body">
+                <div class="round-card__stat-row">
+                  <p-skeleton width="6rem" height="0.8rem" />
+                  <p-skeleton width="4rem" height="1rem" />
+                </div>
+                <p-skeleton width="100%" height="8px" borderRadius="9999px" />
+                <div class="round-card__inner-grid">
+                  <p-skeleton width="100%" height="4rem" borderRadius="12px" />
+                  <p-skeleton width="100%" height="4rem" borderRadius="12px" />
+                </div>
+              </div>
+              <div class="round-card__footer">
+                <div class="round-card__footer-item">
+                  <p-skeleton width="3rem" height="0.6rem" marginBottom="0.4rem" />
+                  <p-skeleton width="5rem" height="0.8rem" />
+                </div>
+                <div class="round-card__footer-item--right">
+                  <p-skeleton width="4rem" height="0.6rem" marginBottom="0.4rem" />
+                  <p-skeleton width="3rem" height="0.8rem" />
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <!-- Overall Summary Section -->
+      <div class="assessment-detail__overview-section">
+        <h3 class="assessment-detail__overview-subtitle">Overall Summary</h3>
+        <div class="assessment-detail__stats-grid">
+          @for (stat of statCardsConfig; track stat.key) {
+            <div 
+              class="assessment-detail__stat-card" 
+              [ngClass]="'assessment-detail__stat-card--' + stat.colorClass">
+              <div class="assessment-detail__stat-content">
+                <span class="assessment-detail__stat-label">{{ stat.label }}</span>
+                <span class="assessment-detail__stat-value">
+                  {{ summaryStats[stat.key] | number }}
+                </span>
+              </div>
+              <div class="assessment-detail__stat-icon">
+                <i [class]="stat.icon"></i>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Round-wise Performance Section -->
+      <div class="assessment-detail__overview-section">
+        <h3 class="assessment-detail__overview-subtitle">Round-wise Performance</h3>
+        
+        <!-- Desktop/Tablet Carousel -->
+        <div class="assessment-detail__carousel-container">
+          <p-carousel 
+            [value]="roundPerformanceData" 
+            [numVisible]="3" 
+            [numScroll]="1" 
+            [circular]="false" 
+            [responsiveOptions]="responsiveOptions"
+            styleClass="custom-carousel">
+            <ng-template let-round pTemplate="item">
+              <div class="round-card-wrapper">
+                <ng-container *ngTemplateOutlet="roundCardTemplate; context: { $implicit: round }"></ng-container>
+              </div>
+            </ng-template>
+          </p-carousel>
+        </div>
+
+        <!-- Mobile Vertical Grid (Shown below 768px) -->
+        <div class="assessment-detail__round-mobile-grid">
+          @for (round of roundPerformanceData; track round.name) {
+            <ng-container *ngTemplateOutlet="roundCardTemplate; context: { $implicit: round }"></ng-container>
+          }
+        </div>
+      </div>
+
+      <!-- Reusable Round Card Template -->
+      <ng-template #roundCardTemplate let-round>
+        <div class="round-card">
+          <div class="round-card__header">
+            <h4 class="round-card__title">{{ round.name }}</h4>
+            <span class="round-card__badge" [ngClass]="round.statusClass">{{ round.status }}</span>
+          </div>
+          
+          <div class="round-card__body">
+            <div class="round-card__stat-row">
+              <span class="round-card__stat-label">
+                {{ round.statLabel }}
+              </span>
+              <span class="round-card__stat-value">
+                {{ round.statValue }}
+              </span>
+            </div>
+            
+            <div class="round-card__progress-container">
+              <div class="round-card__progress-bar" [style.width.%]="round.progress"></div>
+            </div>
+
+            <div class="round-card__inner-grid">
+              <div class="round-card__mini-stat round-card__mini-stat--selected">
+                <span class="round-card__mini-label">SELECTED</span>
+                <span class="round-card__mini-value">{{ round.selected }}</span>
+              </div>
+              <div class="round-card__mini-stat round-card__mini-stat--rejected">
+                <span class="round-card__mini-label">REJECTED</span>
+                <span class="round-card__mini-value">{{ round.rejected }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="round-card__footer">
+            <div class="round-card__footer-item">
+              <span class="round-card__footer-label">PENDING</span>
+              <span class="round-card__footer-value">{{ round.pending }}</span>
+            </div>
+            <div class="round-card__footer-item round-card__footer-item--right">
+              <span class="round-card__footer-label">SCHEDULED</span>
+              <span class="round-card__footer-value" [ngClass]="{'text-orange': round.scheduled !== '100%' && round.scheduled !== '450/450' && round.scheduled !== '-'}">
+                {{ round.scheduled }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </ng-template>
+    }
+  </div>
+
   <!-- Rounds Selector Section -->
   <div class="assessment-detail__rounds-section">
     <div class="assessment-detail__rounds-header">

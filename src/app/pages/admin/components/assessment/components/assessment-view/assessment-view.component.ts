@@ -177,7 +177,7 @@ export class AssessmentViewComponent
     this.stepStatusUpdateSubscription =
       this.stepsStatusService.stepStatusUpdate$.subscribe((assessmentId) => {
         if (assessmentId === this.assessmentId) {
-          this.loadStepsStatus();
+          this.loadStepsStatus(false);
         }
       });
 
@@ -288,7 +288,7 @@ export class AssessmentViewComponent
     });
   }
 
-  public loadStepsStatus(): void {
+  public loadStepsStatus(shouldUpdateActiveStep: boolean = true): void {
     if (this.assessmentId) {
       this.stepsStatusService
         .getAssessmentStepsStatus(this.assessmentId)
@@ -342,7 +342,9 @@ export class AssessmentViewComponent
         .subscribe({
           next: () => {
             this.loadAssessmentRounds();
-            this.setActiveStepFromStatus();
+            if (shouldUpdateActiveStep) {
+              this.setActiveStepFromStatus();
+            }
           },
           error: () => {
             // Error handling
