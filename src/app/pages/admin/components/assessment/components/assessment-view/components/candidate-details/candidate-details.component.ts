@@ -39,44 +39,79 @@ export class CandidateDetailsComponent {
   public filteredEntries = computed(() => {
     const rawData = this.data() ?? {};
     const hiddenKeys = [
-      'panelId', 
-      'key', 
-      'candidates', 
-      'groupId', 
-      'isInvalidRecord', 
-      'failureReason', 
-      'visibleButtonIndices', 
-      'disabledButtonIndices',
-      '_id',
-      'dynamicAnswers',
-      'type',
-      'isDuplicateGroup',
-      'isInvalidGroup',
-      'isDuplicateRecord'
+      'panelId', 'key', 'candidates', 'groupId', 'isInvalidRecord', 
+      'failureReason', 'visibleButtonIndices', 'disabledButtonIndices',
+      '_id', 'dynamicAnswers', 'type', 'isDuplicateGroup', 
+      'isInvalidGroup', 'isDuplicateRecord'
     ];
     
-    const seenLabels = new Set<string>();
+    // Group all entries by their normalized label and score them
+    const labelGroups = new Map<string, { key: string, label: string, value: any, score: number }>();
     
-    return Object.entries(rawData)
-      .filter(([key]) => !hiddenKeys.includes(key))
-      .map(([key, value]) => {
-        const label = this.normalizeLabel(key);
-        return { key, label, value };
-      })
-      .filter(entry => {
-        if (seenLabels.has(entry.label)) return false;
-        seenLabels.add(entry.label);
-        return true;
-      });
+    Object.entries(rawData).forEach(([key, value]) => {
+      if (hiddenKeys.includes(key)) return;
+      
+      const label = this.normalizeLabel(key);
+      const score = this.calculateKeyScore(key, label);
+      
+      const existing = labelGroups.get(label);
+      if (!existing || score > existing.score) {
+        labelGroups.set(label, { key, label, value, score });
+      }
+    });
+    
+    return Array.from(labelGroups.values());
   });
 
-  private normalizeLabel(key: string): string {
+  private calculateKeyScore(key: string, label: string): number {
     const lowerKey = key.toLowerCase();
+    const lowerLabel = label.toLowerCase();
     
+    let score = 0;
+    
+    // Exact matches with standardized headers get top score
+    if (lowerKey === lowerLabel) score += 100;
+    
+    // Keys with more than one word are usually descriptive headers
+    if (key.trim().includes(' ') || key.includes('_')) score += 50;
+    
+    // Common descriptive header fragments
+    if (lowerKey.includes('candidate') || lowerKey.includes('address') || lowerKey.includes('number')) score += 25;
+    
+    // Generic backend keys are lowest priority
+    const genericKeys = ['name', 'email', 'phone', 'contact', 'adhar', 'mobile'];
+    if (genericKeys.includes(lowerKey)) score -= 50;
+    
+    // If the value looks like an ID (short, alphanumeric, etc) and it's mapping to a Name field, penalize it
+    if (label === 'Candidate Name' && /^[A-Z0-9]{3,8}$/.test(String(this.data()?.[key]))) {
+      score -= 30;
+    }
+    
+    return score;
+  }
+
+  private normalizeLabel(key: string): string {
+    const lowerKey = (key || '').toLowerCase().trim();
+    
+    // TIER 1: EXACT OR HIGHLY SPECIFIC MATCHES (Highest Priority)
+    if (lowerKey === 'candidate name' || lowerKey === 'candidate_name' || lowerKey === 'fullname' || lowerKey === 'full name' || lowerKey === 'name') return 'Candidate Name';
+    if (lowerKey === 'email' || lowerKey === 'email id' || lowerKey === 'email_id' || lowerKey === 'email address' || lowerKey === 'emailaddress') return 'Email Address';
+    if (lowerKey === 'aadhaar number' || lowerKey === 'adhar number' || lowerKey === 'aadhaarnumber' || lowerKey === 'adharnumber') return 'Aadhaar Number';
+    if (lowerKey === 'mobile number' || lowerKey === 'phone number' || lowerKey === 'contact number' || lowerKey === 'phonenumber' || lowerKey === 'mobilenumber') return 'Mobile Number';
+
+    // TIER 2: ENTITY/INSTITUTION EXCLUSION (Bail out early to prevent mis-mapping to name)
+    const entityKeywords = [
+      'institution', 'college', 'univ', 'school', 'company', 'org', 'bank', 'office', 'hospital', 
+      'firm', 'center', 'centre', 'branch', 'department', 'dept', 'entity', 'provider', 'board'
+    ];
+    const isEntityField = entityKeywords.some(v => lowerKey.includes(v));
+    if (isEntityField) return this.formatLabel(key);
+
+    // TIER 3: FALLBACK BROAD MATCHES
     if (lowerKey.includes('aadhaar') || lowerKey.includes('adhar')) return 'Aadhaar Number';
-    if (lowerKey.includes('phone') || lowerKey.includes('mobile')) return 'Mobile Number';
+    if (lowerKey.includes('phone') || lowerKey.includes('mobile') || lowerKey === 'contact') return 'Mobile Number';
     if (lowerKey.includes('email')) return 'Email Address';
-    if (lowerKey === 'name' || lowerKey.includes('candidate name')) return 'Candidate Name';
+    if (lowerKey.includes('name') || lowerKey.includes('candidate')) return 'Candidate Name';
     
     return this.formatLabel(key);
   }
@@ -136,20 +171,52 @@ export class CandidateDetailsComponent {
 
     const targetLabel = entry.label;
     const rawData = this.data() ?? {};
-    const updatedData: any = { ...rawData };
+    const updatedData: any = JSON.parse(JSON.stringify(rawData)); // Deep clone to handle nested objects
     
-    // VARIATION-AWARE SYNC: Update ALL keys that share the same normalized label
-    Object.keys(rawData).forEach(key => {
+    // 1. SYNC FLAT PROPERTIES
+    Object.keys(updatedData).forEach(key => {
       if (this.normalizeLabel(key) === targetLabel) {
         updatedData[key] = value;
       }
     });
 
-    // Special cases for backend-specific flat keys that might not match normalization but are standard
-    if (targetLabel === 'Aadhaar Number') updatedData['aadhaarNumber'] = value;
-    if (targetLabel === 'Mobile Number') updatedData['phoneNumber'] = value;
-    if (targetLabel === 'Candidate Name') updatedData['name'] = value;
-    if (targetLabel === 'Email Address') updatedData['email'] = value;
+    // 2. SYNC DYNAMIC ANSWERS (if present)
+    if (updatedData.dynamicAnswers && typeof updatedData.dynamicAnswers === 'object') {
+      Object.keys(updatedData.dynamicAnswers).forEach(key => {
+        if (this.normalizeLabel(key) === targetLabel) {
+          updatedData.dynamicAnswers[key] = value;
+        }
+      });
+    }
+
+    // 3. ENFORCE STANDARD BACKEND PROPERTIES (Flat)
+    if (targetLabel === 'Aadhaar Number') {
+      updatedData['aadhaarNumber'] = value;
+      ['Aadhar Number', 'adhar number', 'Aadhaar Number', 'aadhaar_number', 'adhar_number', 'Adhaar Number'].forEach(v => {
+        if (updatedData[v] !== undefined) updatedData[v] = value;
+      });
+    }
+    
+    if (targetLabel === 'Mobile Number') {
+      updatedData['phoneNumber'] = value;
+      ['Mobile Number', 'Contact Number', 'mobile number', 'phone', 'mobile', 'phoneNumber'].forEach(v => {
+        if (updatedData[v] !== undefined) updatedData[v] = value;
+      });
+    }
+    
+    if (targetLabel === 'Candidate Name') {
+      updatedData['name'] = value;
+      ['Candidate Name', 'candidate name', 'full_name', 'Full Name', 'name', 'Fullname'].forEach(v => {
+        if (updatedData[v] !== undefined) updatedData[v] = value;
+      });
+    }
+    
+    if (targetLabel === 'Email Address') {
+      updatedData['email'] = value;
+      ['Email Address', 'email address', 'Email ID', 'email id', 'emailAddress', 'Email', 'email_id', 'email'].forEach(v => {
+        if (updatedData[v] !== undefined) updatedData[v] = value;
+      });
+    }
 
     this.onUpdate.emit(updatedData);
     this.localEditKey.set(null);

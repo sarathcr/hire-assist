@@ -40,8 +40,8 @@
                        class="candidate-details__action-icon" 
                        (click)="toggleAadhaarVisibility()" 
                        [pTooltip]="isAadhaarVisible() ? 'Hide Aadhaar' : 'Show Aadhaar'"></i>
+                    <i class="pi pi-pencil candidate-details__edit-icon" (click)="startEdit(entry.key, entry.value)" pTooltip="Edit field"></i>
                   }
-                  <i class="pi pi-pencil candidate-details__edit-icon" (click)="startEdit(entry.key, entry.value)" pTooltip="Edit field"></i>
                 </div>
               </div>
             }

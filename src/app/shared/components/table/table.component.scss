@@ -63,6 +63,11 @@
     .p-datatable-tbody>tr {
       &>td {
         white-space: wrap !important;
+
+        span {
+          display: flex;
+          align-items: center;
+        }
       }
     }
 
@@ -117,7 +122,7 @@
     }
 
     // Selection styling with custom left accent
-    .p-datatable-tbody > tr.p-highlight {
+    .p-datatable-tbody>tr.p-highlight {
       position: relative;
       transition: all 0.2s ease;
 
@@ -136,20 +141,28 @@
         font-weight: 500;
         border-bottom: 1px solid #bae6fd !important; // Add subtle border for definition
 
-        i, span, div, a {
+        i,
+        span,
+        div,
+        a {
           color: inherit !important;
         }
 
         // Highlight tags and badges should stand out
-        .p-tag, .p-badge {
-          .p-tag-label, .p-tag-value, .p-badge-value, span {
+        .p-tag,
+        .p-badge {
+
+          .p-tag-label,
+          .p-tag-value,
+          .p-badge-value,
+          span {
             color: #ffffff !important;
           }
         }
       }
 
       &:hover,
-      &:hover > td {
+      &:hover>td {
         // Theme preset handles this, but we can refinement if needed
         background: #bae6fd !important;
       }
@@ -250,7 +263,9 @@
       justify-content: center;
     }
   }
+
   &__expanded {
+
     &__optionList,
     &__optionListForImage {
       list-style-type: lower-alpha;
@@ -272,7 +287,7 @@
 }
 
 :host ::ng-deep {
-  .p-datatable-thead > tr > th p-columnfilter {
+  .p-datatable-thead>tr>th p-columnfilter {
     pointer-events: all;
     cursor: pointer;
   }

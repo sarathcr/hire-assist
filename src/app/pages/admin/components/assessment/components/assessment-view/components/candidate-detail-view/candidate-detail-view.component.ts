@@ -55,6 +55,7 @@ export class CandidateDetailViewComponent
   public isCoverImageLoading = false;
   public interviewId!: number;
   public assessmentRoundId!: number;
+  public isAadhaarVisible = false;
 
   constructor(
     public activatedRoute: ActivatedRoute,
@@ -208,6 +209,17 @@ export class CandidateDetailViewComponent
 
   public getCorrectAnswers(detail: any): number {
     return detail.correctAnswers || 0;
+  }
+
+  public toggleAadhaarVisibility(): void {
+    this.isAadhaarVisible = !this.isAadhaarVisible;
+  }
+
+  public getMaskedAadhaar(aadhaar: string | undefined): string {
+    if (!aadhaar) return 'N/A';
+    const cleaned = aadhaar.replace(/\s/g, '');
+    if (cleaned.length < 12) return aadhaar;
+    return 'XXXX XXXX ' + cleaned.substring(cleaned.length - 4);
   }
 
   // Public method to update cover image

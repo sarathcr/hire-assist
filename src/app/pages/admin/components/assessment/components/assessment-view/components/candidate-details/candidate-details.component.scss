@@ -198,5 +198,11 @@
     grid-template-columns: repeat(2, 1fr);
     column-gap: 2rem;
     row-gap: 1.25rem;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+      padding: 1rem;
+      gap: 1.25rem;
+    }
   }
 }

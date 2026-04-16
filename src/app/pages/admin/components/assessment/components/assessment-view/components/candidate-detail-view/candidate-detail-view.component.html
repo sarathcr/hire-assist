@@ -100,6 +100,26 @@
                         </span>
                       </div>
                     </div>
+
+                    <!-- Aadhaar Number -->
+                    <div class="candidate-detail__info-item">
+                      <div class="candidate-detail__info-icon">
+                        <i class="pi pi-id-card"></i>
+                      </div>
+                      <div class="candidate-detail__info-content">
+                        <span class="candidate-detail__info-label">Aadhaar Number</span>
+                        <div class="candidate-detail__value-wrapper">
+                          <span class="candidate-detail__info-value">
+                            {{ isAadhaarVisible ? candidateDetailsDataSource.aadhaarNumber : getMaskedAadhaar(candidateDetailsDataSource.aadhaarNumber) }}
+                          </span>
+                          <i 
+                            [class]="isAadhaarVisible ? 'pi pi-eye-slash' : 'pi pi-eye'" 
+                            class="candidate-detail__visibility-toggle"
+                            (click)="toggleAadhaarVisibility()">
+                          </i>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 }
               </div>

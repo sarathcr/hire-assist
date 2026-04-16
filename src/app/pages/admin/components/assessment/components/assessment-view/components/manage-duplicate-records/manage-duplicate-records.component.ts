@@ -117,8 +117,8 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   public onEditRecord(candidate: CandidateData) {
-    // If it's an invalid Aadhaar record, focus on Aadhaar Number field
-    const fieldToEdit = candidate['isInvalidRecord'] ? 'aadhaarNumber' : 'name';
+    // Restricted to Aadhaar Number editing only
+    const fieldToEdit = 'aadhaarNumber';
     
     this.editPanelId.set(candidate.panelId ?? null);
     this.editFieldKey.set(fieldToEdit);
@@ -208,7 +208,6 @@ export class ManageDuplicateRecordsComponent implements OnInit {
         'disabledButtonIndices',
         'dynamicAnswers',
         'isDuplicateRecord',
-        'Aadhaar Number',
         '_detectedAadhaar',
         'isDuplicateGroup',
         'isInvalidGroup',
@@ -236,22 +235,22 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     const formData = new FormData();
     formData.append('file', blob, 'candidate.csv');
 
-    const next = () => {
+    const next = (res: any) => {
       this.isLoading.set(false);
       this.messageService.add({
         severity: 'success',
-        summary: 'Success',
-        detail: 'Created the User Successfully',
+        summary: res?.type || 'Success',
+        detail: '',
       });
       this.updateModifiedCandidateData();
     };
-    const error = (error: CustomErrorResponse) => {
+    const error = (err: CustomErrorResponse) => {
       this.isLoading.set(false);
-      const errorMessage = error?.error?.type || error?.error?.message || 'Operation failed';
+      const errorMessage = err?.error?.type || err?.error?.message || 'Operation failed';
        this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: errorMessage,
+          summary: errorMessage,
+          detail: '',
         });
     };
     this.manageDuplicateRecordsService

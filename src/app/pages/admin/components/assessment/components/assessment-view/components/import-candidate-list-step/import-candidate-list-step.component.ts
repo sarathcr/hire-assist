@@ -888,15 +888,13 @@ export class ImportCandidateListStepComponent implements OnInit {
   private errorMessage(error: CustomErrorResponse): void {
     const errorBody = error?.error;
     const type = errorBody?.type;
-    const message = errorBody?.message || (errorBody as any)?.detail;
+    
     
     let displayMessage = 'Contact Technical Support';
     
-    if (type && message) {
-       displayMessage = `${type}: ${message}`;
-    } else {
-       displayMessage = type || message || displayMessage;
-    }
+    if (type ) {
+       displayMessage = `${type}`;
+    } 
 
     this.messageService.add({
       severity: 'error',

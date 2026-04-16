@@ -187,6 +187,27 @@
     font-weight: 500;
   }
 
+  &__value-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: var(--spacing-10);
+  }
+
+  &__visibility-toggle {
+    cursor: pointer;
+    color: var(--primary-color);
+    font-size: var(--font-size-14);
+    transition: transform 0.2s ease;
+    padding: 4px;
+
+    &:hover {
+      transform: scale(1.1);
+      color: var(--secondary-color);
+    }
+  }
+
   // Accordion Styles
   &__accordion {
     ::ng-deep {

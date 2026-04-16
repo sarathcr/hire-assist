@@ -347,7 +347,7 @@
         position: relative;
       }
       .p-carousel-item-list{
-        gap: var(--spacing-20) !important;
+        margin: 0 -10px !important; // Compensate for item padding
         padding-bottom: var(--spacing-10) !important;
       }
       .p-carousel-items-content {
@@ -443,6 +443,7 @@
 
   .round-card-wrapper {
     height: 100%;
+    padding: 0 10px; // Gutter for carousel items
   }
 
   // ============================================
