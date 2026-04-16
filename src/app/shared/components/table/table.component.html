@@ -353,6 +353,7 @@
                       class="mr-2"
                       [outlined]="true"
                       severity="secondary"
+                      [disabled]="product.isDisabledStartInterview || product.isDisabled"
                       (onClick)="onStartInterview(product)"
                     />
                   } @else {
@@ -362,6 +363,7 @@
                       class="mr-2"
                       [outlined]="true"
                       severity="success"
+                      [disabled]="product.isDisabledStartInterview || product.isDisabled"
                       (onClick)="onStartInterview(product)"
                     />
                   }

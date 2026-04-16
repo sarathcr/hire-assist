@@ -332,6 +332,7 @@ export class InterviewCandidateListComponent implements OnInit {
                 } else if (interviewDate < today) {
                   this.previousInterviews.push(item);
                 } else if (interviewDate > today) {
+                  item.disabledButtonIndices = [0];
                   this.upcomingInterviews.push(item);
                 }
               }
@@ -386,6 +387,19 @@ export class InterviewCandidateListComponent implements OnInit {
       .getData(payload)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe((response: any) => {
+        if (response && response.data && Array.isArray(response.data)) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          response.data.forEach((item: any) => {
+            if (item.interviewDate) {
+              const interviewDate = new Date(item.interviewDate);
+              interviewDate.setHours(0, 0, 0, 0);
+              if (interviewDate > today) {
+                item.disabledButtonIndices = [0];
+              }
+            }
+          });
+        }
         this.data = {
           ...response,
           status: response.status,

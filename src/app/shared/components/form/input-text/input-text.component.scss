@@ -1,17 +1,25 @@
 .input-text {
   margin-bottom: 25px;
   position: relative;
+
   .p-inputtext {
-    width: 100%;
+    width: 100% !important;
     // height: 50px;
   }
+
+  .p-floatlabel {
+    width: 100%;
+  }
+
   .p-floatlabel-on:not(input.p-filled) label {
     font-weight: 300;
     font-size: var(--font-size-base);
   }
+
   .p-floatlabel-on:has(input.p-filled, input:focus) label {
     font-size: smaller;
   }
+
   &__validation-label {
     position: absolute;
     left: 0;
@@ -20,6 +28,7 @@
     color: var(--p-form-field-invalid-placeholder-color);
     padding: 0 var(--spacing-10);
   }
+
   &__label {
     font-weight: 300;
     font-size: var(--font-size-base);
@@ -65,19 +74,22 @@
     color: var(--p-inputtext-icon-color);
     z-index: 2;
     padding: 10px;
-    
+
     &:hover {
       color: var(--p-primary-color);
     }
   }
 }
+
 input::-ms-reveal,
 input::-ms-clear {
   display: none;
 }
+
 .p-button-text.p-button-plain:not(:disabled):hover {
   background: transparent;
 }
+
 @media screen and (max-width: 374px) {
   .input-text__validation-label {
     font-size: 10px;

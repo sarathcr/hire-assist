@@ -1,112 +1,88 @@
 <div class="duplicates">
-  <!-- Left Sidebar: Duplicate Groups -->
+  <!-- Left Sidebar: Failed Records Categorized -->
   <div class="duplicates__sidebar">
-    <div class="duplicates__sidebar__header">
-      <h3 class="duplicates__sidebar__title">
-        <i class="pi pi-exclamation-triangle"></i>
-        Failed Records
-      </h3>
-      <p-tag
-        [value]="(data.length || 0).toString()"
-        severity="warn"
-        [rounded]="true"
-      ></p-tag>
+    <div class="duplicates__sidebar__header-card">
+      <div class="duplicates__sidebar__header-content">
+        <div class="duplicates__sidebar__title-group">
+          <i class="pi pi-exclamation-circle"></i>
+          <h3 class="duplicates__sidebar__title">Failed Records</h3>
+        </div>
+        <div class="duplicates__sidebar__badge">{{ data().length }}</div>
+      </div>
     </div>
-    <p-card class="duplicates__sidebar__card">
-      <p-accordion
-        [value]="['0']"
-        [multiple]="true"
-        class="duplicates__accordion"
-      >
-        @for (group of data; let idx = $index; track group) {
-          <p-accordion-panel [value]="idx + ''">
-            <p-accordion-header>
-              <div class="duplicates__accordion__header">
-                <div class="duplicates__accordion__header__info">
-                  <i class="pi pi-users"></i>
-                  <span>{{ group.key }}</span>
+
+    <div class="duplicates__sidebar__scrollable">
+      <!-- Section: Duplicates -->
+      @if (duplicateGroups().length > 0) {
+        <p-accordion [multiple]="true" class="duplicates__accordion">
+          @for (group of duplicateGroups(); track group.groupId; let idx = $index) {
+            <p-accordionTab [selected]="activeGroupId === group.groupId">
+              <ng-template pTemplate="header">
+                <div class="duplicates__accordion__header">
+                  <div class="duplicates__accordion__header__info">
+                    <i class="pi pi-users"></i>
+                    <span>Duplicate Aadhaar Cluster {{ idx + 1 }}</span>
+                  </div>
+                  <p-badge [value]="group.candidates.length.toString()" severity="warn"></p-badge>
                 </div>
-                <p-badge
-                  [value]="(group.candidates.length || 0).toString()"
-                  severity="warn"
-                ></p-badge>
-              </div>
-            </p-accordion-header>
-            <p-accordion-content>
-              <div class="duplicates__accordion__content-wrapper">
-                @for (
-                  candidate of group.candidates;
-                  let candidateIdx = $index;
-                  track candidate
-                ) {
-                  <p-card
-                    class="duplicates__candidate-card"
-                    [class.duplicates__candidate-card--clickable]="true"
-                    tabindex="0"
+              </ng-template>
+              
+              <div class="duplicates__accordion__content-list">
+                @for (c of group.candidates; track c._id) {
+                  <div 
+                    class="sidebar-candidate-item" 
+                    [class.sidebar-candidate-item--active]="splitPanelList().length > 1 && activeGroupId === group.groupId"
                     (click)="onDuplicateRecordClick(group.candidates, group.groupId)"
-                    (keyup.enter)="onDuplicateRecordClick(group.candidates, group.groupId)"
-                    role="button"
-                    aria-pressed="false"
                   >
-                    <div class="duplicates__candidate-card__content">
-                      <div class="duplicates__candidate-card__avatar">
-                        <p-avatar
-                          [label]="
-                            getInitials(candidate['Candidate Name'] || 'N/A')
-                          "
-                          shape="circle"
-                          size="large"
-                          styleClass="duplicates__avatar"
-                        ></p-avatar>
-                        @if (candidate['isInvalidRecord']) {
-                          <p-badge
-                            severity="danger"
-                            icon="pi pi-exclamation-circle"
-                            class="duplicates__candidate-card__invalid-badge"
-                            [pTooltip]="candidate['failureReason'] || 'Validation Failed'"
-                          ></p-badge>
-                        }
-                      </div>
-                      <div class="duplicates__candidate-card__info">
-                        <div class="duplicates__candidate-card__name">
-                          <i class="pi pi-user"></i>
-                          <span>{{
-                            candidate["Candidate Name"] || "N/A"
-                          }}</span>
-                        </div>
-                        <div class="duplicates__candidate-card__phone">
-                          <i class="pi pi-phone"></i>
-                          <span>{{ candidate["Mobile number"] || "N/A" }}</span>
-                        </div>
-                        <div class="duplicates__candidate-card__aadhaar">
-                          <i class="pi pi-id-card"></i>
-                          <span>{{ candidate["Aadhaar Number"] || "N/A" }}</span>
-                        </div>
-                      </div>
+                    <p-avatar [label]="getInitials(c.name || c['Candidate Name'])" shape="circle" size="normal" class="sidebar-candidate-item__avatar"></p-avatar>
+                    <div class="sidebar-candidate-item__info">
+                      <span class="sidebar-candidate-item__name">{{ c.name || c['Candidate Name'] }}</span>
+                      <span class="sidebar-candidate-item__phone">{{ c.phoneNumber || c['Mobile number'] }}</span>
                     </div>
-                  </p-card>
+                  </div>
                 }
               </div>
-            </p-accordion-content>
-          </p-accordion-panel>
-        }
-      </p-accordion>
-    </p-card>
+            </p-accordionTab>
+          }
+        </p-accordion>
+      }
+
+      <!-- Section: Invalid Format -->
+      @if (invalidGroups().length > 0) {
+        <div class="duplicates__invalid-section">
+          @for (group of invalidGroups(); track group.groupId; let idx = $index) {
+            <div 
+              class="duplicates__invalid-item" 
+              [class.duplicates__invalid-item--active]="activeGroupId === group.groupId"
+              (click)="onDuplicateRecordClick(group.candidates, group.groupId)"
+            >
+              <div class="duplicates__invalid-item__info">
+                <span class="duplicates__invalid-item__key">Invalid format record {{ idx + 1 }}</span>
+              </div>
+              <div class="duplicates__invalid-item__actions">
+                <p-badge [value]="'1'" severity="danger"></p-badge>
+                <i class="pi pi-chevron-right"></i>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
   </div>
 
-  <!-- Right Content: Candidate Details -->
+  <!-- Right Content: Candidate Details Comparison -->
   <div class="duplicates__content">
-    <div class="duplicates__content__header">
-      <h3 class="duplicates__content__title">
-        <i class="pi pi-list"></i>
-        Select Candidate to Keep
-      </h3>
-      <p class="duplicates__content__subtitle">
-        Resolve duplicates or correct invalid records before continuing
-      </p>
+    <div class="duplicates__content__top-alert">
+      <div class="duplicates__content__top-alert__icon">
+        <i class="pi pi-clipboard"></i>
+      </div>
+      <div class="duplicates__content__top-alert__text">
+        <h3>Select Candidate to Keep</h3>
+        <p>Resolve duplicates or correct invalid records before continuing to the next step.</p>
+      </div>
     </div>
 
-    <div class="duplicates__split-panel">
+    <div class="duplicates__cards-container">
       @if (isLoading()) {
         <div class="duplicates__loading-overlay">
           <div class="duplicates__loading-content">
@@ -120,89 +96,79 @@
         </div>
       } 
       
-      @if (splitPanelRendered()) {
-        <p-splitter class="duplicates__splitter" [panelSizes]="[50, 50, 50]">
+      @if (data().length > 0) {
+        <div class="duplicates__cards-list">
           @for (candidate of splitPanelList(); track candidate.panelId) {
-            <ng-template #panel>
-              <div
-                class="duplicates__panel"
-                [ngClass]="{
-                  'duplicates__panel--selected':
-                    selectedPanelId() === candidate.panelId,
-                }"
-                tabindex="0"
-                (click)="onDetailsClick(candidate)"
-                (keydown.enter)="onDetailsClick(candidate)"
-                role="button"
-                aria-pressed="false"
-              >
-                <p-card class="duplicates__panel__card">
-                  <ng-template pTemplate="header">
-                    <div class="duplicates__panel__header">
-                      <div class="duplicates__panel__header__actions">
-                        <p-button 
-                          icon="pi pi-pencil" 
-                          [rounded]="true" 
-                          [text]="true" 
-                          severity="info" 
-                          (onClick)="$event.stopPropagation(); onEditRecord(candidate)"
-                          pTooltip="Edit record"
-                        ></p-button>
-                        <p-button 
-                          icon="pi pi-trash" 
-                          [rounded]="true" 
-                          [text]="true" 
-                          severity="danger" 
-                          (onClick)="$event.stopPropagation(); onRejectRecord(candidate)"
-                          pTooltip="Reject record"
-                        ></p-button>
-                      </div>
-                      <div class="duplicates__panel__header__badge">
-                        @if (selectedPanelId() === candidate.panelId) {
-                          <p-tag
-                            value="Selected"
-                            severity="success"
-                            [rounded]="true"
-                          ></p-tag>
-                        } @else if (candidate['isInvalidRecord']) {
-                          <p-tag
-                            [value]="candidate['failureReason'] || 'Correct Me'"
-                            severity="danger"
-                            [rounded]="true"
-                          ></p-tag>
-                        } @else {
-                          <p-tag
-                            value="Click to Select"
-                            severity="info"
-                            [rounded]="true"
-                          ></p-tag>
-                        }
-                      </div>
-                    </div>
-                  </ng-template>
+            <div
+              class="duplicates__panel"
+              [ngClass]="{
+                'duplicates__panel--selected':
+                  selectedPanelId() === candidate.panelId,
+              }"
+              (click)="onDetailsClick(candidate)"
+            >
+              <div class="duplicates__panel__card">
+                <div class="duplicates__panel__header">
+                  <div class="duplicates__panel__header__actions">
+                    <i class="pi pi-trash" (click)="$event.stopPropagation(); onRejectRecord(candidate)" pTooltip="Reject record"></i>
+                  </div>
+                  <div class="duplicates__panel__header__select">
+                    @if (selectedPanelId() === candidate.panelId) {
+                      <span class="duplicates__panel__header__selected-text">SELECTED</span>
+                    } @else {
+                      <span class="duplicates__panel__header__select-btn">CLICK TO SELECT</span>
+                    }
+                  </div>
+                </div>
+                
+                <div class="duplicates__panel__body">
                   <app-candidate-details
                     [data]="candidate"
+                    [isEditable]="editPanelId() === candidate.panelId"
+                    [editField]="editFieldKey()"
+                    (onUpdate)="handleCandidateUpdate($event)"
+                    (onCancel)="handleEditCancel()"
                   ></app-candidate-details>
-                </p-card>
+                  
+                  <div class="duplicates__panel__footer">
+                    @if (candidate['isInvalidRecord']) {
+                      <p-tag [value]="candidate['failureReason'] || 'Invalid Format'" severity="danger" [rounded]="true"></p-tag>
+                    } @else {
+                      <p-tag value="Duplicate Entry" severity="warn" [rounded]="true" class="reason-tag"></p-tag>
+                    }
+                  </div>
+                </div>
               </div>
-            </ng-template>
+            </div>
           }
-        </p-splitter>
+        </div>
+      } @else {
+        <div class="duplicates__empty-state">
+          <div class="duplicates__empty-state__icon-container">
+            <i class="pi pi-check-circle"></i>
+          </div>
+          <h3>All Clear!</h3>
+          <p>Every duplicate and invalid record has been successfully resolved. You can now close this window to proceed with the assessment.</p>
+        </div>
       }
     </div>
 
-    <div class="duplicates__btn flex gap-1">
+    <div class="duplicates__footer-actions">
       <app-button
-        buttonLabel="Cancel"
+        [buttonLabel]="data().length === 0 ? 'Finish' : 'Cancel'"
         buttonVariant="outlined"
-        icon="pi pi-times"
         (btnClick)="onClose()"
       ></app-button>
-      <app-button
-        buttonLabel="Update Candidate"
-        (btnClick)="onSubmit()"
-        [disabled]="!selectedPanelId() || isLoading()"
-      ></app-button>
+      
+      @if (data().length > 0) {
+        <app-button
+          buttonLabel="Update Candidate"
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          (btnClick)="onSubmit()"
+          [disabled]="!selectedPanelId() || isLoading()"
+        ></app-button>
+      }
     </div>
   </div>
 </div>

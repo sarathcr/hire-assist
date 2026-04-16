@@ -26,7 +26,12 @@ export const groupCandidatesByContact = (
   const invalidAadhaars: number[] = [];
 
   candidates.forEach((c) => {
-    const aadhaar = c['Aadhaar Number']?.trim();
+    // Check multiple potential keys for Aadhaar
+    const aadhaar = (c['Aadhaar Number'] || c['aadhaarNumber'] || c['Adhar Number'] || c['adharNumber'])?.trim();
+    
+    // Store detected aadhaar back for consistency in labels later
+    (c as any)['_detectedAadhaar'] = aadhaar;
+
     if (!aadhaar || !/^\d{12}$/.test(aadhaar) || !validateVerhoeff(aadhaar)) {
       invalidAadhaars.push(c['_id']);
     } else {
@@ -47,7 +52,7 @@ export const groupCandidatesByContact = (
     visited.add(id);
     groups.push({
       groupId: `invalid_${id}_${Date.now()}`,
-      key: `Invalid Aadhaar: ${candidateData['Aadhaar Number'] || 'Empty'}`,
+      key: `Invalid Aadhaar: ${(curr as any)['_detectedAadhaar'] || 'Empty'}`,
       candidates: [{ ...candidateData, isInvalid: 'true' }]
     });
   });
@@ -65,7 +70,7 @@ export const groupCandidatesByContact = (
       const { _id, ...candidateData } = curr;
       group.push(candidateData);
 
-      const aadhaar = curr['Aadhaar Number']?.trim();
+      const aadhaar = (curr as any)['_detectedAadhaar'];
 
       if (aadhaar && aadhaarMap.has(aadhaar)) {
         aadhaarMap.get(aadhaar)!.forEach((id) => {
@@ -80,7 +85,7 @@ export const groupCandidatesByContact = (
     // Only add as duplicate group if there's more than one candidate or it's a known duplicate from BE (not handled here)
     if (group.length > 1) {
       const first = group[0];
-      const key = first['Aadhaar Number'] || 'Unknown';
+      const key = (first as any)['_detectedAadhaar'] || 'Unknown';
       const groupId = `group_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
       groups.push({ groupId, key, candidates: group });
     }

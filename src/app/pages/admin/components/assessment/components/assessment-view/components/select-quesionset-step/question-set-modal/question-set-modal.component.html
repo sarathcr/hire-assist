@@ -39,7 +39,7 @@
   <div class="dialog-footer__btn-wrapper">
     <app-button
       [buttonLabel]="'Submit'"
-      [disabled]="!questionSetFGroup.valid || isLoading"
+      [disabled]="!questionSetFGroup.valid || isLoading || isFormUnchanged"
       [isLoading]="isLoading"
       (btnClick)="onSubmit()"
     ></app-button>

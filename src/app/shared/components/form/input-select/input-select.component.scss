@@ -7,7 +7,7 @@
   position: relative;
 
   .p-select {
-    width: 100%;
+    width: 100% !important;
   }
   .p-floatlabel-on:not(input.p-filled) label {
     font-weight: 300;

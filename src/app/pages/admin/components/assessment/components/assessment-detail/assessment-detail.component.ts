@@ -191,10 +191,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public actionItems: MenuItem[] = [];
   public visible: boolean = false;
   public summaryStats: any = {
-    totalCandidates: 1248,
-    selectedCandidates: 42,
-    rejectedCandidates: 856,
-    pendingCandidates: 350,
+    totalCandidates: 0,
+    selectedCandidates: 0,
+    rejectedCandidates: 0,
+    pendingCandidates: 0,
   };
 
   public statCardsConfig = [
@@ -297,6 +297,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       this.assessmentId = Number(routeId);
       this.getAssessmentDetails(this.assessmentId);
       this.getAssessmentRoundDetails(this.assessmentId);
+      this.getAssessmentSummaryData(this.assessmentId);
     }
     this.setSidebarConfig();
     this.setPaginationEndpoint();
@@ -1230,101 +1231,70 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.assessmentService.getEntityById(id).subscribe({ next, error });
   }
 
-  private updateRoundPerformanceData(rounds: AssessmentRound[]): void {
-    if (!rounds || rounds.length === 0) {
+  private getAssessmentSummaryData(id: number): void {
+    this.interviewService.getAssessmentSummary(id).subscribe({
+      next: (res: any) => {
+        if (res.overallSummary) {
+          this.summaryStats = {
+            totalCandidates: res.overallSummary.totalCandidates,
+            selectedCandidates: res.overallSummary.totalSelected,
+            rejectedCandidates: res.overallSummary.totalRejected,
+            pendingCandidates: res.overallSummary.totalPending,
+          };
+        }
+        if (res.roundWisePerformance) {
+          this.mapRoundPerformanceData(res.roundWisePerformance);
+        }
+      },
+      error: (err: HttpErrorResponse) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to fetch recruitment overview.',
+        });
+      },
+    });
+  }
+
+  private mapRoundPerformanceData(performanceData: any[]): void {
+    if (!performanceData || performanceData.length === 0) {
       this.roundPerformanceData = [];
       return;
     }
 
-    const mockStats = [
-      {
-        attended: 820,
-        invited: 950,
-        selected: 450,
-        rejected: 370,
-        pending: '0 candidates',
-        scheduled: '450/450',
-        progress: 86,
-      },
-      {
-        attended: 124,
-        invited: 450,
-        selected: 82,
-        rejected: 42,
-        pending: '326 candidates',
-        scheduled: '180 / 326',
-        progress: 27,
-      },
-      {
-        attended: 82,
-        invited: 82,
-        selected: '-',
-        rejected: '-',
-        pending: '250 candidates',
-        scheduled: '12 / 82',
-        progress: 2,
-      },
-            {
-        attended: 82,
-        invited: 82,
-        selected: '-',
-        rejected: '-',
-        pending: '250 candidates',
-        scheduled: '12 / 82',
-        progress: 2,
-      },
-    ];
-
-    this.roundPerformanceData = rounds.map((round, index) => {
-      // Rotate through mock stats if there are more rounds than mock entries
-      const stats: any = { ...mockStats[index % mockStats.length] };
-      const previousRound = index > 0 ? rounds[index - 1] : null;
+    this.roundPerformanceData = performanceData.map((round) => {
       let statusClass = 'status-queued';
       let statusSeverity = 'secondary';
 
-      if (round.status === 'Active' || round.status === 'In Progress') {
+      const status = round.status?.toLowerCase();
+      if (status === 'active' || status === 'in progress') {
         statusClass = 'status-progress';
         statusSeverity = 'warning';
-      } else if (round.status === 'Completed') {
+      } else if (status === 'completed') {
         statusClass = 'status-active';
         statusSeverity = 'info';
       }
 
-      // Consistent Label across all rounds
-      stats.statLabel = 'Attended / Invited';
+      // Calculate progress (attended / invited)
+      const progress =
+        round.invited > 0 ? (round.attended / round.invited) * 100 : 0;
 
-      // Handle 'Awaiting' state logic
-      const isAwaiting = statusClass === 'status-queued' && previousRound && previousRound.status !== 'Completed';
-
-      if (isAwaiting) {
-        stats.statValue = '-';
-        stats.scheduled = '-';
-        stats.pending = `Awaiting ${previousRound.round}`;
-      } else {
-        // Show actual Attended / Invited counts
-        stats.statValue = `${stats.attended} / ${stats.invited}`;
-        
-        // Ensure pending status is meaningful
-        if (statusClass === 'status-queued') {
-          stats.pending = `${stats.attended || 0} Candidates Available`;
-        }
-
-        // Manage schedule like before (show counts)
-        const total = (stats.invited || stats.expected || stats.attended || 0).toString().replace(' (Est.)', '');
-        stats.scheduled = `${stats.scheduled && stats.scheduled.includes('/') ? stats.scheduled : '0 / ' + total}`;
-      }
-
-      // Cleanup (Est.) if any remnants
-      if (typeof stats.statValue === 'string') {
-        stats.statValue = stats.statValue.replace(' (Est.)', '');
-      }
+      const isAllScheduled =
+        round.totalScheduled > 0 && round.scheduled === round.totalScheduled;
 
       return {
-        ...stats,
-        name: round.round,
+        name: round.roundName,
         status: round.status || 'Queued',
         statusClass: statusClass,
         statusSeverity: statusSeverity,
+        statLabel: 'Attended / Invited',
+        statValue: `${round.attended} / ${round.invited}`,
+        progress: Math.round(progress),
+        selected: round.selected,
+        rejected: round.rejected,
+        pending: round.pendingDescription,
+        scheduled: `${round.scheduled} / ${round.totalScheduled}`,
+        isAllScheduled: isAllScheduled,
       };
     });
   }
@@ -1368,7 +1338,6 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       }
       this.step = res;
       this.assessmentRoundList = res;
-      this.updateRoundPerformanceData(res);
       if (this.step.length > 0) {
         // Find the first round that is NOT completed
         const activeRoundIndex = this.step.findIndex(

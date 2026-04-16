@@ -242,7 +242,7 @@
             </div>
             <div class="round-card__footer-item round-card__footer-item--right">
               <span class="round-card__footer-label">SCHEDULED</span>
-              <span class="round-card__footer-value" [ngClass]="{'text-orange': round.scheduled !== '100%' && round.scheduled !== '450/450' && round.scheduled !== '-'}">
+              <span class="round-card__footer-value" [ngClass]="{'text-orange': !round.isAllScheduled && round.scheduled !== '-'}">
                 {{ round.scheduled }}
               </span>
             </div>

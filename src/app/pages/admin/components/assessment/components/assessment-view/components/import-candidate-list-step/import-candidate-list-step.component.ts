@@ -267,12 +267,7 @@ export class ImportCandidateListStepComponent implements OnInit {
         };
         const error = (error: CustomErrorResponse) => {
           this.isLoading = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail:
-              error?.error?.message || error?.error?.type || 'Deletion failed',
-          });
+          this.errorMessage(error);
         };
         this.candidateService
           .deleteEntityById(userId, this.assessmentId())
@@ -396,81 +391,123 @@ export class ImportCandidateListStepComponent implements OnInit {
         next: (response: CandidateImportResponseDto) => {
           let allFailedRecords: unknown[] = [];
 
-          // 1. Handle Duplicates (from Base64 CSV)
+          // 1. Handle Duplicates
           if (response.duplicateEntries) {
             try {
-              const csvString = atob(response.duplicateEntries);
-              const parsedDuplicates = parseCsvToJson(csvString);
-              const groupedDuplicates = groupCandidatesByContact(parsedDuplicates);
-              allFailedRecords = [...allFailedRecords, ...groupedDuplicates];
+              let parsedDuplicates: any[] = [];
+              const rawDuplicates = response.duplicateEntries;
+
+              if (typeof rawDuplicates === 'string' && rawDuplicates !== 'undefined' && rawDuplicates !== 'null') {
+                // Check if it's Base64 or raw CSV
+                let csvString = '';
+                try {
+                  // If it looks like Base64 (starts with common CSV header chars in B64 or doesn't have commas)
+                  if (!rawDuplicates.includes(',') && !rawDuplicates.includes('\n')) {
+                    csvString = atob(rawDuplicates);
+                  } else {
+                    csvString = rawDuplicates; // Raw CSV string
+                  }
+                } catch {
+                  csvString = rawDuplicates; // Fallback to raw string
+                }
+                parsedDuplicates = parseCsvToJson(csvString);
+              } else if (Array.isArray(rawDuplicates)) {
+                // Normalize duplicates from array format to include display labels
+                parsedDuplicates = rawDuplicates.map((d: any) => {
+                  const dynamicAnswers = typeof d.dynamicAnswers === 'string' ? {} : (d.dynamicAnswers || {});
+                  const name = d.name || dynamicAnswers['Candidate Name'] || 'N/A';
+                  const email = d.email || dynamicAnswers['Email Id'] || 'N/A';
+                  const phone = d.phoneNumber || dynamicAnswers['Mobile number'] || 'N/A';
+                  const aadhaar = d.aadhaarNumber || dynamicAnswers['Aadhaar Number'] || 'N/A';
+                  
+                  return {
+                    ...d,
+                    ...dynamicAnswers,
+                    'isDuplicateRecord': true,
+                    'Candidate Name': name,
+                    'Email Id': email,
+                    'Mobile number': phone,
+                    'Aadhaar Number': aadhaar,
+                    name,
+                    email,
+                    phoneNumber: phone,
+                    aadhaarNumber: aadhaar
+                  };
+                });
+              }
+              
+              if (parsedDuplicates.length > 0) {
+                const groupedDuplicates = groupCandidatesByContact(parsedDuplicates);
+                const taggedDuplicates = groupedDuplicates.map(g => ({
+                  ...g,
+                  isDuplicateGroup: true,
+                  type: 'Duplicate'
+                }));
+                allFailedRecords = [...allFailedRecords, ...taggedDuplicates];
+              }
             } catch (e) {
-              console.error('Error parsing duplicate entries base64', e);
+              console.error('Error processing duplicate entries:', e);
             }
           }
 
           // 2. Handle Invalid Records (Rectification Screen)
-          if (response.invalidRecords && response.invalidRecords.length > 0) {
-            const mappedInvalid = response.invalidRecords.map(record => ({
-              ...JSON.parse(record.originalRowData),
-              groupId: 'invalid-' + Math.random(),
-              isInvalidRecord: true,
-              failureReason: record.reason,
-              candidates: [JSON.parse(record.originalRowData)]
-            }));
+          if (response.invalidRecords && Array.isArray(response.invalidRecords) && response.invalidRecords.length > 0) {
+            const mappedInvalid = response.invalidRecords.map((record) => {
+              const rowData = typeof record.dynamicAnswers === 'string' ? {} : (record.dynamicAnswers || {});
+              // Ensure we have common fields even if misspelled in CSV or at root of record
+              const name = record.name || rowData['Candidate Name'] || rowData['name'] || 'N/A';
+              const email = record.email || rowData['Email Id'] || rowData['Email address'] || rowData['email'] || 'N/A';
+              const phone = record.phoneNumber || rowData['Mobile number'] || rowData['phoneNumber'] || rowData['phone'] || 'N/A';
+              const aadhaarNumber = record.aadhaarNumber || rowData['Aadhaar Number'] || rowData['Adhar Number'] || rowData['aadhaarNumber'] || 'N/A';
+              
+              const normalizedData = {
+                ...rowData,
+                name,
+                email,
+                phoneNumber: phone,
+                aadhaarNumber,
+                // Also keep CSV header names for display if needed
+                'Candidate Name': name,
+                'Email Id': email,
+                'Mobile number': phone,
+                'Aadhaar Number': aadhaarNumber,
+                isInvalidRecord: true,
+                failureReason: record.reason
+              };
+
+              return {
+                ...normalizedData,
+                key: record.reason || 'Invalid Format',
+                groupId: 'invalid-' + Math.random().toString(36).substring(2, 9),
+                isInvalidGroup: true,
+                type: 'Invalid',
+                candidates: [{ 
+                  ...normalizedData, 
+                }],
+              };
+            });
             allFailedRecords = [...allFailedRecords, ...mappedInvalid];
           }
+
+
 
           if (allFailedRecords.length > 0) {
             this.manageDuplicateRecords(allFailedRecords);
           } else {
             this.getAllCandidates(new PaginatedPayload(), true);
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: `Processing complete.`,
+            });
           }
 
           this.getAllCandidatesApplicationQuestions();
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: `Processing complete.`,
-          });
           this.isUploading = false;
         },
         error: (err) => {
-          let errorMessage = 'Something went wrong';
-
-          // Handle 3106 error (Duplicate Data)
-          if (err.status === 422 && err.error?.businessError === 3106) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const text = e.target?.result as string;
-              const parsedData = parseCsvToJson(text);
-              const duplicateRecords = groupCandidatesByContact(parsedData);
-              if (duplicateRecords.length > 0) {
-                this.manageDuplicateRecords(duplicateRecords);
-              }
-              this.isLoading = false;
-              this.isUploading = false;
-            };
-            reader.readAsText(file);
-            return;
-          }
-
-          if (typeof err.error === 'string') {
-            try {
-              const parsed = JSON.parse(err.error);
-              errorMessage = parsed.type || parsed.detail;
-            } catch {
-              errorMessage = err.error;
-            }
-          } else {
-            errorMessage = err?.error?.type || err?.error?.detail;
-          }
-
           this.isLoading = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: `Error : ${errorMessage}`,
-          });
+          this.errorMessage(err);
           this.isUploading = false;
         },
       });
@@ -507,21 +544,7 @@ export class ImportCandidateListStepComponent implements OnInit {
           this.checkIsAllCandidatesAssigned();
         };
         const error = (error: CustomErrorResponse) => {
-          const businerssErrorCode = error.error.businessError;
-          if (businerssErrorCode === 4001) {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Candidate Already Exists',
-            });
-          }
-
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail:
-              error?.error?.message || error?.error?.type || 'Creation failed',
-          });
+          this.errorMessage(error);
         };
         this.candidateService.createEntity(result).subscribe({ next, error });
       }
@@ -569,12 +592,7 @@ export class ImportCandidateListStepComponent implements OnInit {
         };
         const error = (error: CustomErrorResponse) => {
           this.isLoading = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail:
-              error?.error?.message || error?.error?.type || 'Deletion failed',
-          });
+          this.errorMessage(error);
         };
         this.candidateService
           .updateEntity('', payload, 'remove')
@@ -630,14 +648,7 @@ export class ImportCandidateListStepComponent implements OnInit {
             },
             error: (error: CustomErrorResponse) => {
               this.isLoading = false;
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail:
-                  error?.error?.message ||
-                  error?.error?.type ||
-                  'Failed to schedule assessment',
-              });
+              this.errorMessage(error);
             },
           });
         }
@@ -875,13 +886,22 @@ export class ImportCandidateListStepComponent implements OnInit {
   }
 
   private errorMessage(error: CustomErrorResponse): void {
+    const errorBody = error?.error;
+    const type = errorBody?.type;
+    const message = errorBody?.message || (errorBody as any)?.detail;
+    
+    let displayMessage = 'Contact Technical Support';
+    
+    if (type && message) {
+       displayMessage = `${type}: ${message}`;
+    } else {
+       displayMessage = type || message || displayMessage;
+    }
+
     this.messageService.add({
       severity: 'error',
       summary: 'Error',
-      detail:
-        error?.error?.message ||
-        error?.error?.type ||
-        'Contact Technical Support',
+      detail: displayMessage,
     });
   }
 

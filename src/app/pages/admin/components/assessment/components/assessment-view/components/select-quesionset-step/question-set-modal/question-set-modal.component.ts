@@ -45,6 +45,7 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
   public configMap!: ConfigMap;
   public questionSetModal = new QuestionSetFormModal();
   public isLoading = false;
+  private initialFormValues: any;
   constructor(
     private ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
@@ -57,11 +58,19 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
     this.questionSetFGroup = buildFormGroup(this.questionSetModal);
   }
 
+  get isFormUnchanged(): boolean {
+    return (
+      JSON.stringify(this.initialFormValues) ===
+      JSON.stringify(this.questionSetFGroup.getRawValue())
+    );
+  }
+
   ngOnInit(): void {
     this.setConfigMaps();
     this.data = this.config.data;
     this.storeService.setIsLoading(false);
     this.checkAndPatchQuestionSetDataInFGroup();
+    this.initialFormValues = this.questionSetFGroup.getRawValue();
   }
 
   ngOnDestroy(): void {

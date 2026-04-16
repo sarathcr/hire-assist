@@ -184,6 +184,24 @@ export class CandidateDetailViewComponent
     return value !== null && value !== undefined && value !== '';
   }
 
+  public formatLabel(label: string): string {
+    if (!label) return '';
+    
+    // Handle camelCase by adding space before capitals
+    let formatted = label.replace(/([A-Z])/g, ' $1');
+    
+    // Replace underscores and hyphens with spaces
+    formatted = formatted.replace(/[_\-]+/g, ' ');
+    
+    // Capitalize each word and join
+    return formatted
+      .split(/\s+/)
+      .filter(word => word.length > 0)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+      .trim();
+  }
+
   public getDetailDate(detail: any): string {
     return this.formatDate(detail.date);
   }

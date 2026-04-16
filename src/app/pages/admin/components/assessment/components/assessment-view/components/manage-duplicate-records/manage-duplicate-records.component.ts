@@ -1,5 +1,5 @@
 import { NgClass } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, computed, OnInit, signal } from '@angular/core';
 import { AccordionModule } from 'primeng/accordion';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
@@ -46,14 +46,22 @@ import { DialogService } from 'primeng/dynamicdialog';
   styleUrl: './manage-duplicate-records.component.scss',
 })
 export class ManageDuplicateRecordsComponent implements OnInit {
-  public data!: CandidateData[];
+  public data = signal<CandidateData[]>([]);
+  public duplicateGroups = computed(() => this.data().filter(g => g['isDuplicateGroup']));
+  public invalidGroups = computed(() => this.data().filter(g => g['isInvalidGroup']));
+  
   public splitPanelList = signal<CandidateData[]>([]);
   public panelIdIncrementor = 1;
   public splitPanelRendered = signal(true);
   public selectedPanelId = signal<number | null>(null);
   public assessmentId!: string;
   public isLoading = signal(false);
-  private activeGroupId: string | null = null;
+  
+  // Inline edit state
+  public editPanelId = signal<number | null>(null);
+  public editFieldKey = signal<string | null>(null);
+  
+  public activeGroupId: string | null = null;
 
   // Helper method to get initials for avatar
   public getInitials(name: string): string {
@@ -109,59 +117,36 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   public onEditRecord(candidate: CandidateData) {
-    const applicationQuestions = (this.config.data as DialogData).applicationQuestions;
+    // If it's an invalid Aadhaar record, focus on Aadhaar Number field
+    const fieldToEdit = candidate['isInvalidRecord'] ? 'aadhaarNumber' : 'name';
     
-    // Map CSV header names or direct property names to model field names for the dialog
-    const mappedData = {
-      name: candidate['Candidate Name'] || candidate['name'] || candidate['candidateName'],
-      email: candidate['Email Id'] || candidate['email'] || candidate['emailId'],
-      phone: candidate['Mobile number'] || candidate['phoneNumber'] || candidate['phone'] || candidate['mobileNumber'],
-      aadhaarNumber: candidate['Aadhaar Number'] || candidate['aadhaarNumber'],
-      dob: candidate['Date of Birth'] || candidate['dob'],
-      gender: candidate['Gender'] || candidate['gender'],
-    };
+    this.editPanelId.set(candidate.panelId ?? null);
+    this.editFieldKey.set(fieldToEdit);
+    
+    // Smooth scroll to the field if possible (handled by browser focus in template)
+    setTimeout(() => {
+      const element = document.getElementById('field-' + fieldToEdit);
+      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  }
 
-    const editRef = this.dialogService.open(CandidateDialogComponent, {
-      data: {
-        applicationQuestions,
-        candidateData: mappedData,
-        isEdit: true
-      },
-      header: 'Edit Candidate Details',
-      width: '50vw',
-      modal: true,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-    });
-
-    editRef.onClose.subscribe((result) => {
-      if (result) {
-        // Update the candidate in the splitPanelList
-        const updatedList = this.splitPanelList().map(c => {
-          if (c.panelId === candidate.panelId) {
-            return {
-              ...c,
-              'Candidate Name': result.name,
-              'Email Id': result.email,
-              'Mobile number': result.phoneNumber,
-              'Aadhaar Number': result.aadhaarNumber,
-              'Date of Birth': result.dob,
-              'Gender': result.gender,
-              // Update root level names too if they exist
-              name: result.name,
-              email: result.email,
-              phoneNumber: result.phoneNumber,
-              aadhaarNumber: result.aadhaarNumber,
-            };
-          }
-          return c;
-        });
-        this.splitPanelList.set(updatedList);
-        this.cdr.detectChanges();
+  public handleCandidateUpdate(updatedCandidate: CandidateData) {
+    const updatedList = this.splitPanelList().map(c => {
+      if (c.panelId === updatedCandidate.panelId) {
+        return updatedCandidate;
       }
+      return c;
     });
+    
+    this.splitPanelList.set(updatedList);
+    this.editPanelId.set(null);
+    this.editFieldKey.set(null);
+    this.cdr.detectChanges();
+  }
+
+  public handleEditCancel() {
+    this.editPanelId.set(null);
+    this.editFieldKey.set(null);
   }
 
   public onRejectRecord(candidate: CandidateData) {
@@ -184,11 +169,12 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   // Private Methods
   private setConfigData() {
     const configData = this.config.data as DialogData;
-    this.data = configData.duplicateRecords;
+    this.data.set(configData.duplicateRecords);
     this.assessmentId = configData.assessmentId;
-    if (this.data && this.data.length > 0) {
-      this.activeGroupId = this.data[0].groupId;
-      this.setPanelListData(this.data);
+    const currentData = this.data();
+    if (currentData && currentData.length > 0) {
+      this.activeGroupId = currentData[0].groupId;
+      this.setPanelListData(currentData);
     }
   }
 
@@ -211,10 +197,23 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   private updateCandidateData(selectedCandidate: CandidateData) {
     // Determine headers based on available data
     // If it's an invalid record, it might have internal property names
-    const isInvalid = selectedCandidate['isInvalidRecord'];
-    
     const headers = Object.keys(selectedCandidate).filter(
-      (key) => !['panelId', 'groupId', 'isInvalidRecord', 'failureReason', 'candidates', 'visibleButtonIndices', 'disabledButtonIndices'].includes(key),
+      (key) => ![
+        'panelId', 
+        'groupId', 
+        'isInvalidRecord', 
+        'failureReason', 
+        'candidates', 
+        'visibleButtonIndices', 
+        'disabledButtonIndices',
+        'dynamicAnswers',
+        'isDuplicateRecord',
+        'Aadhaar Number',
+        '_detectedAadhaar',
+        'isDuplicateGroup',
+        'isInvalidGroup',
+        'type'
+      ].includes(key),
     );
     
     // Helper to escape CSV values
@@ -248,7 +247,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     };
     const error = (error: CustomErrorResponse) => {
       this.isLoading.set(false);
-      const errorMessage = (error?.error as any)?.detail || 'Operation failed';
+      const errorMessage = error?.error?.type || error?.error?.message || 'Operation failed';
        this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -266,20 +265,24 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   private updateModifiedCandidateData() {
     if (!this.activeGroupId) return;
 
-    this.data = this.data.filter(
-      (item: CandidateData) => item.groupId !== this.activeGroupId,
+    this.data.update((items) =>
+      items.filter((item: CandidateData) => item.groupId !== this.activeGroupId),
     );
     this.activeGroupId = null;
     this.splitPanelList.set([]);
-    this.closeDialog();
+
+    // Auto-select next group if available
+    const remaining = this.data();
+    if (remaining.length > 0) {
+      const nextGroup = remaining[0];
+      this.onDuplicateRecordClick(nextGroup.candidates, nextGroup.groupId);
+    }
   }
 
   private closeDialog() {
-    if (this.data['length'] <= 0) {
-      this.ref.close({
-        status: 'successfully updated all the duplicate records',
-        refresh: true,
-      });
-    }
+    this.ref.close({
+      status: 'successfully updated all the duplicate records',
+      refresh: true,
+    });
   }
 }

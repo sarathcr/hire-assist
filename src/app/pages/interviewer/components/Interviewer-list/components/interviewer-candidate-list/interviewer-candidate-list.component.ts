@@ -217,6 +217,7 @@ export class InterviewerCandidateListComponent implements OnInit {
             } else if (interviewDate < today) {
               this.previousInterviews.push(item);
             } else if (interviewDate > today) {
+              (item as any).isDisabledStartInterview = true;
               this.upcomingInterviews.push(item);
             }
           });
@@ -248,6 +249,19 @@ export class InterviewerCandidateListComponent implements OnInit {
     this.dataSourceService
       .getData(payload)
       .subscribe((response: PaginatedData<InterviewByPanel>) => {
+        if (response && response.data && Array.isArray(response.data)) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          response.data.forEach((item: any) => {
+            if (item.interviewDate) {
+              const interviewDate = new Date(item.interviewDate);
+              interviewDate.setHours(0, 0, 0, 0);
+              if (interviewDate > today) {
+                item.isDisabledStartInterview = true;
+              }
+            }
+          });
+        }
         this.data = response;
         // Also update tableData when loading more data via pagination/search
         const transformedData = response.data.map((item) => ({

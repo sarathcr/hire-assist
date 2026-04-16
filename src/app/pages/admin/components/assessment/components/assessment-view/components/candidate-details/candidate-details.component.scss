@@ -1,45 +1,202 @@
 .candidate-details {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  height: 100%;
+  gap: 1.5rem;
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
 
   &__item {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
+  }
+
+  &__field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
   }
 
   &__label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #718096;
+    gap: 0.4rem;
+    color: #64748b;
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    margin-bottom: 0.15rem;
 
     i {
-      color: #667eea;
-      font-size: 0.9rem;
+      font-size: 0.7rem;
+      color: #94a3b8;
     }
   }
 
   &__value {
-    font-size: 1rem;
-    color: #2d3748;
-    font-weight: 500;
-    padding-left: 1.75rem;
-    word-break: break-word;
-    line-height: 1.5;
+    color: #0f172a;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.25rem;
+    min-height: 1.2rem;
+    letter-spacing: -0.01em;
   }
 
-  ::ng-deep {
-    .p-divider {
-      margin: 0.5rem 0;
-      border-color: #e2e8f0;
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  &__action-icon, 
+  &__edit-icon {
+    font-size: 0.75rem;
+    color: #6366f1;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: all 0.2s ease;
+    padding: 0.25rem;
+    border-radius: 4px;
+
+    &:hover {
+      background: #eef2ff;
+      color: #4f46e5;
+      opacity: 1;
     }
+  }
+
+  &__error {
+    color: #ef4444;
+    font-size: 0.65rem;
+    font-weight: 500;
+    margin-top: 2px;
+    animation: slideIn 0.2s ease-out;
+  }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+  &__text-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+
+    &:hover {
+      .candidate-details__edit-icon,
+      .candidate-details__action-icon {
+        opacity: 1;
+      }
+    }
+  }
+
+  &__text-value {
+    word-break: break-all;
+    flex: 1;
+  }
+
+  &__edit-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    width: 100% !important;
+    font-size: 0.85rem !important;
+    padding: 0.4rem 0.6rem !important;
+    height: 32px !important;
+    border-radius: 6px !important;
+    border-color: #cbd5e1 !important;
+    font-weight: 500 !important;
+
+    &:focus {
+      border-color: #6366f1 !important;
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1) !important;
+    }
+
+    &.ng-invalid.ng-dirty {
+      border-color: #ef4444 !important;
+      
+      &:focus {
+        box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1) !important;
+      }
+    }
+  }
+
+  &__edit-actions {
+    display: flex;
+    gap: 0.25rem;
+
+    ::ng-deep {
+      .p-button {
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        
+        .p-button-icon {
+          font-size: 0.75rem;
+        }
+      }
+    }
+  }
+
+  // Expansion styling
+  &__expander {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__expand-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: #f8fafc;
+    border: 1px dashed #e2e8f0;
+    border-radius: 8px;
+    color: #6366f1;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #f1f5f9;
+      border-color: #6366f1;
+    }
+
+    i {
+      font-size: 0.75rem;
+    }
+  }
+
+  &__section--dynamic {
+    padding: 1.25rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+    
+    // Changing to grid for side-by-side columns
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 2rem;
+    row-gap: 1.25rem;
   }
 }

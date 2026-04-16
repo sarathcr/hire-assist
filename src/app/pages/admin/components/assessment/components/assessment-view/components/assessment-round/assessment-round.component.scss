@@ -577,7 +577,8 @@
     }
 
     input {
-      width: 140px;
+      width: 100%;
+      min-width: 140px;
 
       @media screen and (max-width: 768px) {
         width: 100%;
@@ -589,7 +590,8 @@
     }
 
     ::ng-deep .assessment-round__duration-picker {
-      width: 140px !important;
+      width: 100% !important;
+      min-width: 140px;
 
       @media screen and (max-width: 768px) {
         width: 100% !important;

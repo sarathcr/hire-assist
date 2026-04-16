@@ -195,15 +195,16 @@ export interface feedbackList {
 }
 
 export interface CandidateImportResponseDto {
-  duplicateEntries?: string; // base64 string
+  duplicateEntries?: string | any[]; 
   invalidRecords: InvalidCandidateRecordDto[];
 }
 
 export interface InvalidCandidateRecordDto {
-  candidateName: string;
-  emailId: string;
-  mobileNumber: string;
+  name: string;
+  email: string;
+  phoneNumber: string;
   aadhaarNumber: string;
   reason: string;
-  originalRowData: string; // JSON string
+  dynamicAnswers: Record<string, string>;
 }
+

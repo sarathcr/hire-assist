@@ -40,6 +40,12 @@ export class InterviewService extends ApiService<any> {
     return INTERVIEW_URL;
   }
 
+  public getAssessmentSummary(assessmentId: number) {
+    return this.httpClient.get<any>(
+      `${this.getResourceUrl()}/assessment/summary/${assessmentId}`,
+    );
+  }
+
   public DeleteCandidate(id: string) {
     return this.httpClient.delete<string>(`${INTERVIEW_URL}/${id}`);
   }

@@ -147,3 +147,16 @@ html {
   .p-dialog-header { display: none !important; }
   .p-dialog-content { padding: 0 !important; border-radius: 20px !important; overflow: hidden; }
 }
+
+// ============================================
+// Global Form Component Overrides
+// ============================================
+app-input-text,
+app-input-text-calender,
+app-input-select,
+app-input-textarea,
+app-input-text-iftalabel {
+  display: block;
+  width: 100%;
+}
+

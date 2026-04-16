@@ -1,16 +1,81 @@
 <div class="candidate-details">
-  @for (entry of filteredEntries(); track entry[0]; let idx = $index; let isLast = $last) {
-    <div class="candidate-details__item">
-      <div class="candidate-details__label">
-        <i [class]="getIconForField(entry[0])"></i>
-        <span>{{ entry[0] }}</span>
+  <!-- Basic Fields Section -->
+  <div class="candidate-details__section">
+    @for (entry of basicEntries(); track entry.key; let idx = $index; let isLast = $last) {
+      <div class="candidate-details__item" [id]="'field-' + entry.key">
+        <div class="candidate-details__field-group">
+          <div class="candidate-details__label">
+            <i [class]="getIconForField(entry.label)"></i>
+            <span>{{ entry.label | uppercase }}</span>
+          </div>
+          
+          <div class="candidate-details__value">
+            @if (localEditKey() === entry.key || (isEditable() && (editField() === entry.key || (entry.key === 'aadhaarNumber' && editField() === 'Aadhaar Number')))) {
+              <div class="candidate-details__edit-wrapper">
+                <input 
+                  pInputText 
+                  [ngModel]="editedValue()" 
+                  (ngModelChange)="editedValue.set($event); validateField(entry.key, $event)"
+                  (keyup.enter)="saveEdit(entry.key)"
+                  (keyup.escape)="cancelEdit()"
+                  [autofocus]="true"
+                  [class.ng-invalid]="errorMessage()"
+                  [class.ng-dirty]="errorMessage()"
+                  class="candidate-details__input"
+                />
+                <div class="candidate-details__edit-actions">
+                  <p-button icon="pi pi-check" size="small" [rounded]="true" [text]="true" severity="success" (onClick)="saveEdit(entry.key)"></p-button>
+                  <p-button icon="pi pi-times" size="small" [rounded]="true" [text]="true" severity="danger" (onClick)="cancelEdit()"></p-button>
+                </div>
+              </div>
+              @if (errorMessage()) {
+                <small class="candidate-details__error">{{ errorMessage() }}</small>
+              }
+            } @else {
+              <div class="candidate-details__text-wrapper">
+                <span class="candidate-details__text-value">{{ formatValue(entry.label, entry.value) }}</span>
+                <div class="candidate-details__actions">
+                  @if (entry.label === 'Aadhaar Number') {
+                    <i [class]="isAadhaarVisible() ? 'pi pi-eye-slash' : 'pi pi-eye'" 
+                       class="candidate-details__action-icon" 
+                       (click)="toggleAadhaarVisibility()" 
+                       [pTooltip]="isAadhaarVisible() ? 'Hide Aadhaar' : 'Show Aadhaar'"></i>
+                  }
+                  <i class="pi pi-pencil candidate-details__edit-icon" (click)="startEdit(entry.key, entry.value)" pTooltip="Edit field"></i>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
       </div>
-      <div class="candidate-details__value">
-        {{ entry[1] || "N/A" }}
-      </div>
-    </div>
-    @if (!isLast) {
-      <p-divider></p-divider>
     }
+  </div>
+
+  <!-- Dynamic Fields Section (Expandable) -->
+  @if (dynamicEntries().length > 0) {
+    <div class="candidate-details__expander">
+      <button class="candidate-details__expand-btn" (click)="toggleExpand()">
+        <span>{{ isExpanded() ? 'Hide Additional Information' : 'Show Additional Information' }}</span>
+        <i [class]="isExpanded() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
+      </button>
+
+      @if (isExpanded()) {
+        <div class="candidate-details__section candidate-details__section--dynamic">
+          @for (entry of dynamicEntries(); track entry.key; let idx = $index; let isLast = $last) {
+            <div class="candidate-details__item">
+              <div class="candidate-details__field-group">
+                <div class="candidate-details__label">
+                  <i [class]="getIconForField(entry.label)"></i>
+                  <span>{{ entry.label | uppercase }}</span>
+                </div>
+                <div class="candidate-details__value">
+                  <span class="candidate-details__text-value">{{ entry.value || "N/A" }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
   }
 </div>
