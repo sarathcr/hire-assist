@@ -67,6 +67,14 @@ const tableColumns: TableColumnsData = {
       filterAlias: 'textFilter',
     },
     {
+      field: 'currentLocation',
+      displayName: 'Location',
+      sortedColumn: true,
+      hasChip: false,
+      hasTextFilter: true,
+      filterAlias: 'textFilter',
+    },
+    {
       field: 'aadhaarNumber',
       displayName: 'Aadhaar Number',
       fieldType: FieldType.Masked,

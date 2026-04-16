@@ -43,6 +43,11 @@ export class InputTextComponent extends BaseFormComponent implements OnInit {
 
     this.inputTextConfig = this.config as CustomTextInputConfig;
     this.formControl = this.formGroup.get(this.config.id) as FormControl;
+    
+    // Default to masked state for security-sensitive fields
+    if (this.inputTextConfig?.isMaskable) {
+      this.isMasked = true;
+    }
   }
 
   public onInputChange(event: Event) {

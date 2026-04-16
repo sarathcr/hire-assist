@@ -624,6 +624,13 @@ export class TableComponent<
         this.selectedIds.emit(selectedAcrossPages);
       }
     });
+
+    effect(() => {
+      // Clear unmasked rows on any data refresh to ensure default masking
+      if (this.tableData()) {
+        this.unmaskedRows = {};
+      }
+    });
   }
 
   public unmaskedRows: Record<string, boolean> = {};

@@ -124,6 +124,7 @@ export interface CandidateModel {
   aadhaarNumber: string;
   batchId: number;
   batchName: string;
+  currentLocation?: string;
   isAlreadyExist?: boolean;
   endDateTime?: string;
   startDateTime?: string;
