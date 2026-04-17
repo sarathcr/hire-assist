@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -302,12 +309,12 @@ export class InterviewerFeedbackComponent
 
   public onTimeElapsed(seconds: number): void {
     this.elapsedSeconds = seconds;
-    
+
     // update formatted duration
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
-    
+
     this.formattedDuration = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
 
@@ -329,7 +336,8 @@ export class InterviewerFeedbackComponent
   }
 
   public get savedCriteriaCount(): number {
-    return this.feedbackcriteria.filter((fb) => this.isFeedbackComplete(fb)).length;
+    return this.feedbackcriteria.filter((fb) => this.isFeedbackComplete(fb))
+      .length;
   }
 
   public isFeedbackComplete(fb: AccordionData): boolean {
@@ -591,12 +599,20 @@ export class InterviewerFeedbackComponent
     if (files && files.length > 0) {
       const newFiles: File[] = [];
       let hasLargeFile = false;
+      let hasInvalidType = false;
 
       // 5MB limit: 5 * 1024 * 1024 = 5242880 bytes
       const MAX_SIZE = 5242880;
+      // Only allow PNG and JPEG
+      const ALLOWED_TYPES = ['image/png', 'image/jpeg'];
 
       Array.from(files).forEach((file: any) => {
         if (file) {
+          // Validation: file type
+          if (!ALLOWED_TYPES.includes(file.type)) {
+            hasInvalidType = true;
+            return;
+          }
           // Validation: 5MB limit
           if (file.size > MAX_SIZE) {
             hasLargeFile = true;
@@ -633,6 +649,15 @@ export class InterviewerFeedbackComponent
         }
       });
 
+      if (hasInvalidType) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Invalid File Type',
+          detail: 'Only PNG and JPG/JPEG files are allowed.',
+          life: 5000,
+        });
+      }
+
       if (hasLargeFile) {
         this.messageService.add({
           severity: 'error',
@@ -665,7 +690,6 @@ export class InterviewerFeedbackComponent
       }
     }
   }
-
 
   private uploadAndSaveAttachments(): void {
     // Guard against concurrent uploads
@@ -714,7 +738,9 @@ export class InterviewerFeedbackComponent
       const attachmentFeedback = this.feedbackcriteria.find(
         (f) => f.title === 'Attachments',
       );
-      const feedbackCriteriaId = attachmentFeedback ? attachmentFeedback.value : 6;
+      const feedbackCriteriaId = attachmentFeedback
+        ? attachmentFeedback.value
+        : 6;
       const feedbackId = attachmentFeedback?.id ?? 0;
 
       const filesToUpload = [...this.pendingFiles];
@@ -863,7 +889,8 @@ export class InterviewerFeedbackComponent
   public validateScore(feedback: AccordionData) {
     feedback.isScoreInValid =
       feedback.score != null &&
-      (feedback.score < 0 || (feedback.maxScore != null && feedback.score > feedback.maxScore));
+      (feedback.score < 0 ||
+        (feedback.maxScore != null && feedback.score > feedback.maxScore));
   }
 
   public preventInvalidInput(event: KeyboardEvent): void {
@@ -1150,7 +1177,11 @@ export class InterviewerFeedbackComponent
 
     round.assessmentDetails?.forEach((detail: AssessmentDetails) => {
       detail.feedbackListDto?.forEach((feedback: Feedback) => {
-        if (feedback.criteria === 'Attachments' && feedback.fileDto && feedback.fileDto.length > 0) {
+        if (
+          feedback.criteria === 'Attachments' &&
+          feedback.fileDto &&
+          feedback.fileDto.length > 0
+        ) {
           feedback.fileDto.forEach((file: FileDto) => {
             const key = file.blobId || file.id;
             if (key && !this.previewImageUrls.has(key)) {
@@ -1164,14 +1195,19 @@ export class InterviewerFeedbackComponent
   }
 
   // ── Draggable timer ────────────────────────────────
-  public startTimerDrag(event: MouseEvent | TouchEvent, timerEl: HTMLElement): void {
+  public startTimerDrag(
+    event: MouseEvent | TouchEvent,
+    timerEl: HTMLElement,
+  ): void {
     // Prevent default to avoid scrolling while dragging
     if (event.cancelable) {
       event.preventDefault();
     }
 
-    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
-    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+    const clientX =
+      event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    const clientY =
+      event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
 
     // On first drag, capture the element's current rendered position
     if (!this.timerPos) {
@@ -1194,8 +1230,17 @@ export class InterviewerFeedbackComponent
 
       // Clamp to viewport so it can't be dragged off screen
       this.timerPos = {
-        x: Math.max(0, Math.min(window.innerWidth - timerW, moveX - this._timerDragOffset.x)),
-        y: Math.max(0, Math.min(window.innerHeight - timerH, moveY - this._timerDragOffset.y)),
+        x: Math.max(
+          0,
+          Math.min(window.innerWidth - timerW, moveX - this._timerDragOffset.x),
+        ),
+        y: Math.max(
+          0,
+          Math.min(
+            window.innerHeight - timerH,
+            moveY - this._timerDragOffset.y,
+          ),
+        ),
       };
     };
 
@@ -1209,7 +1254,9 @@ export class InterviewerFeedbackComponent
 
     document.addEventListener('mousemove', this._timerMoveHandler as any);
     document.addEventListener('mouseup', this._timerUpHandler);
-    document.addEventListener('touchmove', this._timerMoveHandler as any, { passive: false });
+    document.addEventListener('touchmove', this._timerMoveHandler as any, {
+      passive: false,
+    });
     document.addEventListener('touchend', this._timerUpHandler);
   }
 
@@ -1230,7 +1277,7 @@ export class InterviewerFeedbackComponent
     const timeStr = `${h.toString().padStart(2, '0')}:${m
       .toString()
       .padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-    
+
     const terminatedTimer = isOvertime ? `+ ${timeStr}` : timeStr;
 
     const url = `${INTERVIEW_URL}/InterviewerRefresh`;
@@ -1267,7 +1314,7 @@ export class InterviewerFeedbackComponent
       document.removeEventListener('touchend', this._timerUpHandler);
     }
     // Revoke object URLs for images to prevent memory leaks
-    Object.values(this.reportImages).forEach(url => URL.revokeObjectURL(url));
+    Object.values(this.reportImages).forEach((url) => URL.revokeObjectURL(url));
   }
 
   // ── Drag & Drop Handlers ───────────────────────────
@@ -1371,7 +1418,11 @@ export class InterviewerFeedbackComponent
       return 'correct';
     }
 
-    if (status === 'skipped' || status === 'not attempted' || !ans.markedAnswer?.trim()) {
+    if (
+      status === 'skipped' ||
+      status === 'not attempted' ||
+      !ans.markedAnswer?.trim()
+    ) {
       return 'skipped';
     }
 

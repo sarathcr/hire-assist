@@ -55,9 +55,5 @@ export class InputTextCalenderComponent
     >;
   }
 
-  public onDateSelect(event: Date): void {
-    if (event) {
-      this.formControl.setValue(event, { emitEvent: true });
-    }
-  }
+
 }

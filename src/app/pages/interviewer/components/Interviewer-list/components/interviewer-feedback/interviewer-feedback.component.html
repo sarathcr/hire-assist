@@ -28,7 +28,6 @@
 
 @if (!isLoading && responseData && feedbackdetails) {
   <div class="ifb">
-
     <!-- ═══════════════════════════════════
          PAGE HEADER
     ═══════════════════════════════════ -->
@@ -65,10 +64,12 @@
       <div class="ifb__candidate-card">
         <div class="ifb__candidate-header">
           <div class="ifb__avatar">
-            {{ (responseData.candidateName | slice: 0 : 1) || 'C' }}
+            {{ (responseData.candidateName | slice: 0 : 1) || "C" }}
           </div>
           <div class="ifb__candidate-name-block">
-            <div class="ifb__candidate-name">{{ responseData.candidateName }}</div>
+            <div class="ifb__candidate-name">
+              {{ responseData.candidateName }}
+            </div>
             <div class="ifb__candidate-sub">Candidate</div>
           </div>
         </div>
@@ -80,7 +81,9 @@
             </div>
             <div class="ifb__meta-info">
               <span class="ifb__meta-label">Email</span>
-              <span class="ifb__meta-value">{{ responseData.candidateId }}</span>
+              <span class="ifb__meta-value">{{
+                responseData.candidateId
+              }}</span>
             </div>
           </div>
           <div class="ifb__meta-item">
@@ -89,7 +92,9 @@
             </div>
             <div class="ifb__meta-info">
               <span class="ifb__meta-label">Assessment ID</span>
-              <span class="ifb__meta-value">#{{ responseData.assessmentId }}</span>
+              <span class="ifb__meta-value"
+                >#{{ responseData.assessmentId }}</span
+              >
             </div>
           </div>
         </div>
@@ -121,15 +126,23 @@
     <!-- ═══════════════════════════════════
          PREVIOUS INTERVIEW ROUNDS
     ═══════════════════════════════════ -->
-    @if (responseData.previousInterviews && responseData.previousInterviews.length > 0) {
-      <div class="ifb__card ifb__card--prev anim-slide-up" style="--delay: 0.1s">
+    @if (
+      responseData.previousInterviews &&
+      responseData.previousInterviews.length > 0
+    ) {
+      <div
+        class="ifb__card ifb__card--prev anim-slide-up"
+        style="--delay: 0.1s"
+      >
         <div class="ifb__card-header">
           <div class="ifb__card-icon ifb__card-icon--amber">
             <i class="pi pi-history"></i>
           </div>
           <div>
             <h2 class="ifb__card-title">Previous Interview Rounds</h2>
-            <p class="ifb__card-subtitle">{{ responseData.previousInterviews.length }} round(s) on record</p>
+            <p class="ifb__card-subtitle">
+              {{ responseData.previousInterviews.length }} round(s) on record
+            </p>
           </div>
         </div>
         <div class="ifb__divider"></div>
@@ -137,10 +150,15 @@
         <p-accordion [value]="0" [multiple]="true" class="ifb__accordion">
           @for (round of responseData.previousInterviews; track $index) {
             <p-accordion-panel [value]="round.sequence">
-              <p-accordion-header class="ifb__acc-header" (click)="onPreviousRoundAccordionOpen(round)">
+              <p-accordion-header
+                class="ifb__acc-header"
+                (click)="onPreviousRoundAccordionOpen(round)"
+              >
                 <div class="ifb__acc-header-content">
                   <div class="ifb__acc-round-info">
-                    <span class="ifb__round-badge">{{ round.sequence || ($index + 1) }}</span>
+                    <span class="ifb__round-badge">{{
+                      round.sequence || $index + 1
+                    }}</span>
                     <span class="ifb__round-name">{{ round.roundName }}</span>
                     @if (round.status) {
                       <p-tag
@@ -153,12 +171,16 @@
                 </div>
               </p-accordion-header>
               <p-accordion-content class="ifb__acc-content">
-                @if (round.assessmentDetails && round.assessmentDetails.length > 0) {
+                @if (
+                  round.assessmentDetails && round.assessmentDetails.length > 0
+                ) {
                   <div class="ifb__round-details">
                     @for (detail of round.assessmentDetails; track $index) {
                       <div class="ifb__detail-card">
                         <div class="ifb__detail-card-header">
-                          <span class="ifb__detail-card-title">Assessment Details</span>
+                          <span class="ifb__detail-card-title"
+                            >Assessment Details</span
+                          >
                           @if (getDetailDate(detail)) {
                             <p-tag
                               [value]="formatDate(getDetailDate(detail)!)"
@@ -169,75 +191,158 @@
                           }
                         </div>
                         <div class="ifb__detail-grid">
-                          @if (isAptitudeRound(round.roundName) && hasValue(detail.questionSet)) {
+                          @if (
+                            isAptitudeRound(round.roundName) &&
+                            hasValue(detail.questionSet)
+                          ) {
                             <div class="ifb__detail-item">
-                              <span class="ifb__detail-label"><i class="pi pi-file-edit"></i>Question Set</span>
-                              <span class="ifb__detail-value">{{ detail.questionSet }}</span>
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-file-edit"></i>Question
+                                Set</span
+                              >
+                              <span class="ifb__detail-value">{{
+                                detail.questionSet
+                              }}</span>
                             </div>
                           }
-                          @if (isAptitudeRound(round.roundName) && hasValue(detail.batch)) {
+                          @if (
+                            isAptitudeRound(round.roundName) &&
+                            hasValue(detail.batch)
+                          ) {
                             <div class="ifb__detail-item">
-                              <span class="ifb__detail-label"><i class="pi pi-users"></i>Batch</span>
-                              <span class="ifb__detail-value">{{ detail.batch }}</span>
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-users"></i>Batch</span
+                              >
+                              <span class="ifb__detail-value">{{
+                                detail.batch
+                              }}</span>
                             </div>
                           }
                           @if (hasValue(detail.panelName)) {
                             <div class="ifb__detail-item">
-                              <span class="ifb__detail-label"><i class="pi pi-users"></i>Panel</span>
-                              <span class="ifb__detail-value">{{ detail.panelName }}</span>
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-users"></i>Panel</span
+                              >
+                              <span class="ifb__detail-value">{{
+                                detail.panelName
+                              }}</span>
                             </div>
                           }
                           @if (hasValue(detail.interviewerName)) {
                             <div class="ifb__detail-item">
-                              <span class="ifb__detail-label"><i class="pi pi-user"></i>Interviewer</span>
-                              <span class="ifb__detail-value">{{ detail.interviewerName }}</span>
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-user"></i>Interviewer</span
+                              >
+                              <span class="ifb__detail-value">{{
+                                detail.interviewerName
+                              }}</span>
                             </div>
                           }
-                          @if ((isAptitudeRound(round.roundName) || hasValue(detail.totalQuestions)) && detail.totalQuestions !== undefined) {
+                          @if (
+                            (isAptitudeRound(round.roundName) ||
+                              hasValue(detail.totalQuestions)) &&
+                            detail.totalQuestions !== undefined
+                          ) {
                             <div class="ifb__detail-item">
-                              <span class="ifb__detail-label"><i class="pi pi-list"></i>Total Questions</span>
-                              <span class="ifb__detail-value">{{ detail.totalQuestions || 0 }}</span>
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-list"></i>Total Questions</span
+                              >
+                              <span class="ifb__detail-value">{{
+                                detail.totalQuestions || 0
+                              }}</span>
                             </div>
                           }
-                          @if ((isAptitudeRound(round.roundName) || hasValue(detail.attendedQuestions)) && detail.attendedQuestions !== undefined) {
+                          @if (
+                            (isAptitudeRound(round.roundName) ||
+                              hasValue(detail.attendedQuestions)) &&
+                            detail.attendedQuestions !== undefined
+                          ) {
                             <div class="ifb__detail-item">
-                              <span class="ifb__detail-label"><i class="pi pi-check-circle"></i>Attended</span>
-                              <span class="ifb__detail-value">{{ detail.attendedQuestions || 0 }}</span>
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-check-circle"></i
+                                >Attended</span
+                              >
+                              <span class="ifb__detail-value">{{
+                                detail.attendedQuestions || 0
+                              }}</span>
                             </div>
                           }
-                          @if ((isAptitudeRound(round.roundName) || getCorrectAnswers(detail) > 0) && detail.correctAnswers !== undefined) {
+                          @if (
+                            (isAptitudeRound(round.roundName) ||
+                              getCorrectAnswers(detail) > 0) &&
+                            detail.correctAnswers !== undefined
+                          ) {
                             <div class="ifb__detail-item">
-                              <span class="ifb__detail-label"><i class="pi pi-check"></i>Correct</span>
-                              <span class="ifb__detail-value ifb__detail-value--success">{{ getCorrectAnswers(detail) }}</span>
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-check"></i>Correct</span
+                              >
+                              <span
+                                class="ifb__detail-value ifb__detail-value--success"
+                                >{{ getCorrectAnswers(detail) }}</span
+                              >
                             </div>
                           }
-                          @if ((isAptitudeRound(round.roundName) || hasValue(detail.skipped)) && detail.skipped !== undefined) {
+                          @if (
+                            (isAptitudeRound(round.roundName) ||
+                              hasValue(detail.skipped)) &&
+                            detail.skipped !== undefined
+                          ) {
                             <div class="ifb__detail-item">
-                              <span class="ifb__detail-label"><i class="pi pi-times-circle"></i>Skipped</span>
-                              <span class="ifb__detail-value">{{ detail.skipped || 0 }}</span>
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-times-circle"></i>Skipped</span
+                              >
+                              <span class="ifb__detail-value">{{
+                                detail.skipped || 0
+                              }}</span>
                             </div>
                           }
-                          @if (hasValue(detail.totalScore) || detail.totalScore === 0) {
-                            <div class="ifb__detail-item ifb__detail-item--score">
-                              <span class="ifb__detail-label"><i class="pi pi-star-fill"></i>Total Score</span>
-                              <span class="ifb__detail-value ifb__detail-value--primary">{{ detail.totalScore || 0 }}</span>
+                          @if (
+                            hasValue(detail.totalScore) ||
+                            detail.totalScore === 0
+                          ) {
+                            <div
+                              class="ifb__detail-item ifb__detail-item--score"
+                            >
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-star-fill"></i>Total
+                                Score</span
+                              >
+                              <span
+                                class="ifb__detail-value ifb__detail-value--primary"
+                                >{{ detail.totalScore || 0 }}</span
+                              >
                             </div>
                           }
-                          @if (hasValue(detail.score) && detail.score !== detail.totalScore) {
+                          @if (
+                            hasValue(detail.score) &&
+                            detail.score !== detail.totalScore
+                          ) {
                             <div class="ifb__detail-item">
-                              <span class="ifb__detail-label"><i class="pi pi-star"></i>Score</span>
-                              <span class="ifb__detail-value">{{ detail.score }}</span>
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-star"></i>Score</span
+                              >
+                              <span class="ifb__detail-value">{{
+                                detail.score
+                              }}</span>
                             </div>
                           }
                         </div>
-                      
+
                         <!-- Aptitude Report Section [V2.1] -->
                         @if (isAptitudeRound(round.roundName)) {
                           <div class="ifb__aptitude-report">
                             <div class="ifb__report-toggle">
                               <p-button
-                                [label]="showReport ? 'Hide Detailed Report' : 'View Detailed Report'"
-                                [icon]="showReport ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                                [label]="
+                                  showReport
+                                    ? 'Hide Detailed Report'
+                                    : 'View Detailed Report'
+                                "
+                                [icon]="
+                                  showReport
+                                    ? 'pi pi-chevron-up'
+                                    : 'pi pi-chevron-down'
+                                "
                                 [loading]="isReportLoading"
                                 severity="secondary"
                                 [outlined]="true"
@@ -247,52 +352,94 @@
 
                             @if (showReport && aptitudeReport) {
                               <div class="ifb__report-grid">
-                                @for (ans of aptitudeReport.answers; track ans.questionId) {
+                                @for (
+                                  ans of aptitudeReport.answers;
+                                  track ans.questionId
+                                ) {
                                   <!-- Question Card -->
                                   <div class="ifb__question-card">
-                                      <div class="ifb__question-header">
-                                        <div class="ifb__question-meta">
-                                          @if (ans.questionType) {
-                                            <span class="ifb__question-type">{{ ans.questionType }}</span>
-                                          }
-                                          <h5 class="ifb__question-title">
-                                            {{ $index + 1 }}. {{ ans.questionText }}
-                                          </h5>
-                                        </div>
+                                    <div class="ifb__question-header">
+                                      <div class="ifb__question-meta">
+                                        @if (ans.questionType) {
+                                          <span class="ifb__question-type">{{
+                                            ans.questionType
+                                          }}</span>
+                                        }
+                                        <h5 class="ifb__question-title">
+                                          {{ $index + 1 }}.
+                                          {{ ans.questionText }}
+                                        </h5>
                                       </div>
+                                    </div>
 
                                     <div class="ifb__question-body">
                                       <!-- Question Images -->
                                       @if (ans.questionAttachments.length > 0) {
                                         <div class="ifb__image-preview">
-                                          @for (img of ans.questionAttachments; track img) {
-                                            <app-image [imageUrl]="reportImages[img]" [isZoomable]="true" [removeIcon]="true" />
+                                          @for (
+                                            img of ans.questionAttachments;
+                                            track img
+                                          ) {
+                                            <app-image
+                                              [imageUrl]="reportImages[img]"
+                                              [isZoomable]="true"
+                                              [removeIcon]="true"
+                                            />
                                           }
                                         </div>
                                       }
 
                                       <div class="ifb__answer-comparison">
                                         <!-- Marked Answer -->
-                                        <div 
+                                        <div
                                           class="ifb__answer-section"
-                                          [ngClass]="'ifb__answer-section--' + getStatusClass(ans)"
+                                          [ngClass]="
+                                            'ifb__answer-section--' +
+                                            getStatusClass(ans)
+                                          "
                                         >
-                                           <span class="ifb__answer-label">Marked Answer</span>
-                                           <div class="ifb__answer-value-wrapper">
+                                          <span class="ifb__answer-label"
+                                            >Marked Answer</span
+                                          >
+                                          <div
+                                            class="ifb__answer-value-wrapper"
+                                          >
                                             <div class="ifb__answer-value">
-                                              {{ ans.markedAnswer || 'N/A' }}
+                                              {{ ans.markedAnswer || "N/A" }}
                                             </div>
-                                            @if (getStatusClass(ans) === 'correct') {
-                                              <i class="pi pi-check-circle ifb__answer-icon--success"></i>
-                                            } @else if (getStatusClass(ans) === 'incorrect' || getStatusClass(ans) === 'skipped') {
-                                              <i class="pi pi-times-circle ifb__answer-icon--danger"></i>
+                                            @if (
+                                              getStatusClass(ans) === "correct"
+                                            ) {
+                                              <i
+                                                class="pi pi-check-circle ifb__answer-icon--success"
+                                              ></i>
+                                            } @else if (
+                                              getStatusClass(ans) ===
+                                                "incorrect" ||
+                                              getStatusClass(ans) === "skipped"
+                                            ) {
+                                              <i
+                                                class="pi pi-times-circle ifb__answer-icon--danger"
+                                              ></i>
                                             }
-                                           </div>
-                                           
-                                          @if (ans.markedAnswerAttachments.length > 0) {
-                                            <div class="ifb__image-preview mt-2">
-                                              @for (img of ans.markedAnswerAttachments; track img) {
-                                                <app-image [imageUrl]="reportImages[img]" [isZoomable]="true" [removeIcon]="true" />
+                                          </div>
+
+                                          @if (
+                                            ans.markedAnswerAttachments.length >
+                                            0
+                                          ) {
+                                            <div
+                                              class="ifb__image-preview mt-2"
+                                            >
+                                              @for (
+                                                img of ans.markedAnswerAttachments;
+                                                track img
+                                              ) {
+                                                <app-image
+                                                  [imageUrl]="reportImages[img]"
+                                                  [isZoomable]="true"
+                                                  [removeIcon]="true"
+                                                />
                                               }
                                             </div>
                                           }
@@ -300,14 +447,28 @@
 
                                         <!-- Correct Answer -->
                                         <div class="ifb__answer-section">
-                                          <span class="ifb__answer-label">Correct Answer</span>
+                                          <span class="ifb__answer-label"
+                                            >Correct Answer</span
+                                          >
                                           <div class="ifb__answer-value">
                                             {{ ans.correctAnswer }}
                                           </div>
-                                          @if (ans.correctAnswerAttachments.length > 0) {
-                                            <div class="ifb__image-preview mt-2">
-                                              @for (img of ans.correctAnswerAttachments; track img) {
-                                                <app-image [imageUrl]="reportImages[img]" [isZoomable]="true" [removeIcon]="true" />
+                                          @if (
+                                            ans.correctAnswerAttachments
+                                              .length > 0
+                                          ) {
+                                            <div
+                                              class="ifb__image-preview mt-2"
+                                            >
+                                              @for (
+                                                img of ans.correctAnswerAttachments;
+                                                track img
+                                              ) {
+                                                <app-image
+                                                  [imageUrl]="reportImages[img]"
+                                                  [isZoomable]="true"
+                                                  [removeIcon]="true"
+                                                />
                                               }
                                             </div>
                                           }
@@ -322,25 +483,38 @@
                         }
 
                         <!-- Feedback List (non-aptitude rounds) -->
-                        @if (!isAptitudeRound(round.roundName) && detail.feedbackListDto && detail.feedbackListDto.length > 0) {
+                        @if (
+                          !isAptitudeRound(round.roundName) &&
+                          detail.feedbackListDto &&
+                          detail.feedbackListDto.length > 0
+                        ) {
                           <div class="ifb__prev-feedback">
                             <div class="ifb__prev-feedback-heading">
                               <i class="pi pi-comments"></i>
                               Feedback Details
                             </div>
                             <div class="ifb__prev-feedback-list">
-                              @for (feedback of detail.feedbackListDto; track $index) {
+                              @for (
+                                feedback of detail.feedbackListDto;
+                                track $index
+                              ) {
                                 <div class="ifb__prev-feedback-item">
                                   <div class="ifb__prev-feedback-item-header">
                                     <div class="ifb__prev-feedback-criteria">
                                       <i class="pi pi-tag"></i>
                                       <span>{{ feedback.criteria }}</span>
                                     </div>
-                                    @if (feedback.criteria !== 'Attachments') {
+                                    @if (feedback.criteria !== "Attachments") {
                                       <div class="ifb__prev-feedback-score">
-                                        <span class="ifb__prev-score-val">{{ feedback.feedbackScore || 0 }}</span>
-                                        <span class="ifb__prev-score-sep">/</span>
-                                        <span class="ifb__prev-score-max">{{ feedback.maxScore || 0 }}</span>
+                                        <span class="ifb__prev-score-val">{{
+                                          feedback.feedbackScore || 0
+                                        }}</span>
+                                        <span class="ifb__prev-score-sep"
+                                          >/</span
+                                        >
+                                        <span class="ifb__prev-score-max">{{
+                                          feedback.maxScore || 0
+                                        }}</span>
                                       </div>
                                     }
                                   </div>
@@ -404,7 +578,8 @@
         <div>
           <h2 class="ifb__card-title">Feedback Criteria</h2>
           <p class="ifb__card-subtitle">
-            {{ savedCriteriaCount }} of {{ feedbackcriteria.length }} criteria completed
+            {{ savedCriteriaCount }} of {{ feedbackcriteria.length }} criteria
+            completed
           </p>
         </div>
 
@@ -412,7 +587,9 @@
         <div class="ifb__progress-bar-wrapper">
           <div
             class="ifb__progress-bar"
-  [style.width.%]="(savedCriteriaCount / feedbackcriteria.length) * 100"
+            [style.width.%]="
+              (savedCriteriaCount / feedbackcriteria.length) * 100
+            "
           ></div>
         </div>
       </div>
@@ -434,7 +611,10 @@
                   <span class="ifb__criteria-name">{{ feedback.title }}</span>
                 </div>
                 <div class="ifb__acc-criteria-right">
-                  @if (feedback.title !== 'Attachments' && (feedback.score || feedback.score === 0)) {
+                  @if (
+                    feedback.title !== "Attachments" &&
+                    (feedback.score || feedback.score === 0)
+                  ) {
                     <p-tag
                       [value]="feedback.score + ' / ' + feedback.maxScore"
                       severity="info"
@@ -457,16 +637,17 @@
               </div>
             </p-accordion-header>
 
-            <p-accordion-content class="ifb__acc-content ifb__acc-content--feedback">
-
+            <p-accordion-content
+              class="ifb__acc-content ifb__acc-content--feedback"
+            >
               <!-- Attachments Section -->
-              @if (feedback.title === 'Attachments') {
+              @if (feedback.title === "Attachments") {
                 <div class="ifb__upload-section">
                   <p-fileupload
                     #fileUpload
                     name="feedbackFiles[]"
                     [multiple]="false"
-                    accept="image/*"
+                    accept="image/png, image/jpeg"
                     [auto]="false"
                     customUpload
                     [showUploadButton]="false"
@@ -497,7 +678,9 @@
                           <button
                             type="button"
                             class="ifb__drop-zone-btn"
-                            (click)="$event.stopPropagation(); fileUpload.choose()"
+                            (click)="
+                              $event.stopPropagation(); fileUpload.choose()
+                            "
                           >
                             <i class="pi pi-folder-open"></i>
                             Browse Files
@@ -511,9 +694,17 @@
 
                   <div class="ifb__attachment-grid">
                     @if (pendingFilePreviews.length > 0 && !isUploadingFiles) {
-                      @for (preview of pendingFilePreviews; track $index; let i = $index) {
+                      @for (
+                        preview of pendingFilePreviews;
+                        track $index;
+                        let i = $index
+                      ) {
                         <div class="ifb__attachment-card">
-                          <img [src]="preview" [alt]="'Pending file ' + (i + 1)" class="ifb__attachment-img" />
+                          <img
+                            [src]="preview"
+                            [alt]="'Pending file ' + (i + 1)"
+                            class="ifb__attachment-img"
+                          />
                           <div class="ifb__attachment-overlay">
                             <span class="ifb__pending-badge">Pending</span>
                             <button
@@ -531,7 +722,9 @@
                     }
 
                     @if (isUploadingFiles) {
-                      <div class="ifb__attachment-card ifb__attachment-card--skeleton">
+                      <div
+                        class="ifb__attachment-card ifb__attachment-card--skeleton"
+                      >
                         <app-image-skeleton></app-image-skeleton>
                       </div>
                     }
@@ -572,7 +765,7 @@
               }
 
               <!-- Regular Feedback Form -->
-              @if (feedback.title !== 'Attachments') {
+              @if (feedback.title !== "Attachments") {
                 <div class="ifb__feedback-form">
                   <div class="ifb__editor-section">
                     <label class="ifb__field-label">
@@ -595,7 +788,9 @@
                       >
                         <i class="pi pi-star"></i>
                         Score
-                        <span class="ifb__max-badge">Max: {{ feedback.maxScore }}</span>
+                        <span class="ifb__max-badge"
+                          >Max: {{ feedback.maxScore }}</span
+                        >
                       </label>
                       <input
                         id="score-input-{{ feedback.value }}"
@@ -643,7 +838,6 @@
                   </div>
                 </div>
               }
-
             </p-accordion-content>
           </p-accordion-panel>
         }
@@ -656,11 +850,19 @@
             @for (feedback of feedbackcriteria; track $index) {
               <div
                 class="ifb__submit-chip"
-                [ngClass]="isFeedbackComplete(feedback) ? 'ifb__submit-chip--done' : 'ifb__submit-chip--pending'"
+                [ngClass]="
+                  isFeedbackComplete(feedback)
+                    ? 'ifb__submit-chip--done'
+                    : 'ifb__submit-chip--pending'
+                "
                 [pTooltip]="feedback.title"
                 tooltipPosition="top"
               >
-                <i [class]="isFeedbackComplete(feedback) ? 'pi pi-check' : 'pi pi-clock'"></i>
+                <i
+                  [class]="
+                    isFeedbackComplete(feedback) ? 'pi pi-check' : 'pi pi-clock'
+                  "
+                ></i>
               </div>
             }
           </div>
@@ -686,7 +888,9 @@
             <i class="pi pi-check-circle ifb__success-icon"></i>
           </div>
           <div class="ifb__success-text">
-            <h3 class="ifb__success-title">Interview Submitted Successfully!</h3>
+            <h3 class="ifb__success-title">
+              Interview Submitted Successfully!
+            </h3>
             <p class="ifb__success-message">
               Your feedback has been recorded and cannot be modified further.
             </p>
@@ -694,7 +898,6 @@
         </div>
       </div>
     }
-
   </div>
 }
 

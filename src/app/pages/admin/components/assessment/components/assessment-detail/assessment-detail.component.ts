@@ -51,7 +51,7 @@ import {
 } from '../../../../models/stepper.model';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { InterviewService } from '../../services/interview.service';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Observable } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 import { PaginatedData } from './../../../../../../shared/models/pagination.models';
 import { ScheduleInterviewComponent } from './components/schedule-interview/schedule-interview.component';
@@ -659,7 +659,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
-      return status === 'selected';
+      return status === 'selected' || status === 'pending' || status === 'active';
     });
 
     if (!hasValidStatus) {
@@ -800,14 +800,18 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
 
     const hasInvalidStatus = selected.some(
-      (c: InterviewSummary) => c.status?.toLowerCase() !== 'selected',
+      (c: InterviewSummary) =>
+        !['selected', 'pending', 'active'].includes(
+          c.status?.toLowerCase().trim() ?? '',
+        ),
     );
 
     if (hasInvalidStatus) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Invalid Selection',
-        detail: 'Only candidates with status "Selected" can be scheduled.',
+        summary: 'Warning',
+        detail:
+          'Only candidates with status "Selected", "Pending", or "Active" can be scheduled.',
       });
       return;
     }
@@ -1769,10 +1773,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         }
       }
       const scheduleDate = new Date(formValue.scheduleDate).toISOString();
-      let payload = [];
-      payload = selectedCandidateIds.map((id: string) => {
+
+      // Create an array of observables for each candidate
+      const requests = selectedCandidateIds.map((email: string, index: number) => {
+        // Find candidate in 'selected' array to check for interviewId
+        const candidate = (selected && selected[index]) ? 
+          (selected[index] as unknown as CandidateData) : null;
+
         const payloadData = {
-          candidateId: id,
+          candidateId: email,
           assessmentRoundId: this.nextRoundId,
           isActive: true,
           statusId: 2,
@@ -1780,7 +1789,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           date: scheduleDate,
         };
 
-        return payloadData;
+        // If candidate already has an interviewId, update it; otherwise create new
+        if (candidate?.interviewId) {
+          return this.interviewService.UpdateInterview(
+            candidate.interviewId,
+            payloadData as any,
+          );
+        } else {
+          return this.interviewService.createEntity([payloadData] as any);
+        }
       });
 
       const next = () => {
@@ -1799,23 +1816,16 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         if (componentInstance) {
           componentInstance.handleError();
         }
-        const businerssErrorCode = error.error.businessError;
-        if (businerssErrorCode === 3109) {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Interview Already Scheduled',
-          });
-        } else {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to schedule interview. Please try again.',
-          });
-        }
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail:
+            error.error?.type ||
+            'Failed to schedule interview. Please try again.',
+        });
       };
 
-      this.interviewService.createEntity(payload).subscribe({ next, error });
+      forkJoin(requests).subscribe({ next, error });
     };
 
     this.ref = this.dialog.open(ScheduleInterviewComponent, {

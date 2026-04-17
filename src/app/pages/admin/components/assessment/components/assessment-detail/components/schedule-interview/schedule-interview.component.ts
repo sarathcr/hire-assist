@@ -41,6 +41,7 @@ export class ScheduleInterviewComponent
   public isPanelValidationError = false;
   public minDate!: Date;
   public maxDate!: Date;
+  public validationMinDate!: Date;
   public onSubmitCallback?: (formValue: { scheduleDate: Date }) => void;
   public setComponentInstance?: (instance: ScheduleInterviewComponent) => void;
 
@@ -67,13 +68,31 @@ export class ScheduleInterviewComponent
     }
     if (this.config.data?.endDateTime) {
       this.maxDate = new Date(this.config.data.endDateTime);
+      // Ensure maxDate covers the entire day to avoid restricting times on the final day
+      this.maxDate.setHours(23, 59, 59, 999);
     }
 
-    // Ensure minDate is at least current time for scheduling
+    // Capture precise current time for validation
     const now = new Date();
-    now.setSeconds(0, 0);
-    if (!this.minDate || this.minDate < now) {
-      this.minDate = now;
+    this.validationMinDate = new Date(now);
+    this.validationMinDate.setSeconds(0, 0);
+    this.validationMinDate.setMilliseconds(0);
+
+    // Normalize minDate time to 00:00:00 for the UI picker.
+    // This resolves a PrimeNG bug where the minDate's time component 
+    // restricts available times even on future dates.
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    if (!this.minDate || this.minDate < startOfToday) {
+      this.minDate = startOfToday;
+    } else {
+      // If minDate is in the future, we still normalize its time to 00:00:00
+      // so the user can select any time on that start date in the UI,
+      // and our custom validation will handle the precise time check.
+      const normalizedFutureDate = new Date(this.minDate);
+      normalizedFutureDate.setHours(0, 0, 0, 0);
+      this.minDate = normalizedFutureDate;
     }
 
     if (this.setComponentInstance) {
@@ -157,7 +176,7 @@ export class ScheduleInterviewComponent
       } else {
         const dateTime = new Date(dateValue);
 
-        if (this.minDate && dateTime < this.minDate) {
+        if (this.validationMinDate && dateTime < this.validationMinDate) {
           dateControl.setErrors({
             errorMessage: `Schedule Date & Time cannot be in the past.`,
           });
