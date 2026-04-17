@@ -267,8 +267,8 @@ export class SelectPanelDailogComponent implements OnInit {
       configMap: this.configMap,
       formData: normalizedFormData,
       isEdit: true,
-      assessmentId: this.assessmentId,
-      interviewId: this.intrviewid,
+      // assessmentId and interviewId are omitted here to prevent the child dialog 
+      // from making autonomous API calls. The parent handles the API updates.
     };
     const dialogRef = this.dialog.open(AssignInterviewersDialogueComponent, {
       data: data,
@@ -316,11 +316,16 @@ export class SelectPanelDailogComponent implements OnInit {
                 detail: 'Updated interviewers into panels',
               });
             },
-            error: () => {
+            error: (error: CustomErrorResponse) => {
+              const errorMessage =
+                error.error?.type ||
+                error.error?.errorValue ||
+                error.error?.message ||
+                'interviewers are not updated to Panels';
               this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'interviewers are not updated to Panels',
+                detail: errorMessage,
               });
             },
           });
@@ -485,100 +490,103 @@ export class SelectPanelDailogComponent implements OnInit {
     this.isSubmitting = true;
     this.isLoading = true; // Show skeleton loader
 
-    // First, call PanelAssignments API
-    const panelAssignmentPayload = [
-      {
-        panelId: Number(selectedPanel.id),
-        interviewers: selectedInterviewerIds,
-      },
-    ];
+    this.isSubmitting = true;
+    this.isLoading = true; // Show skeleton loader
 
+    if (isAdd) {
+      // For NEW assignments, first call PanelAssignments API to link interviewers to panel
+      const panelAssignmentPayload = [
+        {
+          panelId: Number(selectedPanel.id),
+          interviewers: selectedInterviewerIds,
+        },
+      ];
+
+      this.coordinatorPanelBridgeService
+        .addInterviewerPanels(panelAssignmentPayload)
+        .subscribe({
+          next: () => this.processInterviewPanelAssignment(payload, isAdd),
+          error: (error: CustomErrorResponse) => {
+            this.isSubmitting = false;
+            this.isLoading = false;
+            const errorMessage =
+              error.error?.type ||
+              error.error?.errorValue ||
+              error.error?.message ||
+              'Failed to update interviewers into panels';
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: errorMessage,
+            });
+          },
+        });
+    } else {
+      // For UPDATES, bypass PanelAssignments API and go straight to scheduling
+      this.processInterviewPanelAssignment(payload, isAdd);
+    }
+  }
+
+  private processInterviewPanelAssignment(payload: InterviewPanels, isAdd: boolean) {
+    // Prevent multiple simultaneous calls
+    if (this.isGettingInterviewPanel) {
+      return;
+    }
+
+    this.isGettingInterviewPanel = true;
     this.coordinatorPanelBridgeService
-      .addInterviewerPanels(panelAssignmentPayload)
+      .getinterviewPanles(this.intrviewid.toString())
       .subscribe({
-        next: () => {
-          // After successful PanelAssignments, check if panel already exists and then call InterviewPanel API
-          // Prevent multiple simultaneous calls
-          if (this.isGettingInterviewPanel) {
+        next: (response: GetInterviewPanelsResponse) => {
+          this.isGettingInterviewPanel = false;
+          this.interview = response ?? {};
+          const isInterviewIdSame =
+            payload.interviewId === this.interview.interviewId;
+          const isPanelIdSame = payload.panelId === this.interview.panelId;
+          const existingInterviewerIds =
+            this.interview.interviewer?.map((i: Interviewers) => i.id) ?? [];
+          const sortedPayloadInterviewers = payload.interviewers
+            .slice()
+            .sort((a, b) => a.localeCompare(b));
+          const sortedExistingInterviewerIds = existingInterviewerIds
+            .slice()
+            .sort((a, b) => a.localeCompare(b));
+          const isInterviewerSame =
+            JSON.stringify(sortedPayloadInterviewers) ===
+            JSON.stringify(sortedExistingInterviewerIds);
+
+          const isAlreadyScheduled =
+            isInterviewIdSame && isPanelIdSame && isInterviewerSame;
+          if (isAlreadyScheduled) {
+            this.isSubmitting = false;
+            this.isLoading = false;
+            this.messageService.add({
+              severity: 'info',
+              summary: 'Already Exists',
+              detail: 'This panel is already scheduled for the candidate.',
+            });
             return;
           }
-
-          this.isGettingInterviewPanel = true;
-          this.coordinatorPanelBridgeService
-            .getinterviewPanles(this.intrviewid.toString())
-            .subscribe({
-              next: (response: GetInterviewPanelsResponse) => {
-                this.isGettingInterviewPanel = false;
-                this.interview = response ?? {};
-                const isInterviewIdSame =
-                  payload.interviewId === this.interview.interviewId;
-                const isPanelIdSame =
-                  payload.panelId === this.interview.panelId;
-                const existingInterviewerIds =
-                  this.interview.interviewer?.map((i: Interviewers) => i.id) ??
-                  [];
-                const sortedPayloadInterviewers = payload.interviewers
-                  .slice()
-                  .sort((a, b) => a.localeCompare(b));
-                const sortedExistingInterviewerIds = existingInterviewerIds
-                  .slice()
-                  .sort((a, b) => a.localeCompare(b));
-                const isInterviewerSame =
-                  JSON.stringify(sortedPayloadInterviewers) ===
-                  JSON.stringify(sortedExistingInterviewerIds);
-
-                const isAlreadyScheduled =
-                  isInterviewIdSame && isPanelIdSame && isInterviewerSame;
-                if (isAlreadyScheduled) {
-                  this.isSubmitting = false;
-                  this.isLoading = false;
-                  this.messageService.add({
-                    severity: 'info',
-                    summary: 'Already Exists',
-                    detail:
-                      'This panel is already scheduled for the candidate.',
-                  });
-                  return;
-                }
-                if (isAdd) {
-                  this.addInterviewPanels(payload);
-                } else {
-                  this.updateInterviewPanels(payload);
-                }
-              },
-              error: (error: HttpErrorResponse) => {
-                this.isGettingInterviewPanel = false;
-                if (
-                  error?.status === 422 &&
-                  error?.error?.businessError === 3102
-                ) {
-                  // Panel doesn't exist, proceed with add
-                  this.addInterviewPanels(payload);
-                } else {
-                  this.isSubmitting = false;
-                  this.isLoading = false;
-                  this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to get interview panels.',
-                  });
-                }
-              },
-            });
+          if (isAdd) {
+            this.addInterviewPanels(payload);
+          } else {
+            this.updateInterviewPanels(payload);
+          }
         },
-        error: (error: CustomErrorResponse) => {
-          this.isSubmitting = false;
-          this.isLoading = false;
-          const errorMessage =
-            error.error?.type ||
-            error.error?.errorValue ||
-            error.error?.message ||
-            'Failed to update interviewers into panels';
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: errorMessage,
-          });
+        error: (error: HttpErrorResponse) => {
+          this.isGettingInterviewPanel = false;
+          if (error?.status === 422 && error?.error?.businessError === 3102) {
+            // Panel doesn't exist, proceed with add
+            this.addInterviewPanels(payload);
+          } else {
+            this.isSubmitting = false;
+            this.isLoading = false;
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to get interview panels.',
+            });
+          }
         },
       });
   }

@@ -43,6 +43,7 @@ export class CreateBatchDialogComponent implements OnInit {
   public batches!: Option[];
   public questionSets!: Option[];
   private originalDates: Record<string, Date> = {};
+  public minDate: Date = new Date();
 
   constructor(
     private ref: DynamicDialogRef,
@@ -57,32 +58,36 @@ export class CreateBatchDialogComponent implements OnInit {
     this.setConfigMaps();
     this.setOptions();
 
+    // Set minDate for startDate and endDate configs
+    if (this.configMap['startDate']) {
+      (this.configMap['startDate'] as any).minDate = this.minDate;
+    }
+    if (this.configMap['endDate']) {
+      (this.configMap['endDate'] as any).minDate = this.minDate;
+    }
+
     this.fGroup
       .get('batch')
       ?.valueChanges.pipe(debounceTime(0))
       .subscribe(() => {
         const { startDate, endDate } = this.extractSharedDateTimes();
+        this.fGroup.get('startDate')?.setValue(startDate || null, { emitEvent: false });
+        this.fGroup.get('endDate')?.setValue(endDate || null, { emitEvent: false });
 
         if (startDate) {
           this.originalDates['startDate'] = startDate;
-          this.fGroup
-            .get('startDate')
-            ?.setValue(startDate, { emitEvent: false });
-        } else {
-          this.fGroup.get('startDate')?.reset({ emitEvent: false });
         }
-
         if (endDate) {
           this.originalDates['endDate'] = endDate;
-          this.fGroup.get('endDate')?.setValue(endDate, { emitEvent: false });
-        } else {
-          this.fGroup.get('endDate')?.reset({ emitEvent: false });
         }
 
         validateStartAndEndDates(this.fGroup, 'startDate', 'endDate');
       });
 
-    this.fGroup.get('startDate')?.valueChanges.subscribe(() => {
+    this.fGroup.get('startDate')?.valueChanges.subscribe((value) => {
+      if (value) {
+        this.ensureOneHourDifference();
+      }
       validateStartAndEndDates(this.fGroup, 'startDate', 'endDate');
     });
 
@@ -103,6 +108,19 @@ export class CreateBatchDialogComponent implements OnInit {
     const isFormValid = this.fGroup.valid;
     if (isFormValid) {
       this.ref.close(this.fGroup.value);
+    }
+    // Show error if startDate is before now
+    const startValue = this.fGroup.get('startDate')?.value;
+    if (startValue && new Date(startValue) < new Date()) {
+      this.fGroup
+        .get('startDate')
+        ?.setErrors({ errorMessage: 'Start date/time cannot be in the past.' });
+    }
+    const endValue = this.fGroup.get('endDate')?.value;
+    if (endValue && new Date(endValue) < new Date()) {
+      this.fGroup
+        .get('endDate')
+        ?.setErrors({ errorMessage: 'End date/time cannot be in the past.' });
     }
   }
 
@@ -130,8 +148,14 @@ export class CreateBatchDialogComponent implements OnInit {
     const original = this.originalDates[key];
     const current = this.fGroup.get(key)?.value;
 
-    return original && current
-      ? new Date(original).getTime() !== new Date(current).getTime()
+    const originalDate = original ? new Date(original) : null;
+    const currentDate = current ? new Date(current) : null;
+
+    return originalDate &&
+      currentDate &&
+      !isNaN(originalDate.getTime()) &&
+      !isNaN(currentDate.getTime())
+      ? originalDate.getTime() !== currentDate.getTime()
       : false;
   }
 
@@ -194,9 +218,44 @@ export class CreateBatchDialogComponent implements OnInit {
     if (validDates.length === 0 && batchCandidates.length === 0) return {};
 
     const first = validDates[0];
+    const startDate = new Date(first.startDateTime!);
+    let endDate = new Date(first.endDateTime!);
+
+    // Ensure 1-hour difference even for pre-filled data
+    if (endDate.getTime() - startDate.getTime() < 3600000) {
+      endDate = new Date(startDate.getTime() + 3600000);
+    }
+
     return {
-      startDate: new Date(first.startDateTime!),
-      endDate: new Date(first.endDateTime!),
+      startDate,
+      endDate,
     };
+  }
+
+  /**
+   * Adjusts the endDate to be at least one hour after the current startDate
+   * if the current endDate is missing or doesn't meet the requirement.
+   */
+  private ensureOneHourDifference(): void {
+    const startDateValue = this.fGroup.get('startDate')?.value;
+    if (!startDateValue) return;
+
+    const startDate = new Date(startDateValue);
+    if (isNaN(startDate.getTime())) return;
+
+    const endDateControl = this.fGroup.get('endDate');
+    const endDateValue = endDateControl?.value;
+
+    // Use a Date object if possible for comparison
+    const endDateObj = endDateValue ? new Date(endDateValue) : null;
+
+    if (
+      !endDateObj ||
+      isNaN(endDateObj.getTime()) ||
+      endDateObj.getTime() - startDate.getTime() < 3600000
+    ) {
+      const newEndDate = new Date(startDate.getTime() + 3600000);
+      endDateControl?.setValue(newEndDate, { emitEvent: false });
+    }
   }
 }

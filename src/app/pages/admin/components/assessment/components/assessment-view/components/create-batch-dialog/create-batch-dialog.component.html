@@ -11,6 +11,7 @@
       [formGroup]="fGroup"
       [config]="configMap['startDate']"
       [showTime]="true"
+      [minDate]="minDate"
       [hasDateError]="
         isDateChanged('startDate')
           ? 'Modifying the Start Date will update the entire batch schedule.'
@@ -23,6 +24,7 @@
       [formGroup]="fGroup"
       [config]="configMap['endDate']"
       [showTime]="true"
+      [minDate]="minDate"
       [hasDateError]="
         isDateChanged('endDate')
           ? 'Modifying the End Date will update the entire batch schedule.'

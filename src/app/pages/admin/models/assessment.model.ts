@@ -152,6 +152,7 @@ export interface FileDto {
   Path: string;
   Url: string;
   AttachmentType: number;
+  AttachmentName?: string;
 }
 
 export interface IdProofRequest {

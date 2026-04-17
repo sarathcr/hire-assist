@@ -43,6 +43,10 @@
             Interview Feedbacks
           </p-tab>
         }
+        <p-tab value="2">
+          <i class="pi pi-paperclip mr-2"></i>
+          Attachments
+        </p-tab>
       </p-tablist>
 
       <p-tabpanels>
@@ -265,7 +269,7 @@
                                       }
 
                                       <!-- Date -->
-                                      @if (getDetailDate(detail)) {
+                                      @if (getDetailDate(detail, round)) {
                                         <div
                                           class="candidate-detail__detail-item"
                                         >
@@ -283,7 +287,9 @@
                                             >
                                             <span
                                               class="candidate-detail__detail-value"
-                                              >{{ getDetailDate(detail) }}</span
+                                              >{{
+                                                getDetailDate(detail, round)
+                                              }}</span
                                             >
                                           </div>
                                         </div>
@@ -443,13 +449,25 @@
 
                                       <!-- Total Score -->
                                       @if (hasValue(detail.totalScore)) {
-                                        <div class="candidate-detail__detail-item">
-                                          <div class="candidate-detail__detail-icon">
+                                        <div
+                                          class="candidate-detail__detail-item"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
                                             <i class="pi pi-star"></i>
                                           </div>
-                                          <div class="candidate-detail__detail-content">
-                                            <span class="candidate-detail__detail-label">Total Score</span>
-                                            <span class="candidate-detail__detail-value candidate-detail__detail-value--success">{{ detail.totalScore }}</span>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >Total Score</span
+                                            >
+                                            <span
+                                              class="candidate-detail__detail-value candidate-detail__detail-value--success"
+                                              >{{ detail.totalScore }}</span
+                                            >
                                           </div>
                                         </div>
                                       }
@@ -550,37 +568,69 @@
                                       detail.feedbackListDto &&
                                       detail.feedbackListDto.length > 0
                                     ) {
-                                      <div class="candidate-detail__feedback-list">
-                                        <h4 class="candidate-detail__feedback-list-title">
+                                      <div
+                                        class="candidate-detail__feedback-list"
+                                      >
+                                        <h4
+                                          class="candidate-detail__feedback-list-title"
+                                        >
                                           <i class="pi pi-comments"></i>
                                           Feedback Details
                                         </h4>
-                                        <div class="candidate-detail__feedback-items">
+                                        <div
+                                          class="candidate-detail__feedback-items"
+                                        >
                                           @for (
                                             feedback of detail.feedbackListDto;
                                             track $index
                                           ) {
-                                            <div class="candidate-detail__feedback-item">
-                                              <div class="candidate-detail__feedback-item-header">
-                                                <span class="candidate-detail__feedback-criteria">
+                                            <div
+                                              class="candidate-detail__feedback-item"
+                                            >
+                                              <div
+                                                class="candidate-detail__feedback-item-header"
+                                              >
+                                                <span
+                                                  class="candidate-detail__feedback-criteria"
+                                                >
                                                   {{ feedback.criteria }}
                                                 </span>
                                                 @if (
-                                                  feedback.feedbackScore !== null &&
-                                                  feedback.feedbackScore !== undefined &&
-                                                  feedback.criteria !== 'Attachments'
+                                                  feedback.feedbackScore !==
+                                                    null &&
+                                                  feedback.feedbackScore !==
+                                                    undefined &&
+                                                  feedback.criteria !==
+                                                    "Attachments"
                                                 ) {
                                                   <p-tag
-                                                    [value]="'Score: ' + feedback.feedbackScore + ' / ' + feedback.maxScore"
-                                                    [severity]="getFeedbackScoreSeverity(feedback.feedbackScore, feedback.maxScore)"
+                                                    [value]="
+                                                      'Score: ' +
+                                                      feedback.feedbackScore +
+                                                      ' / ' +
+                                                      feedback.maxScore
+                                                    "
+                                                    [severity]="
+                                                      getFeedbackScoreSeverity(
+                                                        feedback.feedbackScore,
+                                                        feedback.maxScore
+                                                      )
+                                                    "
                                                     styleClass="candidate-detail__feedback-score"
                                                   />
                                                 }
                                               </div>
 
                                               @if (feedback.feedbackDetails) {
-                                                <div class="candidate-detail__feedback-text p-editor-container">
-                                                  <div class="ql-editor p-0" [innerHTML]="feedback.feedbackDetails"></div>
+                                                <div
+                                                  class="candidate-detail__feedback-text p-editor-container"
+                                                >
+                                                  <div
+                                                    class="ql-editor p-0"
+                                                    [innerHTML]="
+                                                      feedback.feedbackDetails
+                                                    "
+                                                  ></div>
                                                 </div>
                                               }
 
@@ -628,7 +678,99 @@
             </div>
           </p-tabpanel>
         }
+
+        <!-- Attachments Tab -->
+        <p-tabpanel value="2">
+          <div class="candidate-detail__content">
+            <div class="candidate-detail__section">
+              <h2 class="candidate-detail__section-title">
+                <i class="pi pi-paperclip"></i>
+                Candidate Attachments
+              </h2>
+              <div class="candidate-detail__attachments-grid">
+                @if (isLoadingIdProofs) {
+                  @for (i of [1,2,3]; track i) {
+                    <div class="candidate-detail__attachment-skeleton">
+                      <p-skeleton width="100%" height="150px" borderRadius="10px"></p-skeleton>
+                      <p-skeleton width="60%" height="1rem" styleClass="mt-2"></p-skeleton>
+                    </div>
+                  }
+                } @else if (idProofsDataSource.length > 0) {
+                  @for (file of idProofsDataSource; track file.id) {
+                    <div class="candidate-detail__attachment-card" (click)="viewFile(file)">
+                      <div class="candidate-detail__attachment-preview">
+                        @if (isImage(file.name || '')) {
+                          <app-image [imageUrl]="reportImages[getImageId(file)]" [removeIcon]="true" />
+                        } @else {
+                          <div class="candidate-detail__file-icon">
+                            @if ((file.name || '').toLowerCase().endsWith('.pdf')) {
+                              <i class="pi pi-file-pdf"></i>
+                            } @else {
+                              <i class="pi pi-file"></i>
+                            }
+                          </div>
+                        }
+                        <div class="candidate-detail__attachment-overlay">
+                          <i class="pi pi-eye"></i>
+                          <span>View Attachment</span>
+                        </div>
+                      </div>
+                      <div class="candidate-detail__attachment-info">
+                        <span class="candidate-detail__attachment-name">{{ file.attachmentName || file.name }}</span>
+                        <span class="candidate-detail__file-name">{{ file.name }}</span>
+                      </div>
+                    </div>
+                  }
+                } @else {
+                  <app-empty-state 
+                    icon="pi pi-paperclip" 
+                    message="No attachments found for this candidate"
+                    class="w-full">
+                  </app-empty-state>
+                }
+              </div>
+            </div>
+          </div>
+        </p-tabpanel>
+
       </p-tabpanels>
     </p-tabs>
   </div>
 }
+
+<!-- Document/Image Viewer Dialog -->
+<p-dialog 
+  [(visible)]="displayViewer" 
+  [modal]="true" 
+  [header]="viewerTitle"
+  [draggable]="false" 
+  [resizable]="false"
+  styleClass="candidate-detail__viewer-dialog"
+  [dismissableMask]="true"
+>
+  <div class="candidate-detail__viewer-container">
+    @if (!viewerUrl) {
+      <div class="candidate-detail__viewer-skeleton">
+        <p-skeleton width="100%" height="100%" />
+        <div class="candidate-detail__viewer-loader">
+          <i class="pi pi-spin pi-spinner"></i>
+          <span>Loading attachment...</span>
+        </div>
+      </div>
+    } @else {
+      @if (isViewerPdf) {
+        <iframe 
+          [src]="viewerUrl | safe: 'resourceUrl'" 
+          width="100%" 
+          height="100%" 
+          frameborder="0"
+          class="candidate-detail__viewer-iframe"
+        ></iframe>
+      } @else if (isViewerImage) {
+        <div class="candidate-detail__viewer-image-wrapper">
+          <app-image [imageUrl]="viewerUrl" [isZoomable]="true" [removeIcon]="true" />
+        </div>
+      }
+    }
+  </div>
+</p-dialog>

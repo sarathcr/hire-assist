@@ -7,9 +7,7 @@ import { EditorModule } from 'primeng/editor';
 import { TabsModule } from 'primeng/tabs';
 import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
 import { ErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
-import {
-  candidateDetails,
-} from '../../../../../../models/candidate-data.model';
+import { candidateDetails } from '../../../../../../models/candidate-data.model';
 import { InterviewerCandidate, PreviousInterview, CandidateAptitudeReport, QuestionAnswerDetail, FileDto, AssessmentDetails, Feedback } from '../../../../../../models/interviewer.model';
 import { TagModule } from 'primeng/tag';
 import { ChipModule } from 'primeng/chip';
@@ -23,6 +21,9 @@ import { EmptyStateComponent } from "../../../../../../../../shared/components/e
 import { ImageComponent } from '../../../../../../../../shared/components/image';
 import { ImageSkeletonComponent } from '../../../../../../../../shared/components/image/image-skeleton';
 import { ButtonModule } from 'primeng/button';
+import { Skeleton } from 'primeng/skeleton';
+import { Dialog } from 'primeng/dialog';
+import { SafePipe } from '../../../../../../../../shared/pipes/safepipe';
 import { forkJoin, map } from 'rxjs';
 
 @Component({
@@ -43,7 +44,10 @@ import { forkJoin, map } from 'rxjs';
     EmptyStateComponent,
     ImageComponent,
     ImageSkeletonComponent,
-    ButtonModule
+    ButtonModule,
+    Skeleton,
+    Dialog,
+    SafePipe
 ],
   templateUrl: './candidate-detail-view.component.html',
   styleUrl: './candidate-detail-view.component.scss',
@@ -69,6 +73,15 @@ export class CandidateDetailViewComponent
   public showReport = false;
   public reportImages: Record<string, string> = {};
   public imageLoadingStates: Record<string, boolean> = {};
+  public idProofsDataSource: FileDto[] = [];
+  public isLoadingIdProofs = false;
+  
+  // Viewer state
+  public displayViewer = false;
+  public viewerUrl = '';
+  public viewerTitle = '';
+  public isViewerPdf = false;
+  public isViewerImage = false;
 
   constructor(
     public activatedRoute: ActivatedRoute,
@@ -82,7 +95,7 @@ export class CandidateDetailViewComponent
   ngOnInit(): void {
     // Ensure loading state is set before fetching data
     this.isLoading = true;
-    
+
     this.assessmentId = Number(
       this.activatedRoute.snapshot.paramMap.get('recruitmentId'),
     );
@@ -104,8 +117,11 @@ export class CandidateDetailViewComponent
   }
 
   public onTabChange(value: string | number): void {
-    if (String(value) === '1') {
+    const tabValue = String(value);
+    if (tabValue === '1') {
       this.getInterviewFeedbacks();
+    } else if (tabValue === '2') {
+      this.getIdProofs();
     }
   }
 
@@ -142,6 +158,82 @@ export class CandidateDetailViewComponent
       });
   }
 
+  private getIdProofs(): void {
+    if (this.idProofsDataSource.length > 0) return;
+    
+    this.isLoadingIdProofs = true;
+    this.assessmentService.getCandidateIdProof(this.candidateId).subscribe({
+      next: (res: any) => {
+        const proofs = res as FileDto[];
+        this.idProofsDataSource = proofs;
+        this.isLoadingIdProofs = false;
+        
+        // Fetch all attachments as Blobs
+        this.idProofsDataSource.forEach(file => {
+          const key = this.getImageId(file);
+          if (key) {
+            this.fetchFileBlob(key, file.attachmentType || 4);
+          }
+        });
+      },
+      error: () => {
+        this.isLoadingIdProofs = false;
+      }
+    });
+  }
+
+  public isImage(filename: string): boolean {
+    const ext = filename.split('.').pop()?.toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext || '');
+  }
+
+  public viewFile(file: FileDto): void {
+    const key = this.getImageId(file);
+    const blobUrl = this.reportImages[key];
+    const filename = file.name || '';
+    this.viewerTitle = file.attachmentName || filename;
+    
+    // Prioritize the blob URL if we already fetched it
+    if (blobUrl) {
+      if (this.isImage(filename)) {
+        this.isViewerImage = true;
+        this.isViewerPdf = false;
+      } else {
+        this.isViewerImage = false;
+        this.isViewerPdf = true;
+      }
+      this.viewerUrl = blobUrl;
+      this.displayViewer = true;
+      return;
+    }
+
+    // Fallback if blob is not pre-fetched yet
+    const type = file.attachmentType || 4;
+    if (key) {
+      this.fetchFileBlob(key, type);
+      // We'll show a loading state in the UI while it fetches
+      this.displayViewer = true;
+      this.viewerUrl = ''; // Clear to trigger loading state
+      
+      if (this.isImage(filename)) {
+        this.isViewerImage = true;
+        this.isViewerPdf = false;
+      } else {
+        this.isViewerImage = false;
+        this.isViewerPdf = true;
+      }
+      return;
+    }
+
+    // Last resort: raw URL if we have no key/blob
+    if (file.url) {
+      const fullUrl = file.url.startsWith('http') 
+        ? file.url 
+        : `${this.assessmentService.getResourceUrl().replace('/api/assessment', '')}/${file.url}`;
+      window.open(fullUrl, '_blank');
+    }
+  }
+
   public getStatusSeverity(status: string): 'success' | 'danger' | 'warn' | 'info' | undefined {
     switch (status?.toLowerCase()) {
       case 'selected':
@@ -155,7 +247,9 @@ export class CandidateDetailViewComponent
     }
   }
 
-  public getStatusSeverityFromString(status: string | undefined): 'success' | 'danger' | 'warn' | 'info' | undefined {
+  public getStatusSeverityFromString(
+    status: string | undefined,
+  ): 'success' | 'danger' | 'warn' | 'info' | undefined {
     if (!status) return undefined;
     switch (status?.toLowerCase()) {
       case 'selected':
@@ -171,7 +265,7 @@ export class CandidateDetailViewComponent
 
   public getFeedbackScoreSeverity(
     score: number | null | undefined,
-    maxScore: number | null | undefined
+    maxScore: number | null | undefined,
   ): 'success' | 'warn' | 'danger' | 'info' {
     if (
       score === null ||
@@ -222,8 +316,9 @@ export class CandidateDetailViewComponent
       .trim();
   }
 
-  public getDetailDate(detail: any): string {
-    return this.formatDate(detail.date);
+  public getDetailDate(detail: any, round?: any): string {
+    const dateToFormat = detail?.date || round?.date;
+    return this.formatDate(dateToFormat);
   }
 
   public getCorrectAnswers(detail: any): number {
@@ -244,7 +339,7 @@ export class CandidateDetailViewComponent
   // Public method to update cover image
   public updateCoverImage(file: File): void {
     this.isCoverImageLoading = true;
-    
+
     // TODO: Replace with actual cover image upload service call
     // Example implementation:
     // this.assessmentService.uploadCoverImage(file, this.candidateId, this.assessmentId)
@@ -297,11 +392,11 @@ export class CandidateDetailViewComponent
 
     this.aptitudeReport.answers.forEach((ans: QuestionAnswerDetail) => {
       // Question attachments (attachmentId = 7)
-      ans.questionAttachments.forEach((id) => this.fetchImage(id, 7));
+      ans.questionAttachments.forEach((id) => this.fetchFileBlob(id, 7));
 
       // Option/Answer attachments (attachmentId = 8)
-      ans.markedAnswerAttachments.forEach((id) => this.fetchImage(id, 8));
-      ans.correctAnswerAttachments.forEach((id) => this.fetchImage(id, 8));
+      ans.markedAnswerAttachments.forEach((id) => this.fetchFileBlob(id, 8));
+      ans.correctAnswerAttachments.forEach((id) => this.fetchFileBlob(id, 8));
     });
   }
 
@@ -318,7 +413,7 @@ export class CandidateDetailViewComponent
           feedback.fileDto.forEach((file: FileDto) => {
             const key = this.getImageId(file);
             if (key && !this.reportImages[key]) {
-              this.fetchImage(key, file.attachmentType || 9);
+              this.fetchFileBlob(key, file.attachmentType || 9);
             }
           });
         }
@@ -326,7 +421,7 @@ export class CandidateDetailViewComponent
     });
   }
 
-  private fetchImage(id: string, type: number): void {
+  private fetchFileBlob(id: string, type: number): void {
     if (!id || this.reportImages[id] || this.imageLoadingStates[id]) return;
 
     this.imageLoadingStates[id] = true;
@@ -335,8 +430,36 @@ export class CandidateDetailViewComponent
 
     this.interviewService.GetFiles({ blobId: blobId, attachmentType: type }).subscribe({
       next: (blob: Blob) => {
-        this.reportImages[id] = URL.createObjectURL(blob);
+        // Enforce correct MIME type based on extension to prevent auto-download
+        let mimeType = blob.type;
+        const filename = blobId.toLowerCase();
+        
+        if (filename.endsWith('.pdf')) {
+          mimeType = 'application/pdf';
+        } else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+          mimeType = 'image/jpeg';
+        } else if (filename.endsWith('.png')) {
+          mimeType = 'image/png';
+        } else if (filename.endsWith('.gif')) {
+          mimeType = 'image/gif';
+        } else if (filename.endsWith('.bmp')) {
+          mimeType = 'image/bmp';
+        } else if (filename.endsWith('.webp')) {
+          mimeType = 'image/webp';
+        }
+
+        const safeBlob = new Blob([blob], { type: mimeType });
+        const url = URL.createObjectURL(safeBlob);
+        
+        this.reportImages[id] = url;
         this.imageLoadingStates[id] = false;
+        
+        // If this file is currently being viewed, update the viewerUrl
+        if (this.displayViewer && !this.viewerUrl) {
+          // This allows on-demand fetching to show results automatically
+          this.viewerUrl = url;
+        }
+
         // Ensure reactivity
         this.reportImages = { ...this.reportImages };
       },

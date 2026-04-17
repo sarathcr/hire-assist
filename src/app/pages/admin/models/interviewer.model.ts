@@ -104,6 +104,7 @@ export interface FileDto {
   url?: string;
   blobId?: string;
   attachmentType?: number;
+  attachmentName?: string;
 }
 export interface Feedbackcriteria {
   id: number;
@@ -127,14 +128,6 @@ export interface Interview {
   isActive?: boolean;
   statusId?: number; // Using the enum
   assessmentId?: number;
-}
-export interface FileDto {
-  id?: string;
-  name?: string;
-  path?: string;
-  url?: string;
-  blobId?: string;
-  attachmentType?: number;
 }
 export interface FileRequest {
   attachmentType: number;

@@ -169,6 +169,12 @@ export class AssessmentService extends ApiService<any> {
     );
   }
 
+  public getCandidateIdProof(candidateId: string): Observable<any> {
+    return this.httpClient.get<any>(
+      `${this.getResourceUrl()}/candidates/id-proof/${candidateId}`,
+    );
+  }
+
   public getDashboardAssessments() {
     const payload = {
       sortedColumn: { active: '', direction: '' },

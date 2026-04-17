@@ -18,6 +18,9 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { Tooltip } from 'primeng/tooltip';
 import { ButtonModule } from 'primeng/button';
+import { Skeleton } from 'primeng/skeleton';
+import { Dialog } from 'primeng/dialog';
+import { SafePipe } from '../../../../../../shared/pipes/safepipe';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { ImageSkeletonComponent } from '../../../../../../shared/components/image/image-skeleton';
@@ -77,7 +80,10 @@ import { StatusEnum } from '../../../../../../shared/enums/status.enum';
     TagModule,
     DividerModule,
     CountdownTimerComponent,
-    ButtonModule
+    ButtonModule,
+    Dialog,
+    Skeleton,
+    SafePipe
   ],
   templateUrl: './interviewer-feedback.component.html',
   styleUrl: './interviewer-feedback.component.scss',
@@ -117,6 +123,13 @@ export class InterviewerFeedbackComponent
   public showReport = false;
   public reportImages: Record<string, string> = {};
   public imageLoadingStates: Record<string, boolean> = {};
+
+  // Viewer state
+  public displayViewer = false;
+  public viewerUrl = '';
+  public viewerTitle = '';
+  public isViewerPdf = false;
+  public isViewerImage = false;
 
   public interview!: Interview;
   public durationSeconds = 0;
@@ -440,32 +453,113 @@ export class InterviewerFeedbackComponent
     if (key && this.previewImageUrls.has(key)) {
       return this.previewImageUrls.get(key) || '';
     }
+    // Check reportImages too as we use it for aptitude
+    if (key && this.reportImages[key]) {
+      return this.reportImages[key] || '';
+    }
     return '';
+  }
+
+  public isImage(filename: string): boolean {
+    if (!filename) return false;
+    const ext = filename.split('.').pop()?.toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext || '');
+  }
+
+  public viewFile(file: FileDto): void {
+    const key = file.id || file.blobId || '';
+    const blobUrl = this.previewImageUrls.get(key) || this.reportImages[key];
+    const filename = file.name || '';
+    this.viewerTitle = file.attachmentName || filename;
+    
+    // Prioritize the blob URL if we already fetched it
+    if (blobUrl) {
+      if (this.isImage(filename)) {
+        this.isViewerImage = true;
+        this.isViewerPdf = false;
+      } else {
+        this.isViewerImage = false;
+        this.isViewerPdf = true;
+      }
+      this.viewerUrl = blobUrl;
+      this.displayViewer = true;
+      return;
+    }
+
+    // Fallback if blob is not pre-fetched yet
+    const type = file.attachmentType || 9; // Default for feedback attachments
+    if (key) {
+      this.fetchFileBlob(file);
+      // We'll show a loading state in the UI while it fetches
+      this.displayViewer = true;
+      this.viewerUrl = ''; // Clear to trigger loading state
+      
+      if (this.isImage(filename)) {
+        this.isViewerImage = true;
+        this.isViewerPdf = false;
+      } else {
+        this.isViewerImage = false;
+        this.isViewerPdf = true;
+      }
+      return;
+    }
+
+    // Last resort: raw URL if we have no key/blob
+    if (file.url) {
+      const fullUrl = file.url.startsWith('http') 
+        ? file.url 
+        : `${INTERVIEW_URL.replace('/api/interview', '')}/${file.url}`;
+      window.open(fullUrl, '_blank');
+    }
+  }
+
+  public fetchFileBlob(file: FileDto): void {
+    const key = file.blobId || file.id;
+    if (!key || this.previewImageUrls.has(key) || this.imageLoadingStates[key]) return;
+
+    this.imageLoadingStates[key] = true;
+    // Extract only the filename as some IDs contain folder paths
+    const blobId = key.includes('/') ? key.split('/').pop()! : key;
+    const type = file.attachmentType || 9;
+
+    this.interviewService.GetFiles({ blobId: blobId, attachmentType: type }).subscribe({
+      next: (blob: Blob) => {
+        // Enforce correct MIME type based on extension to prevent auto-download
+        let mimeType = blob.type;
+        const filename = blobId.toLowerCase();
+        
+        if (filename.endsWith('.pdf')) {
+          mimeType = 'application/pdf';
+        } else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
+          mimeType = 'image/jpeg';
+        } else if (filename.endsWith('.png')) {
+          mimeType = 'image/png';
+        }
+
+        const safeBlob = new Blob([blob], { type: mimeType });
+        const url = URL.createObjectURL(safeBlob);
+        
+        this.previewImageUrls.set(key, url);
+        // Force a new Map reference to ensure Angular change detection
+        this.previewImageUrls = new Map(this.previewImageUrls);
+        
+        this.imageLoadingStates[key] = false;
+        
+        // If this file is currently being viewed, update the viewerUrl
+        if (this.displayViewer && !this.viewerUrl) {
+          this.viewerUrl = url;
+        }
+      },
+      error: () => {
+        this.imageLoadingStates[key] = false;
+      },
+    });
   }
 
   public getCorrectAnswers(
     detail: AssessmentDetails & { correctAnswers?: number },
   ): number {
     return detail.correctAnswers ?? 0;
-  }
-  public previewImage(file: FileDto): void {
-    const key = file.blobId || file.id;
-    if (!key) return;
-
-    this.isImageLoading = true;
-    this.isImageLoading = true;
-    this.interviewService.GetFiles(file).subscribe({
-      next: (blob: Blob) => {
-        const imageUrl = URL.createObjectURL(blob);
-        this.previewImageUrls.set(key, imageUrl);
-        // Force a new Map reference to ensure Angular change detection
-        this.previewImageUrls = new Map(this.previewImageUrls);
-        this.isImageLoading = false;
-      },
-      error: () => {
-        this.isImageLoading = false;
-      },
-    });
   }
   private getAssessmentDetails(payload: CandidateDetailRequest): void {
     const next = (res: InterviewerCandidate) => {
@@ -716,7 +810,7 @@ export class InterviewerFeedbackComponent
         // Only fetch if not already fetched
         const key = file.id || file.blobId;
         if (key && !this.previewImageUrls.has(key)) {
-          this.previewImage(file);
+          this.fetchFileBlob(file);
         }
       });
     }
@@ -840,7 +934,7 @@ export class InterviewerFeedbackComponent
             feedback.fileDto.push(...newUniqueFiles);
 
             // Fetch blobs for new files so they display correctly
-            newUniqueFiles.forEach((file) => this.previewImage(file));
+            newUniqueFiles.forEach((file) => this.fetchFileBlob(file));
 
             // Save only the new unique files
             this.saveFeedback(feedback, newUniqueFiles);
@@ -1045,7 +1139,7 @@ export class InterviewerFeedbackComponent
       feedback.fileDto.forEach((file) => {
         const key = file.blobId || file.id;
         if (key && !this.previewImageUrls.has(key)) {
-          this.previewImage(file);
+          this.fetchFileBlob(file);
         }
       });
     }
@@ -1061,7 +1155,7 @@ export class InterviewerFeedbackComponent
             const key = file.blobId || file.id;
             if (key && !this.previewImageUrls.has(key)) {
               file.attachmentType = file.attachmentType || 9;
-              this.previewImage(file);
+              this.fetchFileBlob(file);
             }
           });
         }
@@ -1250,7 +1344,17 @@ export class InterviewerFeedbackComponent
 
     this.interviewService.GetFiles({ blobId: blobId, attachmentType: type }).subscribe({
       next: (blob: Blob) => {
-        this.reportImages[id] = URL.createObjectURL(blob);
+        // Enforce MIME type for aptitude report images too
+        let mimeType = blob.type;
+        const filename = blobId.toLowerCase();
+        if (filename.endsWith('.pdf')) mimeType = 'application/pdf';
+        else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) mimeType = 'image/jpeg';
+        else if (filename.endsWith('.png')) mimeType = 'image/png';
+
+        const safeBlob = new Blob([blob], { type: mimeType });
+        const url = URL.createObjectURL(safeBlob);
+        
+        this.reportImages[id] = url;
         this.imageLoadingStates[id] = false;
       },
       error: () => {

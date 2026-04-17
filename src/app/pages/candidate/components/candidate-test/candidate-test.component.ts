@@ -151,15 +151,36 @@ export class CandidateTestComponent
     this.subscriptionList.push(
       router.events.subscribe((event) => {
         if (event instanceof NavigationStart) {
-          this.browserRefresh = !router.navigated;
+          const navigationEntries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+          const isReload = navigationEntries.length > 0 && navigationEntries[0].type === 'reload';
+          this.browserRefresh = !router.navigated || isReload;
         }
       }),
     );
   }
 
+  private readonly ASSESSMENT_STORAGE_KEY = 'current_candidate_assessment';
+
   ngOnInit(): void {
+    // Attempt to get state from history
     this.candidateInterview = history.state;
-    history.pushState(null, '', window.location.href);
+
+    // If state is present from a fresh navigation, save it for potential refresh recovery
+    if (this.candidateInterview?.assessment) {
+      localStorage.setItem(this.ASSESSMENT_STORAGE_KEY, JSON.stringify(this.candidateInterview.assessment));
+      // Reset warning count for fresh session
+      this.warningService.reset();
+    } else {
+      // If history.state is empty (e.g., refresh), try to recover from localStorage
+      const savedAssessment = localStorage.getItem(this.ASSESSMENT_STORAGE_KEY);
+      if (savedAssessment) {
+        this.candidateInterview = {
+          assessment: JSON.parse(savedAssessment)
+        };
+      }
+    }
+
+    // Safety check: If still no assessment data, redirect
     if (!this.candidateInterview?.assessment) {
       this.isLoading = false;
       this.messageService.add({
@@ -169,15 +190,15 @@ export class CandidateTestComponent
       });
 
       this.router.navigate(['/candidate']);
+      return; // Stop execution
     }
+
     this.assessmentId = this.candidateInterview.assessment?.assessmentId;
     this.candidateId = this.candidateInterview.assessment?.candidateId;
 
     this.getAllQuestions();
 
-    if (this.warningCount >= (this.data?.maxTerminationCount ?? 0)) {
-      this.showTestTerminationDialog();
-    } else this.enterFullScreenMode();
+    history.pushState(null, '', window.location.href);
 
     //setting 1st question as default
     this.responsiveOptions = [
@@ -355,9 +376,10 @@ export class CandidateTestComponent
       if (result) {
         this.isSubmitting = true;
         this.exitFullScreenMode();
+        const roundId = this.candidateInterview?.assessment?.assessmentRoundId;
         this.addCandidateScores(
           this.assessmentId,
-          this.candidateInterview.assessment.assessmentRoundId,
+          roundId,
         ).subscribe({
           next: () => {
             this.isSubmitting = false;
@@ -419,7 +441,7 @@ export class CandidateTestComponent
     }
 
     const payload: Payload = {
-      interviewId: this.candidateInterview.assessment?.interviewId,
+      interviewId: this.candidateInterview?.assessment?.interviewId,
       candidateId: this.candidateId,
       assessmentId: this.assessmentId,
       questionId: this.activeQuestion.id,
@@ -582,13 +604,14 @@ export class CandidateTestComponent
       document.documentElement
         .requestFullscreen()
         .then(() => { })
-        .catch(() =>
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to enter fullscreen mode',
-          }),
-        );
+        .catch(() => {
+          // If entering fullscreen fails, it is usually due to missing user gesture (common on refresh).
+          // We show the warning dialog which has a "Continue" button. 
+          // Clicking that button provides the necessary user gesture to retry fullscreen.
+          if (!document.fullscreenElement && !this.ref) {
+            this.showWarningDialog();
+          }
+        });
     } else {
       this.messageService.add({
         severity: 'warn',
@@ -665,6 +688,7 @@ export class CandidateTestComponent
       if (result) {
         this.isTestEnded = true;
         this.exitFullScreenMode();
+        this.clearAssessmentState();
         this.router.navigate(['candidate/thank-you']);
       }
     });
@@ -830,16 +854,18 @@ export class CandidateTestComponent
       .addcandidateTestTerminationTime(terminationPayload)
       .pipe(
         catchError(() => of(void 0)),
-        switchMap(() =>
-          this.addCandidateScores(
+        switchMap(() => {
+          const roundId = this.candidateInterview?.assessment?.assessmentRoundId;
+          return this.addCandidateScores(
             this.assessmentId,
-            this.candidateInterview.assessment.assessmentRoundId,
-          ),
-        ),
+            roundId,
+          );
+        }),
       )
       .subscribe({
         next: () => {
           this.isSubmitting = false;
+          this.clearAssessmentState();
           this.router.navigate(['candidate/thank-you']);
         },
         error: () => {
@@ -878,6 +904,17 @@ export class CandidateTestComponent
         setTimeout(() => {
           this.fetchCandidateAnswers();
           this.fetchTerminationTimeAndSetTimer();
+
+          // After data is loaded, check for termination or enter full screen
+          const maxAttempts = this.data?.maxTerminationCount ?? 2;
+          if (this.warningCount >= maxAttempts) {
+            this.showTestTerminationDialog();
+          } else {
+            // Attempt to enter full screen. If it fails (e.g. on refresh due to gesture lock),
+            // the enterFullScreenMode method will automatically show the warning dialog
+            // to prompt the user for a gesture.
+            this.enterFullScreenMode();
+          }
         });
       }
     };
@@ -928,13 +965,14 @@ export class CandidateTestComponent
       .addCandidateScore(assessmentId, assessmentRoundId)
       .pipe(
         switchMap((score: number) => {
+          const interviewId = this.candidateInterview?.assessment?.interviewId;
           this.interview = {
-            id: this.candidateInterview.assessment.interviewId,
+            id: interviewId,
             statusId: StatusEnum.Completed,
             score: score,
           };
           return this.interviewService.UpdateInterview(
-            this.candidateInterview.assessment.interviewId,
+            interviewId,
             this.interview,
           );
         }),
@@ -1171,13 +1209,20 @@ export class CandidateTestComponent
       .subscribe({
         next: () => {
           this.isSaving = false;
+          this.clearAssessmentState();
           this.router.navigate(['candidate/thank-you']);
         },
         error: () => {
           this.isSaving = false;
+          this.clearAssessmentState();
           // Even if API fails, we should probably still navigate away as they chose to quit
           this.router.navigate(['candidate/thank-you']);
         },
       });
+  }
+
+  private clearAssessmentState() {
+    localStorage.removeItem(this.ASSESSMENT_STORAGE_KEY);
+    this.warningService.reset();
   }
 }

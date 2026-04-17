@@ -352,17 +352,23 @@
                                   }
 
                                   @if (feedback.criteria === 'Attachments' && feedback.fileDto && feedback.fileDto.length > 0) {
-                                    <div class="ifb__image-preview mt-2" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <div class="ifb__attachment-grid mt-2">
                                       @for (file of feedback.fileDto; track file.id) {
-                                        @if (getFileUrl(file)) {
-                                          <div style="width: 200px; height: 150px;">
+                                        <div class="ifb__attachment-card" (click)="viewFile(file)">
+                                          @if (getFileUrl(file)) {
                                             <app-image [imageUrl]="getFileUrl(file)" [isZoomable]="true" [removeIcon]="true" width="100%" height="100%" />
-                                          </div>
-                                        } @else {
-                                          <div style="width: 200px; height: 150px;">
-                                            <app-image-skeleton />
-                                          </div>
-                                        }
+                                            <div class="ifb__attachment-overlay">
+                                              <i class="pi pi-eye"></i>
+                                            </div>
+                                          } @else {
+                                            <div class="ifb__attachment-skeleton">
+                                              <p-skeleton width="100%" height="100%" />
+                                              <div class="ifb__attachment-loader">
+                                                <i class="pi pi-spin pi-spinner"></i>
+                                              </div>
+                                            </div>
+                                          }
+                                        </div>
                                       }
                                     </div>
                                   }
@@ -532,7 +538,7 @@
 
                     @if (feedback.fileDto && feedback.fileDto.length > 0) {
                       @for (file of feedback.fileDto; track $index; let fi = $index) {
-                        <div class="ifb__attachment-card">
+                        <div class="ifb__attachment-card" (click)="viewFile(file)">
                           <app-image
                             width="100%"
                             height="100%"
@@ -541,23 +547,23 @@
                             [forceCancelRequest]="[]"
                             [isZoomable]="true"
                             [removeIcon]="true"
-                            (closeImage)="removeImage(fi)"
                             class="ifb__app-image"
                           >
                           </app-image>
-                          @if (!isSubmitted) {
-                            <div class="ifb__attachment-overlay ifb__attachment-overlay--saved">
+                          <div class="ifb__attachment-overlay ifb__attachment-overlay--interactive">
+                            <i class="pi pi-eye ifb__view-icon"></i>
+                            @if (!isSubmitted) {
                               <button
                                 type="button"
                                 class="ifb__remove-btn"
-                                (click)="removeImage(fi)"
+                                (click)="$event.stopPropagation(); removeImage(fi)"
                                 pTooltip="Delete"
                                 tooltipPosition="top"
                               >
                                 <i class="pi pi-trash"></i>
                               </button>
-                            </div>
-                          }
+                            }
+                          </div>
                         </div>
                       }
                     }
@@ -691,3 +697,40 @@
 
   </div>
 }
+
+<!-- Document/Image Viewer Dialog -->
+<p-dialog 
+  [(visible)]="displayViewer" 
+  [modal]="true" 
+  [header]="viewerTitle"
+  [draggable]="false" 
+  [resizable]="false"
+  styleClass="ifb__viewer-dialog"
+  [dismissableMask]="true"
+>
+  <div class="ifb__viewer-container">
+    @if (!viewerUrl) {
+      <div class="ifb__viewer-skeleton">
+        <p-skeleton width="100%" height="100%" />
+        <div class="ifb__viewer-loader">
+          <i class="pi pi-spin pi-spinner"></i>
+          <span>Loading attachment...</span>
+        </div>
+      </div>
+    } @else {
+      @if (isViewerPdf) {
+        <iframe 
+          [src]="viewerUrl | safe: 'resourceUrl'" 
+          width="100%" 
+          height="100%" 
+          frameborder="0"
+          class="ifb__viewer-iframe"
+        ></iframe>
+      } @else if (isViewerImage) {
+        <div class="ifb__viewer-image-wrapper">
+          <app-image [imageUrl]="viewerUrl" [isZoomable]="true" [removeIcon]="true" />
+        </div>
+      }
+    }
+  </div>
+</p-dialog>

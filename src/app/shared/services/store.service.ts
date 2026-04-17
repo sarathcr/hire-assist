@@ -89,6 +89,8 @@ export class StoreService {
     this.state = initialState;
     if (this.isBrowserEnvironment()) {
       localStorage.removeItem(this.STORAGE_KEY);
+      localStorage.removeItem('assessment_warning_count');
+      localStorage.removeItem('current_candidate_assessment');
     }
   }
 

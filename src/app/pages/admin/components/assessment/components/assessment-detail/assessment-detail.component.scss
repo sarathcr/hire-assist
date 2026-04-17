@@ -458,9 +458,7 @@
     background: white;
     border-radius: 20px;
     padding: var(--spacing-25);
-    box-shadow:
-      0 4px 6px -1px rgba(0, 0, 0, 0.1),
-      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: none;
     display: flex;
     flex-direction: column;
     gap: var(--spacing-20);
@@ -475,9 +473,7 @@
 
     &:hover {
       transform: translateY(-8px);
-      box-shadow:
-        0 20px 25px -5px rgba(0, 0, 0, 0.1),
-        0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      box-shadow: none;
     }
 
     &__header {
