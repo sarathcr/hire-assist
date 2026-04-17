@@ -3,11 +3,9 @@
 }
 
 .assessment-round__section {
-  background: linear-gradient(
-    135deg,
-    rgba(33, 150, 243, 0.05) 0%,
-    rgba(21, 101, 192, 0.05) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(33, 150, 243, 0.05) 0%,
+      rgba(21, 101, 192, 0.05) 100%);
   border-radius: 16px;
   margin-top: var(--spacing-20);
   overflow: hidden;
@@ -82,11 +80,9 @@
 .assessment-round {
   display: flex;
   flex-direction: column;
-  background: linear-gradient(
-    135deg,
-    rgba(33, 150, 243, 0.05) 0%,
-    rgba(21, 101, 192, 0.05) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(33, 150, 243, 0.05) 0%,
+      rgba(21, 101, 192, 0.05) 100%);
   padding: 24px;
   border: none;
 
@@ -119,6 +115,7 @@
 
     &_skeleton {
       width: 100%;
+
       ::ng-deep .input-multiselect {
         margin-bottom: 0;
         position: relative;
@@ -177,11 +174,9 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-10);
-    background: linear-gradient(
-      135deg,
-      rgba(33, 150, 243, 0.08) 0%,
-      rgba(21, 101, 192, 0.08) 100%
-    );
+    background: linear-gradient(135deg,
+        rgba(33, 150, 243, 0.08) 0%,
+        rgba(21, 101, 192, 0.08) 100%);
     border: 1.5px solid rgba(33, 150, 243, 0.3);
     border-radius: 10px;
     padding: var(--spacing-15) var(--spacing-20);
@@ -241,11 +236,9 @@
 
     &.assessment-round__sortable-ghost {
       opacity: 0.4;
-      background: linear-gradient(
-        135deg,
-        rgba(33, 150, 243, 0.05) 0%,
-        rgba(21, 101, 192, 0.05) 100%
-      );
+      background: linear-gradient(135deg,
+          rgba(33, 150, 243, 0.05) 0%,
+          rgba(21, 101, 192, 0.05) 100%);
       border-style: dashed;
       border-color: #2196f3;
       border-width: 2px;
@@ -453,7 +446,7 @@
     ::ng-deep {
       .p-button {
         font-size: var(--font-size-base);
-        padding: var(--spacing-12) var(--spacing-24);
+        padding: var(--spacing-12) var(--spacing-25);
         font-weight: 500;
       }
     }
@@ -630,9 +623,11 @@
       align-items: stretch !important;
       gap: 20px;
     }
+
     ::ng-deep .p-multiselect .p-multiselect-label {
       font-size: var(--font-size-base);
     }
+
     .assessment-round__multiselect,
     .assessment-round__multiselect_skeleton {
       width: 100% !important;
@@ -708,6 +703,7 @@
       opacity: 0.7 !important;
       flex-shrink: 0 !important;
     }
+
     ::ng-deep .assessment-round__footer {
       display: block;
       padding: 20px 0 0 0;
@@ -766,6 +762,7 @@
     0% {
       background-position: 200% 0;
     }
+
     100% {
       background-position: -200% 0;
     }
@@ -784,13 +781,16 @@
     .assessment-round {
       padding: 25px 10px;
     }
+
     ::ng-deep .assessment-round__section-header {
       padding: 16px;
       font-size: var(--font-size-base);
     }
+
     ::ng-deep .assessment-round__header-icon {
       display: none;
     }
+
     .assessment-round__skeleton-title.p-skeleton {
       width: min(280px, 100%) !important;
       max-width: 100%;

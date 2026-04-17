@@ -17,6 +17,7 @@ import { Message } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { Tooltip } from 'primeng/tooltip';
+import { ButtonModule } from 'primeng/button';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { ImageSkeletonComponent } from '../../../../../../shared/components/image/image-skeleton';
@@ -33,13 +34,17 @@ import { Score } from '../../../../../admin/models/assessment.model';
 import {
   AccordionData,
   AssessmentDetails,
+  CandidateAptitudeReport,
   CandidateDetailRequest,
+  Feedback,
   Feedbackcriteria,
   FileDto,
   FileRequest,
   Interview,
   InterviewerCandidate,
   InterviewerFeedback,
+  PreviousInterview,
+  QuestionAnswerDetail,
 } from '../../../../../admin/models/interviewer.model';
 import { InterviewerFeedbackSkeletonComponent } from './interviewer-feedback.skeleton';
 import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
@@ -72,6 +77,7 @@ import { StatusEnum } from '../../../../../../shared/enums/status.enum';
     TagModule,
     DividerModule,
     CountdownTimerComponent,
+    ButtonModule
   ],
   templateUrl: './interviewer-feedback.component.html',
   styleUrl: './interviewer-feedback.component.scss',
@@ -106,6 +112,11 @@ export class InterviewerFeedbackComponent
   public isImageLoading = false;
   public isUploadingFiles = false;
   public isDragOver = false;
+  public aptitudeReport: CandidateAptitudeReport | null = null;
+  public isReportLoading = false;
+  public showReport = false;
+  public reportImages: Record<string, string> = {};
+  public imageLoadingStates: Record<string, boolean> = {};
 
   public interview!: Interview;
   public durationSeconds = 0;
@@ -447,6 +458,8 @@ export class InterviewerFeedbackComponent
       next: (blob: Blob) => {
         const imageUrl = URL.createObjectURL(blob);
         this.previewImageUrls.set(key, imageUrl);
+        // Force a new Map reference to ensure Angular change detection
+        this.previewImageUrls = new Map(this.previewImageUrls);
         this.isImageLoading = false;
       },
       error: () => {
@@ -1038,6 +1051,24 @@ export class InterviewerFeedbackComponent
     }
   }
 
+  public onPreviousRoundAccordionOpen(round: PreviousInterview): void {
+    if (this.isAptitudeRound(round.roundName)) return;
+
+    round.assessmentDetails?.forEach((detail: AssessmentDetails) => {
+      detail.feedbackListDto?.forEach((feedback: Feedback) => {
+        if (feedback.criteria === 'Attachments' && feedback.fileDto && feedback.fileDto.length > 0) {
+          feedback.fileDto.forEach((file: FileDto) => {
+            const key = file.blobId || file.id;
+            if (key && !this.previewImageUrls.has(key)) {
+              file.attachmentType = file.attachmentType || 9;
+              this.previewImage(file);
+            }
+          });
+        }
+      });
+    });
+  }
+
   // ── Draggable timer ────────────────────────────────
   public startTimerDrag(event: MouseEvent | TouchEvent, timerEl: HTMLElement): void {
     // Prevent default to avoid scrolling while dragging
@@ -1141,6 +1172,8 @@ export class InterviewerFeedbackComponent
       document.removeEventListener('mouseup', this._timerUpHandler);
       document.removeEventListener('touchend', this._timerUpHandler);
     }
+    // Revoke object URLs for images to prevent memory leaks
+    Object.values(this.reportImages).forEach(url => URL.revokeObjectURL(url));
   }
 
   // ── Drag & Drop Handlers ───────────────────────────
@@ -1168,5 +1201,76 @@ export class InterviewerFeedbackComponent
       const files = event.dataTransfer.files;
       this.onFileChange({ files });
     }
+  }
+
+  public fetchAptitudeReport(): void {
+    if (this.aptitudeReport) {
+      this.showReport = !this.showReport;
+      return;
+    }
+
+    if (!this.assessmentId || !this.candidateid) return;
+
+    this.isReportLoading = true;
+    this.showReport = true;
+
+    this.interviewService
+      .getCandidateAptitudeReport(Number(this.assessmentId), this.candidateid)
+      .subscribe({
+        next: (res: CandidateAptitudeReport) => {
+          this.aptitudeReport = res;
+          this.isReportLoading = false;
+          this.loadReportImages();
+        },
+        error: () => {
+          this.isReportLoading = false;
+          this.showReport = false;
+        },
+      });
+  }
+
+  private loadReportImages(): void {
+    if (!this.aptitudeReport) return;
+
+    this.aptitudeReport.answers.forEach((ans: QuestionAnswerDetail) => {
+      // Question attachments (attachmentId = 7)
+      ans.questionAttachments.forEach((id) => this.fetchImage(id, 7));
+
+      // Option/Answer attachments (attachmentId = 8)
+      ans.markedAnswerAttachments.forEach((id) => this.fetchImage(id, 8));
+      ans.correctAnswerAttachments.forEach((id) => this.fetchImage(id, 8));
+    });
+  }
+
+  private fetchImage(id: string, type: number): void {
+    if (!id || this.reportImages[id] || this.imageLoadingStates[id]) return;
+
+    this.imageLoadingStates[id] = true;
+    const blobId = id.includes('/') ? id.split('/').pop()! : id;
+
+    this.interviewService.GetFiles({ blobId: blobId, attachmentType: type }).subscribe({
+      next: (blob: Blob) => {
+        this.reportImages[id] = URL.createObjectURL(blob);
+        this.imageLoadingStates[id] = false;
+      },
+      error: () => {
+        this.imageLoadingStates[id] = false;
+      },
+    });
+  }
+
+  public getStatusClass(ans: QuestionAnswerDetail): string {
+    const status = ans.answerStatus?.toLowerCase().trim();
+    const isCorrect = ans.markedAnswer?.trim() === ans.correctAnswer?.trim();
+
+    if (isCorrect && ans.markedAnswer?.trim()) {
+      return 'correct';
+    }
+
+    if (status === 'skipped' || status === 'not attempted' || !ans.markedAnswer?.trim()) {
+      return 'skipped';
+    }
+
+    return 'incorrect';
   }
 }

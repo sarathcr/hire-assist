@@ -293,8 +293,14 @@
     ::ng-deep {
       .p-accordion-header {
         .p-accordion-header-link {
-          padding: var(--spacing-15) var(--spacing-18);
+          padding: var(--spacing-12) var(--spacing-18);
         }
+      }
+
+      .p-tag {
+        font-size: 10px;
+        padding: 2px 8px;
+        font-weight: 600;
       }
     }
   }
@@ -308,7 +314,8 @@
   }
 
   &__round-name {
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
     color: var(--color-dune);
     display: flex;
     align-items: center;
@@ -316,6 +323,7 @@
 
     i {
       color: var(--primary-color);
+      font-size: 14px;
     }
   }
 
@@ -558,7 +566,7 @@
   }
 
   &__feedback-criteria {
-    font-size: var(--font-size-16);
+    font-size: 14px;
     font-weight: 600;
     color: var(--color-dune);
   }
@@ -584,9 +592,197 @@
       }
     }
   }
+
+  // Aptitude Report Section
+  &__aptitude-report {
+    margin-top: var(--spacing-25);
+    border-top: 1px dashed var(--color-seperator);
+    width: 100%;
+  }
+
+  &__report-toggle {
+    display: flex;
+    justify-content: center;
+    margin: var(--spacing-20) 0;
+  }
+
+  &__answer-header-inline {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-8);
+    margin-bottom: var(--spacing-8);
+  }
+
+  &__answer-icon {
+    &--success {
+      color: var(--color-success);
+      font-size: var(--font-size-20);
+    }
+
+    &--danger {
+      color: var(--color-error);
+      font-size: var(--font-size-20);
+    }
+  }
+
+  &__report-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-20);
+  }
+
+  &__question-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-seperator);
+    border-radius: var(--spacing-12);
+    padding: var(--spacing-20);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-15);
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-color: var(--primary-color);
+    }
+  }
+
+  &__question-type {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(var(--primary-color-rgb, 99, 102, 241), 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    width: fit-content;
+  }
+
+  &__question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-15);
+    gap: var(--spacing-15);
+  }
+
+  &__question-title {
+    font-size: var(--font-size-16);
+    font-weight: 600;
+    color: var(--color-dune);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__question-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-20);
+  }
+
+  &__image-preview {
+    margin: var(--spacing-10) 0;
+    border-radius: var(--spacing-8);
+    overflow: hidden;
+    background: var(--dashboard-main-background-color);
+    max-width: 100%;
+
+    app-image {
+      display: block;
+      width: 100%;
+    }
+  }
+
+  &__answer-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-20);
+    padding: var(--spacing-15);
+    background: var(--dashboard-main-background-color);
+    border-radius: var(--spacing-10);
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+      padding: var(--spacing-10);
+      gap: var(--spacing-15);
+    }
+  }
+
+  &__answer-label {
+    font-size: var(--font-size-small);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-grey);
+    font-weight: 700;
+  }
+
+  &__answer-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-10);
+    padding: var(--spacing-12);
+    border-radius: var(--spacing-8);
+    background: var(--color-white);
+    border: 1px solid var(--color-seperator);
+    transition: all 0.2s ease;
+    width: 100%;
+
+    &--correct {
+      background: #f0fdf4 !important;
+      border: 1px solid #bbf7d0 !important;
+    }
+
+    &--incorrect,
+    &--skipped {
+      background: #fef2f2 !important;
+      border: 1px solid #fecaca !important;
+    }
+
+    &--marked-for-review {
+      background: #f9fafb !important;
+      border: 1px solid #e5e7eb !important;
+    }
+
+    @media (max-width: 480px) {
+      padding: var(--spacing-10);
+      gap: var(--spacing-8);
+    }
+  }
+
+  &__answer-value-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-10);
+    width: 100%;
+
+    @media (max-width: 480px) {
+      gap: var(--spacing-8);
+    }
+  }
+
+  &__answer-value {
+    font-size: var(--font-size-16);
+    font-weight: 500;
+    color: var(--color-dune);
+    padding: var(--spacing-10);
+    background: var(--color-white);
+    border: 1px solid var(--color-seperator);
+    border-radius: var(--spacing-6);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    word-break: break-word;
+
+    @media (max-width: 480px) {
+      font-size: var(--font-size-base);
+      padding: var(--spacing-8);
+      min-height: 40px;
+    }
+  }
 }
 
-// Responsive Design
 // Tablet View
 @media (max-width: 1024px) {
   .candidate-detail {
@@ -595,8 +791,8 @@
     &__header {
       padding: var(--spacing-20);
       border-radius: 0;
-      margin: -20px -45px 20px;
-      width: 100vw;
+      margin: -20px -20px 20px;
+      width: calc(100% + 40px);
     }
 
     &__header-content {
@@ -633,8 +829,8 @@
     &__header {
       padding: var(--spacing-15);
       border-radius: 0;
-      // margin: 0 calc(-50vw + 50%) var(--spacing-20) calc(-50vw + 50%);
-      width: 100vw;
+      margin: -15px -15px 15px;
+      width: calc(100% + 30px);
     }
 
     &__header-content {
@@ -787,23 +983,6 @@
       flex-wrap: wrap;
     }
 
-    &__rounds-accordion,
-    &__interviewers-accordion,
-    &__feedback-accordion {
-      ::ng-deep {
-        .p-accordion-header {
-          .p-accordion-header-link {
-            padding: var(--spacing-10) var(--spacing-12);
-            font-size: var(--font-size-base);
-          }
-        }
-
-        .p-accordion-content {
-          padding: var(--spacing-12);
-        }
-      }
-    }
-
     &__round-header,
     &__interviewer-header,
     &__feedback-header {
@@ -825,42 +1004,9 @@
       padding: var(--spacing-4) var(--spacing-10);
     }
 
-    &__round-details {
-      padding: var(--spacing-12) 0;
-    }
-
     &__details-grid {
       grid-template-columns: 1fr;
       gap: var(--spacing-10);
-    }
-
-    &__detail-item {
-      padding: var(--spacing-10);
-      gap: var(--spacing-6);
-    }
-
-    &__detail-label {
-      font-size: var(--font-size-small);
-    }
-
-    &__detail-value {
-      font-size: var(--font-size-base);
-    }
-
-    &__score-badge {
-      padding: var(--spacing-4) var(--spacing-10);
-      font-size: var(--font-size-small);
-      align-self: flex-start;
-    }
-
-    &__feedback-content {
-      padding: var(--spacing-12) 0;
-
-      ::ng-deep {
-        .p-editor-container {
-          border-radius: var(--spacing-6);
-        }
-      }
     }
 
     &__feedback-card {
@@ -876,29 +1022,16 @@
       padding: var(--spacing-12);
     }
 
-    &__feedback-criteria {
-      font-size: var(--font-size-base);
+    &__report-grid {
+      gap: var(--spacing-15);
     }
 
-    &__empty-state {
-      padding: var(--spacing-30) var(--spacing-20);
+    &__question-card {
+      padding: var(--spacing-15);
+    }
 
-      i {
-        font-size: var(--spacing-40);
-        margin-bottom: var(--spacing-12);
-      }
-
-      p {
-        font-size: var(--font-size-base);
-      }
-
-      &--large {
-        padding: var(--spacing-40) var(--spacing-20);
-
-        i {
-          font-size: var(--spacing-50);
-        }
-      }
+    &__question-title {
+      font-size: var(--font-size-base);
     }
   }
 }
@@ -911,8 +1044,8 @@
     &__header {
       padding: var(--spacing-12);
       border-radius: 0;
-      margin: 0 calc(-50vw + 50%) var(--spacing-15) calc(-50vw + 50%);
-      width: 100vw;
+      margin: -12px -12px 12px;
+      width: calc(100% + 24px);
     }
 
     &__avatar {
@@ -936,7 +1069,7 @@
           font-size: var(--font-size-small);
 
           i {
-            display: none; // Hide icons on very small screens
+            display: none;
           }
         }
       }
@@ -965,4 +1098,4 @@
       font-size: var(--font-size-16);
     }
   }
-}
+}

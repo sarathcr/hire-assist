@@ -36,11 +36,9 @@
       right: -50%;
       width: 200%;
       height: 200%;
-      background: radial-gradient(
-        circle,
-        rgba(255, 255, 255, 0.1) 0%,
-        transparent 70%
-      );
+      background: radial-gradient(circle,
+          rgba(255, 255, 255, 0.1) 0%,
+          transparent 70%);
       animation: pulse 8s ease-in-out infinite;
     }
 
@@ -122,11 +120,9 @@
   }
 
   &__info-card {
-    background: linear-gradient(
-      135deg,
-      rgba(33, 150, 243, 0.08) 0%,
-      rgba(21, 101, 192, 0.08) 100%
-    );
+    background: linear-gradient(135deg,
+        rgba(33, 150, 243, 0.08) 0%,
+        rgba(21, 101, 192, 0.08) 100%);
     border: 1px solid rgba(33, 150, 243, 0.2);
     border-radius: 16px;
     padding: var(--spacing-20);
@@ -224,6 +220,7 @@
       .assessment-detail__stat-value {
         color: #003892;
       }
+
       .assessment-detail__stat-icon {
         background: #eef2ff;
         color: #003892;
@@ -234,6 +231,7 @@
       .assessment-detail__stat-value {
         color: #107c10;
       }
+
       .assessment-detail__stat-icon {
         background: #e6ffed;
         color: #107c10;
@@ -244,6 +242,7 @@
       .assessment-detail__stat-value {
         color: #a4262c;
       }
+
       .assessment-detail__stat-icon {
         background: #fff1f0;
         color: #a4262c;
@@ -254,6 +253,7 @@
       .assessment-detail__stat-value {
         color: #d83b01;
       }
+
       .assessment-detail__stat-icon {
         background: #fff4e6;
         color: #d83b01;
@@ -275,7 +275,7 @@
   }
 
   &__stat-value {
-    font-size: clamp(24px, 3vw + 0.5rem, 36px);
+    font-size: clamp(18px, 2vw + 0.5rem, 24px);
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.02em;
@@ -307,7 +307,7 @@
 
   &__overview-title {
     margin: 0;
-    font-size: clamp(20px, 3.5vw + 0.5rem, 24px);
+    font-size: clamp(16px, 1.8vw + 0.5rem, 18px);
     font-weight: 700;
     color: #1e293b;
     display: flex;
@@ -315,7 +315,7 @@
     gap: var(--spacing-12);
 
     i {
-      font-size: 1.5rem;
+      font-size: 1.15rem;
       color: #2196f3;
     }
   }
@@ -328,7 +328,7 @@
 
   &__overview-subtitle {
     margin: 0;
-    font-size: clamp(14px, 1.8vw + 0.25rem, 16px);
+    font-size: 13px;
     font-weight: 600;
     color: #64748b;
     text-transform: uppercase;
@@ -346,12 +346,15 @@
       .p-carousel-container {
         position: relative;
       }
-      .p-carousel-item-list{
-        margin: 0 -10px !important; // Compensate for item padding
-        padding-bottom: var(--spacing-10) !important;
+
+      .p-carousel-item-list {
+        margin: 0 -10px !important;
+
       }
+
       .p-carousel-items-content {
         padding: var(--spacing-10) 0;
+        overflow: visible !important; // Allow shadow to show
       }
 
       .p-carousel-prev-button,
@@ -383,6 +386,7 @@
       .p-carousel-prev-button {
         left: 2px !important;
       }
+
       .p-carousel-next-button {
         right: 2px !important;
       }
@@ -391,6 +395,7 @@
         .p-carousel-prev-button {
           left: 0 !important;
         }
+
         .p-carousel-next-button {
           right: 0 !important;
         }
@@ -484,7 +489,7 @@
 
     &__title {
       margin: 0;
-      font-size: clamp(18px, 2.5vw, 20px);
+      font-size: 16px;
       font-weight: 700;
       color: #1e293b;
     }
@@ -500,10 +505,12 @@
         background: #e0e7ff;
         color: #4338ca;
       }
+
       &.status-progress {
         background: #fff7ed;
         color: #c2410c;
       }
+
       &.status-queued {
         background: #f1f5f9;
         color: #475569;
@@ -527,13 +534,13 @@
     }
 
     &__stat-label {
-      font-size: 14px;
+      font-size: 12px;
       color: #64748b;
       font-weight: 500;
     }
 
     &__stat-value {
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 700;
       color: #1e293b;
     }
@@ -572,9 +579,11 @@
 
       &--selected {
         background: #f0fdf4;
+
         .round-card__mini-label {
           color: #166534;
         }
+
         .round-card__mini-value {
           color: #15803d;
         }
@@ -582,9 +591,11 @@
 
       &--rejected {
         background: #fef2f2;
+
         .round-card__mini-label {
           color: #991b1b;
         }
+
         .round-card__mini-value {
           color: #b91c1c;
         }
@@ -598,7 +609,7 @@
     }
 
     &__mini-value {
-      font-size: 24px;
+      font-size: 18px;
       font-weight: 700;
     }
 
@@ -930,11 +941,9 @@
   align-items: center;
   gap: var(--spacing-12);
   padding: var(--spacing-15) var(--spacing-20);
-  background: linear-gradient(
-    135deg,
-    rgba(33, 150, 243, 0.05) 0%,
-    rgba(21, 101, 192, 0.05) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(33, 150, 243, 0.05) 0%,
+      rgba(21, 101, 192, 0.05) 100%);
   border: 2px solid transparent;
   border-radius: 12px;
   cursor: pointer;
@@ -945,11 +954,9 @@
   position: relative;
 
   &:hover:not(&--active) {
-    background: linear-gradient(
-      135deg,
-      rgba(33, 150, 243, 0.1) 0%,
-      rgba(21, 101, 192, 0.1) 100%
-    );
+    background: linear-gradient(135deg,
+        rgba(33, 150, 243, 0.1) 0%,
+        rgba(21, 101, 192, 0.1) 100%);
     border-color: rgba(33, 150, 243, 0.3);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
@@ -980,11 +987,9 @@
   }
 
   &--completed:not(&--active) {
-    background: linear-gradient(
-      135deg,
-      rgba(16, 185, 129, 0.08) 0%,
-      rgba(5, 150, 105, 0.08) 100%
-    );
+    background: linear-gradient(135deg,
+        rgba(16, 185, 129, 0.08) 0%,
+        rgba(5, 150, 105, 0.08) 100%);
     border-color: #10b981;
     border-width: 2px;
 
@@ -1007,11 +1012,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(
-      135deg,
-      rgba(33, 150, 243, 0.15) 0%,
-      rgba(21, 101, 192, 0.15) 100%
-    );
+    background: linear-gradient(135deg,
+        rgba(33, 150, 243, 0.15) 0%,
+        rgba(21, 101, 192, 0.15) 100%);
     color: #2196f3;
     font-size: clamp(14px, 2vw + 0.25rem, 16px);
     font-weight: 700;
@@ -1066,6 +1069,7 @@
 // Animations
 // ============================================
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 0.3;
@@ -1232,8 +1236,7 @@
         font-size: clamp(12px, 3vw, 13px);
       }
 
-      ::ng-deep {
-      }
+      ::ng-deep {}
     }
   }
 

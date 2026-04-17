@@ -167,7 +167,6 @@
         </p-tabpanel>
 
         <!-- Interview Feedbacks Tab -->
-        <!-- Interview Feedbacks Tab -->
         @if (interviewId > 0) {
           <p-tabpanel value="1">
             <div class="candidate-detail__content">
@@ -185,7 +184,7 @@
                         track round.roundId
                       ) {
                         <p-accordion-panel [value]="round.sequence">
-                          <p-accordion-header>
+                          <p-accordion-header (click)="onPreviousRoundAccordionOpen(round)">
                             <div class="candidate-detail__round-header">
                               <span class="candidate-detail__round-name">
                                 <i class="pi pi-sitemap"></i>
@@ -456,6 +455,96 @@
                                       }
                                     </div>
 
+                                    <!-- Aptitude Report Section [V2.1] -->
+                                    @if (isAptitudeRound(round.roundName)) {
+                                      <div class="candidate-detail__aptitude-report">
+                                        <div class="candidate-detail__report-toggle">
+                                          <p-button
+                                            [label]="showReport ? 'Hide Detailed Report' : 'View Detailed Report'"
+                                            [icon]="showReport ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                                            [loading]="isReportLoading"
+                                            severity="secondary"
+                                            [outlined]="true"
+                                            (onClick)="fetchAptitudeReport()"
+                                          />
+                                        </div>
+
+                                        @if (showReport && aptitudeReport) {
+                                          <div class="candidate-detail__report-grid">
+                                            @for (ans of aptitudeReport.answers; track ans.questionId) {
+                                              <!-- Question Card -->
+                                              <div class="candidate-detail__question-card">
+                                                  <div class="candidate-detail__question-header">
+                                                    <div class="flex flex-column gap-1">
+                                                      @if (ans.questionType) {
+                                                        <span class="candidate-detail__question-type">{{ ans.questionType }}</span>
+                                                      }
+                                                      <h5 class="candidate-detail__question-title">
+                                                        {{ $index + 1 }}. {{ ans.questionText }}
+                                                      </h5>
+                                                    </div>
+                                                  </div>
+
+                                                <div class="candidate-detail__question-body">
+                                                  <!-- Question Images -->
+                                                  @if (ans.questionAttachments.length > 0) {
+                                                    <div class="candidate-detail__image-preview">
+                                                      @for (img of ans.questionAttachments; track img) {
+                                                        <app-image [imageUrl]="reportImages[img]" [isZoomable]="true" [removeIcon]="true" />
+                                                      }
+                                                    </div>
+                                                  }
+
+                                                  <div class="candidate-detail__answer-comparison">
+                                                    <!-- Marked Answer -->
+                                                    <div 
+                                                      class="candidate-detail__answer-section"
+                                                      [ngClass]="'candidate-detail__answer-section--' + getStatusClass(ans)"
+                                                    >
+                                                       <span class="candidate-detail__answer-label">Marked Answer</span>
+                                                       <div class="candidate-detail__answer-value-wrapper">
+                                                        <div class="candidate-detail__answer-value">
+                                                          {{ ans.markedAnswer || 'N/A' }}
+                                                        </div>
+                                                        @if (getStatusClass(ans) === 'correct') {
+                                                          <i class="pi pi-check-circle candidate-detail__answer-icon--success"></i>
+                                                        } @else if (getStatusClass(ans) === 'incorrect' || getStatusClass(ans) === 'skipped') {
+                                                          <i class="pi pi-times-circle candidate-detail__answer-icon--danger"></i>
+                                                        }
+                                                       </div>
+                                                       
+                                                      @if (ans.markedAnswerAttachments.length > 0) {
+                                                        <div class="candidate-detail__image-preview mt-2">
+                                                          @for (img of ans.markedAnswerAttachments; track img) {
+                                                            <app-image [imageUrl]="reportImages[img]" [isZoomable]="true" [removeIcon]="true" />
+                                                          }
+                                                        </div>
+                                                      }
+                                                    </div>
+
+                                                    <!-- Correct Answer -->
+                                                    <div class="candidate-detail__answer-section">
+                                                      <span class="candidate-detail__answer-label">Correct Answer</span>
+                                                      <div class="candidate-detail__answer-value">
+                                                        {{ ans.correctAnswer }}
+                                                      </div>
+                                                      @if (ans.correctAnswerAttachments.length > 0) {
+                                                        <div class="candidate-detail__image-preview mt-2">
+                                                          @for (img of ans.correctAnswerAttachments; track img) {
+                                                            <app-image [imageUrl]="reportImages[img]" [isZoomable]="true" [removeIcon]="true" />
+                                                          }
+                                                        </div>
+                                                      }
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            }
+                                          </div>
+                                        }
+                                      </div>
+                                    }
+
                                     <!-- Feedback List -->
                                     @if (
                                       detail.feedbackListDto &&
@@ -492,6 +581,22 @@
                                               @if (feedback.feedbackDetails) {
                                                 <div class="candidate-detail__feedback-text p-editor-container">
                                                   <div class="ql-editor p-0" [innerHTML]="feedback.feedbackDetails"></div>
+                                                </div>
+                                              }
+
+                                              @if (feedback.criteria === 'Attachments' && feedback.fileDto && feedback.fileDto.length > 0) {
+                                                <div class="candidate-detail__image-preview mt-2" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                                  @for (file of feedback.fileDto; track file.id) {
+                                                    @if (getImageId(file) && reportImages[getImageId(file)]) {
+                                                      <div style="width: 200px; height: 150px;">
+                                                        <app-image [imageUrl]="reportImages[getImageId(file)]" [isZoomable]="true" [removeIcon]="true" width="100%" height="100%" />
+                                                      </div>
+                                                    } @else {
+                                                      <div style="width: 200px; height: 150px;">
+                                                        <app-image-skeleton />
+                                                      </div>
+                                                    }
+                                                  }
                                                 </div>
                                               }
                                             </div>

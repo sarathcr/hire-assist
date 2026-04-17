@@ -4,11 +4,11 @@
   height: 100%;
   gap: 0;
   position: relative;
-  
+
   @media (max-width: 1024px) {
     flex-direction: column;
   }
-  
+
   @media (max-width: 768px) {
     flex-direction: column;
     height: auto;
@@ -172,11 +172,11 @@
   @media (max-width: 1024px) and (min-width: 769px) {
     flex: 1;
     padding: var(--spacing-30, 30px);
-    
+
     &__header {
       margin-bottom: var(--spacing-30, 30px);
     }
-    
+
     &__title {
       font-size: 1.85rem;
     }
@@ -197,7 +197,7 @@
     height: auto;
     justify-content: center;
     align-items: center;
-    padding-top: var(--spacing-24, 24px);
+    padding-top: var(--spacing-25, 24px);
     overflow: visible;
     position: relative;
 
@@ -228,6 +228,7 @@
 
       // Compact inputs and buttons for mobile
       ::ng-deep {
+
         input,
         button {
           min-height: 40px;
@@ -299,6 +300,7 @@
       gap: var(--spacing-8, 8px);
 
       ::ng-deep {
+
         input,
         button {
           min-height: 38px;
@@ -357,6 +359,7 @@
       gap: var(--spacing-8, 8px);
 
       ::ng-deep {
+
         input,
         button {
           min-height: 36px;
@@ -406,6 +409,7 @@
       gap: var(--spacing-8, 8px);
 
       ::ng-deep {
+
         input,
         button {
           min-height: 38px;
@@ -723,21 +727,21 @@
   @media (max-width: 1024px) and (min-width: 769px) {
     flex: 0 0 40%;
     padding: var(--spacing-30, 30px);
-    
+
     &__slide {
       padding: var(--spacing-30, 30px);
     }
-    
+
     &__icon {
       font-size: 3rem;
       margin-bottom: var(--spacing-20, 20px);
     }
-    
+
     &__title {
       font-size: 1.5rem;
       margin-bottom: var(--spacing-16, 16px);
     }
-    
+
     &__description {
       font-size: 0.9rem;
     }
@@ -754,6 +758,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -764,6 +769,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -775,13 +781,16 @@
     opacity: 0;
     transform: scale(0.3);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.05);
   }
+
   70% {
     transform: scale(0.9);
   }
+
   100% {
     transform: scale(1);
   }

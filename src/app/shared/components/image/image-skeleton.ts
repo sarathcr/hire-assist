@@ -6,7 +6,7 @@ import { SkeletonModule } from 'primeng/skeleton';
   imports: [SkeletonModule],
   template: `<div class="image-container">
     <span class="image-container__loader">
-      <p-skeleton width="15rem" height="15rem" />
+      <p-skeleton width="100%" height="100%" />
     </span>
   </div>`,
   styleUrl: './image.component.scss',

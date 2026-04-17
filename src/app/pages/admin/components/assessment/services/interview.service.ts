@@ -21,6 +21,7 @@ import {
   InterviewerFeedback,
   InterviewerRefreshRequest,
   PreviousInterview,
+  CandidateAptitudeReport,
 } from '../../../models/interviewer.model';
 
 @Injectable({
@@ -114,7 +115,9 @@ export class InterviewService extends ApiService<any> {
   }
 
   public GetFiles(payload: FileDto): Observable<Blob> {
-    let blobId = payload.blobId || payload.id || '';
+    // blobId should be the filename/UUID with extension, not the full path
+    let id = payload.id || payload.blobId || '';
+    let blobId = id.includes('/') ? id.split('/').pop()! : id;
     // Append file extension from name if blobId doesn't already have one
     if (payload.name && !blobId.includes('.')) {
       const extMatch = payload.name.match(/\.[^.]+$/);
@@ -229,6 +232,12 @@ export class InterviewService extends ApiService<any> {
   ) {
     return this.httpClient.get<PreviousInterview[]>(
       `${this.getResourceUrl()}/Feedback/CurrentAndPreviousRounds/${candidateId}/${assessmentId}/${assessmentRoundId}`,
+    );
+  }
+
+  public getCandidateAptitudeReport(recruitmentId: number, email: string) {
+    return this.httpClient.get<CandidateAptitudeReport>(
+      `${this.getResourceUrl()}/assessment/aptitude-report/${recruitmentId}/${email}`,
     );
   }
 }

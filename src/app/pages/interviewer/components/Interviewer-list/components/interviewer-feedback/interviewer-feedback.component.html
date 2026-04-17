@@ -137,7 +137,7 @@
         <p-accordion [value]="0" [multiple]="true" class="ifb__accordion">
           @for (round of responseData.previousInterviews; track $index) {
             <p-accordion-panel [value]="round.sequence">
-              <p-accordion-header class="ifb__acc-header">
+              <p-accordion-header class="ifb__acc-header" (click)="onPreviousRoundAccordionOpen(round)">
                 <div class="ifb__acc-header-content">
                   <div class="ifb__acc-round-info">
                     <span class="ifb__round-badge">{{ round.sequence || ($index + 1) }}</span>
@@ -230,6 +230,96 @@
                             </div>
                           }
                         </div>
+                      
+                        <!-- Aptitude Report Section [V2.1] -->
+                        @if (isAptitudeRound(round.roundName)) {
+                          <div class="ifb__aptitude-report">
+                            <div class="ifb__report-toggle">
+                              <p-button
+                                [label]="showReport ? 'Hide Detailed Report' : 'View Detailed Report'"
+                                [icon]="showReport ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                                [loading]="isReportLoading"
+                                severity="secondary"
+                                [outlined]="true"
+                                (onClick)="fetchAptitudeReport()"
+                              />
+                            </div>
+
+                            @if (showReport && aptitudeReport) {
+                              <div class="ifb__report-grid">
+                                @for (ans of aptitudeReport.answers; track ans.questionId) {
+                                  <!-- Question Card -->
+                                  <div class="ifb__question-card">
+                                      <div class="ifb__question-header">
+                                        <div class="ifb__question-meta">
+                                          @if (ans.questionType) {
+                                            <span class="ifb__question-type">{{ ans.questionType }}</span>
+                                          }
+                                          <h5 class="ifb__question-title">
+                                            {{ $index + 1 }}. {{ ans.questionText }}
+                                          </h5>
+                                        </div>
+                                      </div>
+
+                                    <div class="ifb__question-body">
+                                      <!-- Question Images -->
+                                      @if (ans.questionAttachments.length > 0) {
+                                        <div class="ifb__image-preview">
+                                          @for (img of ans.questionAttachments; track img) {
+                                            <app-image [imageUrl]="reportImages[img]" [isZoomable]="true" [removeIcon]="true" />
+                                          }
+                                        </div>
+                                      }
+
+                                      <div class="ifb__answer-comparison">
+                                        <!-- Marked Answer -->
+                                        <div 
+                                          class="ifb__answer-section"
+                                          [ngClass]="'ifb__answer-section--' + getStatusClass(ans)"
+                                        >
+                                           <span class="ifb__answer-label">Marked Answer</span>
+                                           <div class="ifb__answer-value-wrapper">
+                                            <div class="ifb__answer-value">
+                                              {{ ans.markedAnswer || 'N/A' }}
+                                            </div>
+                                            @if (getStatusClass(ans) === 'correct') {
+                                              <i class="pi pi-check-circle ifb__answer-icon--success"></i>
+                                            } @else if (getStatusClass(ans) === 'incorrect' || getStatusClass(ans) === 'skipped') {
+                                              <i class="pi pi-times-circle ifb__answer-icon--danger"></i>
+                                            }
+                                           </div>
+                                           
+                                          @if (ans.markedAnswerAttachments.length > 0) {
+                                            <div class="ifb__image-preview mt-2">
+                                              @for (img of ans.markedAnswerAttachments; track img) {
+                                                <app-image [imageUrl]="reportImages[img]" [isZoomable]="true" [removeIcon]="true" />
+                                              }
+                                            </div>
+                                          }
+                                        </div>
+
+                                        <!-- Correct Answer -->
+                                        <div class="ifb__answer-section">
+                                          <span class="ifb__answer-label">Correct Answer</span>
+                                          <div class="ifb__answer-value">
+                                            {{ ans.correctAnswer }}
+                                          </div>
+                                          @if (ans.correctAnswerAttachments.length > 0) {
+                                            <div class="ifb__image-preview mt-2">
+                                              @for (img of ans.correctAnswerAttachments; track img) {
+                                                <app-image [imageUrl]="reportImages[img]" [isZoomable]="true" [removeIcon]="true" />
+                                              }
+                                            </div>
+                                          }
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                }
+                              </div>
+                            }
+                          </div>
+                        }
 
                         <!-- Feedback List (non-aptitude rounds) -->
                         @if (!isAptitudeRound(round.roundName) && detail.feedbackListDto && detail.feedbackListDto.length > 0) {
@@ -259,6 +349,22 @@
                                       [innerHTML]="feedback.feedbackDetails"
                                       class="ifb__prev-feedback-html"
                                     ></div>
+                                  }
+
+                                  @if (feedback.criteria === 'Attachments' && feedback.fileDto && feedback.fileDto.length > 0) {
+                                    <div class="ifb__image-preview mt-2" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                      @for (file of feedback.fileDto; track file.id) {
+                                        @if (getFileUrl(file)) {
+                                          <div style="width: 200px; height: 150px;">
+                                            <app-image [imageUrl]="getFileUrl(file)" [isZoomable]="true" [removeIcon]="true" width="100%" height="100%" />
+                                          </div>
+                                        } @else {
+                                          <div style="width: 200px; height: 150px;">
+                                            <app-image-skeleton />
+                                          </div>
+                                        }
+                                      }
+                                    </div>
                                   }
                                 </div>
                               }

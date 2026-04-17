@@ -35,7 +35,7 @@
     @media (max-width: 1024px) and (min-width: 769px) {
       width: 160px;
       left: var(--spacing-30, 30px);
-      top: var(--spacing-24, 24px);
+      top: var(--spacing-25, 24px);
     }
 
     // Mobile
@@ -46,13 +46,13 @@
       transform: translateX(-50%);
       right: auto;
       margin-left: 0;
-      
+
       img {
         width: 100%;
         max-width: 100%;
         height: auto;
       }
-      
+
       &:hover {
         transform: translateX(-50%) scale(1.05);
       }
@@ -64,7 +64,7 @@
       top: var(--spacing-10, 10px);
       left: 50%;
       transform: translateX(-50%);
-      
+
       &:hover {
         transform: translateX(-50%) scale(1.05);
       }
@@ -76,7 +76,7 @@
       top: var(--spacing-8, 8px);
       left: 50%;
       transform: translateX(-50%);
-      
+
       &:hover {
         transform: translateX(-50%) scale(1.05);
       }
@@ -115,7 +115,7 @@
     overflow-y: visible;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    
+
     &__content {
       padding: 0;
       align-items: center;
@@ -129,6 +129,7 @@
   // Override global body overflow on mobile for auth pages
   @media (max-width: 768px) {
     ::ng-deep {
+
       body,
       html {
         overflow-y: auto !important;
@@ -184,7 +185,7 @@
       top: var(--spacing-12, 12px);
       left: 50%;
       transform: translateX(-50%);
-      
+
       &:hover {
         transform: translateX(-50%) scale(1.05);
       }

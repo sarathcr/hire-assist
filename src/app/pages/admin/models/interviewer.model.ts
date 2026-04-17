@@ -31,6 +31,7 @@ export interface Feedback {
   feedbackScore: number;
   criteria: string;
   maxScore: number;
+  fileDto?: FileDto[];
 }
 
 export interface CandidateDetailRequest {
@@ -145,4 +146,22 @@ export interface InterviewerRefreshRequest {
   assessmentId: number;
   interviewId: number;
   terminatedTimer: string;
+}
+
+export interface CandidateAptitudeReport {
+  candidateId: string;
+  candidateName: string;
+  answers: QuestionAnswerDetail[];
+}
+
+export interface QuestionAnswerDetail {
+  questionId: number;
+  questionText: string;
+  questionAttachments: string[];
+  correctAnswer: string;
+  correctAnswerAttachments: string[];
+  markedAnswer: string;
+  markedAnswerAttachments: string[];
+  answerStatus: string; // Skipped, Correct, Incorrect, Marked for Review
+  questionType?: string;
 }

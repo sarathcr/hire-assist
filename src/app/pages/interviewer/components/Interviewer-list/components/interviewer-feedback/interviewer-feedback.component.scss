@@ -690,7 +690,7 @@ $white: #ffffff;
   }
 
   &__round-name {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: $slate-700;
   }
@@ -733,7 +733,7 @@ $white: #ffffff;
   }
 
   &__criteria-name {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     color: $slate-700;
   }
@@ -747,7 +747,7 @@ $white: #ffffff;
 
   &__criteria-score-tag {
     ::ng-deep .p-tag {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
     }
   }
@@ -1754,4 +1754,185 @@ $white: #ffffff;
       grid-template-columns: 1fr;
     }
   }
-}
+
+  // ── Aptitude Report Section [V2.1] ────────────────────
+  &__aptitude-report {
+    margin-top: 25px;
+    border-top: 1px dashed $slate-200;
+    width: 100%;
+  }
+
+  &__report-toggle {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+  }
+
+  &__report-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__question-card {
+    background: $white;
+    border: 1px solid $slate-200;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba($slate-900, 0.08);
+      border-color: $indigo-500;
+    }
+  }
+
+  &__question-type {
+    font-size: 10px;
+    font-weight: 700;
+    color: $indigo-500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba($indigo-500, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    width: fit-content;
+  }
+
+  &__question-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    gap: 15px;
+  }
+
+  &__question-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: $slate-800;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__question-body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__image-preview {
+    margin: 10px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: $slate-50;
+    max-width: 100%;
+
+    app-image {
+      display: block;
+      width: 100%;
+    }
+  }
+
+  &__answer-comparison {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 15px;
+    background: $slate-50;
+    border-radius: 10px;
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+      padding: 10px;
+      gap: 15px;
+    }
+  }
+
+  &__answer-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $slate-400;
+    font-weight: 700;
+  }
+
+  &__answer-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    background: $white;
+    border: 1px solid $slate-200;
+    transition: all 0.2s ease;
+    width: 100%;
+
+    &--correct {
+      background: #f0fdf4 !important;
+      border: 1px solid #bbf7d0 !important;
+
+      .ifb__answer-label {
+        color: #166534;
+      }
+    }
+
+    &--incorrect,
+    &--skipped {
+      background: #fef2f2 !important;
+      border: 1px solid #fecaca !important;
+      
+      .ifb__answer-label {
+        color: #991b1b;
+      }
+    }
+
+    @media (max-width: 480px) {
+      padding: 10px;
+      gap: 8px;
+    }
+  }
+
+  &__answer-value-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  &__answer-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: $slate-700;
+    padding: 10px;
+    background: $white;
+    border: 1px solid $slate-200;
+    border-radius: 6px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    word-break: break-word;
+  }
+
+  &__answer-icon {
+    &--success {
+      color: $green-500;
+      font-size: 20px;
+    }
+
+    &--danger {
+      color: #ef4444;
+      font-size: 20px;
+    }
+  }
+}
