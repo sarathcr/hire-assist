@@ -44,7 +44,7 @@ import { ProfileComponent } from './shared/pages/profile/profile.component';
 
 export const routes: Routes = [
   {
-    path: '',
+    path: 'auth',
     component: AuthComponent,
     children: [
       { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -55,6 +55,11 @@ export const routes: Routes = [
         component: ResetPasswordChangeComponent,
       },
     ],
+  },
+  {
+    path: '',
+    redirectTo: 'auth',
+    pathMatch: 'full',
   },
   {
     path: 'admin',
