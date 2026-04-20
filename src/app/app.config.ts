@@ -18,7 +18,6 @@ import { routes } from './app.routes';
 import { MyPreset } from './app.theme.preset';
 import { authInterceptor } from './shared/interceptors/auth.interceptor';
 import { errorInterceptor } from './shared/interceptors/error.interceptor';
-import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -35,7 +34,6 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor, errorInterceptor]),
       withFetch(),
     ),
-    { provide: LocationStrategy, useClass: HashLocationStrategy },
     DialogService,
     MessageService,
     ConfirmationService,
