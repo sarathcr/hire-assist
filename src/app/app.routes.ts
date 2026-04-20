@@ -61,6 +61,17 @@ export const routes: Routes = [
     redirectTo: 'auth',
     pathMatch: 'full',
   },
+  { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
+  {
+    path: 'forgot-password',
+    redirectTo: 'auth/forgot-password',
+    pathMatch: 'full',
+  },
+  {
+    path: 'reset-password',
+    redirectTo: 'auth/reset-password',
+    pathMatch: 'full',
+  },
   {
     path: 'admin',
     component: DashboardComponent,
