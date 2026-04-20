@@ -5,19 +5,20 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
-import { Menu, MenuModule } from 'primeng/menu';
+import { CarouselModule } from 'primeng/carousel';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { Menu, MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
 import { StepperModule } from 'primeng/stepper';
-import { Toast } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
-import { CarouselModule } from 'primeng/carousel';
+import { forkJoin, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
-import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../../../shared/models/dialog.models';
@@ -28,8 +29,7 @@ import {
 import { recruitment } from '../../../../../../shared/models/stepper.models';
 import {
   FieldType,
-  PaginatedDataActions,
-  TableColumnsData,
+  TableColumnsData
 } from '../../../../../../shared/models/table.models';
 import {
   GetInterviewPanelsResponse,
@@ -51,14 +51,12 @@ import {
 } from '../../../../models/stepper.model';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { InterviewService } from '../../services/interview.service';
-import { forkJoin, of, Observable } from 'rxjs';
-import { catchError, finalize } from 'rxjs/operators';
 import { PaginatedData } from './../../../../../../shared/models/pagination.models';
 import { ScheduleInterviewComponent } from './components/schedule-interview/schedule-interview.component';
 
+import { CandidateService } from '../../services/candidate.service';
 import { RoundCompletionWarningComponent } from './components/round-completion-warning/round-completion-warning.component';
 import { SelectPanelDailogComponent } from './components/select-panel-dailog/select-panel-dailog.component';
-import { CandidateService } from '../../services/candidate.service';
 
 const tableColumns: TableColumnsData = {
   columns: [

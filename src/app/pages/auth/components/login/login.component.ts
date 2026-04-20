@@ -111,7 +111,7 @@ export class LoginComponent implements OnInit {
   }
 
   public forgotPassword(): void {
-    this.router.navigate(['forgot-password']);
+    this.router.navigate(['auth/forgot-password']);
   }
 
   private handleLoginSuccess(res: TokenData): void {

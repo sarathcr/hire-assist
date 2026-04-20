@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
+import { CarouselModule } from 'primeng/carousel';
 
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { InputPasswordComponent } from '../../../../shared/components/form/input-password/input-password.component';
@@ -15,6 +16,12 @@ import {
 import { ResetPasswordChangeData } from '../../models/change-password-data.model';
 import { AuthService } from '../../services/auth.service';
 
+interface Slide {
+  title: string;
+  description: string;
+  icon: string;
+}
+
 @Component({
   selector: 'app-reset-password-change',
   imports: [
@@ -22,7 +29,8 @@ import { AuthService } from '../../services/auth.service';
     ButtonComponent,
     CommonModule,
     ReactiveFormsModule,
-],
+    CarouselModule,
+  ],
   templateUrl: './reset-password-change.component.html',
   styleUrl: './reset-password-change.component.scss',
 })
@@ -32,6 +40,45 @@ export class ResetPasswordChangeComponent implements OnInit {
   public configMap!: ConfigMap;
   public token: string | null = '';
   public id: string | null = '';
+  public slides: Slide[] = [
+    {
+      title: 'Streamline Your Hiring Process',
+      description: 'Efficiently manage candidates, interviews, and assessments all in one place.',
+      icon: '👥',
+    },
+    {
+      title: 'Smart Candidate Assessment',
+      description: 'Evaluate candidates with comprehensive tools and real-time analytics.',
+      icon: '📊',
+    },
+    {
+      title: 'Collaborative Interview Management',
+      description: 'Coordinate with your team and schedule interviews seamlessly.',
+      icon: '🤝',
+    },
+    {
+      title: 'Data-Driven Decisions',
+      description: 'Make informed hiring decisions with detailed insights and reports.',
+      icon: '📈',
+    },
+  ];
+  public responsiveOptions = [
+    {
+      breakpoint: '1024px',
+      numVisible: 1,
+      numScroll: 1,
+    },
+    {
+      breakpoint: '768px',
+      numVisible: 1,
+      numScroll: 1,
+    },
+    {
+      breakpoint: '560px',
+      numVisible: 1,
+      numScroll: 1,
+    },
+  ];
 
   constructor(
     private readonly router: Router,
@@ -75,7 +122,7 @@ export class ResetPasswordChangeComponent implements OnInit {
   }
 
   public backToLogin(): void {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/auth/login']);
   }
 
   private handleResetPasswordSuccess(res: boolean): void {

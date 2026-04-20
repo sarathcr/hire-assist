@@ -60,7 +60,7 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
   // Public
   public ResetPassword(ResetPasswordData: {
     email: string;
-  }): Observable<boolean> {
+  }): Observable<any> {
     const { email } = ResetPasswordData;
 
     const emailForResetPassword = {
@@ -68,7 +68,7 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
     };
 
     return this.http
-      .post<boolean>(RESET_PASSWORD_URL, emailForResetPassword)
+      .post(RESET_PASSWORD_URL, emailForResetPassword, { responseType: 'text' })
       .pipe();
   }
 
