@@ -52,9 +52,9 @@ export class CollectionService implements OnDestroy {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event) => {
         const url = (event as NavigationEnd).url;
-        const isAuthRoute = url.includes('auth/login') || 
-                           url.includes('auth/forgot-password') || 
-                           url.includes('auth/reset-password');
+        const isAuthRoute = url.includes('/login') || 
+                           url.includes('/forgot-password') || 
+                           url.includes('/reset-password');
         
         if (!isAuthRoute && this.storeService.isAuthenticated()) {
           this.getCollection(true);

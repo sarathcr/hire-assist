@@ -57,7 +57,7 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
   }
 
   public logout(): void {
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/login']);
     this.storeService.reset();
   }
 
@@ -73,7 +73,7 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (e) {
         this.storeService.setTokenData(initialTokenData);
-        this.router.navigateByUrl('auth/login');
+        this.router.navigateByUrl('login');
         throw new HttpErrorResponse({ error, status });
       }
     } else {

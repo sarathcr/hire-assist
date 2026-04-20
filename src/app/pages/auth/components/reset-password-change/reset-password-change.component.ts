@@ -122,7 +122,7 @@ export class ResetPasswordChangeComponent implements OnInit {
   }
 
   public backToLogin(): void {
-    this.router.navigate(['/auth/login']);
+    this.router.navigate(['/login']);
   }
 
   private handleResetPasswordSuccess(res: boolean): void {

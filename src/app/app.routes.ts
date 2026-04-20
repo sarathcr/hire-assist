@@ -44,7 +44,7 @@ import { ProfileComponent } from './shared/pages/profile/profile.component';
 
 export const routes: Routes = [
   {
-    path: 'auth',
+    path: '',
     component: AuthComponent,
     children: [
       { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -55,22 +55,6 @@ export const routes: Routes = [
         component: ResetPasswordChangeComponent,
       },
     ],
-  },
-  {
-    path: '',
-    redirectTo: 'auth',
-    pathMatch: 'full',
-  },
-  { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
-  {
-    path: 'forgot-password',
-    redirectTo: 'auth/forgot-password',
-    pathMatch: 'full',
-  },
-  {
-    path: 'reset-password',
-    redirectTo: 'auth/reset-password',
-    pathMatch: 'full',
   },
   {
     path: 'admin',
