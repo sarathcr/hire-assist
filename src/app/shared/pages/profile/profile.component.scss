@@ -1,256 +1,771 @@
-@use "sass:list";
+@use "sass:math";
+@use "sass:color";
+
+// ─── Design Tokens ───────────────────────────────────────────────────────────
+$primary:        #4f46e5;
+$primary-dark:   #3730a3;
+$primary-light:  #eef2ff;
+$violet:         #7c3aed;
+$violet-light:   #f5f3ff;
+$green:          #059669;
+$green-light:    #ecfdf5;
+$orange:         #ea580c;
+$orange-light:   #fff7ed;
+$blue:           #2563eb;
+$blue-light:     #eff6ff;
+
+$card-radius: 16px;
+$card-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+$card-shadow-hover: 0 4px 8px rgba(0,0,0,.08), 0 12px 32px rgba(0,0,0,.1);
+
+// ─── Page Shell ──────────────────────────────────────────────────────────────
 .profile {
-  height: 100%;
+  min-height: 100vh;
+  background: #f1f5f9;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 
-  &__content {
-    width: 100%;
-    margin-top: var(--spacing-30);
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
-    &-wrapper {
-      display: flex;
-      gap: 2rem;
-      width: 100%;
-      max-height: calc(100% - 235px);
-    }
-  }
-  &__sidebar {
-    width: 300px;
-    flex-shrink: 0;
-    margin-top: -100px;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  &__card {
-    padding: var(--spacing-10);
-    border-radius: 6px;
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+  // ─── Hero ────────────────────────────────────────────────────────────────
+  &__hero {
     position: relative;
+    height: 220px;
     overflow: hidden;
-    &__name {
-      font-size: var(--font-size-2xl);
-      font-weight: 600;
-      color: var(--color-text-primary);
-      text-align: center;
-    }
-    &__role {
-      font-size: var(--font-size-lg);
-      color: var(--color-text-secondary);
-      text-align: center;
-      margin-top: var(--spacing-10);
-    }
-  }
 
-  &__circle-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 6px;
-    background-color: var(--color-white);
-  }
-  &__skills {
-    margin-top: var(--spacing-20);
-    padding: var(--spacing-10) var(--spacing-20) var(--spacing-20)
-      var(--spacing-20);
-    position: relative;
-    background-color: var(--color-white);
-    flex-grow: 1;
-    &__title {
-      font-size: var(--font-size-lg);
-      margin-top: 0;
-      font-weight: 600;
-      color: var(--color-text-primary);
-      margin-bottom: var(--spacing-10);
+    @media (max-width: 768px) {
+      height: 160px;
     }
-    &__list {
+
+    &-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 70%, #6d28d9 100%);
+      z-index: 0;
+    }
+
+    &-cover {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      transition: opacity .35s ease;
+
+      &--loading { opacity: 0; pointer-events: none; }
+    }
+
+    &-loader {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
       display: flex;
-      flex-wrap: wrap;
-      gap: var(--spacing-10);
-      list-style: none;
-      padding: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: .75rem;
+      background: rgba(30, 27, 75, .55);
+      backdrop-filter: blur(6px);
+    }
+
+    &-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255,255,255,.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: profile-spin .8s linear infinite;
+    }
+
+    &-loader-text {
+      font-size: .85rem;
+      color: rgba(255,255,255,.85);
+      font-weight: 500;
       margin: 0;
     }
-    &__item {
-      border: 1px solid var(--color-grey-light);
-      padding: 0 var(--spacing-20);
-      border-radius: 4px;
-      font-size: var(--font-size-base);
-      color: var(--color-text-secondary);
-      line-height: 10px;
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-10);
-      justify-content: space-between;
 
-      p {
-        margin: 0;
-        flex: 1;
-      }
-
-      &__delete {
-        flex-shrink: 0;
-        padding: 0;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-    }
-    &__button {
-      margin-bottom: var(--spacing-20);
-      &__icon {
+    ::ng-deep {
+      .cover-image {
         position: absolute;
-        right: var(--spacing-15);
-        font-size: var(--font-size-extra-small);
-        color: var(--primary-color);
-        cursor: pointer;
-        ::ng-deep {
+        inset: 0;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+
+        &__bg { background: transparent !important; }
+        &__img { width: 100%; height: 100%; object-fit: cover; opacity: .3; }
+        &__icon {
+          z-index: 10;
+          bottom: 16px;
+          right: 16px;
           .p-button {
-            background-color: var(--color-white);
-            color: var(--primary-color);
-            box-shadow:
-              0 3px 1px -2px rgba(0, 0, 0, 0.1),
-              0 2px 2px 0 rgba(0, 0, 0, 0.08),
-              0 1px 5px 0 rgba(0, 0, 0, 0.06);
+            background: rgba(255,255,255,.2) !important;
+            border: 1px solid rgba(255,255,255,.3) !important;
+            color: #fff !important;
+            backdrop-filter: blur(8px);
           }
         }
       }
     }
   }
-  &__avatar,
-  &__card__name,
-  &__card__role {
+
+  @keyframes profile-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  // ─── Identity Strip ──────────────────────────────────────────────────────────
+  &__identity {
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 0 rgba(0,0,0,.04);
+    position: relative;
+    z-index: 10;
+    padding: 0 2rem;
+
+    @media (max-width: 768px) {
+      padding: 0 1rem;
+    }
+  }
+
+  &__identity-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    gap: 1.5rem;
+    padding-bottom: 1.5rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding-bottom: 2rem;
+      gap: 1rem;
+    }
+  }
+
+
+  &__identity-info {
+    flex: 1;
+    padding-top: .75rem;
+
+    @media (max-width: 768px) {
+      padding-top: 0;
+    }
+  }
+
+  &__identity-name {
+    font-size: 1.625rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 .85rem;
+    letter-spacing: -.025em;
+  }
+
+  &__identity-meta {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+      justify-content: center;
+      gap: .5rem;
+    }
+  }
+
+  &__identity-actions { padding-top: 1rem; }
+
+  &__meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    padding: .35rem 1rem;
+    font-size: .8rem;
+    color: #475569;
+    font-weight: 500;
+    white-space: nowrap;
+    line-height: 1;
+    i { font-size: .75rem; color: $primary; }
+
+    // Role chip — same shape, subtle indigo tint
+    &--primary {
+      background: $primary-light;
+      color: $primary;
+      border-color: rgba($primary, .2);
+      font-weight: 700;
+      i { color: $primary; }
+    }
+  }
+
+  // ─── Avatar ──────────────────────────────────────────────────────────────
+  &__avatar-wrap {
+    position: relative;
+    // Pull avatar up to overlap the hero
+    margin-top: -56px;
+    flex-shrink: 0;
+
+    @media (max-width: 768px) {
+      margin-top: -48px;
+    }
+  }
+
+  &__avatar-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $primary, $violet);
+    z-index: 0;
+  }
+
+  &__avatar-skeleton {
     position: relative;
     z-index: 1;
-  }
-
-  &__avatar {
-    width: 150px;
-    height: 150px;
-    margin: auto;
+    border: 4px solid #fff;
     border-radius: 50%;
     overflow: hidden;
-    
-    &__img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-    }
-    &__bg {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-      background-color: var(--background-secondary);
+  }
+
+  &__avatar-img {
+    position: relative;
+    z-index: 1;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #fff;
+    display: block;
+    transition: transform .25s ease;
+
+    &:hover { transform: scale(1.03); }
+  }
+
+  &__avatar-initials {
+    position: relative;
+    z-index: 1;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    background: linear-gradient(135deg, $primary, $violet);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #fff;
+    transition: transform .25s ease;
+
+    &:hover { transform: scale(1.03); }
+  }
+
+  // Edit pencil icon overlaid on avatar bottom-right
+  &__avatar-edit {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    z-index: 10;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: $primary;
+    color: #fff;
+    border: 2.5px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba($primary,.4);
+    transition: background .2s, transform .2s;
+
+    &:hover {
+      background: $primary-dark;
+      transform: scale(1.12);
     }
   }
-  &__button {
-    margin-bottom: var(--spacing-10);
-    &__icon {
-      position: absolute;
-      right: var(--spacing-15);
-      font-size: var(--font-size-extra-small);
-      color: var(--primary-color);
-      cursor: pointer;
-      ::ng-deep {
-        .p-button {
-          background-color: var(--color-white);
-          color: var(--primary-color);
-          box-shadow:
-            0 3px 1px -2px rgba(0, 0, 0, 0.1),
-            0 2px 2px 0 rgba(0, 0, 0, 0.08),
-            0 1px 5px 0 rgba(0, 0, 0, 0.06);
-        }
+
+  // ─── Edit Button ─────────────────────────────────────────────────────────
+  &__btn-edit {
+    ::ng-deep .p-button {
+      background: $primary !important;
+      border-color: $primary !important;
+      border-radius: 10px !important;
+      font-weight: 600 !important;
+      padding: .6rem 1.25rem !important;
+      transition: all .2s ease !important;
+      box-shadow: 0 2px 8px rgba($primary, .35) !important;
+
+      &:hover {
+        background: $primary-dark !important;
+        border-color: $primary-dark !important;
+        box-shadow: 0 4px 16px rgba($primary, .45) !important;
+        transform: translateY(-1px);
       }
     }
   }
 
-  ::ng-deep {
-    .p-tabs {
-      height: 100%;
+  // ─── Grid ────────────────────────────────────────────────────────────────
+  &__grid {
+    max-width: 1200px;
+    margin: 1.75rem auto;
+    padding: 0 2rem 3rem;
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+      padding: 0 1rem 3rem;
     }
-    .p-tabpanels {
-      flex-grow: 1;
+
+    @media (max-width: 360px) {
+      padding: 0 0.5rem 2rem;
     }
   }
 
-  @media (max-width: 1024px) {
-    &__content {
-      &-wrapper {
-        flex-direction: column;
-        gap: var(--spacing-20);
-        max-height: none;
+  &__col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  // ─── Cards ───────────────────────────────────────────────────────────────
+  &__card {
+    background: #fff;
+    border-radius: $card-radius;
+    border: 1px solid #e2e8f0;
+    box-shadow: $card-shadow;
+    padding: 1.5rem;
+    transition: box-shadow .2s ease;
+
+    @media (max-width: 640px) {
+      padding: 1.25rem;
+    }
+
+    &:hover { box-shadow: $card-shadow-hover; }
+
+    &--interviews { flex: 1 1 auto; }
+    &--resume, &--strength { flex: 1; }
+  }
+
+  &__card-head {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  &__card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .9rem;
+    flex-shrink: 0;
+
+    &--blue   { background: $blue-light;   color: $blue;   }
+    &--violet { background: $violet-light; color: $violet; }
+    &--green  { background: $green-light;  color: $green;  }
+    &--orange { background: $orange-light; color: $orange; }
+  }
+
+  &__card-title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    flex: 1;
+    letter-spacing: -.01em;
+  }
+
+  &__badge {
+    padding: .2rem .6rem;
+    border-radius: 9999px;
+    font-size: .75rem;
+    font-weight: 600;
+
+    &--green { background: $green-light; color: $green; }
+  }
+
+  // ─── Add button ──────────────────────────────────────────────────────────
+  &__add-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1.5px dashed $primary;
+    background: $primary-light;
+    color: $primary;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .8rem;
+    transition: all .2s;
+
+    &:hover {
+      background: $primary;
+      color: #fff;
+      border-style: solid;
+    }
+  }
+
+  &__edit-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #f8fafc;
+    color: #475569;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .85rem;
+    transition: all .25s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+
+    &:hover {
+      background: $primary-light;
+      color: $primary;
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba($primary, .15);
+    }
+  }
+
+  // ─── Skills ──────────────────────────────────────────────────────────────
+  &__skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  &__skill-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    background: $violet-light;
+    color: $violet;
+    border: 1px solid color.adjust($violet-light, $lightness: -8%);
+    padding: .3rem .75rem;
+    border-radius: 9999px;
+    font-size: .8rem;
+    font-weight: 600;
+  }
+
+  &__skill-remove {
+    background: none;
+    border: none;
+    color: $violet;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    font-size: .65rem;
+    opacity: .6;
+    transition: opacity .2s;
+
+    &:hover { opacity: 1; }
+  }
+
+  // ─── Empty States ────────────────────────────────────────────────────────
+  &__empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+
+    &--center { padding: 3rem 2rem; }
+  }
+
+  &__empty-icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: .75rem;
+
+    &--violet { background: $violet-light; color: $violet; }
+    &--green  { background: $green-light;  color: $green;  }
+  }
+
+  &__empty-illustration {
+    position: relative;
+    margin-bottom: 1.25rem;
+    i {
+      font-size: 3.5rem;
+      color: #cbd5e1;
+    }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  &__empty-dots {
+    display: flex;
+    gap: .3rem;
+    span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+  }
+
+  &__empty-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #334155;
+    margin: 0;
+  }
+
+  &__empty-sub {
+    font-size: .85rem;
+    color: #94a3b8;
+    margin: 0;
+    max-width: 340px;
+    line-height: 1.5;
+  }
+
+  &__empty-action {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    margin-top: .75rem;
+    padding: .55rem 1.25rem;
+    border-radius: 9px;
+    background: $primary;
+    color: #fff;
+    border: none;
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: 0 2px 8px rgba($primary, .3);
+
+    &:hover {
+      background: $primary-dark;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba($primary, .4);
+    }
+
+    &--outline {
+      background: transparent;
+      color: $primary;
+      border: 1.5px solid $primary;
+      box-shadow: none;
+
+      &:hover {
+        background: $primary-light;
+        box-shadow: none;
+        transform: translateY(-1px);
       }
     }
-    &__sidebar {
-      width: 100%;
-      margin-top: var(--spacing-20);
-    }
-    &__content {
-      margin-top: var(--spacing-20);
+  }
+
+  // ─── Interviews ──────────────────────────────────────────────────────────
+  &__interviews-list { display: flex; flex-direction: column; gap: .75rem; }
+
+  &__interview-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .85rem 1rem;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+    background: #fafafa;
+    transition: background .2s;
+
+    &:hover { background: $primary-light; border-color: color.adjust($primary-light, $lightness: -5%); }
+  }
+
+  &__interview-date {
+    width: 48px;
+    height: 52px;
+    background: $primary;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+  }
+
+  &__interview-day   { font-size: 1.2rem; font-weight: 800; line-height: 1; }
+  &__interview-month { font-size: .65rem; font-weight: 600; opacity: .85; }
+
+  &__interview-info  { flex: 1; }
+  &__interview-time  { font-size: .9rem; font-weight: 700; color: #1e293b; margin: 0; }
+  &__interview-label { font-size: .8rem; color: #94a3b8; margin: .1rem 0 0; }
+  &__interview-status {
+    font-size: .75rem;
+    font-weight: 600;
+    color: $green;
+    background: $green-light;
+    padding: .25rem .65rem;
+    border-radius: 99px;
+  }
+
+  // ─── Bottom Row ──────────────────────────────────────────────────────────
+  &__bottom-row {
+    display: flex;
+    gap: 1.5rem;
+
+    @media (max-width: 640px) {
+      flex-direction: column;
     }
   }
 
+  // ─── Upload Zone ─────────────────────────────────────────────────────────
+  &__upload-zone {
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
+    padding: 1.75rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .4rem;
+    transition: border-color .2s, background .2s;
+    cursor: pointer;
+
+    &:hover {
+      border-color: $primary;
+      background: $primary-light;
+    }
+  }
+
+  &__upload-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: $orange-light;
+    color: $orange;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: .5rem;
+  }
+
+  &__upload-text {
+    font-size: .9rem;
+    font-weight: 600;
+    color: #334155;
+    margin: 0;
+  }
+
+  &__upload-sub {
+    font-size: .78rem;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  // ─── Strength ────────────────────────────────────────────────────────────
+  &__strength {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+
+    @media (max-width: 500px) {
+      flex-direction: column;
+    }
+  }
+
+  &__strength-ring {
+    position: relative;
+    flex-shrink: 0;
+    width: 90px;
+    height: 90px;
+  }
+
+  &__strength-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  &__strength-track {
+    fill: none;
+    stroke: #e2e8f0;
+    stroke-width: 8;
+  }
+
+  &__strength-fill {
+    fill: none;
+    stroke: url(#strengthGrad);
+    stroke: $primary;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset .6s ease;
+  }
+
+  &__strength-pct {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: $primary;
+  }
+
+  &__strength-info { flex: 1; }
+
+  &__strength-label {
+    font-size: .85rem;
+    font-weight: 500;
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+
+    @media (max-width: 480px) {
+      white-space: normal;
+      text-align: center;
+      word-break: break-all;
+    }
+  }
+
+  &__strength-steps { display: flex; flex-direction: column; gap: .4rem; }
+
+  &__strength-step {
+    font-size: .78rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+
+    i { font-size: .8rem; }
+
+    &--done {
+      color: $green;
+      i { color: $green; }
+    }
+  }
+
+  // ─── Responsive ──────────────────────────────────────────────────────────
   @media (max-width: 768px) {
-    &__content {
-      &-wrapper {
-        gap: var(--spacing-15);
-      }
+    &__identity { padding: 0 1rem; }
+    &__grid { padding: 0 1rem 3rem; margin: 1.25rem auto; }
+    &__identity-inner {
+      flex-wrap: wrap;
+      gap: 1rem;
     }
-    &__sidebar {
-      margin-top: var(--spacing-15);
-    }
-    &__card {
-      padding: var(--spacing-15);
-    }
-    &__avatar {
-      width: 120px;
-      height: 120px;
-    }
-    &__card__name {
-      font-size: var(--font-size-xl);
-    }
-    &__card__role {
-      font-size: var(--font-size-base);
-    }
-    &__skills {
-      padding: var(--spacing-15);
-    }
-  }
-}
-.circle {
-  position: absolute;
-  border-radius: 50%;
-}
-
-$circles-list:
-  (6px, rgba(118, 110, 7, 0.7), 48%, 20%),
-  (8px, rgba(16, 224, 224, 0.7), 18%, 8%),
-  (7px, rgba(243, 156, 18, 0.7), 9%, 26%),
-  (5px, rgba(46, 204, 113, 0.7), 34%, 7%),
-  (5px, rgba(155, 89, 182, 0.7), 6%, 43%),
-  (3px, rgba(231, 76, 60, 0.7), 25%, 18%),
-  (8px, rgba(52, 152, 219, 0.7), 53%, 30%),
-  (5px, rgba(241, 196, 15, 0.7), 6%, 69%),
-  (5px, rgba(26, 188, 156, 0.7), 31%, 79%),
-  (6px, rgba(230, 126, 34, 0.7), 37%, 93%),
-  (9px, rgba(142, 68, 173, 0.7), 50%, 90%),
-  (5px, rgba(192, 57, 43, 0.7), 58%, 60%),
-  (4px, rgba(41, 128, 185, 0.7), 14%, 80%),
-  (6px, rgba(39, 174, 96, 0.7), 48%, 82%),
-  (9px, rgba(211, 84, 0, 0.7), 22%, 77%);
-
-@for $i from 1 through list.length($circles-list) {
-  .circle:nth-child(#{$i}) {
-    $circle-properties: list.nth($circles-list, $i);
-    width: list.nth($circle-properties, 1);
-    height: list.nth($circle-properties, 1);
-    background: list.nth($circle-properties, 2);
-    top: list.nth($circle-properties, 3);
-    left: list.nth($circle-properties, 4);
+    &__identity-actions { width: 100%; }
+    &__avatar-wrap { margin-top: -44px; }
+    &__avatar-img, &__avatar-initials { width: 88px; height: 88px; }
   }
 }

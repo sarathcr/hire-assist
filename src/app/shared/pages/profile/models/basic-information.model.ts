@@ -1,6 +1,6 @@
-import { Metadata } from '../../../utilities/form.utility';
+import { FormEntity, Metadata } from '../../../utilities/form.utility';
 
-export class BasicInformation {
+export class BasicInformation extends FormEntity {
   name = '';
   email = '';
   phone = '';

@@ -19,6 +19,7 @@ export interface SkillsDialogData {
 
 @Component({
   selector: 'app-skills-dialog',
+  standalone: true,
   imports: [
     ButtonComponent,
     InputMultiselectComponent,

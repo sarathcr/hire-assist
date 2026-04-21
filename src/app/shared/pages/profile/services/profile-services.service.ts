@@ -40,6 +40,13 @@ export class ProfileServicesService extends ApiService<any> {
       `${this.getResourceUrl()}/get-detailsBy-user`,
     );
   }
+
+  public updatePersonalDetails(payload: any): Observable<void> {
+    return this.httpClient.put<void>(
+      `${this.getResourceUrl()}/update-user-details`,
+      payload,
+    );
+  }
   public GetPhoto(blobId: string, attachmentTypeId: number): Observable<Blob> {
     const url = `${ASSESSMENT_URL}/files?blobId=${blobId}&attachmentId=${attachmentTypeId}`;
     return this.httpClient.get(url, { responseType: 'blob' });

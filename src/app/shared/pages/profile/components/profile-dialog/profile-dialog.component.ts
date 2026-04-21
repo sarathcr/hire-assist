@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit, DoCheck, ChangeDetectorRef } from '@angular/core';
+import { MessageService } from 'primeng/api';
 import { InputTextComponent } from '../../../../components/form/input-text/input-text.component';
 import { ButtonComponent } from '../../../../components/button/button.component';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -13,8 +14,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-profile-dialog',
+  standalone: true,
   imports: [
-    InputTextComponent,
     ButtonComponent,
     ImageModule,
     ButtonModule,
@@ -42,6 +43,7 @@ export class ProfileDialogComponent
     private ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
     private cdr: ChangeDetectorRef,
+    private messageService: MessageService,
   ) {
     super();
   }
@@ -114,7 +116,13 @@ export class ProfileDialogComponent
         return;
       }
       
-      if (file.size > 1000000) {
+      if (file.size > 2 * 1024 * 1024) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'File Too Large',
+          detail: 'Image size must not exceed 2 MB.',
+        });
+        input.value = '';
         return;
       }
       

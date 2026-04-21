@@ -25,12 +25,16 @@
       @if (isLoadingProfileImage) {
         <p-skeleton shape="circle" [width]="isMobile ? '30px' : '50px'" [height]="isMobile ? '30px' : '50px'" />
       } @else {
-        <app-drop-down class="dropdown"
-          ><img
-            [src]="profileImageUrl || 'avatar.png'"
-            alt="avatar"
-            (error)="onImageError()"
-        /></app-drop-down>
+        <app-drop-down class="dropdown">
+          <div class="header__profile-trigger">
+            <img
+              [src]="profileImageUrl || 'avatar.png'"
+              alt="avatar"
+              (error)="onImageError()"
+            />
+            <i class="pi pi-chevron-down header__profile-chevron"></i>
+          </div>
+        </app-drop-down>
       }
     </div>
   </div>

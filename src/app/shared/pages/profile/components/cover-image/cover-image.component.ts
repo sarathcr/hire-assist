@@ -4,6 +4,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-cover-image',
+  standalone: true,
   imports: [ButtonModule, SkeletonModule],
   templateUrl: './cover-image.component.html',
   styleUrl: './cover-image.component.scss',

@@ -1,0 +1,52 @@
+<div class="personal-dialog">
+  <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+    <div class="personal-dialog__grid">
+      <!-- Email -->
+      <div class="personal-dialog__field">
+        <app-input-text 
+          [formGroup]="formGroup" 
+          [config]="configMap['email']" 
+          type="email"
+        ></app-input-text>
+      </div>
+
+      <!-- Phone -->
+      <div class="personal-dialog__field">
+        <app-input-text 
+          [formGroup]="formGroup" 
+          [config]="configMap['phone']" 
+          type="tel"
+        ></app-input-text>
+      </div>
+
+      <!-- DOB -->
+      <div class="personal-dialog__field">
+        <app-input-text-calender 
+          [formGroup]="formGroup" 
+          [config]="configMap['dob']"
+        ></app-input-text-calender>
+      </div>
+
+      <!-- Gender -->
+      <div class="personal-dialog__field">
+        <app-input-select 
+          [formGroup]="formGroup" 
+          [config]="configMap['gender']"
+        ></app-input-select>
+      </div>
+    </div>
+
+    <footer class="personal-dialog__footer">
+      <app-button 
+        [buttonLabel]="'Cancel'" 
+        (btnClick)="onClose()" 
+        [buttonVariant]="'outlined'"
+      ></app-button>
+      <app-button 
+        [buttonLabel]="'Save Changes'" 
+        (btnClick)="onSubmit()"
+        [disabled]="formGroup.invalid"
+      ></app-button>
+    </footer>
+  </form>
+</div>

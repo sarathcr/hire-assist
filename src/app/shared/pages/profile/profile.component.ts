@@ -1,9 +1,9 @@
+import { UpperCasePipe, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { TabsModule } from 'primeng/tabs';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
 import { BaseComponent } from '../../components/base/base.component';
@@ -15,6 +15,7 @@ import { BasicInformationComponent } from './components/basic-information/basic-
 import { CoverImageComponent } from './components/cover-image/cover-image.component';
 import { ProfileDialogComponent } from './components/profile-dialog/profile-dialog.component';
 import { SkillsDialogComponent, SkillsDialogData } from './components/skills-dialog/skills-dialog.component';
+import { PersonalDetailsDialogComponent } from './components/personal-details-dialog/personal-details-dialog.component';
 import { ProfileDetails, SkillsDto } from './models/basic-information.model';
 import { Profile, ProfileForm } from './models/profile.model';
 import { ProfileServicesService } from './services/profile-services.service';
@@ -22,14 +23,16 @@ import { ProfileSkeletonComponent } from './profile-skeleton.component';
 
 @Component({
   selector: 'app-profile',
+  standalone: true,
   imports: [
-    TabsModule,
     BasicInformationComponent,
     CoverImageComponent,
     ButtonModule,
     ProfileSkeletonComponent,
     SkeletonModule,
     TooltipModule,
+    UpperCasePipe,
+    DatePipe,
   ],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss'],
@@ -51,6 +54,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
   public isLoading = true;
   public isLoadingCoverImage = false;
   public isLoadingProfileImage = false;
+  public userRole: string = '';
 
   constructor(
     private readonly profileServices: ProfileServicesService,
@@ -64,8 +68,67 @@ export class ProfileComponent extends BaseComponent implements OnInit {
   ngOnInit(): void {
     this.getProfileDetails();
     this.setConfigMaps();
+    this.loadUserRole();
   }
+
+  private loadUserRole(): void {
+    const roles = this.storeService.getUserRole();
+    if (roles && roles.length > 0) {
+      // Capitalize first letter of each role word
+      this.userRole = roles
+        .map(r => r.replace(/([a-z])([A-Z])/g, '$1 $2'))
+        .map(r => r.charAt(0).toUpperCase() + r.slice(1))
+        .join(', ');
+    }
+  }
+
+  private readonly MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB
+  private readonly ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
+
+  private isValidImage(file: File): boolean {
+    // 1. Type validation
+    if (!this.ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Invalid File Type',
+        detail: 'Only JPG and PNG images are allowed.',
+      });
+      return false;
+    }
+
+    // 2. Size validation
+    if (file.size > this.MAX_IMAGE_SIZE_BYTES) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'File Too Large',
+        detail: 'Image size must not exceed 2 MB.',
+      });
+      return false;
+    }
+
+    return true;
+  }
+
+  /** Called from the avatar's hidden file input */
+  public onProfileImageFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    if (!this.isValidImage(file)) {
+      input.value = '';
+      return;
+    }
+
+    this.onProfileImageUpload(file);
+    input.value = '';
+  }
+
   public onCoverImageUpload(file: File): void {
+    if (!this.isValidImage(file)) {
+      return;
+    }
+
     this.isLoadingCoverImage = true;
     const payload: FileRequest = {
       attachmentType: AttachmentTypeEnum.CoverImage,
@@ -76,13 +139,58 @@ export class ProfileComponent extends BaseComponent implements OnInit {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'File uploaded successfully',
+          detail: 'Cover photo updated successfully',
         });
         this.getProfileDetails();
       },
-      error: (error) => {
+      error: () => {
         this.isLoadingCoverImage = false;
       },
+    });
+  }
+
+  public onEditPersonalDetails(): void {
+    const ref = this.dialog.open(PersonalDetailsDialogComponent, {
+      data: {
+        userDetails: this.profileDetailsDataSource,
+      },
+      header: 'Update Personal Details',
+      width: '600px',
+      modal: true,
+      breakpoints: {
+        '640px': '90vw',
+      },
+    });
+
+    ref.onClose.subscribe((data) => {
+      if (data) {
+        const payload = {
+          name: this.profileDetailsDataSource?.name || '',
+          email: data.email,
+          phoneNumber: data.phone,
+          dob: data.dob ? new Date(data.dob).toISOString().split('T')[0] : null,
+          gender: data.gender,
+          designation: '',
+        };
+        
+        this.profileServices.updatePersonalDetails(payload).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Personal details updated successfully',
+            });
+            this.getProfileDetails();
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to update personal details',
+            });
+          },
+        });
+      }
     });
   }
 
