@@ -14,7 +14,9 @@
       padding: .6rem 0;
     }
 
-    &:last-child { border-bottom: none; }
+    &:last-child {
+      border-bottom: none;
+    }
   }
 
   &__label {
@@ -30,6 +32,7 @@
     font-weight: 500;
     color: #1e293b;
     margin: 0;
+    word-break: break-all;
 
     &--empty {
       color: #cbd5e1;
