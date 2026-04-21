@@ -93,6 +93,25 @@
       font-weight: 500;
       border: 1px solid rgba(255, 255, 255, 0.3);
       white-space: nowrap;
+      transition: all 0.3s ease;
+
+      &--disabled {
+        opacity: 0.6 !important;
+        cursor: not-allowed !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+        filter: grayscale(0.4);
+        pointer-events: auto;
+
+        &:hover {
+          transform: none !important;
+          box-shadow: none !important;
+        }
+
+        i {
+          opacity: 0.7;
+        }
+      }
 
       i {
         font-size: clamp(14px, 1.8vw + 0.25rem, 16px);
@@ -820,19 +839,20 @@
 
   &__table-container {
     flex: 1;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
-    min-height: 0;
+    min-height: 400px;
+    max-height: calc(100vh - 300px);
+    background-color: var(--color-white);
+    border-radius: 12px;
+    overflow: hidden;
 
-    ::ng-deep {
-      .p-datatable-table-container {
-        max-height: calc(100vh - 500px);
-        height: auto;
-        width: 100%;
-        overflow-y: auto;
-        background-color: var(--color-white);
-      }
+    app-table {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      width: 100%;
     }
   }
 
@@ -1210,13 +1230,8 @@
     }
 
     &__table-container {
-      ::ng-deep {
-        .p-datatable-table-container {
-          max-height: calc(100vh - 400px);
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-      }
+      min-height: 350px;
+      max-height: calc(100vh - 350px);
     }
 
     &__rounds-footer {
@@ -1362,16 +1377,8 @@
 
     &__table-container {
       width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-
-      ::ng-deep {
-        .p-datatable-table-container {
-          max-height: calc(100vh - 350px);
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-      }
+      min-height: 350px;
+      max-height: 60vh;
     }
 
     &__actions {

@@ -53,7 +53,7 @@
           @for (group of invalidGroups(); track group.groupId; let idx = $index) {
             <div 
               class="duplicates__invalid-item" 
-              [class.duplicates__invalid-item--active]="activeGroupId === group.groupId"
+              [class.active]="activeGroupId === group.groupId"
               (click)="onDuplicateRecordClick(group.candidates, group.groupId)"
             >
               <div class="duplicates__invalid-item__info">
@@ -166,7 +166,7 @@
           icon="pi pi-arrow-right"
           iconPos="right"
           (btnClick)="onSubmit()"
-          [disabled]="!selectedPanelId() || isLoading()"
+          [disabled]="!selectedPanelId() || isLoading() || !isSelectedCandidateValid()"
         ></app-button>
       }
     </div>

@@ -631,7 +631,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
-      return status === 'pending' || status === 'active';
+      return status === 'pending' || status === 'active' || status === 'assigned to panel';
     });
   }
 
@@ -657,7 +657,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
-      return status === 'selected' || status === 'pending' || status === 'active';
+      return status === 'selected' || status === 'pending' || status === 'active' || status === 'assigned to panel';
     });
 
     if (!hasValidStatus) {
@@ -799,7 +799,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     const hasInvalidStatus = selected.some(
       (c: InterviewSummary) =>
-        !['selected', 'pending', 'active'].includes(
+        !['selected', 'pending', 'active', 'assigned to panel'].includes(
           c.status?.toLowerCase().trim() ?? '',
         ),
     );
@@ -809,7 +809,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         severity: 'warn',
         summary: 'Warning',
         detail:
-          'Only candidates with status "Selected", "Pending", or "Active" can be scheduled.',
+          'Only candidates with status "Selected", "Pending", "Active", or "Assigned to Panel" can be scheduled.',
       });
       return;
     }
@@ -905,14 +905,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         assessmentid: this.assessmentId,
         interviewId: this.selectedCandidates[0].id,
       },
-      showHeader: false,
-      maximizable: false,
-      width: '60vw',
+      header: 'Assign Candidate to Panel',
+      showHeader: true,
       modal: true,
-      focusOnShow: false,
-      closable: false,
-      dismissableMask: true,
-      styleClass: 'select-panel-dialog-wrapper',
+      width: '60vw',
+      styleClass: 'standard-dialog-wrapper',
       breakpoints: {
         '960px': '85vw',
         '640px': '95vw',
@@ -2066,11 +2063,21 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       });
   }
   public navigateToSummary(): void {
+    if (!this.isAllRoundsCompleted) {
+      return;
+    }
     if (this.assessmentId) {
       this.router.navigate([
         '/admin/recruitments/recruitment-summary',
         this.assessmentId,
       ]);
     }
+  }
+
+  public get isAllRoundsCompleted(): boolean {
+    if (!this.step || this.step.length === 0) {
+      return false;
+    }
+    return this.step.every((round) => round.status === 'Completed');
   }
 }

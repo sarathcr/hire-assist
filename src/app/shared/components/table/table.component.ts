@@ -114,6 +114,7 @@ export class TableComponent<
   @Input() onLoadOptionImage?: (id: number) => void;
   @ViewChild('dt') table!: Table;
   @Input() hasCheckbox = true;
+  @Input() fillHeight = false;
   public isFirstLazyLoad = true;
   private lastPaginationCall: {
     payload: PaginatedPayload;

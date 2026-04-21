@@ -1,4 +1,4 @@
-<div class="table" [class.table-loading]="isLoading()">
+<div class="table" [class.table--fill]="fillHeight" [class.table-loading]="isLoading()">
   <p-table
     #dt
     [value]="displayData() || []"
@@ -98,7 +98,7 @@
                 ? headerColumn.field
                 : ''
             "
-            [style.minWidth.px]="150"
+            [style.minWidth.px]="120"
             [ngClass]="
               headerColumn.field === 'actions' ||
               headerColumn.field === 'button' ||

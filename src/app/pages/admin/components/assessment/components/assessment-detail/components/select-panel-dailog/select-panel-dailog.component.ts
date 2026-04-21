@@ -484,6 +484,7 @@ export class SelectPanelDailogComponent implements OnInit {
       assessmentId: this.assessmentId,
       interviewId: Number(this.intrviewid),
       panelId: selectedPanel.id,
+      panel: pName,
       interviewers: selectedInterviewerIds,
     };
 
@@ -638,7 +639,8 @@ export class SelectPanelDailogComponent implements OnInit {
     const payloaddata: InterviewPanelsResponse = {
       assessmentId: this.assessmentId,
       interviewId: Number(payload.interviewId),
-      panel: this.selectedPanelForAssignment.panelName,
+      panelId: Number(payload.panelId),
+      panel: this.selectedPanelForAssignment.name || (this.selectedPanelForAssignment as any).panelName || (this.selectedPanelForAssignment as any).panel || 'the panel',
       interviewer: payload.interviewers,
     };
     this.interviewservice.updateinterviewpanel(payloaddata).subscribe({

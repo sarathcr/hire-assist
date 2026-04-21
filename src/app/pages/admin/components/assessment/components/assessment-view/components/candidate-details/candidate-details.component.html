@@ -35,12 +35,17 @@
               <div class="candidate-details__text-wrapper">
                 <span class="candidate-details__text-value">{{ formatValue(entry.label, entry.value) }}</span>
                 <div class="candidate-details__actions">
-                  @if (entry.label === 'Aadhaar Number') {
+                  @if (entry.label === 'Aadhaar Number' && data()?.['isInvalidRecord']) {
                     <i [class]="isAadhaarVisible() ? 'pi pi-eye-slash' : 'pi pi-eye'" 
                        class="candidate-details__action-icon" 
                        (click)="toggleAadhaarVisibility()" 
                        [pTooltip]="isAadhaarVisible() ? 'Hide Aadhaar' : 'Show Aadhaar'"></i>
                     <i class="pi pi-pencil candidate-details__edit-icon" (click)="startEdit(entry.key, entry.value)" pTooltip="Edit field"></i>
+                  } @else if (entry.label === 'Aadhaar Number') {
+                    <i [class]="isAadhaarVisible() ? 'pi pi-eye-slash' : 'pi pi-eye'" 
+                       class="candidate-details__action-icon" 
+                       (click)="toggleAadhaarVisibility()" 
+                       [pTooltip]="isAadhaarVisible() ? 'Hide Aadhaar' : 'Show Aadhaar'"></i>
                   }
                 </div>
               </div>

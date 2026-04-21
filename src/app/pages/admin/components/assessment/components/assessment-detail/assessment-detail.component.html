@@ -27,8 +27,9 @@
       @if (data) {
         <div 
           class="assessment-detail__hero-badge"
+          [ngClass]="{'assessment-detail__hero-badge--disabled': !isAllRoundsCompleted}"
           (click)="navigateToSummary()"
-          pTooltip="Click to view full summary"
+          [pTooltip]="isAllRoundsCompleted ? 'Click to view full summary' : 'Complete all rounds to view summary'"
           tooltipPosition="bottom"
           style="cursor: pointer;">
           <i class="pi pi-info-circle"></i>
@@ -389,6 +390,7 @@
           (pageChangeAndSort)="onTablePayloadChange($event)"
           (unlock)="unlockCandidate($event)"
           (history)="viewHistory($event)"
+          [fillHeight]="true"
           (buttonClick)="onButtonClick($event)"
         >
         </app-table>

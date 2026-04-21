@@ -8,6 +8,7 @@
       (onClick)="goBack()">
     </p-button>
     <p-button 
+      *ngIf="!isLoading && summaryData"
       icon="pi pi-print" 
       label="Download PDF" 
       severity="primary"
@@ -15,8 +16,31 @@
     </p-button>
   </div>
 
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="hero-header skeleton">
+      <p-skeleton width="60%" height="3rem" marginBottom="1rem"></p-skeleton>
+      <p-skeleton width="40%" height="1.5rem"></p-skeleton>
+    </div>
+    <div class="stats-grid">
+      <div *ngFor="let i of [1,2,3,4]" class="stat-card skeleton">
+        <p-skeleton shape="circle" size="3rem"></p-skeleton>
+        <div style="flex: 1; margin-left: 1rem">
+          <p-skeleton width="30%" height="2rem" marginBottom="0.5rem"></p-skeleton>
+          <p-skeleton width="70%"></p-skeleton>
+        </div>
+      </div>
+    </div>
+    <div class="section-container">
+      <p-skeleton width="200px" height="2rem" marginBottom="1rem"></p-skeleton>
+      <div *ngFor="let i of [1,2]" class="pipeline-step skeleton">
+        <p-skeleton width="100%" height="100px" borderRadius="12px"></p-skeleton>
+      </div>
+    </div>
+  </div>
+
   <!-- Main Content Area to Print -->
-  <div class="printable-area">
+  <div *ngIf="!isLoading && summaryData" class="printable-area">
     
     <!-- Hero Header -->
     <div class="hero-header">
@@ -27,7 +51,7 @@
           <span class="meta-divider">•</span>
           <span class="meta-item"><i class="pi pi-calendar"></i> {{ summaryData.dateCreated | date:'longDate' }}</span>
           <span class="meta-divider">•</span>
-          <span class="meta-item status-badge" [ngClass]="'status-' + summaryData.status.toLowerCase().replace(' ', '-')">
+          <span class="meta-item status-badge" [ngClass]="'status-' + (summaryData.status?.toLowerCase().replace(' ', '-') || 'unknown')">
             <i class="pi pi-circle-fill" style="font-size: 0.5rem; margin-right: 0.35rem;"></i>
             {{ summaryData.status }}
           </span>
@@ -87,7 +111,7 @@
             <div class="step-header">
               <div class="step-number">{{ i + 1 }}</div>
               <h3 class="step-name">{{ round.name }}</h3>
-              <span class="step-status" [ngClass]="'status-' + round.status.toLowerCase().replace(' ', '-')">
+              <span class="step-status" [ngClass]="'status-' + (round.status?.toLowerCase().replace(' ', '-') || 'pending')">
                 {{ round.status }}
               </span>
             </div>
@@ -114,8 +138,8 @@
               <!-- Completion Bar -->
               <div class="completion-bar-wrapper">
                 <div class="completion-bar">
-                  <div class="completion-fill bg-green" [style.width.%]="(round.passed / round.completed) * 100"></div>
-                  <div class="completion-fill bg-red" [style.width.%]="(round.failed / round.completed) * 100"></div>
+                  <div class="completion-fill bg-green" [style.width.%]="round.completed > 0 ? (round.passed / round.completed) * 100 : 0"></div>
+                  <div class="completion-fill bg-red" [style.width.%]="round.completed > 0 ? (round.failed / round.completed) * 100 : 0"></div>
                 </div>
               </div>
             </div>
@@ -138,15 +162,13 @@
       </div>
       
       <div class="audit-list">
-        <!-- We use an array of active indices or values for multiple accordion expansion -->
         <p-accordion [multiple]="true" [value]="activeAccordionIds">
           @for (candidate of summaryData.detailedCandidates; track candidate.id) {
             <p-accordion-panel [value]="candidate.id" class="audit-candidate-panel">
-              <!-- Candidate Header (Always Visible) -->
               <p-accordion-header class="audit-accordion-header">
                 <div class="candidate-header-content">
                   <div class="candidate-info-block">
-                    <div class="candidate-avatar large">{{ candidate.name.charAt(0) }}</div>
+                    <div class="candidate-avatar large">{{ candidate.name?.charAt(0) }}</div>
                     <div class="candidate-details">
                       <h3 class="candidate-name">{{ candidate.name }} <span class="candidate-id">({{ candidate.id }})</span></h3>
                       <div class="candidate-contact">
@@ -160,14 +182,13 @@
                       <span class="score-label">Overall Score</span>
                       <span class="score-value">{{ candidate.overallScore }}%</span>
                     </div>
-                    <span class="candidate-status" [ngClass]="'status-' + candidate.finalStatus.toLowerCase().replace(' ', '-')">
+                    <span class="candidate-status" [ngClass]="'status-' + (candidate.finalStatus?.toLowerCase().replace(' ', '-') || 'pending')">
                       {{ candidate.finalStatus }}
                     </span>
                   </div>
                 </div>
               </p-accordion-header>
 
-              <!-- Rounds Details (Collapsible) -->
               <p-accordion-content>
                 <div class="candidate-rounds">
                   <h4 class="rounds-title">Round Details</h4>
@@ -175,48 +196,44 @@
                   @for (round of candidate.roundsData; track round.roundId) {
                     <div class="round-detail-block">
                       
-                      <!-- Round Header Info -->
                       <div class="round-header-info">
                         <div class="round-title-group">
                           <span class="round-badge">{{ round.roundId }}</span>
                           <h5 class="round-name">{{ round.roundName }}</h5>
-                          <span class="round-status-badge" [ngClass]="'status-' + round.status.toLowerCase().replace(' ', '-')">
+                          <span class="round-status-badge" [ngClass]="'status-' + (round.status?.toLowerCase().replace(' ', '-') || 'pending')">
                             {{ round.status }}
+                          </span>
+                          <span class="round-date" *ngIf="round.date">
+                            <i class="pi pi-calendar"></i> {{ round.date | date:'dd MMM yyyy' }}
                           </span>
                         </div>
                         <div class="round-score-info">
                           <div class="score-pill">
                             <span class="pill-label">Score</span>
-                            <span class="pill-val" [class.text-green]="round.score >= round.cutOffScore" [class.text-red]="round.score < round.cutOffScore">
-                              {{ round.score }}
+                            <span class="pill-val">
+                              {{ round.score }}%
                             </span>
-                          </div>
-                          <div class="score-pill outline">
-                            <span class="pill-label">Cut-off</span>
-                            <span class="pill-val">{{ round.cutOffScore }}</span>
                           </div>
                         </div>
                       </div>
 
-                      <!-- Round Meta Data -->
-                      <div class="round-meta-grid" [ngClass]="{'three-cols': round.questionSet}">
+                      <div class="round-meta-grid" [ngClass]="{'three-cols': round.panelMembers && round.panelMembers.length > 0}">
                         <div class="meta-field">
                           <span class="field-label">Panel Name</span>
                           <span class="field-value"><i class="pi pi-users"></i> {{ round.panelName }}</span>
                         </div>
                         <div class="meta-field">
-                          <span class="field-label">Interviewer</span>
+                          <span class="field-label">Primary Interviewer</span>
                           <span class="field-value"><i class="pi pi-user"></i> {{ round.interviewer }}</span>
                         </div>
-                        @if (round.questionSet) {
+                        @if (round.panelMembers && round.panelMembers.length > 0) {
                           <div class="meta-field">
-                            <span class="field-label">Question Set</span>
-                            <span class="field-value"><i class="pi pi-file-edit"></i> {{ round.questionSet }}</span>
+                            <span class="field-label">Panel Members</span>
+                            <span class="field-value"><i class="pi pi-users"></i> {{ round.panelMembers.join(', ') }}</span>
                           </div>
                         }
                       </div>
 
-                      <!-- Feedback Criteria -->
                       <div class="feedback-section">
                         <h6 class="feedback-title">Feedback Breakdown</h6>
                         <table class="feedback-table">
@@ -239,42 +256,40 @@
                         </table>
                       </div>
 
-                      <!-- Overall Reason -->
                       <div class="reason-section">
                         <span class="reason-label"><i class="pi pi-comment"></i> Overall Comments:</span>
                         <p class="reason-text">{{ round.overallReason }}</p>
                       </div>
 
-                      <!-- Attachments -->
-                      @if (round.frontdeskAttachments.length > 0 || round.worksheetAttachments.length > 0) {
+                      @if (round.frontdeskAttachments?.length > 0 || round.worksheetAttachments?.length > 0) {
                         <div class="attachments-section">
                           <h6 class="attachments-title"><i class="pi pi-paperclip"></i> Documents & Attachments</h6>
                           
-                          @if (round.frontdeskAttachments.length > 0) {
+                          @if (round.frontdeskAttachments?.length > 0) {
                             <div class="attachment-group">
                               <span class="group-label">Frontdesk:</span>
                               <div class="attachment-chips">
                                 @for (file of round.frontdeskAttachments; track file.name) {
-                                  <span class="doc-chip">
-                                    <i class="pi" [ngClass]="{'pi-file-pdf text-red': file.type === 'pdf', 'pi-file-word text-blue': file.type === 'doc', 'pi-file': file.type !== 'pdf' && file.type !== 'doc'}"></i>
+                                  <a [href]="file.url" target="_blank" class="doc-chip link">
+                                    <i class="pi" [ngClass]="{'pi-file-pdf text-red': file.type?.toLowerCase() === 'pdf', 'pi-file-word text-blue': file.type?.toLowerCase() === 'doc', 'pi-file': true}"></i>
                                     <span class="doc-name">{{ file.name }}</span>
                                     <span class="doc-size">({{ file.size }})</span>
-                                  </span>
+                                  </a>
                                 }
                               </div>
                             </div>
                           }
                           
-                          @if (round.worksheetAttachments.length > 0) {
+                          @if (round.worksheetAttachments?.length > 0) {
                             <div class="attachment-group">
                               <span class="group-label">Worksheet:</span>
                               <div class="attachment-chips">
                                 @for (file of round.worksheetAttachments; track file.name) {
-                                  <span class="doc-chip">
-                                    <i class="pi" [ngClass]="{'pi-file-pdf text-red': file.type === 'pdf', 'pi-image text-green': file.type === 'image', 'pi-code text-orange': file.type === 'code', 'pi-file': file.type === 'text'}"></i>
+                                  <a [href]="file.url" target="_blank" class="doc-chip link">
+                                    <i class="pi" [ngClass]="{'pi-file-pdf text-red': file.type?.toLowerCase() === 'pdf', 'pi-image text-green': file.type?.toLowerCase() === 'image', 'pi-code text-orange': file.type?.toLowerCase() === 'code', 'pi-file': true}"></i>
                                     <span class="doc-name">{{ file.name }}</span>
                                     <span class="doc-size">({{ file.size }})</span>
-                                  </span>
+                                  </a>
                                 }
                               </div>
                             </div>
@@ -297,5 +312,12 @@
       <p>Generated by HireAssist | {{ summaryData.recruitmentName }} Recruitment Summary</p>
     </div>
 
+  </div>
+  
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !summaryData" class="empty-state">
+    <i class="pi pi-info-circle" style="font-size: 3rem; color: var(--text-secondary)"></i>
+    <h3>No Summary Data Available</h3>
+    <p>Please ensure all recruitment rounds are completed and data is processed.</p>
   </div>
 </div>

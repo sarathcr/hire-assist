@@ -240,4 +240,10 @@ export class InterviewService extends ApiService<any> {
       `${this.getResourceUrl()}/assessment/aptitude-report/${recruitmentId}/${email}`,
     );
   }
+
+  public getSelectedStatus(assessmentId: number) {
+    return this.httpClient.get<any>(
+      `${this.getResourceUrl()}/assessment/selected-status/${assessmentId}`,
+    );
+  }
 }

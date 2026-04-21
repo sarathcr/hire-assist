@@ -939,3 +939,62 @@
         font-size: 0.85rem;
     }
 }
+/* Loading and Empty States */
+.loading-container, .empty-state {
+    background: white;
+    border-radius: 16px;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    min-height: 400px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.empty-state {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #64748b;
+    
+    h3 {
+        margin: 1rem 0 0.5rem 0;
+        color: #1e293b;
+    }
+}
+
+.hero-header.skeleton {
+    border-bottom: none;
+    margin-bottom: 2rem;
+}
+
+.stat-card.skeleton {
+    background: #f8fafc;
+}
+
+.pipeline-step.skeleton {
+    height: 100px;
+    background: #f1f5f9;
+}
+
+.doc-chip.link {
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-color: #cbd5e1;
+    
+    &:hover {
+        border-color: #3b82f6;
+        background-color: #eff6ff;
+        transform: translateY(-1px);
+    }
+}
+
+.round-date {
+    font-size: 0.85rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: 0.5rem;
+}

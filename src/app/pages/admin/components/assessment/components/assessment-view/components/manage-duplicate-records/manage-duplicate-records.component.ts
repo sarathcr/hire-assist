@@ -23,6 +23,9 @@ import { ManageDuplicateRecordsService } from '../../services/manage-duplicate-r
 import { CandidateDetailsComponent } from '../candidate-details/candidate-details.component';
 import { CandidateDialogComponent } from '../candidate-dialog/candidate-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { validateVerhoeff } from '../../../../../../../../shared/utilities/verhoeff.utility';
+import { DialogComponent } from '../../../../../../../../shared/components/dialog/dialog.component';
+import { DialogFooterComponent } from '../../../../../../../../shared/components/dialog-footer/dialog-footer.component';
 
 @Component({
   selector: 'app-manage-duplicate-records',
@@ -54,6 +57,25 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   public panelIdIncrementor = 1;
   public splitPanelRendered = signal(true);
   public selectedPanelId = signal<number | null>(null);
+  public isSelectedCandidateValid = computed(() => {
+    const selectedId = this.selectedPanelId();
+    if (!selectedId) return false;
+
+    const selectedCandidate = this.splitPanelList().find(
+      (candidate) => candidate.panelId === selectedId,
+    );
+
+    if (!selectedCandidate) return false;
+
+    if (selectedCandidate['isInvalidRecord']) {
+      const aadhaar = selectedCandidate['aadhaarNumber'] || selectedCandidate['Aadhaar Number'] || '';
+      const cleaned = String(aadhaar).replace(/\s/g, '');
+      return /^\d{12}$/.test(cleaned) && validateVerhoeff(cleaned);
+    }
+
+    return true;
+  });
+
   public assessmentId!: string;
   public isLoading = signal(false);
   
@@ -104,6 +126,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   public onSubmit() {
+    if (!this.isSelectedCandidateValid()) return;
     const selectedId = this.selectedPanelId();
     if (!selectedId) return;
 
@@ -150,20 +173,68 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   public onRejectRecord(candidate: CandidateData) {
-    const updatedList = this.splitPanelList().filter(c => c.panelId !== candidate.panelId);
-    this.splitPanelList.set(updatedList);
-    
-    if (this.selectedPanelId() === candidate.panelId) {
-      this.selectedPanelId.set(null);
-    }
+    const modalData = {
+      message: 'Are you sure you want to reject this candidate record?',
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Reject',
+    };
 
-    if (updatedList.length === 0) {
-      this.updateModifiedCandidateData();
-    }
+    const ref = this.dialogService.open(DialogComponent, {
+      data: modalData,
+      header: 'Warning',
+      width: '400px',
+      modal: true,
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    ref.onClose.subscribe((result) => {
+      if (result) {
+        const updatedList = this.splitPanelList().filter(
+          (c) => c.panelId !== candidate.panelId,
+        );
+        this.splitPanelList.set(updatedList);
+
+        if (this.selectedPanelId() === candidate.panelId) {
+          this.selectedPanelId.set(null);
+        }
+
+        if (updatedList.length === 0) {
+          this.updateModifiedCandidateData();
+        }
+      }
+    });
   }
 
   public onClose() {
-    this.ref.close({ refresh: true });
+    if (this.data().length > 0) {
+      const modalData = {
+        message: 'Pending candidates details will be lost and cannot be scheduled. Are you sure you want to cancel?',
+        isChoice: true,
+        cancelButtonText: 'No',
+        acceptButtonText: 'Yes, Cancel',
+      };
+
+      const ref = this.dialogService.open(DialogComponent, {
+        data: modalData,
+        header: 'Confirm Cancel',
+        width: '400px',
+        modal: true,
+        templates: {
+          footer: DialogFooterComponent,
+        },
+      });
+
+      ref.onClose.subscribe((result) => {
+        if (result) {
+          this.ref.close({ refresh: true });
+        }
+      });
+    } else {
+      this.ref.close({ refresh: true });
+    }
   }
 
   // Private Methods
@@ -240,7 +311,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
       this.messageService.add({
         severity: 'success',
         summary: res?.type || 'Success',
-        detail: '',
+        detail: res?.message || 'Candidate updated successfully.',
       });
       this.updateModifiedCandidateData();
     };
@@ -249,8 +320,8 @@ export class ManageDuplicateRecordsComponent implements OnInit {
       const errorMessage = err?.error?.type || err?.error?.message || 'Operation failed';
        this.messageService.add({
           severity: 'error',
-          summary: errorMessage,
-          detail: '',
+          summary: 'Error',
+          detail: errorMessage,
         });
     };
     this.manageDuplicateRecordsService

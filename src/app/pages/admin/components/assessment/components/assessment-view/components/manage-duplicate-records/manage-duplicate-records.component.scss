@@ -206,6 +206,20 @@
       background: #f8fafc;
     }
 
+    &.active {
+      background: #eff6ff !important;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.12);
+
+      .duplicates__invalid-item__key {
+        color: #2563eb;
+      }
+
+      .duplicates__invalid-item__actions {
+        color: #3b82f6;
+      }
+    }
+
     &__key {
       font-size: 0.9rem;
       font-weight: 600;
