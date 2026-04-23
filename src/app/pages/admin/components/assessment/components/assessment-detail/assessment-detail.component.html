@@ -338,8 +338,67 @@
     }
   </div>
 
+
+  <!-- Recruitment Flow Indicator - Outside table section to save fixed space -->
+  <div class="assessment-detail__flow-indicator">
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step__icon flow-step__icon--assign">
+          @if (isAptitudeRound()) {
+            <i class="pi pi-desktop"></i>
+          } @else {
+            <i class="pi pi-user-plus"></i>
+          }
+        </div>
+        <div class="flow-step__content">
+          <span class="flow-step__label">Phase 1</span>
+          <span class="flow-step__title">
+            {{ isAptitudeRound() ? 'Online Assessment' : 'Assign Panel' }}
+          </span>
+        </div>
+      </div>
+      <div class="flow-step__connector"></div>
+      <div class="flow-step">
+        <div class="flow-step__icon flow-step__icon--interview">
+          @if (isAptitudeRound()) {
+            <i class="pi pi-search-plus"></i>
+          } @else {
+            <i class="pi pi-comments"></i>
+          }
+        </div>
+        <div class="flow-step__content">
+          <span class="flow-step__label">Phase 2</span>
+          <span class="flow-step__title">
+            {{ isAptitudeRound() ? 'Test Monitoring' : 'Interview' }}
+          </span>
+        </div>
+      </div>
+      <div class="flow-step__connector"></div>
+      <div class="flow-step">
+        <div class="flow-step__icon flow-step__icon--select">
+          <i class="pi pi-check-square"></i>
+        </div>
+        <div class="flow-step__content">
+          <span class="flow-step__label">Phase 3</span>
+          <span class="flow-step__title">Selection</span>
+        </div>
+      </div>
+      <div class="flow-step__connector"></div>
+      <div class="flow-step">
+        <div class="flow-step__icon flow-step__icon--schedule">
+          <i class="pi pi-calendar-plus"></i>
+        </div>
+        <div class="flow-step__content">
+          <span class="flow-step__label">Phase 4</span>
+          <span class="flow-step__title">Schedule Next</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Candidates Table Section -->
   <div class="assessment-detail__table-section">
+
     <div class="assessment-detail__table-header">
       <div class="assessment-detail__table-title-section">
         <h2 class="assessment-detail__table-title">
@@ -391,6 +450,7 @@
           (unlock)="unlockCandidate($event)"
           (history)="viewHistory($event)"
           [fillHeight]="true"
+          [scrollHeight]="'500px'"
           (buttonClick)="onButtonClick($event)"
         >
         </app-table>

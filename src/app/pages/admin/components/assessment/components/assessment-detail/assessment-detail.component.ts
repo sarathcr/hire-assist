@@ -645,19 +645,31 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
    * Note: If panel data is not in cache, the button is enabled anyway and validation happens in the modal
    */
   public isScheduleEnabled(): boolean {
+    // Check if it's the final round - cannot schedule beyond final round
+    if (this.assessmentRoundList) {
+      const currentIndex = this.assessmentRoundList.findIndex(
+        (round) => round.id === this.currentStep,
+      );
+      if (currentIndex === this.assessmentRoundList.length - 1) {
+        return false;
+      }
+    }
+
     // Must have at least one candidate selected
     if (!this.selectedCandidates || this.selectedCandidates.length === 0) {
       return false;
     }
 
-    // Check if all selected candidates have status "Selected" (case-insensitive)
-    // This matches the requirement in schedule() method
+    // Check if the selected candidates have status "Selected" 
     const hasValidStatus = this.selectedCandidates.every((candidate) => {
       if (!candidate || !candidate.status) {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
-      return status === 'pending' || status === 'active' || status === 'assigned to panel';
+      // Ensure candidate is 'Selected' and NOT already scheduled for the next round
+      const isNotScheduled = !candidate.isScheduled;
+      
+      return status === 'selected' && isNotScheduled;
     });
 
     if (!hasValidStatus) {
@@ -675,7 +687,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       if (!candidate || !candidate.id) {
         return false;
       }
-      return this.candidatePanelAssignments.has(candidate.id);
+      return this.candidatePanelAssignments.has(String(candidate.id));
     });
 
     // If all candidates are in cache, check if they have panels assigned
@@ -684,7 +696,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         if (!candidate || !candidate.id) {
           return false;
         }
-        return this.isCandidateAssignedToPanel(candidate.id);
+        return this.isCandidateAssignedToPanel(String(candidate.id));
       });
     }
 
@@ -695,10 +707,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       .filter(
         (candidate) =>
           candidate?.id &&
-          !this.candidatePanelAssignments.has(candidate.id) &&
-          !this.candidatesBeingLoaded.has(candidate.id), // Don't load if already being loaded
+          !this.candidatePanelAssignments.has(String(candidate.id)) &&
+          !this.candidatesBeingLoaded.has(String(candidate.id)), // Don't load if already being loaded
       )
-      .map((candidate) => candidate.id);
+      .map((candidate) => String(candidate.id));
 
     if (candidateIdsToLoad.length > 0) {
       // Load in background without blocking button enablement
@@ -797,19 +809,19 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const hasInvalidStatus = selected.some(
-      (c: InterviewSummary) =>
-        !['pending', 'active', 'assigned to panel'].includes(
-          c.status?.toLowerCase().trim() ?? '',
-        ),
-    );
+    const hasInvalidStatus = selected.some((c: InterviewSummary) => {
+      const status = c.status?.toLowerCase().trim() ?? '';
+      const isNotScheduled = !c.isScheduled;
+      // Now strictly allowing ONLY 'selected' candidates for scheduling for next round
+      return status !== 'selected' || !isNotScheduled;
+    });
 
     if (hasInvalidStatus) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Warning',
+        summary: 'Action Required',
         detail:
-          'Only candidates with status "Pending", "Active", or "Assigned to Panel" can be scheduled.',
+          'Only candidates with "Selected" status who are not yet scheduled for the next round can be processed.',
       });
       return;
     }
@@ -1511,7 +1523,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             this.tableData.data.some(
               (candidate: CandidateData) =>
                 candidate.status === 'Pending' ||
-                candidate.isScheduled === 'Not Scheduled',
+                (candidate.isScheduled as any) === 'Not Scheduled' ||
+                (candidate.isScheduled as any) === false,
             );
 
           // Note: Panel assignments are now loaded lazily only when needed
@@ -1737,20 +1750,18 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     };
     this.filterMap = filter;
 
-    // Open modal IMMEDIATELY - no blocking operations before this
-
     // Create callback functions to handle submit, success, and error
     let componentInstance: ScheduleInterviewComponent | null = null;
 
     const handleSubmit = (formValue: { scheduleDate: Date }) => {
-      if (selectedCandidateIds.length === 0 || !formValue.scheduleDate) {
+      if (!selectedCandidateIds || selectedCandidateIds.length === 0 || !formValue.scheduleDate) {
         if (componentInstance) {
           componentInstance.handleError();
         }
         this.messageService.add({
           severity: 'warn',
           summary: 'Warning',
-          detail: 'No candidates selected',
+          detail: 'No candidates selected or invalid date',
         });
         return;
       }
@@ -1780,7 +1791,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           assessmentRoundId: this.nextRoundId,
           isActive: true,
           statusId: 2,
-          assessmentId: this.assessmentId,
+          assessmentId: this.assessmentId!,
           date: scheduleDate,
         };
 
@@ -1807,6 +1818,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           componentInstance.closeOnSuccess();
         }
       };
+
       const error = (error: CustomErrorResponse) => {
         if (componentInstance) {
           componentInstance.handleError();
@@ -1825,11 +1837,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     this.ref = this.dialog.open(ScheduleInterviewComponent, {
       data: {
-        candidateIds: selectedCandidateIds,
+        candidateIds: selectedCandidateIds || [],
         onSubmit: handleSubmit,
-        isLoadingPanelData: isLoadingPanelData,
-        startDateTime: this.data.startDateTime,
-        endDateTime: this.data.endDateTime,
+        isLoadingPanelData: !!isLoadingPanelData,
+        startDateTime: this.data?.startDateTime,
+        endDateTime: this.data?.endDateTime,
         setComponentInstance: (instance: ScheduleInterviewComponent) => {
           componentInstance = instance;
           if (updateComponentInstance) {
@@ -1837,13 +1849,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           }
         },
       },
-      showHeader: false,
+      showHeader: true,
+      header: 'Schedule Interview',
+      styleClass: 'standard-dialog-wrapper',
       width: '50vw',
       modal: true,
+      contentStyle: { padding: '0' },
       focusOnShow: false,
       closable: false,
       dismissableMask: true,
-      styleClass: 'schedule-interview-dialog',
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -1852,8 +1866,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     // Handle modal close (when user clicks cancel or closes)
     this.ref.onClose.subscribe(() => {
-      // This will be called when modal is closed
-      // result will be undefined if closed via cancel, or formValue if closed via success
+      // Cleanup component instance reference
+      componentInstance = null;
     });
 
     return this.ref;
@@ -1873,7 +1887,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         this.isCompleteDisabled = this.tableData.data.some(
           (candidate: CandidateData) =>
             candidate.status === 'Pending' ||
-            candidate.isScheduled === 'Not Scheduled',
+            (candidate.isScheduled as any) === 'Not Scheduled' ||
+            (candidate.isScheduled as any) === false,
         );
 
         // Note: Panel assignments are now loaded lazily only when needed
@@ -1887,7 +1902,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   private UpdateCandidateStatus(Payload: CandidatePayload[], name: string) {
     const filter: FilterMap = {
-      AssessmentRoundId: this.currentStep,
+      AssessmentRoundId: this.currentStep!,
     };
     this.filterMap = filter;
 
@@ -1942,7 +1957,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const validationPayload = {
       multiSortedColumns: [],
       filterMap: {
-        AssessmentRoundId: this.currentStep,
+        AssessmentRoundId: this.currentStep!,
       },
       pagination: {
         pageNumber: 1,
@@ -2015,8 +2030,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         next: (res: PaginatedData<AssesmentRoundResponse>) => {
           if (res.data.length == 0) {
             const payloadData = {
-              assessmentId: this.assessmentId,
-              assessmentRoundId: this.currentStep,
+              assessmentId: this.assessmentId!,
+              assessmentRoundId: this.currentStep!,
             };
             const nextComplete = () => {
               this.messageService.add({

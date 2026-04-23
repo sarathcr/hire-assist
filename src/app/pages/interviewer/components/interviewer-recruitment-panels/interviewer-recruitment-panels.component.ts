@@ -77,20 +77,31 @@ type TableDataItem = InterviewByPanel & { id: string };
 function groupByPanel(
   rows: InterviewerPanelDetails[],
 ): { panelId: number; panelName: string; roundName: string }[] {
-  const seen = new Map<
+  const panelMap = new Map<
     number,
-    { panelId: number; panelName: string; roundName: string }
+    { panelId: number; panelName: string; roundNames: Set<string> }
   >();
+
   for (const row of rows) {
-    if (!seen.has(row.panelId)) {
-      seen.set(row.panelId, {
+    if (!panelMap.has(row.panelId)) {
+      panelMap.set(row.panelId, {
         panelId: row.panelId,
         panelName: row.panelName,
-        roundName: row.roundName,
+        roundNames: new Set([row.roundName]),
       });
+    } else {
+      const panel = panelMap.get(row.panelId);
+      if (panel && row.roundName) {
+        panel.roundNames.add(row.roundName);
+      }
     }
   }
-  return Array.from(seen.values());
+
+  return Array.from(panelMap.values()).map((p) => ({
+    panelId: p.panelId,
+    panelName: p.panelName,
+    roundName: Array.from(p.roundNames).filter(Boolean).sort().join(' / '),
+  }));
 }
 
 @Component({

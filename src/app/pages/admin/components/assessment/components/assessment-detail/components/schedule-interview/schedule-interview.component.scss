@@ -1,111 +1,75 @@
-// Dialog global styles
-::ng-deep {
-  .schedule-interview-dialog {
-    .p-dialog-header {
-      display: none;
-    }
-
-    .p-dialog-content {
-      overflow-y: visible !important;
-      background-color: var(--color-white);
-      padding: 0;
-      border-radius: 12px;
-    }
-
-    .p-dialog {
-      border-radius: 12px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    }
-  }
-
-  .p-dialog {
-    display: flex;
-    flex-direction: column;
-    max-height: 900px;
-
-    .p-dialog-content {
-      overflow-y: visible !important;
-      background-color: var(--color-white);
-    }
-  }
-
-  // Date picker z-index fix - ensure calendar popup appears above modal
-  .p-datepicker-panel {
-    z-index: 10000 !important;
-  }
-
-  .schedule-interview {
-    .p-chip {
-      background: var(--color-white) !important;
-    }
-  }
+:host {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
 }
 
-// Main container
-.schedule-interview {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
+// ============================================
+// Main Container
+// ============================================
+.schedule-interview-dialog {
+  display: flex !important;
+  flex-direction: column !important;
   background: var(--color-white);
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  width: 100%;
   border-radius: 12px;
-
-  &__form {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    padding: 2rem;
-    flex: 1;
-  }
-
-  // Header Section
-  &__header {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    padding-bottom: 1.5rem;
-    border-bottom: 2px solid var(--surface-border, #e9ecef);
-
-    &-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 3.5rem;
-      height: 3.5rem;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: var(--color-white);
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-
-      i {
-        font-size: 1.5rem;
-      }
-    }
-
-    &-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-  }
-
-  &__title {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-color, #212529);
-    line-height: 1.3;
-  }
+  overflow: hidden !important;
 
   &__subtitle {
     margin: 0;
     font-size: 0.95rem;
     color: var(--text-color-secondary, #6c757d);
     line-height: 1.5;
+    margin-bottom: 2rem;
   }
 
+  // ============================================
+  // Body Section (Scrollable)
+  // ============================================
+  &__body {
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+    padding: 2rem;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    background: var(--color-white);
+
+    // Ensure custom scrollbar matches the app style
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+
+      &:hover {
+        background: #a8a8a8;
+      }
+    }
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    flex: 1;
+  }
+
+  // ============================================
   // Candidates Section
+  // ============================================
   &__candidates-section {
     display: flex;
     flex-direction: column;
@@ -204,7 +168,9 @@
     }
   }
 
+  // ============================================
   // Date Section
+  // ============================================
   &__date-section {
     display: flex;
     flex-direction: column;
@@ -231,9 +197,8 @@
 
   &__date-picker {
     margin-top: 0.5rem;
-    min-height: 3.5rem; // Ensure space for the date picker
+    min-height: 3.5rem;
 
-    // Hide only the float label text since we have a custom header, but keep the input visible
     ::ng-deep {
       .p-floatlabel {
         display: block;
@@ -244,71 +209,43 @@
         }
       }
 
-      .input-text-calender {
-        display: block !important;
-        width: 100% !important;
-        visibility: visible !important;
-        margin-bottom: 0; // Remove extra margin in modal
-      }
-
       .p-datepicker {
         width: 100% !important;
         display: flex !important;
-        align-items: stretch;
 
         .p-inputtext {
           flex: 1;
-          min-width: 0;
-        }
-
-        .p-datepicker-trigger {
-          flex-shrink: 0;
-        }
-      }
-
-      // Ensure the calendar popup is visible
-      .p-datepicker-panel {
-        z-index: 10000 !important;
-      }
-
-      // Ensure time picker shows correctly
-      .p-timepicker {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-
-        .p-hour-picker,
-        .p-minute-picker,
-        .p-second-picker {
-          input {
-            width: 3rem;
-            text-align: center;
-          }
         }
       }
     }
   }
 
-  // Footer Section
+  // ============================================
+  // Footer Section (Fixed)
+  // ============================================
   &__footer {
+    flex: 0 0 auto;
+    padding: 1.5rem 2rem;
+    background: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 1rem;
-    padding: 1.5rem 2rem;
-    border-top: 1px solid var(--surface-border, #e9ecef);
-    background: var(--surface-0, #ffffff);
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
-    border-radius: 12px;
+    z-index: 10;
   }
 
+  // ============================================
   // Skeleton Loader
+  // ============================================
   &__skeleton {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    padding: 2rem;
+    flex: 1;
 
     &-chips {
       display: flex;
@@ -317,7 +254,9 @@
     }
   }
 
+  // ============================================
   // Error Message
+  // ============================================
   &__error {
     display: flex;
     align-items: center;
@@ -337,45 +276,66 @@
   }
 }
 
-// Date picker z-index fix - consolidated with main ::ng-deep block
+// ============================================
+// Global Dialog Overrides for Standard Look
+// ============================================
+::ng-deep {
+  .standard-dialog-wrapper {
+    .p-dialog-header {
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 1.5rem !important;
+      border-radius: 12px 12px 0 0;
 
-// Responsive design
-@media (max-width: 768px) {
-  .schedule-interview {
-    &__form {
-      padding: 1.5rem;
-      gap: 1.5rem;
-    }
-
-    &__header {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-
-      &-icon {
-        width: 3rem;
-        height: 3rem;
-
-        i {
-          font-size: 1.25rem;
-        }
+      .p-dialog-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1e293b;
       }
     }
 
-    &__title {
-      font-size: 1.25rem;
+    .p-dialog-content {
+      padding: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100% !important;
+      overflow: hidden !important; // Let the inner body handle scroll
     }
 
-    &__candidates-section {
-      padding: 1rem;
+    .p-dialog {
+      border-radius: 12px;
+      overflow: hidden;
+      max-height: 90vh !important;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  // Date picker z-index fix
+  .p-datepicker-panel {
+    z-index: 10000 !important;
+  }
+}
+
+// ============================================
+// Responsive Design
+// ============================================
+@media screen and (max-width: 768px) {
+  .schedule-interview-dialog {
+    &__body {
+      padding: 1.5rem;
     }
 
     &__footer {
-      flex-direction: column-reverse;
       padding: 1rem 1.5rem;
+      flex-direction: column-reverse;
+      gap: 0.75rem;
 
       app-button {
         width: 100%;
+        ::ng-deep .p-button {
+          width: 100% !important;
+        }
       }
     }
   }

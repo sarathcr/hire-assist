@@ -7,17 +7,17 @@
   flex-direction: column;
   gap: var(--spacing-25);
   min-height: 100vh;
-  // background: linear-gradient(
-  //   135deg,
-  //   rgba(33, 150, 243, 0.03) 0%,
-  //   rgba(21, 101, 192, 0.03) 100%
-  // );
-  // padding: var(--spacing-25);
   position: relative;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
   box-sizing: border-box;
+  padding: 0;
+
+  @media (max-width: 768px) {
+    gap: var(--spacing-10);
+    padding: var(--spacing-8);
+  }
 
   // ============================================
   // Hero Section
@@ -784,6 +784,124 @@
   }
 
   // ============================================
+  // Recruitment Flow Indicator
+  // ============================================
+  &__flow-indicator {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: var(--spacing-20) var(--spacing-25);
+    border: 1px solid #e2e8f0;
+    margin-bottom: var(--spacing-25);
+    animation: fadeIn 0.4s ease;
+
+    .flow-steps {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--spacing-15);
+      position: relative;
+
+      @media (max-width: 960px) {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-15);
+      }
+
+      @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-10);
+      }
+    }
+
+    .flow-step {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-15);
+      flex: 1;
+      padding: var(--spacing-12);
+      border-radius: 16px;
+      transition: all 0.3s ease;
+      cursor: default;
+
+      @media (max-width: 640px) {
+        padding: var(--spacing-8) var(--spacing-10);
+        gap: var(--spacing-10);
+      }
+
+      &__icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+
+        @media (max-width: 640px) {
+          width: 36px;
+          height: 36px;
+          font-size: 1rem;
+        }
+
+        &--assign {
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+          color: white;
+        }
+
+        &--interview {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+        }
+
+        &--select {
+          background: linear-gradient(135deg, #2af598 0%, #009efd 100%);
+          color: white;
+        }
+
+        &--schedule {
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          color: white;
+        }
+      }
+
+      &__content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      &__label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      &__title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e293b;
+        white-space: nowrap;
+      }
+
+      &__connector {
+        height: 2px;
+        flex: 0.5;
+        background: linear-gradient(90deg, #e2e8f0 0%, #f1f5f9 100%);
+        border-radius: 2px;
+
+        @media (max-width: 960px) {
+          display: none;
+        }
+      }
+    }
+  }
+
+  // ============================================
   // Table Section
   // ============================================
   &__table-section {
@@ -793,6 +911,11 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
     border: 1px solid rgba(33, 150, 243, 0.1);
     animation: fadeIn 0.4s ease;
+
+    @media (max-width: 640px) {
+      padding: var(--spacing-15);
+      border-radius: 12px;
+    }
   }
 
   &__table-header {
@@ -841,11 +964,10 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 400px;
-    max-height: calc(100vh - 580px); // Account for hero, info cards, and stepper section height
+    min-height: 500px;
     background-color: var(--color-white);
     border-radius: 12px;
-    overflow: hidden; // Contain the internal scroll
+    overflow: hidden;
     position: relative;
 
     app-table {
@@ -854,7 +976,34 @@
       flex-direction: column;
       min-height: 0;
       width: 100%;
-      height: 100%; // Fill the container
+      height: 100%;
+    }
+
+    ::ng-deep {
+      .p-datatable-wrapper {
+        min-height: 500px !important; // Ensure body always has 500px min-height
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+
+        // Custom scrollbar for better visibility
+        &::-webkit-scrollbar {
+          width: 8px !important;
+          display: block !important;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background: #cbd5e1 !important;
+          border-radius: 10px;
+        }
+      }
+    }
+
+    @media (max-width: 768px) {
+      min-height: auto !important;
+      height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      display: block !important;
     }
   }
 
