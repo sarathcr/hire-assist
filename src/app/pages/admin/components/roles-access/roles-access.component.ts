@@ -23,7 +23,7 @@ import { UserService } from '../../services/user.service';
 import { UserDialogComponent } from './components/user-dialog/user-dialog.component';
 import { CollectionService } from '../../../../shared/services/collection.service';
 import { UserState } from '../../../../shared/models/user.models';
-import { finalize } from 'rxjs/operators';
+import { finalize } from 'rxjs';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -86,32 +86,8 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   private previousFilterMap: any = {};
   private isManualRefresh = false;
   public visible: boolean = false;
-  events = [
-    {
-      status: 'Created',
-      user: 'Sarath Cheerakkadan',
-      date: '15/10/2025 10:30',
-      icon: 'pi pi-plus',
-    },
-    {
-      status: 'Updated',
-      user: 'Sarath Cheerakkadan',
-      date: '15/10/2025 14:00',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Steve Jose',
-      date: '15/10/2025 16:15',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Lakshmipriya',
-      date: '16/10/2025 10:00',
-      icon: 'pi pi-pencil',
-    },
-  ];
+  public historyEvents: any[] = [];
+  public historyLoading: boolean = false;
 
   constructor(
     public dialog: DialogService,
@@ -300,8 +276,36 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     });
   }
 
-  public viewHistory(id: any) {
-    this.visible = true;
+  public viewHistory(id: string) {
+    this.historyLoading = true;
+    this.userService.getUserHistory(id).pipe(
+      finalize(() => this.historyLoading = false)
+    ).subscribe({
+      next: (res: any[]) => {
+        this.historyEvents = res.map((event) => {
+          let description = '';
+          if (event.action === 'Updated' && event.field) {
+            description = `${event.field} changed from "${event.previousValue}" to "${event.currentValue}"`;
+          }
+
+          return {
+            status: event.action,
+            description: description,
+            user: event.changedByName,
+            date: new Date(event.changedAt + 'Z'),
+            icon: event.action === 'Created' ? 'pi pi-plus' : 'pi pi-pencil',
+          };
+        });
+        this.visible = true;
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load user history',
+        });
+      }
+    });
   }
 
   public onButtonClick(data: { event: any; fName: string }): void {

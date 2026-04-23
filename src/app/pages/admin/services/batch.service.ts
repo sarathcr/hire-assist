@@ -20,4 +20,8 @@ export class BatchService extends ApiService<any> {
   override getResourceUrl(): string {
     return BATCH_URL;
   }
+
+  getBatchHistory(payload: any) {
+    return this.httpClient.post(`${BATCH_URL}/history`, payload);
+  }
 }

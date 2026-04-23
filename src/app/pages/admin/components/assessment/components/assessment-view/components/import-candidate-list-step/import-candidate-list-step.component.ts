@@ -151,32 +151,14 @@ export class ImportCandidateListStepComponent implements OnInit {
   public isLoading = false;
   public alreadySelectedCandidates: string[] = [];
   public visible: boolean = false;
-  events = [
-    {
-      status: 'Created',
-      user: 'Sarath Cheerakkadan',
-      date: '15/10/2025 10:30',
-      icon: 'pi pi-plus',
-    },
-    {
-      status: 'Updated',
-      user: 'Sarath Cheerakkadan',
-      date: '15/10/2025 14:00',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Steve Jose',
-      date: '15/10/2025 16:15',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Lakshmipriya',
-      date: '16/10/2025 10:00',
-      icon: 'pi pi-pencil',
-    },
-  ];
+  public historyEvents: any[] = [];
+  public historyLoading: boolean = false;
+  public historyPagination = {
+    pageNumber: 1,
+    pageSize: 10,
+    totalRecords: 0
+  };
+  public currentHistoryCandidateId: string | null = null;
   private skipAutoSelection = false;
 
   public columns = computed(() => {
@@ -377,8 +359,90 @@ export class ImportCandidateListStepComponent implements OnInit {
     });
   }
 
-  public viewHistory(id: any) {
+  public viewHistory(data: any) {
+    this.currentHistoryCandidateId = data?.id || null;
+    this.historyPagination.pageNumber = 1;
+    this.historyEvents = [];
     this.visible = true;
+    this.fetchCandidateHistory();
+  }
+
+  public viewGlobalHistory() {
+    this.currentHistoryCandidateId = null;
+    this.historyPagination.pageNumber = 1;
+    this.historyEvents = [];
+    this.visible = true;
+    this.fetchCandidateHistory();
+  }
+
+  public loadMoreHistory() {
+    this.historyPagination.pageNumber++;
+    this.fetchCandidateHistory();
+  }
+
+  private fetchCandidateHistory() {
+    this.historyLoading = true;
+    const payload = new PaginatedPayload();
+    payload.pagination.pageNumber = this.historyPagination.pageNumber;
+    payload.pagination.pageSize = this.historyPagination.pageSize;
+    payload.filterMap = {
+      assessmentId: Number(this.assessmentId()),
+    };
+
+    if (this.currentHistoryCandidateId) {
+      payload.filterMap['candidateId'] = this.currentHistoryCandidateId;
+    }
+
+    payload.multiSortedColumns = [{ active: 'ChangedAt', direction: 'desc' }];
+
+    this.candidateService.getCandidateHistoryPaginated(payload)
+      .pipe(finalize(() => this.historyLoading = false))
+      .subscribe({
+        next: (res: any) => {
+          const newEvents = res.data.map((item: any) => ({
+            status: item.action,
+            user: item.changedByName,
+            date: new Date(item.changedAt + 'Z'),
+            icon: this.getHistoryIcon(item.action),
+            description: this.getHistoryDescription(item)
+          }));
+          this.historyEvents = [...this.historyEvents, ...newEvents];
+          this.historyPagination.totalRecords = res.totalRecords;
+        },
+        error: (err: any) => {
+          this.errorMessage(err);
+        }
+      });
+  }
+
+  private getHistoryDescription(item: any): string {
+    const detailActions = ['Created', 'Deleted', 'Imported', 'Assigned', 'Scheduled', 'Reassigned'];
+    if (detailActions.includes(item.action)) {
+      return item.details || '';
+    }
+    if (item.field) {
+      return `${item.field}: ${item.previousValue || 'None'} → ${item.currentValue || 'None'}`;
+    }
+    return item.details || 'Candidate was modified';
+  }
+
+  private getHistoryIcon(action: string): string {
+    switch (action?.toLowerCase()) {
+      case 'created':
+      case 'imported':
+        return 'pi pi-plus';
+      case 'updated':
+        return 'pi pi-pencil';
+      case 'deleted':
+        return 'pi pi-trash';
+      case 'assigned':
+      case 'reassigned':
+        return 'pi pi-link';
+      case 'scheduled':
+        return 'pi pi-calendar-clock';
+      default:
+        return 'pi pi-info-circle';
+    }
   }
 
   public onPreviousAssessment(data: CandidateModel) {

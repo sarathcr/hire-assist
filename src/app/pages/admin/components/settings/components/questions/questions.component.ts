@@ -99,32 +99,14 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   public visible: boolean = false;
   private previousFilterMap: any = {};
   private currentPayload: PaginatedPayload = new PaginatedPayload();
-  events = [
-    {
-      status: 'Created',
-      user: 'Sarath Cheerakkadan',
-      date: '15/10/2025 10:30',
-      icon: 'pi pi-plus',
-    },
-    {
-      status: 'Updated',
-      user: 'Sarath Cheerakkadan',
-      date: '15/10/2025 14:00',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Steve Jose',
-      date: '15/10/2025 16:15',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Lakshmipriya',
-      date: '16/10/2025 10:00',
-      icon: 'pi pi-pencil',
-    },
-  ];
+  public historyEvents: any[] = [];
+  public historyPagination = {
+    pageNumber: 1,
+    pageSize: 10,
+    totalRecords: 0
+  };
+  public historyLoading: boolean = false;
+  public currentHistoryQuestionId!: number;
   // Flag to prevent recursive calls when updating data programmatically
   private isUpdatingData = false;
   constructor(
@@ -341,7 +323,69 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     });
   }
   public viewQuestionHistory(id: any) {
+    this.currentHistoryQuestionId = id;
+    this.historyEvents = [];
+    this.historyPagination.pageNumber = 1;
+    this.fetchQuestionHistory(id, 1);
     this.visible = true;
+  }
+
+  public fetchQuestionHistory(questionId: number, pageNumber: number) {
+    const payload = new PaginatedPayload();
+    payload.pagination.pageNumber = pageNumber;
+    payload.pagination.pageSize = this.historyPagination.pageSize;
+    payload.filterMap = { questionId: questionId };
+    payload.multiSortedColumns = [{ active: 'ChangedAt', direction: 'desc' }];
+
+    this.historyLoading = true;
+    this.questionService.getQuestionHistoryPaginated(payload).pipe(
+      finalize(() => this.historyLoading = false)
+    ).subscribe({
+      next: (res: any) => {
+        const events = res.data.map((item: any) => ({
+          status: item.action,
+          user: item.changedByName,
+          date: new Date(item.changedAt + 'Z'),
+          icon: this.getHistoryIcon(item.action),
+          description: this.getHistoryDescription(item)
+        }));
+
+        if (pageNumber === 1) {
+          this.historyEvents = events;
+        } else {
+          this.historyEvents = [...this.historyEvents, ...events];
+        }
+        this.historyPagination.totalRecords = res.totalRecords;
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to fetch question history'
+        });
+      }
+    });
+  }
+
+  private getHistoryIcon(action: string): string {
+    switch (action.toLowerCase()) {
+      case 'created': return 'pi pi-plus';
+      case 'updated': return 'pi pi-pencil';
+      case 'deleted': return 'pi pi-trash';
+      default: return 'pi pi-info-circle';
+    }
+  }
+
+  private getHistoryDescription(item: any): string {
+    if (item.field && item.previousValue !== undefined && item.currentValue !== undefined) {
+      return `${item.field}: ${item.previousValue || 'None'} → ${item.currentValue || 'None'}`;
+    }
+    return item.details || '';
+  }
+
+  public loadMoreHistory() {
+    this.historyPagination.pageNumber++;
+    this.fetchQuestionHistory(this.currentHistoryQuestionId, this.historyPagination.pageNumber);
   }
 
   public onButtonClick(data: { event: any; fName: string }): void {
@@ -629,9 +673,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
   private loadData(payload: PaginatedPayload): void {
     // Prevent recursive calls when updating data programmatically
-    // if (this.isUpdatingData) {
-    //   return;
-    // }
+    if (this.isUpdatingData) {
+      return;
+    }
     this.previewImageUrls = {};
     this.isImageLoadings = {};
     this.questionFileData = {};

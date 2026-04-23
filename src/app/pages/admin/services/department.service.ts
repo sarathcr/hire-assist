@@ -34,4 +34,7 @@ export class DepartmentService extends ApiService<any> {
   public deleteDepartment(id: number) {
     return this.httpClient.delete(`${this.getResourceUrl()}/Department/${id}`);
   }
+  public getDepartmentHistory(payload: any) {
+    return this.httpClient.post(`${this.getResourceUrl()}/Department/history`, payload);
+  }
 }

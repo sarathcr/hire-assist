@@ -1,20 +1,54 @@
 <p-drawer
-  [header]="header()"
+  [header]="header"
   [(visible)]="visible"
   position="right"
   styleClass="history-drawer-sidebar"
   [style]="{ width: '30rem' }"
 >
-  <p-timeline [value]="events()">
-    <ng-template #marker let-event>
-      <span class="history-drawer__marker">
-        <i [class]="event.icon"></i>
-      </span>
-    </ng-template>
-    <ng-template #content let-event>
-      <p class="history-drawer__action">{{ event.status }}</p>
-      <p class="history-drawer__user">{{ event.user }}</p>
-      <p class="history-drawer__date">{{ event.date }}</p>
-    </ng-template>
-  </p-timeline>
+  <div class="history-drawer">
+    <p-timeline *ngIf="events.length > 0" [value]="events">
+      <ng-template #marker let-event>
+        <span class="history-drawer__marker">
+          <i [class]="event.icon"></i>
+        </span>
+      </ng-template>
+      <ng-template #content let-event>
+        <div class="history-drawer__event-content">
+          <p class="history-drawer__action">
+            <span class="status">{{ event.status }}</span>
+            <span class="by"> by </span>
+            <span class="user">{{ event.user }}</span>
+          </p>
+          <p class="history-drawer__description" *ngIf="event.description">
+            {{ event.description }}
+          </p>
+          <p class="history-drawer__date">
+            {{ event.date | date : "MMM d, y, hh:mm a" }}
+          </p>
+        </div>
+      </ng-template>
+    </p-timeline>
+
+    <div *ngIf="events.length === 0 && !loading" class="history-drawer__empty">
+      <i class="pi pi-history"></i>
+      <p>No history records found</p>
+    </div>
+
+    <div *ngIf="showLoadMore && !loading && events.length > 0" class="history-drawer__load-more">
+      <button (click)="loadMore.emit()" class="load-more-btn">Load More</button>
+    </div>
+
+    <div
+      *ngIf="loading"
+      class="history-drawer__loading"
+      [class.initial]="events.length === 0"
+    >
+      <p-progressSpinner
+        styleClass="w-2rem h-2rem"
+        strokeWidth="4"
+        fill="transparent"
+        animationDuration=".5s"
+      ></p-progressSpinner>
+    </div>
+  </div>
 </p-drawer>

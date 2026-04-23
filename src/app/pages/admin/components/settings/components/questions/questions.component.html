@@ -28,5 +28,11 @@
       ></app-button>
     </div>
   </app-table>
-  <app-history-drawer [(visible)]="visible" [events]="events"></app-history-drawer>
+  <app-history-drawer 
+    [(visible)]="visible" 
+    [events]="historyEvents"
+    [loading]="historyLoading"
+    [showLoadMore]="historyEvents.length < historyPagination.totalRecords"
+    (loadMore)="loadMoreHistory()"
+  ></app-history-drawer>
 </div>

@@ -61,4 +61,7 @@ export class CoordinatorPanelBridgeService extends ApiService<any> {
   public createPanel(payload: CreatePanel) {
     return this.httpClient.post(`${this.getResourceUrl()}/Panel`, payload);
   }
+  public getPanelHistory(payload: any) {
+    return this.httpClient.post(`${this.getResourceUrl()}/panel/history`, payload);
+  }
 }

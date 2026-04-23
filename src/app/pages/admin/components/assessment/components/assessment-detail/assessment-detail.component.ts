@@ -246,25 +246,25 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     {
       status: 'Created',
       user: 'Sarath Cheerakkadan',
-      date: '15/10/2025 10:30',
+      date: '2025-10-15T10:30:00',
       icon: 'pi pi-plus',
     },
     {
       status: 'Updated',
       user: 'Sarath Cheerakkadan',
-      date: '15/10/2025 14:00',
+      date: '2025-10-15T14:00:00',
       icon: 'pi pi-pencil',
     },
     {
       status: 'Updated',
       user: 'Steve Jose',
-      date: '15/10/2025 16:15',
+      date: '2025-10-15T16:15:00',
       icon: 'pi pi-pencil',
     },
     {
       status: 'Updated',
       user: 'Lakshmipriya',
-      date: '16/10/2025 10:00',
+      date: '2025-10-16T10:00:00',
       icon: 'pi pi-pencil',
     },
   ];

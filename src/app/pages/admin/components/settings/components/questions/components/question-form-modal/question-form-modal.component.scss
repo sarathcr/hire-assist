@@ -484,37 +484,32 @@
         max-width: 100%;
         min-width: 0;
 
-        // Target the selected value display - ensure it truncates
-        .p-select-trigger,
-        .p-multiselect-trigger {
-          max-width: 100%;
-          min-width: 0;
-          overflow: hidden;
-          width: 100%;
-
-          .p-select-label,
-          .p-multiselect-label,
-          span,
-          div {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 100%;
-            display: block;
-            width: 100%;
-            min-width: 0;
-          }
+        // Ensure clear icon is centered vertically and positioned correctly
+        .p-select-clear-icon,
+        .p-multiselect-clear-icon {
+          top: 50%;
+          margin-top: 0;
+          transform: translateY(-50%);
+          right: 2.5rem; // Position it before the trigger icon
+          z-index: 1;
         }
 
-        // Also target label directly if it exists outside trigger
+        // Target the selected value display - ensure it truncates
         .p-select-label,
-        .p-multiselect-label,
-        span[class*="label"] {
+        .p-multiselect-label {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          max-width: 100%;
-          display: block;
+          padding-right: 4rem; // Give space for clear icon and trigger
+        }
+
+        .p-select-trigger,
+        .p-multiselect-trigger {
+          // Trigger should only be the icon area, don't set width 100%
+          width: 2.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
       }
     }

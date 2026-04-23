@@ -29,4 +29,8 @@ export class UserService extends ApiService<any> {
       payload,
     );
   }
+
+  public getUserHistory(userId: string) {
+    return this.httpClient.get<any[]>(`${this.getResourceUrl()}/history/${userId}`);
+  }
 }

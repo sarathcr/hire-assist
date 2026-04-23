@@ -160,3 +160,10 @@ app-input-text-iftalabel {
   width: 100%;
 }
 
+// Fix for PrimeNG Select Clear Icon alignment
+.p-select-clear-icon,
+.p-multiselect-clear-icon {
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin-top: 0 !important;
+}

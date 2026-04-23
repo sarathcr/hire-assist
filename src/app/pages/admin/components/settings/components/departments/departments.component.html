@@ -27,5 +27,8 @@
   <app-history-drawer
     [(visible)]="visible"
     [events]="events"
+    [loading]="historyLoading"
+    [showLoadMore]="hasMoreHistory"
+    (loadMore)="loadHistory()"
   ></app-history-drawer>
 </div>

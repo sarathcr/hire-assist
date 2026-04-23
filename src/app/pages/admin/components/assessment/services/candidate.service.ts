@@ -35,4 +35,8 @@ export class CandidateService extends ApiService<any> {
       `${ASSESSMENT_URL}/candidates/unmask/${candidateId}`,
     );
   }
+
+  public getCandidateHistoryPaginated(payload: any) {
+    return this.http.post(`${ASSESSMENT_URL}/candidates/history`, payload);
+  }
 }

@@ -20,4 +20,7 @@ export class PanelService extends ApiService<any> {
   override getResourceUrl(): string {
     return Panel_URL;
   }
+  public getPanelHistory(payload: any) {
+    return this.httpClient.post(`${this.getResourceUrl()}/history`, payload);
+  }
 }

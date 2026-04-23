@@ -96,32 +96,12 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
   public configMap!: ConfigMap;
   public isLoading = true;
   public visible: boolean = false;
-  events = [
-    {
-      status: 'Created',
-      user: 'Sarath Cheerakkadan',
-      date: '15/10/2025 10:30',
-      icon: 'pi pi-plus',
-    },
-    {
-      status: 'Updated',
-      user: 'Sarath Cheerakkadan',
-      date: '15/10/2025 14:00',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Steve Jose',
-      date: '15/10/2025 16:15',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Lakshmipriya',
-      date: '16/10/2025 10:00',
-      icon: 'pi pi-pencil',
-    },
-  ];
+  public events: any[] = [];
+  public selectedDepartmentId: any;
+  public historyPageNumber: number = 1;
+  public totalHistoryRecords: number = 0;
+  public historyLoading: boolean = false;
+  public hasMoreHistory: boolean = true;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
   private previousFilterMap: any = {};
 
@@ -253,7 +233,73 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
   }
 
   public viewHistory(id: any) {
+    this.selectedDepartmentId = id;
     this.visible = true;
+    this.events = [];
+    this.historyPageNumber = 1;
+    this.hasMoreHistory = true;
+    this.loadHistory();
+  }
+
+  public loadHistory() {
+    if (this.historyLoading || !this.hasMoreHistory) return;
+
+    this.historyLoading = true;
+    const payload = {
+      pagination: {
+        pageNumber: this.historyPageNumber,
+        pageSize: 10
+      },
+      filterMap: {
+        departmentId: `${this.selectedDepartmentId}`
+      },
+      multiSortedColumns: [
+        {
+          active: "ChangedAt",
+          direction: "desc"
+        }
+      ]
+    };
+
+    this.departmentService.getDepartmentHistory(payload).subscribe({
+      next: (res: any) => {
+        const newEvents = res.data.map((item: any) => ({
+          status: item.action,
+          user: item.changedByName,
+          date: new Date(item.changedAt + 'Z'),
+          icon: this.getHistoryIcon(item.action),
+          description: this.getHistoryDescription(item)
+        }));
+
+        this.events = [...this.events, ...newEvents];
+        this.totalHistoryRecords = res.totalRecords;
+        this.hasMoreHistory = this.events.length < this.totalHistoryRecords;
+        this.historyPageNumber++;
+        this.historyLoading = false;
+      },
+      error: () => {
+        this.historyLoading = false;
+      }
+    });
+  }
+
+  private getHistoryIcon(action: string): string {
+    switch (action) {
+      case 'Created': return 'pi pi-plus';
+      case 'Updated': return 'pi pi-pencil';
+      case 'Deleted': return 'pi pi-trash';
+      default: return 'pi pi-info-circle';
+    }
+  }
+
+  private getHistoryDescription(item: any): string {
+    if (item.action === 'Created' || item.action === 'Deleted') {
+      return item.details || '';
+    }
+    if (item.field) {
+      return `${item.field}: ${item.previousValue} → ${item.currentValue}`;
+    }
+    return item.details || 'Department was modified';
   }
 
   public onButtonClick(data: { event: any; fName: string }): void {

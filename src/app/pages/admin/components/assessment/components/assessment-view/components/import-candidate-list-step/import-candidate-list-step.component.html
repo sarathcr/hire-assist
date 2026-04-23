@@ -90,7 +90,10 @@
 
   <app-history-drawer
     [visible]="visible"
-    [events]="events"
+    [events]="historyEvents"
+    [loading]="historyLoading"
+    [showLoadMore]="historyEvents.length < historyPagination.totalRecords"
     (visibleChange)="visible = $event"
+    (loadMore)="loadMoreHistory()"
   ></app-history-drawer>
 </div>

@@ -27,7 +27,8 @@
 
   <app-history-drawer
     [visible]="visible"
-    [events]="events"
+    [events]="historyEvents"
+    [loading]="historyLoading"
     (visibleChange)="visible = $event"
   ></app-history-drawer>
 </div>

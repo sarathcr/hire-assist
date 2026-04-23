@@ -10,6 +10,7 @@ import {
   FileRequest,
   Questionsinterface,
 } from '../models/question.model';
+import { PaginatedPayload } from '../../../shared/models/pagination.models';
 
 @Injectable({
   providedIn: 'root',
@@ -91,5 +92,9 @@ export class QuestionService extends ApiService<any> {
       `${this.getResourceUrl()}/files/multifiles`,
       formData,
     );
+  }
+
+  public getQuestionHistoryPaginated(payload: PaginatedPayload): Observable<any> {
+    return this.httpClient.post(`${this.getResourceUrl()}/Question/history`, payload);
   }
 }
