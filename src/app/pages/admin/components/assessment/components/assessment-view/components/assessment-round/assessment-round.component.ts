@@ -21,18 +21,22 @@ import {
   Validators,
 } from '@angular/forms';
 import { MessageService } from 'primeng/api';
+import { Accordion, AccordionPanel, AccordionHeader, AccordionContent } from 'primeng/accordion';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { DatePickerModule } from 'primeng/datepicker';
 import { FormsModule } from '@angular/forms';
+import { EditorModule } from 'primeng/editor';
+import { MultiSelect, MultiSelectModule } from 'primeng/multiselect';
+import { DividerModule } from 'primeng/divider';
+import { CardModule } from 'primeng/card';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
-import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
+import { OptionsMap, Option } from '../../../../../../../../shared/models/app-state.models';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
-import { Option } from '../../../../../../../../shared/models/option';
 import { StoreService } from '../../../../../../../../shared/services/store.service';
 import {
   buildFormGroup,
@@ -43,6 +47,7 @@ import {
   AssessmentScheduleModal,
   AssessmentRoundsInterface,
   RoundsInterface,
+  FeedbackCriteriaConfig,
 } from '../../../../../../models/assessment-schedule.model';
 import { AssessmentRoundFormGroup } from '../../../../../../models/assessment.model';
 import { AssessmentScheduleService } from '../../../../services/assessment-schedule.service';
@@ -51,6 +56,8 @@ import { AssessmentRoundSkeletonComponent } from './assessment-round-skeleton';
 import { CollectionService } from '../../../../../../../../shared/services/collection.service';
 import { CreateRoundModalComponent } from './components/create-round-modal/create-round-modal.component';
 import { StepsStatusService } from '../../../../services/steps-status.service';
+import { CommonModule } from '@angular/common';
+
 @Component({
   selector: 'app-assessment-round',
   imports: [
@@ -62,6 +69,15 @@ import { StepsStatusService } from '../../../../services/steps-status.service';
     FloatLabelModule,
     FormsModule,
     DatePickerModule,
+    EditorModule,
+    MultiSelectModule,
+    DividerModule,
+    CardModule,
+    Accordion,
+    AccordionPanel,
+    AccordionHeader,
+    AccordionContent,
+    CommonModule,
   ],
   templateUrl: './assessment-round.component.html',
   styleUrl: './assessment-round.component.scss',
@@ -79,6 +95,9 @@ export class AssessmentRoundComponent
   public newRoundsToCreate: RoundsInterface[] = [];
   public isLoading = false;
   public roundConfigForms = new FormArray<FormGroup>([]);
+  public feedbackCriteriaOptions: Option[] = [];
+  public isFetchingCriteria = false;
+  private isFullCriteriaLoaded = false;
 
   public assessmentId = input<number>();
   public isReadOnly = input<boolean>(false);
@@ -110,9 +129,9 @@ export class AssessmentRoundComponent
     });
   }
   ngOnInit(): void {
-    this.loadCollections();
     this.setConfigMaps();
-    this.setOptions();
+    this.loadCollections();
+    this.setOptions(); 
     this.GetAssessmentRoundbyAssessment();
     this.setupRoundSelectionListener();
   }
@@ -179,10 +198,13 @@ export class AssessmentRoundComponent
     }
 
     const selectedRounds = this.rounds
-      .filter((item: Option) => selectedRoundIds.includes(item.value))
+      .filter(
+        (item: Option) =>
+          item.value !== undefined && selectedRoundIds.includes(item.value),
+      )
       .map((item: Option) => ({
-        id: item.value.toString(),
-        name: item.label,
+        id: item.value?.toString() || '',
+        name: item.label || '',
         timerHour: 0,
         durationDate: new Date(new Date().setHours(0, 0, 0, 0)),
         maxTerminationCount: 0,
@@ -198,9 +220,145 @@ export class AssessmentRoundComponent
       (round) => !existingIds.has(round.id),
     );
 
-    this.submittedData = [...existingData, ...newRounds];
+    this.submittedData = [
+      ...existingData,
+      ...(newRounds as AssessmentRoundFormGroup[]),
+    ];
     this.buildRoundConfigForms();
     this.reinitSortable();
+  }
+
+  public getCriteriaFormArray(roundIdx: number): FormArray {
+    return this.getRoundFormGroup(roundIdx).get('feedbackCriteria') as FormArray;
+  }
+
+  public addCriteria(roundIdx: number): void {
+    const criteriaArray = this.getCriteriaFormArray(roundIdx);
+    criteriaArray.push(this.createCriteriaFormGroup());
+    this.cdr.detectChanges();
+  }
+
+  public removeCriteria(roundIdx: number, criteriaIdx: number): void {
+    const group = this.getRoundFormGroup(roundIdx);
+    const criteriaArray = group.get('feedbackCriteria') as FormArray;
+    const removedItem = criteriaArray.at(criteriaIdx).value;
+    
+    criteriaArray.removeAt(criteriaIdx);
+
+    // If it was an imported item, remove it from the dropdown selection too
+    if (removedItem.isImported) {
+      const selectionCtrl = group.get('importSelection');
+      const currentSelection = selectionCtrl?.value || [];
+      const removedId = removedItem.id?.toString();
+      
+      if (removedId) {
+        selectionCtrl?.setValue(
+          currentSelection.filter((val: any) => val?.toString() !== removedId),
+          { emitEvent: true }
+        );
+      }
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  private createCriteriaFormGroup(data?: FeedbackCriteriaConfig): FormGroup {
+    return new FormGroup({
+      id: new FormControl(data?.id || null),
+      title: new FormControl(data?.title || '', [
+        Validators.required,
+        Validators.pattern(/^[a-zA-Z\s]*$/),
+      ]),
+      description: new FormControl(data?.description || '', []),
+      maxScore: new FormControl(data?.maxScore || 10, [
+        Validators.required,
+        Validators.min(1),
+      ]),
+      isImported: new FormControl(data?.isImported || false),
+    });
+  }
+
+  public onExistingCriteriaSelected(event: any, idx: number): void {
+    const selectedValues = (event.value as any[] || []).map(v => v?.toString());
+    const feedbackCriteria = this.getCriteriaFormArray(idx);
+    
+    // 1. Identify which imported items were DESELECTED in the dropdown
+    // First, collect all controls that need to be removed to avoid index shift issues
+    const controlsToRemove: number[] = [];
+    
+    feedbackCriteria.controls.forEach((control, i) => {
+      if (control.get('isImported')?.value) {
+        const id = control.get('id')?.value?.toString();
+        // If the item has an ID and it's NOT in the new selection, mark for removal
+        if (id && !selectedValues.includes(id)) {
+          controlsToRemove.push(i);
+        }
+      }
+    });
+
+    // Remove from end to start to maintain index stability
+    controlsToRemove.sort((a, b) => b - a).forEach(i => {
+      feedbackCriteria.removeAt(i);
+    });
+
+    // 2. Identify which items were SELECTED in the dropdown but ARE NOT in the list
+    selectedValues.forEach((val) => {
+      // Find the option by its value (ID or Title)
+      const option = this.feedbackCriteriaOptions.find(
+        (o) => o.value?.toString() === val
+      );
+
+      if (option && option.label) {
+        // Check if this specific item already exists in the list (match by ID OR Title)
+        const alreadyExists = feedbackCriteria.value.some(
+          (c: any) => c.isImported && (c.id?.toString() === val || c.title === option.label)
+        );
+
+        if (!alreadyExists) {
+          feedbackCriteria.push(
+            this.createCriteriaFormGroup({
+              id: option.value,
+              title: option.label,
+              description: (option as any).description || '',
+              maxScore: (option as any).maxScore || 10,
+              isImported: true,
+            })
+          );
+        }
+      }
+    });
+
+    this.cdr.detectChanges();
+  }
+
+
+  public fetchCriteriaOptions(): void {
+    if (this.isFetchingCriteria || this.isFullCriteriaLoaded) {
+      return;
+    }
+    
+    this.isFetchingCriteria = true;
+    this.assessmentScheduleService.GetExceptCommonFeedbackCriteria()
+      .pipe(
+        catchError(() => {
+          this.isFetchingCriteria = false;
+          return of([]);
+        })
+      )
+      .subscribe((response: any) => {
+        // Handle both raw array and { data: [] } response shapes
+        const criteria = Array.isArray(response) ? response : (response?.data || response?.items || []);
+        
+        this.feedbackCriteriaOptions = criteria.map((c: any) => ({
+          label: c.label || c.title || c.Title || c.name || c.Name || c.criteriaTitle || c.criteria_title || c.criteriaName || c.criteria_name || 'Untitled',
+          value: (c.value || c.id || c.Id || c.title || c.Title || c.name || c.Name)?.toString(), 
+          description: c.description || c.Description || c.criteria_description || '',
+          maxScore: c.maxScore || c.MaxScore || c.max_score || 10
+        })) as any[];
+        
+        this.isFetchingCriteria = false;
+        this.isFullCriteriaLoaded = true;
+      });
   }
 
   private initSortable(): void {
@@ -431,10 +589,30 @@ export class AssessmentRoundComponent
     for (const data of this.submittedData) {
       const isAptitude = data.name?.toLowerCase().includes('aptitude');
       const group = new FormGroup({
-        duration: new FormControl(data.durationDate, [Validators.required]),
+        duration: new FormControl(data.durationDate, [
+          Validators.required,
+          (control) => {
+            const val = control.value;
+            if (val && val instanceof Date && val.getHours() === 0 && val.getMinutes() === 0) {
+              return { invalidDuration: true };
+            }
+            return null;
+          }
+        ]),
         maxTerminationCount: new FormControl(
           data.maxTerminationCount,
           isAptitude ? [Validators.required, Validators.min(1)] : [],
+        ),
+        feedbackCriteria: new FormArray(
+          (data.feedbackCriteria || []).map((c) =>
+            this.createCriteriaFormGroup(c),
+          ),
+          !isAptitude ? [Validators.required, Validators.minLength(1)] : [],
+        ),
+        importSelection: new FormControl(
+          (data.feedbackCriteria || [])
+            .filter((c) => c.isImported)
+            .map((c) => c.id?.toString()),
         ),
       });
 
@@ -444,6 +622,10 @@ export class AssessmentRoundComponent
       });
       group.get('maxTerminationCount')?.valueChanges.subscribe((val) => {
         data.maxTerminationCount = val ?? undefined;
+      });
+
+      group.get('feedbackCriteria')?.valueChanges.subscribe((val) => {
+        data.feedbackCriteria = val as FeedbackCriteriaConfig[] ?? [];
       });
 
       this.roundConfigForms.push(group);
@@ -583,8 +765,8 @@ export class AssessmentRoundComponent
   private mapRoundsToAssessment() {
     const payload: AssessmentRoundsInterface[] = this.submittedData.map(
       (item: AssessmentRoundFormGroup, index: number) => ({
-        RoundId: Number(item.id),
-        name: item.name,
+        roundId: Number(item.id),
+        round: item.name,
         sequence: index + 1,
         timerHour: item.durationDate
           ? `${item.durationDate.getHours().toString().padStart(2, '0')}:` +
@@ -592,6 +774,19 @@ export class AssessmentRoundComponent
             `${item.durationDate.getSeconds().toString().padStart(2, '0')}`
           : '00:00:00',
         maxTerminationCount: item.maxTerminationCount || 0,
+        isActive: true,
+        assessmentRoundFeedbackCriteria: (item.feedbackCriteria || []).map((c: any) => {
+          const rawDescription = c.description || '';
+          const plainText = rawDescription.replace(/<[^>]*>/g, '').trim();
+          const finalDescription = plainText === '' ? null : rawDescription;
+
+          return {
+            feedbackCriteriaId: c.id && !isNaN(Number(c.id)) ? Number(c.id) : 0,
+            criteriaName: c.title,
+            description: finalDescription,
+            maxScore: c.maxScore || 10,
+          };
+        }),
       }),
     );
 
@@ -618,7 +813,7 @@ export class AssessmentRoundComponent
     this.rounds = this.optionsMap['rounds'] as unknown as Option[];
     this.configMap['round'] = {
       ...this.configMap['round'],
-      options: [...this.rounds],
+      options: [...this.rounds] as any[],
     };
   }
 
@@ -643,19 +838,43 @@ export class AssessmentRoundComponent
           this.isLoading = false;
           this.isDataLoaded = true;
           this.assessmentRounds = response;
-          this.submittedData = response.map((item) => {
-          const date = new Date();
-
-          if (item.timerHour) {
-            const timeString = typeof item.timerHour === 'string'
-              ? item.timerHour
-              : '00:00:00';
-            const [h, m, s] = timeString.split(':').map(Number);
-            date.setHours(h || 0, m || 0, s || 0, 0);
-          } else {
-            date.setHours(0, 0, 0, 0);
+          
+          // Seed dropdown options from response data BEFORE building the forms
+          const allCriteriaOptions: Option[] = [];
+          response.forEach(item => {
+            const criteriaList = ((item as any).assessmentRoundFeedbackCriteria || []) as any[];
+            criteriaList.forEach(fc => {
+              if (fc.feedbackCriteriaId && fc.feedbackCriteriaId !== 0) {
+                const exists = allCriteriaOptions.some(o => o.value?.toString() === fc.feedbackCriteriaId.toString());
+                if (!exists) {
+                   allCriteriaOptions.push({
+                      label: fc.criteriaName,
+                      value: fc.feedbackCriteriaId.toString()
+                   });
+                }
+              }
+            });
+          });
+          
+          if (allCriteriaOptions.length > 0) {
+            this.feedbackCriteriaOptions = [...this.feedbackCriteriaOptions, ...allCriteriaOptions];
           }
 
+          this.submittedData = response.map((item) => {
+            const date = new Date();
+
+            if (item.timerHour) {
+              const timeString =
+                typeof item.timerHour === 'string'
+                  ? item.timerHour
+                  : '00:00:00';
+              const [h, m, s] = timeString.split(':').map(Number);
+              date.setHours(h || 0, m || 0, s || 0, 0);
+            } else {
+              date.setHours(0, 0, 0, 0);
+            }
+
+            const criteriaList = ((item as any).assessmentRoundFeedbackCriteria || []) as any[];
             return {
               name: item.round,
               id: item.roundId.toString(),
@@ -663,6 +882,13 @@ export class AssessmentRoundComponent
               timerHour: item.timerHour || 0,
               durationDate: date,
               maxTerminationCount: item.maxTerminationCount || 0,
+              feedbackCriteria: criteriaList.map((fc: any) => ({
+                id: fc.feedbackCriteriaId || fc.id,
+                title: fc.criteriaName,
+                description: fc.description || '',
+                maxScore: fc.maxScore || 10,
+                isImported: !!fc.feedbackCriteriaId && fc.feedbackCriteriaId !== 0,
+              })),
             };
           });
           this.fGroup.patchValue(
@@ -694,7 +920,7 @@ export class AssessmentRoundComponent
   private setOptions() {
     (this.configMap['round'] as CustomSelectConfig).options = this.optionsMap[
       'rounds'
-    ] as unknown as Option[];
+    ] as any[];
   }
 
   private loadCollections() {

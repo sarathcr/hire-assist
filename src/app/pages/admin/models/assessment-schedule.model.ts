@@ -38,6 +38,14 @@ export interface RoundsInterface {
   description: string;
 }
 
+export interface FeedbackCriteriaConfig {
+  id?: number | string;
+  title: string;
+  description: string;
+  maxScore: number;
+  isImported?: boolean;
+}
+
 export interface QuestionSetFormInterface {
   id: number;
   title: string;
@@ -46,12 +54,17 @@ export interface QuestionSetFormInterface {
 }
 
 export interface AssessmentRoundsInterface {
-  RoundId: number;
-  name: string;
+  id?: number;
+  assessment?: string;
+  roundId: number;
+  round?: string;
+  statusId?: number;
+  status?: string;
   sequence: number;
+  isActive?: boolean;
   timerHour?: string;
   maxTerminationCount?: number;
-  assessmentId?: number;
+  assessmentRoundFeedbackCriteria?: any[];
 }
 
 export interface RoundForm extends RoundsInterface {

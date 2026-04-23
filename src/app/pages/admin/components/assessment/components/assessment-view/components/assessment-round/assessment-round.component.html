@@ -115,86 +115,193 @@
           <div class="assessment-round__config-section">
             <h3 class="assessment-round__config-title">Round Configuration</h3>
             <div class="assessment-round__config-list">
-              @for (data of submittedData; let idx = $index; track data.id) {
-                <div class="assessment-round__config-item">
-                  <div class="assessment-round__config-round-info">
-                    <span class="assessment-round__round-number">{{
-                      idx + 1
-                    }}</span>
-                    <span class="assessment-round__round-name">{{
-                      data.name
-                    }}</span>
-                  </div>
+            <div class="assessment-round__config-list">
+              <p-accordion [multiple]="true" class="assessment-round__accordion">
+                @for (data of submittedData; let idx = $index; track data.id) {
+                  <p-accordionpanel [value]="idx.toString()" class="assessment-round__panel">
+                    <p-accordionheader>
+                      <div class="assessment-round__accordion-header-content">
+                        <div class="header-main">
+                          <span class="assessment-round__round-number">{{ idx + 1 }}</span>
+                          <span class="assessment-round__round-name">{{ data.name }}</span>
+                        </div>
+                        <div class="header-status">
+                          @if (getRoundFormGroup(idx).invalid && getRoundFormGroup(idx).touched) {
+                            <span class="error-badge"><i class="pi pi-exclamation-circle"></i> Incomplete</span>
+                          } @else if (getRoundFormGroup(idx).valid && getRoundFormGroup(idx).touched) {
+                            <span class="success-badge"><i class="pi pi-check-circle"></i> Configured</span>
+                          }
+                          @if (data.name.toLowerCase().includes("aptitude") && getRoundFormGroup(idx).get('maxTerminationCount')?.value) {
+                             <span class="info-badge">{{ getRoundFormGroup(idx).get('maxTerminationCount')?.value }} Tries</span>
+                          }
+                        </div>
+                      </div>
+                    </p-accordionheader>
+                    
+                    <p-accordioncontent>
+                      <div class="assessment-round__config-item-body" [formGroup]="getRoundFormGroup(idx)">
+                        <div class="assessment-round__config-inputs">
+                          <!-- Max Attempts Input (Only for Aptitude Round) -->
+                          @if (data.name.toLowerCase().includes("aptitude")) {
+                            <div class="assessment-round__input-group">
+                              <label [for]="'attempts-' + idx">Number of Tries <span class="assessment-round__required">*</span></label>
+                              <input
+                                pInputText
+                                type="number"
+                                [id]="'attempts-' + idx"
+                                formControlName="maxTerminationCount"
+                                min="1"
+                                placeholder="e.g., 3"
+                                [attr.disabled]="isReadOnly() ? true : null"
+                                class="w-full"
+                              />
+                            </div>
+                          }
+                          
+                          <!-- Duration Input -->
+                          <div class="assessment-round__input-group">
+                            <label [for]="'duration-' + idx">Duration (HH:mm) <span class="assessment-round__required">*</span></label>
+                            <p-datepicker
+                              [id]="'duration-' + idx"
+                              formControlName="duration"
+                              [timeOnly]="true"
+                              [hourFormat]="'24'"
+                              inputId="timeonly"
+                              placeholder="00:00"
+                              appendTo="body"
+                              styleClass="assessment-round__duration-picker"
+                              [disabled]="isReadOnly()"
+                            ></p-datepicker>
+                          </div>
+                        </div>
 
-                  <div class="assessment-round__config-inputs">
-                    <!-- Max Attempts Input (Only for Aptitude Round) -->
-                    @if (
-                      data &&
-                      data.name &&
-                      data.name.toLowerCase().includes("aptitude")
-                    ) {
-                      <div class="assessment-round__input-group">
-                        <label [for]="'attempts-' + idx"
-                          >Number of Tries
-                          <span class="assessment-round__required"
-                            >*</span
-                          ></label
-                        >
-                        <input
-                          pInputText
-                          type="number"
-                          [id]="'attempts-' + idx"
-                          [formControl]="
-                            $any(
-                              getRoundFormGroup(idx).get('maxTerminationCount')
-                            )
-                          "
-                          min="1"
-                          [attr.disabled]="isReadOnly() ? true : null"
-                        />
-                        @if (
-                          getRoundFormGroup(idx).get("maxTerminationCount")
-                            ?.touched &&
-                          getRoundFormGroup(idx).get("maxTerminationCount")
-                            ?.invalid
-                        ) {
-                          <span class="assessment-round__validation-label">
-                            {{ getErrorMessage(idx, "maxTerminationCount") }}
-                          </span>
+                        <!-- Feedback Criteria Section -->
+                        @if (!data.name.toLowerCase().includes("aptitude")) {
+                          <div class="assessment-round__criteria-section">
+                            <p-divider></p-divider>
+                            <div class="assessment-round__criteria-header">
+                              <div class="assessment-round__criteria-header-text">
+                                <h4 class="assessment-round__criteria-title">Feedback Criteria</h4>
+                                <p class="assessment-round__criteria-subtitle">Candidate evaluation parameters</p>
+                              </div>
+                              <div class="assessment-round__criteria-actions">
+                                <p-multiSelect
+                                  #ms
+                                  [formControl]="$any(getRoundFormGroup(idx).get('importSelection'))"
+                                  [options]="feedbackCriteriaOptions"
+                                  optionLabel="label"
+                                  optionValue="value"
+                                  placeholder="Import Existing"
+                                  (onChange)="onExistingCriteriaSelected($event, idx)"
+                                  (onFocus)="fetchCriteriaOptions()"
+                                  [loading]="isFetchingCriteria"
+                                  loadingIcon="pi pi-spin pi-spinner"
+                                  [display]="ms.value && ms.value.length > 3 ? 'comma' : 'chip'"
+                                  [filter]="true"
+                                  appendTo="body"
+                                  [maxSelectedLabels]="3"
+                                  selectedItemsLabel="{0} items selected"
+                                  styleClass="assessment-round__criteria-multiselect"
+                                  [disabled]="isReadOnly()"
+                                >
+                                </p-multiSelect>
+                                <app-button
+                                  [icon]="'pi pi-plus'"
+                                  [buttonLabel]="'Add New'"
+                                  [buttonSize]="'small'"
+                                  [buttonVariant]="'outlined'"
+                                  [disabled]="isReadOnly()"
+                                  (btnClick)="addCriteria(idx)"
+                                ></app-button>
+                              </div>
+                            </div>
+
+                            <div class="assessment-round__criteria-list" formArrayName="feedbackCriteria">
+                              @for (criteria of getCriteriaFormArray(idx).controls; let cIdx = $index; track criteria) {
+                                <div class="assessment-round__criteria-item-v2" [formGroupName]="cIdx">
+                                  <div class="criteria-header-row">
+                                    <div class="criteria-identity">
+                                      <span class="criteria-index">{{ cIdx + 1 }}</span>
+                                      <div class="criteria-field-wrapper">
+                                        <input
+                                          pInputText
+                                          formControlName="title"
+                                          placeholder="Criteria Title"
+                                          class="criteria-title-input-v2"
+                                          [readonly]="isReadOnly()"
+                                        />
+                                        @if (criteria.get('title')?.touched && criteria.get('title')?.invalid) {
+                                          <small class="p-error">
+                                            @if (criteria.get('title')?.errors?.['required']) { Title is required. }
+                                            @if (criteria.get('title')?.errors?.['pattern']) { Only letters allowed. }
+                                          </small>
+                                        }
+                                      </div>
+                                    </div>
+                                    <div class="criteria-controls">
+                                      <div class="score-input-v2">
+                                        <label>Max Score</label>
+                                        <div class="criteria-field-wrapper">
+                                          <input
+                                            pInputText
+                                            type="number"
+                                            formControlName="maxScore"
+                                            placeholder="10"
+                                            [readonly]="isReadOnly()"
+                                          />
+                                          @if (criteria.get('maxScore')?.touched && criteria.get('maxScore')?.invalid) {
+                                            <small class="p-error block text-xs">
+                                              Min 1.
+                                            </small>
+                                          }
+                                        </div>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        class="criteria-remove-btn"
+                                        (click)="removeCriteria(idx, cIdx)"
+                                        [disabled]="isReadOnly()"
+                                      >
+                                        <i class="pi pi-minus-circle"></i>
+                                      </button>
+                                    </div>
+                                  </div>
+                                  <div class="criteria-desc-row">
+                                    <p-editor
+                                      formControlName="description"
+                                      [readonly]="isReadOnly()"
+                                      placeholder="Instructions for the interviewer..."
+                                      [style]="{ height: '120px' }"
+                                    >
+                                      <ng-template pTemplate="header">
+                                        <span class="ql-formats">
+                                          <button class="ql-bold"></button>
+                                          <button class="ql-italic"></button>
+                                          <button class="ql-underline"></button>
+                                          <button class="ql-list" value="ordered"></button>
+                                          <button class="ql-list" value="bullet"></button>
+                                        </span>
+                                      </ng-template>
+                                    </p-editor>
+                                  </div>
+                                </div>
+                              }
+                              
+                              @if (getCriteriaFormArray(idx).invalid && getCriteriaFormArray(idx).touched && getCriteriaFormArray(idx).length === 0) {
+                                <div class="assessment-round__criteria-empty-v2">
+                                  <i class="pi pi-info-circle"></i>
+                                  <span>At least one feedback criteria is required for this round.</span>
+                                </div>
+                              }
+                            </div>
+                          </div>
                         }
                       </div>
-                    }
-                    <!-- Duration Input -->
-                    <div class="assessment-round__input-group">
-                      <label [for]="'duration-' + idx"
-                        >Duration (HH:mm)
-                        <span class="assessment-round__required">*</span></label
-                      >
-                      <p-datepicker
-                        [id]="'duration-' + idx"
-                        [formControl]="
-                          $any(getRoundFormGroup(idx).get('duration'))
-                        "
-                        [timeOnly]="true"
-                        [hourFormat]="'24'"
-                        inputId="timeonly"
-                        placeholder="00:00"
-                        appendTo="body"
-                        styleClass="assessment-round__duration-picker"
-                        [disabled]="isReadOnly()"
-                      ></p-datepicker>
-                      @if (
-                        getRoundFormGroup(idx).get("duration")?.touched &&
-                        getRoundFormGroup(idx).get("duration")?.invalid
-                      ) {
-                        <span class="assessment-round__validation-label">
-                          {{ getErrorMessage(idx, "duration") }}
-                        </span>
-                      }
-                    </div>
-                  </div>
-                </div>
-              }
+                    </p-accordioncontent>
+                  </p-accordionpanel>
+                }
+              </p-accordion>
+            </div>
             </div>
           </div>
         }

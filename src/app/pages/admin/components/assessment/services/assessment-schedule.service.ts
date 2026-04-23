@@ -2,12 +2,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ASSESSMENT_URL } from '../../../../../shared/constants/api';
+import { ASSESSMENT_URL, INTERVIEW_URL } from '../../../../../shared/constants/api';
 import { ApiService } from '../../../../../shared/services/api.service';
 import { StoreService } from '../../../../../shared/services/store.service';
 import {
   AssessmentRoundsInterface,
   RoundsInterface,
+  FeedbackCriteriaConfig,
 } from '../../../models/assessment-schedule.model';
 import { AssessmentRound } from '../../../models/assessment.model';
 
@@ -52,6 +53,11 @@ export class AssessmentScheduleService extends ApiService<any> {
     return this.httpClient.put<AssessmentRound[]>(
       `${this.getResourceUrl()}/AssessmentRound?assessmentId=${assessmentId}`,
       payload,
+    );
+  }
+  public GetExceptCommonFeedbackCriteria() {
+    return this.httpClient.get<FeedbackCriteriaConfig[]>(
+      `${INTERVIEW_URL}/FeedbackCriteria/Except-common`,
     );
   }
 }

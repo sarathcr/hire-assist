@@ -102,12 +102,28 @@
 
   &__select-wrapper {
     display: flex;
-    gap: var(--spacing-20);
-    align-items: center;
-    margin-bottom: 0;
+    gap: 12px;
+    align-items: stretch;
+    margin-bottom: 8px;
     width: 100%;
-    // Ensure multiselect has proper positioning context
     position: relative;
+
+    ::ng-deep {
+      .assessment-round__multiselect_skeleton {
+        flex: 1;
+        .p-multiselect {
+          height: 42px;
+          display: flex;
+          align-items: center;
+        }
+      }
+    }
+
+    .assessment-round__create-button {
+      height: 42px;
+      display: flex;
+      align-items: center;
+    }
   }
 
   &__multiselect {
@@ -498,333 +514,498 @@
     margin: 0 0 16px 0;
   }
 
-  &__config-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  /* ---------------- Configuration Section (Accordion) ---------------- */
+  &__config-section {
+    margin-top: 32px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 24px;
+    animation: fadeIn 0.4s ease-out;
   }
 
-  &__config-item {
-    display: flex;
-    align-items: center;
-    // justify-content: space-between;
-    background: white;
-    padding: 16px;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    gap: 24px;
-    transition: all 0.2s ease;
+  &__config-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+  }
 
-    &:hover {
-      border-color: #bbdefb;
-      box-shadow: 0 2px 8px rgba(33, 150, 243, 0.08);
+  &__accordion {
+    ::ng-deep {
+      .p-accordion {
+        display: flex;
+        flex-direction: column;
+        gap: 16px; // Increased gap
+        background: transparent;
+        border: none;
+      }
+
+      .p-accordionpanel {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px !important;
+        overflow: hidden;
+        background: white;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 16px !important; // Forced margin for gap
+
+        &:last-child {
+          margin-bottom: 0 !important;
+        }
+
+        &:hover {
+          border-color: #3b82f6;
+          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+        }
+
+        &.p-accordionpanel-active {
+          border-color: #3b82f6;
+          box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1);
+          
+          .p-accordionheader {
+            background: #eff6ff;
+            border-bottom: 1px solid #dbeafe;
+          }
+        }
+
+        .p-accordionheader {
+          padding: 16px 24px;
+          background: #f8fafc;
+          border: none;
+          transition: background 0.2s;
+
+          &:hover {
+            background: #f1f5f9;
+          }
+
+          .p-accordion-header-link {
+            background: transparent;
+            border: none;
+            color: inherit;
+            padding: 0;
+          }
+
+          .p-accordion-header-toggle-icon {
+            color: #64748b;
+          }
+        }
+
+        .p-accordioncontent-content {
+          padding: 24px;
+          border-top: 1px solid #f1f5f9;
+        }
+      }
     }
+  }
 
-    @media screen and (max-width: 768px) {
-      flex-direction: column;
-      align-items: flex-start;
+  &__accordion-header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-right: 12px;
+
+    .header-main {
+      display: flex;
+      align-items: center;
       gap: 16px;
     }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      @media screen and (max-width: 640px) {
+        display: none;
+      }
+    }
+
+    .error-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #ef4444;
+      background: #fef2f2;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid #fee2e2;
+    }
+
+    .success-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #10b981;
+      background: #ecfdf5;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid #d1fae5;
+    }
+
+    .info-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: #3b82f6;
+      background: #eff6ff;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid #dbeafe;
+    }
   }
 
-  &__config-round-info {
+  &__config-item-body {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    flex: 1;
-
-    .assessment-round__round-number {
-      margin: 0;
-    }
-
-    .assessment-round__round-name {
-      font-size: 15px;
-    }
+    flex-direction: column;
+    gap: 24px;
   }
 
   &__config-inputs {
     display: flex;
-    align-items: center;
     gap: 32px;
     flex-wrap: wrap;
 
-    @media screen and (max-width: 768px) {
-      width: 100%;
-      gap: 16px;
-    }
-  }
+    .assessment-round__input-group {
+      flex: 0 0 240px;
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
 
-  &__input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    position: relative;
-    margin-bottom: var(--spacing-20);
+      @media screen and (max-width: 640px) {
+        flex: 1 1 100%;
+      }
 
-    label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #64748b;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+      label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
 
-    input {
-      width: 100%;
-      min-width: 140px;
-
-      @media screen and (max-width: 768px) {
+      input {
         width: 100%;
+        border-radius: 8px;
+        padding: 10px 12px;
       }
 
-      &.ng-invalid.ng-dirty {
-        border-color: #e24c4c;
+      ::ng-deep .assessment-round__duration-picker {
+        width: 100% !important;
+        .p-datepicker-input {
+          width: 100% !important;
+          border-radius: 8px;
+        }
       }
     }
-
-    ::ng-deep .assessment-round__duration-picker {
-      width: 100% !important;
-      min-width: 140px;
-
-      @media screen and (max-width: 768px) {
-        width: 100% !important;
-      }
-
-      .p-inputtext {
-        width: 100% !important;
-      }
-
-      &.ng-invalid.ng-dirty .p-inputtext {
-        color: var(--p-form-field-invalid-placeholder-color);
-      }
-    }
-  }
-
-  &__validation-label {
-    position: absolute;
-    left: 0;
-    font-size: var(--font-size-small);
-    bottom: -18px;
-    color: var(--p-form-field-invalid-placeholder-color);
-    white-space: nowrap;
   }
 
   &__required {
-    color: var(--p-form-field-invalid-placeholder-color);
+    color: #ef4444;
+    margin-left: 2px;
+  }
+
+  /* ---------------- Feedback Criteria Section (Refined) ---------------- */
+  &__criteria-section {
+    width: 100%;
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__criteria-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+    margin-bottom: 8px;
+
+    &-text {
+      flex: 1;
+    }
+  }
+
+  &__criteria-title {
+    font-size: 1.05rem;
     font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px 0;
   }
 
-  /* ---------------- RESPONSIVE ---------------- */
+  &__criteria-subtitle {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0;
+  }
 
-  @media screen and (max-width: 768px) {
-    .assessment-round__select-wrapper {
-      flex-direction: column !important;
-      width: 100% !important;
-      align-items: stretch !important;
-      gap: 20px;
+  &__criteria-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+
+    .import-existing-wrapper {
+      display: flex;
+      align-items: stretch;
+      
+      app-button {
+         ::ng-deep .p-button {
+           height: 38px;
+         }
+      }
     }
 
-    ::ng-deep .p-multiselect .p-multiselect-label {
-      font-size: var(--font-size-base);
+    ::ng-deep .assessment-round__criteria-multiselect {
+      flex: 1;
+      height: 38px;
+      .p-multiselect {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
     }
 
-    .assessment-round__multiselect,
-    .assessment-round__multiselect_skeleton {
-      width: 100% !important;
-      display: block !important;
+    app-button {
+       ::ng-deep .p-button {
+         height: 38px;
+       }
     }
+  }
 
-    .assessment-round__create-button {
-      width: 100% !important;
-      order: 2 !important;
-      margin-top: auto !important;
-    }
-
+  &__criteria-multiselect {
+    min-width: 220px;
     ::ng-deep .p-multiselect {
-      width: 100% !important;
-    }
-
-    ::ng-deep .p-multiselect-token {
-      padding: 2px 6px !important;
-      font-size: 10px !important;
-      line-height: 1.2 !important;
-    }
-
-    .assessment-round__rounds-list {
-      flex-direction: column !important;
-      gap: var(--spacing-10) !important;
-      padding: var(--spacing-12) !important;
-      align-items: stretch !important;
-    }
-
-    .assessment-round__round-item {
-      width: 100% !important;
-      min-width: 100% !important;
-      max-width: 100% !important;
-      padding: var(--spacing-12) var(--spacing-15) !important;
-      gap: var(--spacing-8) !important;
-      flex-wrap: nowrap;
-      flex: 1 1 100% !important;
-    }
-
-    .assessment-round__round-item-content {
-      gap: var(--spacing-8) !important;
-    }
-
-    .assessment-round__drag-handle {
-      padding: var(--spacing-4) !important;
-    }
-
-    .assessment-round__round-name {
-      white-space: normal !important;
-      word-break: break-word !important;
-      overflow-wrap: break-word !important;
-      flex: 1 !important;
-      min-width: 0 !important;
-    }
-
-    .assessment-round__round-number {
-      width: clamp(26px, 5.5vw, 28px) !important;
-      height: clamp(26px, 5.5vw, 28px) !important;
-      font-size: clamp(11px, 2.2vw, 13px) !important;
-      margin: 0 !important;
-      flex-shrink: 0 !important;
-    }
-
-    .assessment-round__grip-icon {
-      font-size: clamp(16px, 3.5vw, 18px) !important;
-      flex-shrink: 0 !important;
-    }
-
-    .assessment-round__remove-button {
-      width: clamp(24px, 5vw, 28px) !important;
-      height: clamp(24px, 5vw, 28px) !important;
-      margin-right: var(--spacing-5) !important;
-      opacity: 0.7 !important;
-      flex-shrink: 0 !important;
-    }
-
-    ::ng-deep .assessment-round__footer {
-      display: block;
-      padding: 20px 0 0 0;
+      border-radius: 10px;
+      .p-multiselect-label {
+        padding: 8px 12px;
+        font-size: 13px;
+      }
     }
   }
 
-  @media screen and (max-width: 480px) {
-    .assessment-round__rounds-list {
-      padding: var(--spacing-10) !important;
-      gap: var(--spacing-8) !important;
-      flex-direction: column !important;
-    }
-
-    .assessment-round__round-item {
-      width: 100% !important;
-      min-width: 100% !important;
-      max-width: 100% !important;
-      padding: var(--spacing-10) var(--spacing-12) !important;
-      gap: var(--spacing-6) !important;
-      flex: 1 1 100% !important;
-    }
-
-    .assessment-round__round-number {
-      width: 26px !important;
-      height: 26px !important;
-      font-size: 11px !important;
-    }
-
-    .assessment-round__round-name {
-      font-size: clamp(13px, 3.5vw, 14px) !important;
-    }
-
-    .assessment-round__grip-icon {
-      font-size: 16px !important;
-    }
-
-    .assessment-round__remove-button {
-      width: 24px !important;
-      height: 24px !important;
-    }
-  }
-}
-
-// Skeleton specific styles
-:host ::ng-deep {
-  .p-skeleton {
-    border-radius: 8px;
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: skeleton-loading 1.5s ease-in-out infinite;
-    max-width: 100%;
-    overflow: hidden;
+  &__criteria-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
-  @keyframes skeleton-loading {
-    0% {
-      background-position: 200% 0;
-    }
-
-    100% {
-      background-position: -200% 0;
-    }
-  }
-
-  .assessment-round__header-icon .p-skeleton {
+  &__criteria-item-v2 {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
-  }
+    overflow: hidden;
+    transition: all 0.2s;
 
-  .assessment-round__skeleton-round-number .p-skeleton {
-    border-radius: 50%;
-  }
-
-  // Responsive skeleton widths
-  @media screen and (max-width: 768px) {
-    .assessment-round {
-      padding: 25px 10px;
+    &:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
-    ::ng-deep .assessment-round__section-header {
+    .criteria-header-row {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      background: #f8fafc;
+      border-bottom: 1px solid #f1f5f9;
+
+      @media screen and (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+    }
+
+    .criteria-identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+
+      .criteria-field-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .criteria-index {
+        width: 24px;
+        height: 24px;
+        background: #3b82f6;
+        color: white;
+        font-size: 11px;
+        font-weight: 800;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .criteria-title-input-v2 {
+        border: none !important;
+        background: transparent !important;
+        font-weight: 700;
+        font-size: 0.95rem;
+        padding: 8px 0 !important;
+        box-shadow: none !important;
+        color: #1e293b;
+        width: 100%;
+
+        &:focus {
+          background: #fff !important;
+          padding: 8px 12px !important;
+          border-radius: 6px !important;
+          border: 1px solid #3b82f6 !important;
+        }
+
+        &.ng-invalid.ng-touched {
+          border-bottom: 1px solid #ef4444 !important;
+          border-radius: 0 !important;
+        }
+      }
+    }
+
+    .criteria-controls {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+
+      @media screen and (max-width: 768px) {
+        justify-content: space-between;
+      }
+
+      .score-input-v2 {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        
+        .criteria-field-wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        label {
+          font-size: 10px;
+          font-weight: 800;
+          color: #94a3b8;
+          text-transform: uppercase;
+        }
+
+        input {
+          width: 60px;
+          text-align: center;
+          font-weight: 800;
+          border-radius: 8px;
+          padding: 6px 4px;
+          font-size: 13px;
+
+          &.ng-invalid.ng-touched {
+            border-color: #ef4444 !important;
+          }
+        }
+      }
+    }
+
+    .p-error {
+      font-size: 10px;
+      font-weight: 600;
+      color: #ef4444;
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .criteria-imported-msg {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #3b82f6;
+      line-height: 1;
+      margin-top: 2px;
+      
+      i {
+        font-size: 10px;
+      }
+    }
+
+    .criteria-remove-btn {
+      color: #94a3b8;
+      background: transparent;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s;
+
+      &:hover {
+        color: #ef4444;
+        transform: scale(1.1);
+      }
+    }
+
+    .criteria-desc-row {
       padding: 16px;
-      font-size: var(--font-size-base);
-    }
 
-    ::ng-deep .assessment-round__header-icon {
-      display: none;
-    }
+      ::ng-deep .p-editor-container {
+        border: 1px solid #f1f5f9;
+        border-radius: 10px;
+        
+        .ql-toolbar {
+          background: #fafafa;
+          border: none;
+          border-bottom: 1px solid #f1f5f9;
+          border-top-left-radius: 10px;
+          border-top-right-radius: 10px;
+        }
 
-    .assessment-round__skeleton-title.p-skeleton {
-      width: min(280px, 100%) !important;
-      max-width: 100%;
-    }
-
-    .assessment-round__skeleton-description.p-skeleton {
-      width: min(350px, 100%) !important;
-      max-width: 100%;
-    }
-
-    .assessment-round__header-text .p-skeleton {
-      width: 100% !important;
-      max-width: 100%;
-    }
-  }
-
-  @media screen and (max-width: 480px) {
-    .assessment-round__skeleton-title.p-skeleton {
-      width: 100% !important;
-    }
-
-    .assessment-round__skeleton-description.p-skeleton {
-      width: 100% !important;
+        .ql-container {
+          border: none;
+          border-bottom-left-radius: 10px;
+          border-bottom-right-radius: 10px;
+          
+          .ql-editor {
+            min-height: 100px;
+            font-size: 14px;
+          }
+        }
+      }
     }
   }
 
-  // Global button styles for all non-outlined buttons
-  .p-button:not(.p-button-outlined):not(.p-button-text) {
-    background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%) !important;
-    border: none !important;
+  &__criteria-empty-v2 {
+    padding: 32px;
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: #64748b;
+    text-align: center;
 
-    &:hover:not(:disabled) {
-      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25) !important;
+    i {
+      font-size: 24px;
+      color: #3b82f6;
+    }
+
+    span {
+      max-width: 280px;
+      font-size: 14px;
+      font-weight: 500;
     }
   }
 }
@@ -833,3 +1014,8 @@
   margin-bottom: 10px !important;
   display: block !important;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -1,4 +1,5 @@
 import { FormGroup } from '@angular/forms';
+import { FeedbackCriteriaConfig } from './assessment-schedule.model';
 import { PaginatedPayload } from '../../../shared/models/pagination.models';
 import {
   ConfigMap,
@@ -96,6 +97,7 @@ export interface AssessmentRoundFormGroup {
   timerHour?: number | string;
   durationDate?: Date;
   maxTerminationCount?: number;
+  feedbackCriteria?: FeedbackCriteriaConfig[]; 
 }
 
 export interface CoordinatorRoundDto {
