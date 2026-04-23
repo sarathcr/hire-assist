@@ -824,7 +824,8 @@
                         <app-button
                           [buttonLabel]="'Save'"
                           [icon]="'pi pi-save'"
-                          [disabled]="!hasChanges(feedback)"
+                          [disabled]="!hasChanges(feedback) || savingCriteriaId === feedback.value"
+                          [isLoading]="savingCriteriaId === feedback.value"
                           (btnClick)="onsave(feedback)"
                         >
                         </app-button>
@@ -870,7 +871,8 @@
             [buttonLabel]="'Review & Submit'"
             [icon]="'pi pi-check-circle'"
             [buttonSize]="'large'"
-            [disabled]="!isAllCriteriaMarked"
+            [disabled]="!isAllCriteriaMarked || isSubmitting"
+            [isLoading]="isSubmitting"
             (btnClick)="onSubmit()"
           >
           </app-button>

@@ -120,6 +120,8 @@ export class InterviewerFeedbackComponent
   public isInterviewerLoaded = false;
   public isFeedbackCriteriaLoaded = false;
   public isSubmitted = false;
+  public isSubmitting = false;
+  public savingCriteriaId: number | null = null;
   public responseData!: InterviewerCandidate;
   public feedbackRequest!: InterviewerFeedback;
   public isImageLoading = false;
@@ -987,6 +989,7 @@ export class InterviewerFeedbackComponent
     filesToSave: FileDto[],
     showToast: boolean = true,
   ): void {
+    this.savingCriteriaId = feedback.value;
     this.feedbackRequest = {
       assessmentId: Number(this.assessmentId),
       candidateId: this.candidateid ?? '',
@@ -1019,7 +1022,7 @@ export class InterviewerFeedbackComponent
             : 'Feedback Saved Successfully',
         });
       }
-      this.isLoading = false;
+      this.savingCriteriaId = null;
       feedback.isSaved = true;
       feedback.id = res.id ? res.id : feedback.id;
 
@@ -1047,7 +1050,7 @@ export class InterviewerFeedbackComponent
           detail: 'Failed to save feedback', // Generic message or dynamic based on error
         });
       }
-      this.isLoading = false;
+      this.savingCriteriaId = null;
     };
 
     if (feedback.isSaved || feedback.id) {
@@ -1125,6 +1128,7 @@ export class InterviewerFeedbackComponent
   }
 
   public onSubmit() {
+    this.isSubmitting = true;
     this.interview = {
       id: Number(this.interviewId),
       statusId: 7,
@@ -1132,6 +1136,7 @@ export class InterviewerFeedbackComponent
       score: this.totalFeedbackScore,
     };
     const next = (res: Interview) => {
+      this.isSubmitting = false;
       this.messageService.add({
         severity: 'success',
         summary: 'success',
@@ -1146,12 +1151,12 @@ export class InterviewerFeedbackComponent
       this.router.navigate([`/interviewer/`]);
     };
     const error = () => {
+      this.isSubmitting = false;
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
         detail: 'No data Found',
       });
-      this.isLoading = false;
     };
     this.interviewService
       .UpdateInterview(Number(this.interviewId), this.interview)
