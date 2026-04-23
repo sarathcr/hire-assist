@@ -266,3 +266,18 @@ export interface CreatePanel {
   isAssigned: boolean;
   description: string;
 }
+
+export interface InterviewerPanelDetails {
+  panelId: number;
+  panelName: string;
+  interviewId: number;
+  assessmentId: number;
+  roundName: string;
+  assessmentRoundId: number;
+  candidateId: string;
+  candidateName: string;
+  candidateEmail: string;
+  interviewDate: string;
+  status: string;
+  score: number;
+}

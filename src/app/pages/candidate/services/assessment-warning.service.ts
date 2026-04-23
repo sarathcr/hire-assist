@@ -9,7 +9,7 @@ export class AssessmentWarningService {
 
   private getInitialWarningCount(): number {
     const stored = localStorage.getItem(this.STORAGE_KEY);
-    return stored ? parseInt(stored, 10) : 1;
+    return stored ? parseInt(stored, 10) : 0;
   }
 
   public setWarningCount(count: number) {
@@ -26,6 +26,6 @@ export class AssessmentWarningService {
 
   public reset() {
     localStorage.removeItem(this.STORAGE_KEY);
-    this.warningCount.set(1);
+    this.warningCount.set(0);
   }
 }

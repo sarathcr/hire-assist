@@ -7,6 +7,7 @@ import { ApiService } from '../../../shared/services/api.service';
 import { StoreService } from '../../../shared/services/store.service';
 import { interviewerInterface } from '../models/interviewers-model';
 import { Candidate } from '../models/stepper.model';
+import { InterviewerPanelDetails } from '../models/assessment-schedule.model';
 
 @Injectable({
   providedIn: 'root',
@@ -55,6 +56,12 @@ export class InterviewService extends ApiService<any> {
     return this.httpClient.post(
       `${this.getResourceUrl()}/InterviewPanel`,
       payload,
+    );
+  }
+
+  public getInterviewerPanels(assessmentId: number) {
+    return this.httpClient.get<InterviewerPanelDetails[]>(
+      `${this.getResourceUrl()}/InterviewPanel/interviewer/${assessmentId}`,
     );
   }
 }

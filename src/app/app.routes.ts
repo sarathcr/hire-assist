@@ -37,6 +37,7 @@ import { FrontdeskDashboardComponent } from './pages/frontdesk/components/frontd
 import { InterviewerCandidateListComponent } from './pages/interviewer/components/Interviewer-list/components/interviewer-candidate-list/interviewer-candidate-list.component';
 import { InterviewerFeedbackComponent } from './pages/interviewer/components/Interviewer-list/components/interviewer-feedback/interviewer-feedback.component';
 import { InterviewerDashboardComponent } from './pages/interviewer/components/interviewer-dashboard/interviewer-dashboard.component';
+import { InterviewerRecruitmentPanelsComponent } from './pages/interviewer/components/interviewer-recruitment-panels/interviewer-recruitment-panels.component';
 
 import { backButtonGuard } from './shared/guards/back-button.guard';
 import { DeviceWidthGuard } from './shared/guards/device-width.guard';
@@ -172,6 +173,10 @@ export const routes: Routes = [
 
     children: [
       { path: '', component: InterviewerDashboardComponent },
+      {
+        path: 'recruitments/:id',
+        component: InterviewerRecruitmentPanelsComponent,
+      },
       {
         path: ':id/:panel',
         component: InterviewerCandidateListComponent,

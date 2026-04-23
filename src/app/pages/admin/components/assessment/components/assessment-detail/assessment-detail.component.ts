@@ -657,7 +657,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
-      return status === 'selected' || status === 'pending' || status === 'active' || status === 'assigned to panel';
+      return status === 'pending' || status === 'active' || status === 'assigned to panel';
     });
 
     if (!hasValidStatus) {
@@ -799,7 +799,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     const hasInvalidStatus = selected.some(
       (c: InterviewSummary) =>
-        !['selected', 'pending', 'active', 'assigned to panel'].includes(
+        !['pending', 'active', 'assigned to panel'].includes(
           c.status?.toLowerCase().trim() ?? '',
         ),
     );
@@ -809,7 +809,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         severity: 'warn',
         summary: 'Warning',
         detail:
-          'Only candidates with status "Selected", "Pending", "Active", or "Assigned to Panel" can be scheduled.',
+          'Only candidates with status "Pending", "Active", or "Assigned to Panel" can be scheduled.',
       });
       return;
     }

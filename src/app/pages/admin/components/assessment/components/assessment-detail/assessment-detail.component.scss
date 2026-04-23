@@ -842,10 +842,11 @@
     display: flex;
     flex-direction: column;
     min-height: 400px;
-    max-height: calc(100vh - 300px);
+    max-height: calc(100vh - 580px); // Account for hero, info cards, and stepper section height
     background-color: var(--color-white);
     border-radius: 12px;
-    overflow: hidden;
+    overflow: hidden; // Contain the internal scroll
+    position: relative;
 
     app-table {
       flex: 1;
@@ -853,6 +854,7 @@
       flex-direction: column;
       min-height: 0;
       width: 100%;
+      height: 100%; // Fill the container
     }
   }
 

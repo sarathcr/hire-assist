@@ -1,8 +1,7 @@
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SkeletonComponent } from '../../../../shared/components/assessment-card/assessment-card-skeleton';
-import { AssessmentCardComponent } from '../../../../shared/components/assessment-card/assessment-card.component';
 import { BaseComponent } from '../../../../shared/components/base/base.component';
 import { GenericDataSource } from '../../../../shared/components/pagination/generic-data-source';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
@@ -13,7 +12,7 @@ import { Assessment } from '../../../admin/models/assessment.model';
 
 @Component({
   selector: 'app-interviewer-dashboard',
-  imports: [AssessmentCardComponent, SkeletonComponent, PaginationComponent, AsyncPipe],
+  imports: [SkeletonComponent, PaginationComponent, AsyncPipe, DatePipe],
   templateUrl: './interviewer-dashboard.component.html',
   styleUrl: './interviewer-dashboard.component.scss',
   providers: [GenericDataSource],
@@ -54,8 +53,43 @@ export class InterviewerDashboardComponent
   }
 
   // Public Methods
-  public onClickAssessment(id: number, panel: number): void {
-    if (id > 0) this.router.navigate([`interviewer/${id}/${panel}`]);
+  public expandedRounds = new Set<number>();
+
+  public onClickAssessment(id: number): void {
+    if (id > 0) this.router.navigate([`interviewer/recruitments/${id}`]);
+  }
+
+  public getCandidateCount(assessment: any): number {
+    return (
+      assessment.users?.filter((u: any) => u.role === 'Candidate').length ?? 0
+    );
+  }
+
+  public toggleRounds(event: Event, id: number): void {
+    event.stopPropagation();
+    if (this.expandedRounds.has(id)) {
+      this.expandedRounds.delete(id);
+    } else {
+      this.expandedRounds.add(id);
+    }
+  }
+
+  public getRoundStatusClass(assessment: any, round: any): string {
+    const status = round.roundStatus?.toLowerCase();
+    if (status === 'completed') {
+      return 'recruitment-card__round-chip--completed';
+    }
+
+    // The "Current" round is the first one that isn't completed
+    const firstNonCompleted = assessment.rounds?.find(
+      (r: any) => r.roundStatus?.toLowerCase() !== 'completed'
+    );
+
+    if (firstNonCompleted && firstNonCompleted.roundId === round.roundId) {
+      return 'recruitment-card__round-chip--in-progress';
+    }
+
+    return 'recruitment-card__round-chip--pending';
   }
 
   private subscribeToPaginatedData(): void {

@@ -19,15 +19,60 @@
       @if (assessmentData && assessmentData.length > 0) {
         <div class="coordinator-assessment__list">
           @for (assessment of assessmentData; track assessment) {
-            <app-assessment-card
-              class="coordinator-assessment__card"
-              [data]="assessment"
-              [showToggleButton]="false"
-              [showContent]="false"
-              (click)="
-                onClickAssessment(assessment.id ?? 0, assessment.panel ?? 0)
-              "
-            ></app-assessment-card>
+            <div
+              class="recruitment-card"
+              (click)="onClickAssessment(assessment.id ?? 0)"
+            >
+              <div class="recruitment-card__header">
+                <div>
+                  <h3 class="recruitment-card__name">{{ assessment.name }}</h3>
+                  <p class="recruitment-card__id">ID: #{{ assessment.id }}</p>
+                </div>
+                @if (assessment.isActive) {
+                  <span class="recruitment-card__badge recruitment-card__badge--active">Active</span>
+                }
+              </div>
+
+              <div class="recruitment-card__meta">
+                <div class="recruitment-card__meta-item">
+                  <i class="pi pi-calendar"></i>
+                  <span>{{ assessment.startDateTime | date: 'MMM dd' }} - {{ assessment.endDateTime | date: 'MMM dd' }}</span>
+                </div>
+                <div class="recruitment-card__meta-item">
+                  <i class="pi pi-users"></i>
+                  <span>{{ getCandidateCount(assessment) }} Candidate{{ getCandidateCount(assessment) !== 1 ? 's' : '' }}</span>
+                </div>
+              </div>
+
+              <div class="recruitment-card__rounds">
+                @let roundsToShow = (assessment.id && expandedRounds.has(assessment.id)) ? assessment.rounds : (assessment.rounds?.slice(0, 3) || []);
+                @for (round of roundsToShow; track round.roundId) {
+                  <span
+                    class="recruitment-card__round-chip"
+                    [class]="getRoundStatusClass(assessment, round)"
+                  >
+                    {{ round.roundName }}
+                  </span>
+                }
+                @if (assessment.rounds && assessment.rounds.length > 3) {
+                  <span 
+                    class="recruitment-card__round-toggle"
+                    [class.recruitment-card__round-toggle--expanded]="assessment.id && expandedRounds.has(assessment.id)"
+                    (click)="toggleRounds($event, assessment.id!)"
+                  >
+                    {{ (assessment.id && expandedRounds.has(assessment.id)) ? 'Hide details' : 'Show details' }}
+                    <i class="pi pi-chevron-down"></i>
+                  </span>
+                }
+              </div>
+
+              <div class="recruitment-card__footer">
+                <span class="recruitment-card__action">
+                  View Panels
+                  <i class="pi pi-arrow-right"></i>
+                </span>
+              </div>
+            </div>
           }
         </div>
       } @else {

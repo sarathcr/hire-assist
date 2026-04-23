@@ -1,0 +1,105 @@
+<div class="panel-detail">
+  <!-- ── Header ── -->
+  <div class="panel-detail__header-wrapper">
+    <h1 class="panel-detail__title">
+      <i class="pi pi-id-card"></i>
+      My Interview Panels
+    </h1>
+    @if (!isLoading && panels.length > 0) {
+      <div class="panel-detail__header-meta">
+        <span class="panel-detail__panel-count">
+          <i class="pi pi-layers"></i>
+          {{ panels.length }} Panel{{ panels.length !== 1 ? 's' : '' }} Assigned
+        </span>
+      </div>
+    }
+  </div>
+
+  <div class="panel-detail__view">
+    <div class="panel-detail__view__content">
+
+      <!-- ── Loading skeleton ── -->
+      @if (isLoading) {
+        <app-interviewer-panels-skeleton></app-interviewer-panels-skeleton>
+      }
+
+      <!-- ── No panels ── -->
+      @else if (panels.length === 0) {
+        <div class="panel-detail__empty">
+          <i class="pi pi-inbox panel-detail__empty-icon"></i>
+          <p class="panel-detail__empty-text">No panels assigned to you for this recruitment.</p>
+        </div>
+      }
+
+      <!-- ── Panels accordion ── -->
+      @else {
+        <p-accordion
+          class="panel-detail__accordion"
+          [multiple]="true"
+          (onOpen)="onAccordionOpen($event)"
+        >
+          @for (panel of panels; track panel.panelId) {
+            <p-accordion-panel [value]="panel.panelId.toString()">
+              <p-accordion-header 
+                class="panel-detail__acc-header"
+                (click)="onPanelHeaderClick(panel.panelId)"
+              >
+                <div class="panel-detail__acc-header-content">
+                  <!-- Left: Panel name + round badge -->
+                  <div class="panel-detail__acc-left">
+                    <span class="panel-detail__acc-name">
+                      <i class="pi pi-users"></i>
+                      {{ panel.panelName }}
+                    </span>
+                    <p-chip
+                      [label]="panel.roundName"
+                      icon="pi pi-circle-fill"
+                      styleClass="panel-detail__round-chip"
+                    />
+                  </div>
+
+                  <!-- Right: Stat chips -->
+                  <div class="panel-detail__acc-stats">
+                    <span class="panel-detail__stat-chip panel-detail__stat-chip--total">
+                      <i class="pi pi-list"></i>
+                      {{ totalForPanel(panel.panelId) }} Candidate{{ totalForPanel(panel.panelId) !== 1 ? 's' : '' }}
+                    </span>
+                    @if (countByStatus(panel.panelId, 'selected') > 0) {
+                      <span class="panel-detail__stat-chip panel-detail__stat-chip--selected">
+                        <i class="pi pi-check-circle"></i>
+                        {{ countByStatus(panel.panelId, 'selected') }} Selected
+                      </span>
+                    }
+                    @if (countByStatus(panel.panelId, 'assigned') > 0) {
+                      <span class="panel-detail__stat-chip panel-detail__stat-chip--assigned">
+                        <i class="pi pi-clock"></i>
+                        {{ countByStatus(panel.panelId, 'assigned') }} Pending
+                      </span>
+                    }
+                  </div>
+                </div>
+              </p-accordion-header>
+
+              <p-accordion-content class="panel-detail__acc-content">
+                @if (loadingPanels[panel.panelId] && !candidatesByPanel[panel.panelId]) {
+                  <app-table-skeleton></app-table-skeleton>
+                } @else {
+                  <app-table
+                    [tableData]="candidatesByPanel[panel.panelId]"
+                    [columnsData]="columns"
+                    [hasCheckbox]="false"
+                    [hasSearch]="true"
+                    [parentLoader]="loadingPanels[panel.panelId] || false"
+                    (btnClick)="onStartInterview($event, panel.panelId)"
+                    (pageChangeAndSort)="onTablePayloadChange($event, panel.panelId)"
+                  ></app-table>
+                }
+              </p-accordion-content>
+            </p-accordion-panel>
+          }
+        </p-accordion>
+      }
+
+    </div>
+  </div>
+</div>

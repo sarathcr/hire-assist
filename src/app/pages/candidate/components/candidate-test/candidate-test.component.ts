@@ -129,6 +129,7 @@ export class CandidateTestComponent
   public placeholderImageUrl =
     'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjcwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iNzAiIGZpbGw9IiNmNWY1ZjUiLz48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjEyIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+RXJyb3IgRmV0Y2hpbmcgQXR0YWNobWVudDwvdGV4dD48L3N2Zz4=';
   @ViewChild(TimerComponent) timerComponent!: TimerComponent;
+  private everEnteredFullScreen = false;
   constructor(
     private readonly dialog: DialogService,
     private readonly router: Router,
@@ -220,8 +221,7 @@ export class CandidateTestComponent
     ];
   }
   ngAfterViewInit(): void {
-    this.fetchCandidateAnswers();
-    this.fetchTerminationTimeAndSetTimer();
+    // Redundant calls removed - handled in getAllQuestions()
   }
 
   // ngAfterViewInit(): void {
@@ -235,7 +235,11 @@ export class CandidateTestComponent
   @HostListener('document:fullscreenchange')
   public onFullscreenChange(): void {
     this.isFullScreen = !!document.fullscreenElement;
-    if (!this.isFullScreen && !this.isSubmitting && !this.isTestEnded) {
+    if (this.isFullScreen) {
+      this.everEnteredFullScreen = true;
+    }
+
+    if (!this.isFullScreen && this.everEnteredFullScreen && !this.isSubmitting && !this.isTestEnded) {
       this.saveTerminationTime();
 
       if (this.warningCount < (this.data?.maxTerminationCount ?? 2)) {
@@ -248,7 +252,7 @@ export class CandidateTestComponent
 
   @HostListener('document:visibilitychange')
   public onVisibilityChange(): void {
-    if (document.visibilityState === 'hidden' && !this.isSubmitting && !this.isTestEnded) {
+    if (document.visibilityState === 'hidden' && this.everEnteredFullScreen && !this.isSubmitting && !this.isTestEnded) {
       this.saveTerminationTime();
 
       if (this.warningCount < (this.data?.maxTerminationCount ?? 2)) {
@@ -599,17 +603,19 @@ export class CandidateTestComponent
     return this.getStatusFromId(statusId);
   }
 
-  private enterFullScreenMode(): void {
+  private enterFullScreenMode(isInitial: boolean = false): void {
     if (typeof document !== 'undefined') {
       document.documentElement
         .requestFullscreen()
-        .then(() => { })
+        .then(() => {
+          this.everEnteredFullScreen = true;
+        })
         .catch(() => {
           // If entering fullscreen fails, it is usually due to missing user gesture (common on refresh).
           // We show the warning dialog which has a "Continue" button. 
           // Clicking that button provides the necessary user gesture to retry fullscreen.
           if (!document.fullscreenElement && !this.ref) {
-            this.showWarningDialog();
+            this.showWarningDialog(isInitial);
           }
         });
     } else {
@@ -622,8 +628,8 @@ export class CandidateTestComponent
     }
   }
 
-  private showWarningDialog(): void {
-    const modalData: DialogData = this.getWarningDialogData();
+  private showWarningDialog(isInitial: boolean = false): void {
+    const modalData: DialogData = this.getWarningDialogData(isInitial);
     this.ref = this.dialog.open(DialogComponent, {
       data: modalData,
       width: '50vw',
@@ -640,7 +646,9 @@ export class CandidateTestComponent
     });
     this.ref?.onClose.subscribe((result) => {
       if (result === true) {
-        this.warningService.setWarningCount(1);
+        if (!isInitial) {
+          this.warningService.setWarningCount(1);
+        }
         this.enterFullScreenMode();
       } else {
         this.quitAssessment();
@@ -649,9 +657,21 @@ export class CandidateTestComponent
     });
   }
 
-  private getWarningDialogData(): DialogData {
+  private getWarningDialogData(isInitial: boolean = false): DialogData {
     const maxAttempts = this.data?.maxTerminationCount ?? 2;
     const remainingAttempts = maxAttempts - this.warningCount;
+
+    if (isInitial) {
+      return {
+        headerTitle: 'Action Required',
+        message: 'To start the assessment, please enter full screen mode. This ensures a fair testing environment for all candidates.',
+        isChoice: true,
+        closeOnNavigation: false,
+        acceptButtonText: 'Enter Full Screen',
+        cancelButtonText: 'I Quit',
+      };
+    }
+
     const message =
       remainingAttempts === 1
         ? `You have exited fullscreen mode/switched tab. Please return to fullscreen to continue your assessment. This is your final warning.`
@@ -903,7 +923,12 @@ export class CandidateTestComponent
         this.cdRef.detectChanges();
         setTimeout(() => {
           this.fetchCandidateAnswers();
-          this.fetchTerminationTimeAndSetTimer();
+          
+          // Directly set initial time from data instead of calling termination endpoint during startup
+          if (this.timerComponent && this.data?.timerHour) {
+            const initialSeconds = this.parseTimeToSeconds(this.data.timerHour);
+            this.timerComponent.setInitialTime(initialSeconds);
+          }
 
           // After data is loaded, check for termination or enter full screen
           const maxAttempts = this.data?.maxTerminationCount ?? 2;
@@ -911,9 +936,9 @@ export class CandidateTestComponent
             this.showTestTerminationDialog();
           } else {
             // Attempt to enter full screen. If it fails (e.g. on refresh due to gesture lock),
-            // the enterFullScreenMode method will automatically show the warning dialog
+            // the enterFullScreenMode method will automatically show the action dialog
             // to prompt the user for a gesture.
-            this.enterFullScreenMode();
+            this.enterFullScreenMode(true);
           }
         });
       }
