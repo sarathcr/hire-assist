@@ -219,10 +219,10 @@ export class InterviewerFeedbackComponent
       this.pendingFiles = [];
       this.pendingFilePreviews = [];
 
-      this.feedbackcriteria = this.feedbackdetails.map((item) => {
+      this.feedbackcriteria = (this.feedbackdetails as any[]).map((item: any) => {
         // Sort files if they exist to maintain consistent order in UI
         if (item.fileDto && item.fileDto.length > 0) {
-          item.fileDto.sort((a, b) => {
+          item.fileDto.sort((a: any, b: any) => {
             const nameA = a.name?.toLowerCase() || '';
             const nameB = b.name?.toLowerCase() || '';
             return nameA.localeCompare(nameB);
@@ -246,8 +246,26 @@ export class InterviewerFeedbackComponent
           fileDto: item.fileDto,
           originalContent: item.comments ?? '',
           originalScore: item.score ?? null,
-        };
+          description: item.description ?? '',
+        } as AccordionData;
       });
+
+      // Sort criteria: Attachments second to last, Overall comments last
+      this.feedbackcriteria.sort((a, b) => {
+        const titleA = a.title?.toLowerCase() || '';
+        const titleB = b.title?.toLowerCase() || '';
+
+        // Overall comments should always be at the very bottom
+        if (titleA === 'overall comments') return 1;
+        if (titleB === 'overall comments') return -1;
+
+        // Attachments should be at the bottom, but above Overall comments
+        if (titleA === 'attachments') return 1;
+        if (titleB === 'attachments') return -1;
+
+        return 0;
+      });
+
       this.feedbackcriteria.forEach((feedback) => {
         if (
           feedback.title === 'Attachments' &&
@@ -333,7 +351,7 @@ export class InterviewerFeedbackComponent
 
   public getMaxTotalScore(): number {
     return this.feedbackcriteria
-      .filter((fb) => fb.title !== 'Attachments')
+      .filter((fb) => fb.title !== 'Attachments' && fb.title.toLowerCase() !== 'overall comments')
       .reduce((acc, curr) => acc + (curr.maxScore || 0), 0);
   }
 
@@ -342,15 +360,22 @@ export class InterviewerFeedbackComponent
       .length;
   }
 
+  public getFeedbackDescription(fb: AccordionData | any): string {
+    return fb?.description || '';
+  }
+
   public isFeedbackComplete(fb: AccordionData): boolean {
     if (fb.title === 'Attachments') {
       return !!fb.isSaved;
     }
+    
+    const isOverall = fb.title.toLowerCase() === 'overall comments';
+    const hasValidScore = isOverall || (fb.score !== null && fb.score !== undefined);
+    
     return !!(
       fb.isSaved &&
       !this.hasChanges(fb) &&
-      fb.score !== null &&
-      fb.score !== undefined &&
+      hasValidScore &&
       fb.content &&
       this.stripHtml(fb.content).trim() !== '' &&
       !fb.isScoreInValid

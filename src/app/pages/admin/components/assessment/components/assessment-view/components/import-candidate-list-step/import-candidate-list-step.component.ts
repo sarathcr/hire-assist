@@ -97,13 +97,18 @@ const tableColumns: TableColumnsData = {
       sortedColumn: true,
       hasChip: false,
       hasTextFilter: true,
-      filterAlias: 'selectFilter',
+      filterAlias: 'selectFilterSchedule',
     },
     {
       field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      buttonIcons: ['pi pi-eye', 'pi pi-trash', 'pi pi-history', 'pi pi-calendar-clock'],
+      buttonIcons: [
+        'pi pi-eye',
+        'pi pi-trash',
+        'pi pi-history',
+        'pi pi-calendar-clock',
+      ],
       buttonLabels: ['View', 'Delete', 'History', 'Previous Recruitments'],
       buttonTooltips: ['View', 'Delete', 'History', 'Previous Recruitments'],
       sortedColumn: false,
@@ -292,14 +297,14 @@ export class ImportCandidateListStepComponent implements OnInit {
       this.data = {
         ...res,
         data: res.data.map((candidate) => {
-          const visibleButtonIndices = [0, 1, 2, 3]; 
+          const visibleButtonIndices = [0, 1, 2, 3];
 
           const disabledButtonIndices: number[] = [];
           if (this.isReadOnly()) {
             disabledButtonIndices.push(1); // Delete
           }
           if (!candidate.isAlreadyExist) {
-            disabledButtonIndices.push(3); 
+            disabledButtonIndices.push(3);
           }
 
           return {
@@ -405,12 +410,19 @@ export class ImportCandidateListStepComponent implements OnInit {
               let parsedDuplicates: any[] = [];
               const rawDuplicates = response.duplicateEntries;
 
-              if (typeof rawDuplicates === 'string' && rawDuplicates !== 'undefined' && rawDuplicates !== 'null') {
+              if (
+                typeof rawDuplicates === 'string' &&
+                rawDuplicates !== 'undefined' &&
+                rawDuplicates !== 'null'
+              ) {
                 // Check if it's Base64 or raw CSV
                 let csvString = '';
                 try {
                   // If it looks like Base64 (starts with common CSV header chars in B64 or doesn't have commas)
-                  if (!rawDuplicates.includes(',') && !rawDuplicates.includes('\n')) {
+                  if (
+                    !rawDuplicates.includes(',') &&
+                    !rawDuplicates.includes('\n')
+                  ) {
                     csvString = atob(rawDuplicates);
                   } else {
                     csvString = rawDuplicates; // Raw CSV string
@@ -422,16 +434,24 @@ export class ImportCandidateListStepComponent implements OnInit {
               } else if (Array.isArray(rawDuplicates)) {
                 // Normalize duplicates from array format to include display labels
                 parsedDuplicates = rawDuplicates.map((d: any) => {
-                  const dynamicAnswers = typeof d.dynamicAnswers === 'string' ? {} : (d.dynamicAnswers || {});
-                  const name = d.name || dynamicAnswers['Candidate Name'] || 'N/A';
+                  const dynamicAnswers =
+                    typeof d.dynamicAnswers === 'string'
+                      ? {}
+                      : d.dynamicAnswers || {};
+                  const name =
+                    d.name || dynamicAnswers['Candidate Name'] || 'N/A';
                   const email = d.email || dynamicAnswers['Email Id'] || 'N/A';
-                  const phone = d.phoneNumber || dynamicAnswers['Mobile number'] || 'N/A';
-                  const aadhaar = d.aadhaarNumber || dynamicAnswers['Aadhaar Number'] || 'N/A';
-                  
+                  const phone =
+                    d.phoneNumber || dynamicAnswers['Mobile number'] || 'N/A';
+                  const aadhaar =
+                    d.aadhaarNumber ||
+                    dynamicAnswers['Aadhaar Number'] ||
+                    'N/A';
+
                   return {
                     ...d,
                     ...dynamicAnswers,
-                    'isDuplicateRecord': true,
+                    isDuplicateRecord: true,
                     'Candidate Name': name,
                     'Email Id': email,
                     'Mobile number': phone,
@@ -439,17 +459,18 @@ export class ImportCandidateListStepComponent implements OnInit {
                     name,
                     email,
                     phoneNumber: phone,
-                    aadhaarNumber: aadhaar
+                    aadhaarNumber: aadhaar,
                   };
                 });
               }
-              
+
               if (parsedDuplicates.length > 0) {
-                const groupedDuplicates = groupCandidatesByContact(parsedDuplicates);
-                const taggedDuplicates = groupedDuplicates.map(g => ({
+                const groupedDuplicates =
+                  groupCandidatesByContact(parsedDuplicates);
+                const taggedDuplicates = groupedDuplicates.map((g) => ({
                   ...g,
                   isDuplicateGroup: true,
-                  type: 'Duplicate'
+                  type: 'Duplicate',
                 }));
                 allFailedRecords = [...allFailedRecords, ...taggedDuplicates];
               }
@@ -459,15 +480,41 @@ export class ImportCandidateListStepComponent implements OnInit {
           }
 
           // 2. Handle Invalid Records (Rectification Screen)
-          if (response.invalidRecords && Array.isArray(response.invalidRecords) && response.invalidRecords.length > 0) {
+          if (
+            response.invalidRecords &&
+            Array.isArray(response.invalidRecords) &&
+            response.invalidRecords.length > 0
+          ) {
             const mappedInvalid = response.invalidRecords.map((record) => {
-              const rowData = typeof record.dynamicAnswers === 'string' ? {} : (record.dynamicAnswers || {});
+              const rowData =
+                typeof record.dynamicAnswers === 'string'
+                  ? {}
+                  : record.dynamicAnswers || {};
               // Ensure we have common fields even if misspelled in CSV or at root of record
-              const name = record.name || rowData['Candidate Name'] || rowData['name'] || 'N/A';
-              const email = record.email || rowData['Email Id'] || rowData['Email address'] || rowData['email'] || 'N/A';
-              const phone = record.phoneNumber || rowData['Mobile number'] || rowData['phoneNumber'] || rowData['phone'] || 'N/A';
-              const aadhaarNumber = record.aadhaarNumber || rowData['Aadhaar Number'] || rowData['Adhar Number'] || rowData['aadhaarNumber'] || 'N/A';
-              
+              const name =
+                record.name ||
+                rowData['Candidate Name'] ||
+                rowData['name'] ||
+                'N/A';
+              const email =
+                record.email ||
+                rowData['Email Id'] ||
+                rowData['Email address'] ||
+                rowData['email'] ||
+                'N/A';
+              const phone =
+                record.phoneNumber ||
+                rowData['Mobile number'] ||
+                rowData['phoneNumber'] ||
+                rowData['phone'] ||
+                'N/A';
+              const aadhaarNumber =
+                record.aadhaarNumber ||
+                rowData['Aadhaar Number'] ||
+                rowData['Adhar Number'] ||
+                rowData['aadhaarNumber'] ||
+                'N/A';
+
               const normalizedData = {
                 ...rowData,
                 name,
@@ -480,24 +527,25 @@ export class ImportCandidateListStepComponent implements OnInit {
                 'Mobile number': phone,
                 'Aadhaar Number': aadhaarNumber,
                 isInvalidRecord: true,
-                failureReason: record.reason
+                failureReason: record.reason,
               };
 
               return {
                 ...normalizedData,
                 key: record.reason || 'Invalid Format',
-                groupId: 'invalid-' + Math.random().toString(36).substring(2, 9),
+                groupId:
+                  'invalid-' + Math.random().toString(36).substring(2, 9),
                 isInvalidGroup: true,
                 type: 'Invalid',
-                candidates: [{ 
-                  ...normalizedData, 
-                }],
+                candidates: [
+                  {
+                    ...normalizedData,
+                  },
+                ],
               };
             });
             allFailedRecords = [...allFailedRecords, ...mappedInvalid];
           }
-
-
 
           if (allFailedRecords.length > 0) {
             this.manageDuplicateRecords(allFailedRecords);
@@ -896,13 +944,12 @@ export class ImportCandidateListStepComponent implements OnInit {
   private errorMessage(error: CustomErrorResponse): void {
     const errorBody = error?.error;
     const type = errorBody?.type;
-    
-    
+
     let displayMessage = 'Contact Technical Support';
-    
-    if (type ) {
-       displayMessage = `${type}`;
-    } 
+
+    if (type) {
+      displayMessage = `${type}`;
+    }
 
     this.messageService.add({
       severity: 'error',

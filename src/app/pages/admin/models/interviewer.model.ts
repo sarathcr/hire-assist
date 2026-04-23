@@ -83,6 +83,7 @@ export interface AccordionData {
   fileDto?: FileDto[];
   originalContent?: string | null;
   originalScore?: number | null;
+  description?: string;
 }
 
 export interface InterviewerFeedback {
@@ -114,6 +115,7 @@ export interface Feedbackcriteria {
   score?: number;
   feedbackId: number;
   fileDto?: FileDto[];
+  description?: string;
 }
 
 export interface Interview {

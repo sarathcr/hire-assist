@@ -613,6 +613,7 @@
                 <div class="ifb__acc-criteria-right">
                   @if (
                     feedback.title !== "Attachments" &&
+                    feedback.title.toLowerCase() !== "overall comments" &&
                     (feedback.score || feedback.score === 0)
                   ) {
                     <p-tag
@@ -640,6 +641,17 @@
             <p-accordion-content
               class="ifb__acc-content ifb__acc-content--feedback"
             >
+              <!-- Criteria Description [V2.2] -->
+              @if (getFeedbackDescription(feedback) && getFeedbackDescription(feedback) !== '<p></p>') {
+                <div class="ifb__criteria-description-box">
+                  <div class="ifb__description-header">
+                    <i class="pi pi-info-circle"></i>
+                    <span>Evaluation Guidelines</span>
+                  </div>
+                  <div [innerHTML]="getFeedbackDescription(feedback)" class="ifb__description-text"></div>
+                </div>
+              }
+
               <!-- Attachments Section -->
               @if (feedback.title === "Attachments") {
                 <div class="ifb__upload-section">
@@ -781,43 +793,47 @@
                   </div>
 
                   <div class="ifb__score-row">
-                    <div class="ifb__score-input-group">
-                      <label
-                        for="score-input-{{ feedback.value }}"
-                        class="ifb__field-label"
-                      >
-                        <i class="pi pi-star"></i>
-                        Score
-                        <span class="ifb__max-badge"
-                          >Max: {{ feedback.maxScore }}</span
+                    @if (feedback.title.toLowerCase() !== 'overall comments') {
+                      <div class="ifb__score-input-group">
+                        <label
+                          for="score-input-{{ feedback.value }}"
+                          class="ifb__field-label"
                         >
-                      </label>
-                      <input
-                        id="score-input-{{ feedback.value }}"
-                        type="number"
-                        pInputText
-                        [(ngModel)]="feedback.score"
-                        class="ifb__score-input"
-                        (ngModelChange)="validateScore(feedback)"
-                        (keydown)="preventInvalidInput($event)"
-                        [pTooltip]="'Max score is ' + feedback.maxScore"
-                        [tooltipPosition]="'bottom'"
-                        [max]="feedback.maxScore"
-                        [min]="0"
-                        [disabled]="isSubmitted"
-                        placeholder="0"
-                      />
-                      @if (feedback.isScoreInValid) {
-                        <p-message
-                          severity="error"
-                          variant="simple"
-                          size="small"
-                          class="ifb__score-error"
-                        >
-                          Maximum allowed score is {{ feedback.maxScore }}
-                        </p-message>
-                      }
-                    </div>
+                          <i class="pi pi-star"></i>
+                          Score
+                          <span class="ifb__max-badge"
+                            >Max: {{ feedback.maxScore }}</span
+                          >
+                        </label>
+                        <input
+                          id="score-input-{{ feedback.value }}"
+                          type="number"
+                          pInputText
+                          [(ngModel)]="feedback.score"
+                          class="ifb__score-input"
+                          (ngModelChange)="validateScore(feedback)"
+                          (keydown)="preventInvalidInput($event)"
+                          [pTooltip]="'Max score is ' + feedback.maxScore"
+                          [tooltipPosition]="'bottom'"
+                          [max]="feedback.maxScore"
+                          [min]="0"
+                          [disabled]="isSubmitted"
+                          placeholder="0"
+                        />
+                        @if (feedback.isScoreInValid) {
+                          <p-message
+                            severity="error"
+                            variant="simple"
+                            size="small"
+                            class="ifb__score-error"
+                          >
+                            Maximum allowed score is {{ feedback.maxScore }}
+                          </p-message>
+                        }
+                      </div>
+                    } @else {
+                      <div class="ifb__score-input-group--hidden"></div>
+                    }
 
                     <div class="ifb__action-row">
                       @if (!isSubmitted) {

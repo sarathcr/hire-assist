@@ -1,4 +1,8 @@
-<div class="table" [class.table--fill]="fillHeight" [class.table-loading]="isLoading()">
+<div
+  class="table"
+  [class.table--fill]="fillHeight"
+  [class.table-loading]="isLoading()"
+>
   <p-table
     #dt
     [value]="displayData() || []"
@@ -154,6 +158,40 @@
                       [ngModel]="value"
                       (ngModelChange)="filter($event)"
                       [options]="activeStatusOptions"
+                      placeholder="Select One"
+                      styleClass="w-full"
+                    >
+                      <ng-template let-option #item>
+                        <p-tag
+                          [value]="option.value"
+                          [severity]="getSeverity(option.value)"
+                        ></p-tag>
+                      </ng-template>
+                    </p-select>
+                  </ng-template>
+                </p-columnFilter>
+              }
+              @if (headerColumn.filterAlias === "selectFilterSchedule") {
+                <p-columnFilter
+                  field="{{ headerColumn.field }}"
+                  display="menu"
+                  hideOnClear="true"
+                  [matchMode]="
+                    headerColumn.hasMultiStatus ? undefined : 'equals'
+                  "
+                  [matchModeOptions]="getMatchModes(headerColumn)"
+                  ><ng-template pTemplate="filtericon">
+                    @if (activeFilters.has(headerColumn.field)) {
+                      <i class="pi pi-filter-fill"></i>
+                    } @else {
+                      <i class="pi pi-filter"></i>
+                    }
+                  </ng-template>
+                  <ng-template #filter let-value let-filter="filterCallback">
+                    <p-select
+                      [ngModel]="value"
+                      (ngModelChange)="filter($event)"
+                      [options]="statusOptionsForSchedule"
                       placeholder="Select One"
                       styleClass="w-full"
                     >
@@ -354,7 +392,9 @@
                       class="mr-2"
                       [outlined]="true"
                       severity="secondary"
-                      [disabled]="product.isDisabledStartInterview || product.isDisabled"
+                      [disabled]="
+                        product.isDisabledStartInterview || product.isDisabled
+                      "
                       (onClick)="onStartInterview(product)"
                     />
                   } @else {
@@ -364,7 +404,9 @@
                       class="mr-2"
                       [outlined]="true"
                       severity="success"
-                      [disabled]="product.isDisabledStartInterview || product.isDisabled"
+                      [disabled]="
+                        product.isDisabledStartInterview || product.isDisabled
+                      "
                       (onClick)="onStartInterview(product)"
                     />
                   }
@@ -440,7 +482,9 @@
                   />
                 }
                 @if (
-                  headerColumn.actions?.includes(PaginatedDataActions.PreviousAssessment)
+                  headerColumn.actions?.includes(
+                    PaginatedDataActions.PreviousAssessment
+                  )
                 ) {
                   <p-button
                     icon="pi pi-history"
@@ -450,7 +494,11 @@
                     severity="info"
                     pTooltip="View Previous Recruitment"
                     tooltipPosition="bottom"
-                    [disabled]="product.isSelf || product.isDisabled || !product.isAlreadyExist"
+                    [disabled]="
+                      product.isSelf ||
+                      product.isDisabled ||
+                      !product.isAlreadyExist
+                    "
                     (onClick)="onPreviousAssessment(product)"
                   />
                 }
@@ -503,7 +551,12 @@
                 <p-popover #op appendTo="body">
                   <div
                     class="flex flex-column gap-1 p-1"
-                    style="display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch;"
+                    style="
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: flex-start;
+                      align-items: stretch;
+                    "
                   >
                     @for (
                       icon of headerColumn.buttonIcons;
@@ -572,7 +625,7 @@
                 <p-chip label="Not Reported" />
               </ng-template>
             </td>
-          } @else if (headerColumn.fieldType === 'masked') {
+          } @else if (headerColumn.fieldType === "masked") {
             <td>
               <div class="flex align-items-center gap-2">
                 <span>{{
@@ -589,7 +642,10 @@
                   [text]="true"
                   [plain]="true"
                   [size]="'small'"
-                  [disabled]="!product[headerColumn.field] || product[headerColumn.field] === 'N/A'"
+                  [disabled]="
+                    !product[headerColumn.field] ||
+                    product[headerColumn.field] === 'N/A'
+                  "
                   (onClick)="toggleMask(product, headerColumn.field)"
                 ></p-button>
               </div>

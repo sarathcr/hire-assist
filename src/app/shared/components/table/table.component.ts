@@ -138,7 +138,7 @@ export class TableComponent<
   private readonly persistedSelectedIds = new Set<string>();
   public expandedRows: Record<string, boolean> = {};
   public matchModeOptions: SelectItem[] = matchOptions;
-  public activeStatusOptions: SelectItem[] = uniqueStatusesForIsSchedule;
+  public activeStatusOptions: SelectItem[] = uniquesActives;
   public statusOptions: SelectItem[] = uniqueStatuses;
   public statusOptionsForSchedule: SelectItem[] = uniqueStatusesForIsSchedule;
   public hasSearch = input<boolean>(false);
