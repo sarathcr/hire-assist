@@ -12,7 +12,6 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { MenuItem } from 'primeng/api';
-import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
 import { MenuModule } from 'primeng/menu';
 import { PanelMenuModule } from 'primeng/panelmenu';
@@ -26,7 +25,6 @@ import { SidebarCollapseService } from '../../services/sidebar-collapse.service'
     MenuModule,
     BadgeModule,
     RippleModule,
-    AvatarModule,
     CommonModule,
     PanelMenuModule,
   ],
@@ -43,8 +41,8 @@ export class SideNavComponent implements OnChanges, OnInit {
   public mainNavLinks: MenuItem[] = [];
   public bottomNavLinks: MenuItem[] = [];
   @Input() public navLinks: MenuItem[] | undefined;
-  private cdr = inject(ChangeDetectorRef);
   public isMobile = false;
+  private cdr = inject(ChangeDetectorRef);
 
   @HostListener('window:resize')
   onResize(): void {

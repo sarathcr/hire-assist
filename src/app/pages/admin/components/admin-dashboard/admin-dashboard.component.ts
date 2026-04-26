@@ -8,7 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
 import { CardModule } from 'primeng/card';
 import { CommonModule } from '@angular/common'; // Import CommonModule for ngClass etc if needed
@@ -45,20 +45,10 @@ export class AdminDashboardComponent implements OnInit {
   // Pro Elements Signals (Mock Data)
 
 
-  public recentActivities = signal<{ message: string; time: string; type: 'primary' | 'success' | 'danger' | 'info'; icon: string }[]>([
-    { message: '<strong>John Doe</strong> created a new recruitment drive "Senior Java Dev".', time: '2 hours ago', type: 'primary', icon: 'pi pi-briefcase' },
-    { message: '<strong>Sarah Smith</strong> joined the platform as a Recruiter.', time: '5 hours ago', type: 'success', icon: 'pi pi-user' },
-    { message: 'System automated backup completed successfully.', time: '1 day ago', type: 'info', icon: 'pi pi-cloud-upload' },
-    { message: '<strong>Admin</strong> updated question bank "React Basics".', time: '1 day ago', type: 'primary', icon: 'pi pi-file-edit' },
-    { message: 'Failed login attempt detected from IP 192.168.1.1.', time: '2 days ago', type: 'danger', icon: 'pi pi-shield' },
-  ]);
+  public recentActivities = signal<{ message: string; time: string; type: 'primary' | 'success' | 'danger' | 'info'; icon: string }[]>([]);
 
   // NEW WIDGET SIGNALS 
-  public upcomingInterviews = signal<{ candidate: string; role: string; time: string; interviewer: string; avatar: string }[]>([
-    { candidate: 'Alice Johnson', role: 'Frontend Dev', time: '10:30 AM', interviewer: 'Sarah Smith', avatar: 'AJ' },
-    { candidate: 'Michael Chen', role: 'Backend Dev', time: '02:00 PM', interviewer: 'John Doe', avatar: 'MC' },
-    { candidate: 'Emma Wilson', role: 'Product Manager', time: '04:15 PM', interviewer: 'Emily Davis', avatar: 'EW' },
-  ]);
+  public upcomingInterviews = signal<{ candidate: string; role: string; time: string; interviewer: string; avatar: string; assessmentId: number; candidateId: string; interviewId: number; }[]>([]);
 
   // Real Data Signal for NEW Widget (Replaces System Health)
   public recentAssessments = signal<AssessmentModel[]>([]);
@@ -80,6 +70,7 @@ export class AdminDashboardComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService) as DashboardService<DashboardData>;
   private readonly assessmentService = inject(AssessmentService);
   private readonly storeService = inject(StoreService);
+  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
@@ -120,6 +111,15 @@ export class AdminDashboardComponent implements OnInit {
           this.assessmentData.set(res.data.assessment);
           this.usersData.set(res.data.users);
           this.questionsData.set(res.data.questions);
+          
+          if (res.data.recentActivities) {
+            this.recentActivities.set(res.data.recentActivities);
+          }
+          
+          if (res.data.upcomingInterviews) {
+            this.upcomingInterviews.set(res.data.upcomingInterviews);
+          }
+
           this.updateCharts();
           this.isLoadingDashboard.set(false);
         },
@@ -291,5 +291,14 @@ export class AdminDashboardComponent implements OnInit {
         },
       ],
     });
+  }
+
+  public navigateTo(path: string | any[]): void {
+    console.log('Navigating to:', path);
+    if (Array.isArray(path)) {
+      this.router.navigate(path);
+    } else {
+      this.router.navigate([path]);
+    }
   }
 }

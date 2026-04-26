@@ -1,0 +1,45 @@
+<div class="logs-container">
+    <div class="logs-header">
+        <div class="header-left">
+            <a routerLink="/admin/dashboard" class="back-link">
+                <i class="pi pi-arrow-left"></i>
+                Back to Dashboard
+            </a>
+            <h1 class="page-title">System Activity Logs</h1>
+            <p class="page-subtitle">Track all recent recruitment and administrative actions</p>
+        </div>
+    </div>
+
+    <div class="logs-card">
+        <p-table [value]="activities()" [loading]="isLoading()" [rows]="10" [paginator]="true" 
+                 styleClass="p-datatable-sm p-datatable-gridlines">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 80px">Type</th>
+                    <th>Activity Details</th>
+                    <th style="width: 200px">Time</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-activity>
+                <tr>
+                    <td class="text-center">
+                        <div class="activity-icon" [ngClass]="'icon-' + activity.type">
+                            <i [class]="activity.icon"></i>
+                        </div>
+                    </td>
+                    <td>
+                        <span [innerHTML]="activity.message"></span>
+                    </td>
+                    <td>
+                        <span class="time-text">{{ activity.time }}</span>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="3" class="text-center p-4">No activity logs found.</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>

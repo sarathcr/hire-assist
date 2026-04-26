@@ -761,12 +761,54 @@
 
     ::ng-deep .assessment-round__criteria-multiselect {
       flex: 1;
-      height: 38px;
+      height: 42px; // Increased slightly to accommodate chips better
       .p-multiselect {
         width: 100%;
         height: 100%;
         display: flex;
         align-items: center;
+        border-radius: 10px;
+
+        .p-multiselect-label {
+          display: flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          padding: 2px 10px !important; // Reduced vertical padding
+          min-height: 40px !important;
+          flex-wrap: nowrap !important;
+          overflow-x: auto !important;
+
+          &::-webkit-scrollbar {
+            display: none;
+          }
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
+        .p-multiselect-token {
+          padding: 0 8px !important;
+          margin: 0 !important;
+          height: 24px !important;
+          background: rgba(33, 150, 243, 0.1) !important;
+          color: #1565c0 !important;
+          border-radius: 4px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          flex-shrink: 0 !important;
+          border: 1px solid rgba(33, 150, 243, 0.2) !important;
+          
+          .p-multiselect-token-label {
+            font-size: 11px !important;
+            font-weight: 500 !important;
+            line-height: 1 !important;
+          }
+          
+          .p-multiselect-token-icon {
+            font-size: 10px !important;
+            margin-left: 4px !important;
+            cursor: pointer;
+          }
+        }
       }
     }
 
@@ -779,13 +821,6 @@
 
   &__criteria-multiselect {
     min-width: 220px;
-    ::ng-deep .p-multiselect {
-      border-radius: 10px;
-      .p-multiselect-label {
-        padding: 8px 12px;
-        font-size: 13px;
-      }
-    }
   }
 
   &__criteria-list {
@@ -979,6 +1014,67 @@
           .ql-editor {
             min-height: 100px;
             font-size: 14px;
+            line-height: 1.6;
+            color: #1f2937;
+
+            // Restore text formatting styles suppressed by CSS resets
+            strong, b, em, i, u, s, span {
+              display: inline;
+            }
+
+            strong, b { 
+              font-weight: 700 !important; 
+              font-style: inherit;
+            }
+            em, i { 
+              font-style: italic !important; 
+              font-weight: inherit;
+            }
+            u { 
+              text-decoration: underline !important; 
+              font-style: inherit;
+              font-weight: inherit;
+            }
+            s { 
+              text-decoration: line-through !important; 
+              font-style: inherit;
+              font-weight: inherit;
+            }
+            
+            // Restore list rendering
+            ul, ol {
+              padding-left: 1.5rem !important;
+              margin-bottom: 0.5rem !important;
+              display: block !important;
+            }
+            
+            li {
+              display: list-item !important;
+              list-style-position: outside !important;
+              padding-left: 0.25rem !important;
+              margin-bottom: 0.25rem !important;
+              
+              &::before {
+                display: none !important;
+              }
+            }
+            
+            ul li, li[data-list="bullet"] {
+              list-style-type: disc !important;
+            }
+            
+            ol li, li[data-list="ordered"] {
+              list-style-type: decimal !important;
+            }
+
+            p {
+              margin-bottom: 0.5rem;
+            }
+
+            &.ql-blank::before {
+              color: #94a3b8;
+              font-style: normal;
+            }
           }
         }
       }

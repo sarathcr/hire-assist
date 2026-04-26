@@ -164,6 +164,7 @@ export interface Candidate {
   toggleTooltipIconIndex?: number;
   visibleButtonIndices?: number[];
   disabledButtonIndices?: number[];
+  candidateId?: string;
 }
 
 export interface ButtonAction {
@@ -378,6 +379,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     this.ref = this.dialog.open(UploadIdProofDialogComponent, {
       data: {
         candidateEmail: candidate.email,
+        candidateId: candidate.id,
       },
       header: 'Upload ID Proof',
       width: '50vw',

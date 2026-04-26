@@ -42,6 +42,17 @@ export interface ProfileDetails {
   profilePhoto?: GetImageResponseDto;
   userSkills?: SkillsDto[];
   userUpcomingInterviews?: UpcomingInterviewDto[];
+  userExperiences?: ExperienceDto[];
+}
+
+export interface ExperienceDto {
+  id: number;
+  company: string;
+  role: string;
+  startDate: string | Date;
+  endDate?: string | Date;
+  description?: string;
+  isCurrent: boolean;
 }
 
 export interface UpcomingInterviewDto {

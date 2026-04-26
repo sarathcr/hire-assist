@@ -188,5 +188,8 @@
 <app-history-drawer
   [visible]="visible"
   [events]="events"
+  [loading]="historyLoading"
+  [showLoadMore]="events.length < historyPagination.totalRecords"
   (visibleChange)="visible = $event"
+  (loadMore)="loadMoreHistory()"
 ></app-history-drawer>

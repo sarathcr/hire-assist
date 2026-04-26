@@ -1,10 +1,11 @@
-import { UpperCasePipe, DatePipe } from '@angular/common';
+import { UpperCasePipe, DatePipe, CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TimelineModule } from 'primeng/timeline';
 import { TooltipModule } from 'primeng/tooltip';
 import { BaseComponent } from '../../components/base/base.component';
 import { AttachmentTypeEnum } from '../../enums/status.enum';
@@ -16,7 +17,8 @@ import { CoverImageComponent } from './components/cover-image/cover-image.compon
 import { ProfileDialogComponent } from './components/profile-dialog/profile-dialog.component';
 import { SkillsDialogComponent, SkillsDialogData } from './components/skills-dialog/skills-dialog.component';
 import { PersonalDetailsDialogComponent } from './components/personal-details-dialog/personal-details-dialog.component';
-import { ProfileDetails, SkillsDto } from './models/basic-information.model';
+import { ExperienceDialogComponent } from './components/experience-dialog/experience-dialog.component';
+import { ProfileDetails, SkillsDto, ExperienceDto } from './models/basic-information.model';
 import { Profile, ProfileForm } from './models/profile.model';
 import { ProfileServicesService } from './services/profile-services.service';
 import { ProfileSkeletonComponent } from './profile-skeleton.component';
@@ -25,12 +27,14 @@ import { ProfileSkeletonComponent } from './profile-skeleton.component';
   selector: 'app-profile',
   standalone: true,
   imports: [
+    CommonModule,
     BasicInformationComponent,
     CoverImageComponent,
     ButtonModule,
     ProfileSkeletonComponent,
     SkeletonModule,
     TooltipModule,
+    TimelineModule,
     UpperCasePipe,
     DatePipe,
   ],
@@ -54,6 +58,8 @@ export class ProfileComponent extends BaseComponent implements OnInit {
   public isLoading = true;
   public isLoadingCoverImage = false;
   public isLoadingProfileImage = false;
+  public isAddingSkill = false;
+  public experienceTimeline: any[] = [];
   public userRole: string = '';
 
   constructor(
@@ -194,33 +200,6 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     });
   }
 
-  public onEdit() {
-    if (this.profileDataSource) {
-      const data = {
-        fGroup: this.fGroup,
-        configMap: this.configMap,
-        formData: this.profileDataSource,
-        onProfileImageUpload: (file: File) => this.onProfileImageUpload(file),
-        isLoadingProfileImage: this.isLoadingProfileImage,
-      };
-      this.ref = this.dialog.open(ProfileDialogComponent, {
-        data: data,
-        header: 'Edit Profile',
-        width: '50vw',
-        modal: true,
-        breakpoints: {
-          '960px': '75vw',
-          '640px': '90vw',
-        },
-      });
-    }
-    this.ref?.onClose.subscribe((res) => {
-      if (res) {
-        // Handle dialog close response if needed
-      }
-      this.fGroup.reset();
-    });
-  }
 
   public onProfileImageUpload(file: File): void {
     this.isLoadingProfileImage = true;
@@ -303,6 +282,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
         '960px': '75vw',
         '640px': '90vw',
       },
+      contentStyle: { overflow: 'visible', padding: '0' },
     });
     this.ref?.onClose.subscribe(() => {
       // Handle dialog close
@@ -370,6 +350,20 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     
     const next = (res: ProfileDetails) => {
       this.profileDetailsDataSource = res;
+      
+      // Map experiences to timeline
+      if (res.userExperiences) {
+        this.experienceTimeline = res.userExperiences.map((exp: any) => ({
+          id: exp.id,
+          status: exp.role,
+          company: exp.company,
+          date: this.formatDateRange(exp.startDate, exp.endDate, exp.isCurrent),
+          icon: 'pi pi-briefcase',
+          color: exp.isCurrent ? '#4f46e5' : '#64748b',
+          description: exp.description
+        }));
+      }
+
       this.coverBlob = res.coverPhoto?.id;
       this.coverType = res.coverPhoto?.attachmentType;
       this.profileBlob = res.profilePhoto?.id;
@@ -445,5 +439,82 @@ export class ProfileComponent extends BaseComponent implements OnInit {
   private setConfigMaps(): void {
     const { metadata } = new ProfileForm();
     this.configMap = metadata.configMap || {};
+  }
+
+  private formatDateRange(start: string | Date, end: string | Date | null | undefined, isCurrent: boolean): string {
+    const datePipe = new DatePipe('en-US');
+    const startStr = datePipe.transform(start, 'MMM yyyy') || '';
+    if (isCurrent) {
+      return `${startStr} - Present`;
+    }
+    const endStr = end ? datePipe.transform(end, 'MMM yyyy') || '' : '';
+    return `${startStr} - ${endStr}`;
+  }
+
+  public onAddExperience(): void {
+    this.ref = this.dialog.open(ExperienceDialogComponent, {
+      header: 'Add Experience',
+      width: '550px',
+      modal: true,
+      contentStyle: { overflow: 'visible', padding: '0' }
+    });
+
+    this.ref.onClose.subscribe((experience: ExperienceDto) => {
+      if (experience) {
+        this.onSaveExperience(experience);
+      }
+    });
+  }
+
+  public onEditExperience(id: number): void {
+    const experience = this.profileDetailsDataSource.userExperiences?.find(e => e.id === id);
+    if (!experience) return;
+
+    this.ref = this.dialog.open(ExperienceDialogComponent, {
+      header: 'Edit Experience',
+      width: '550px',
+      data: { experience },
+      modal: true,
+      contentStyle: { overflow: 'visible', padding: '0' }
+    });
+
+    this.ref.onClose.subscribe((updatedExp: ExperienceDto) => {
+      if (updatedExp) {
+        this.onSaveExperience(updatedExp);
+      }
+    });
+  }
+
+  private onSaveExperience(experience: ExperienceDto): void {
+    const experiences = [...(this.profileDetailsDataSource.userExperiences || [])];
+    
+    if (experience.id) {
+      const index = experiences.findIndex(e => e.id === experience.id);
+      if (index > -1) experiences[index] = experience;
+    } else {
+      experiences.push(experience);
+    }
+
+    this.profileServices.saveUserExperiences(experiences).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Experience updated' });
+        this.loadProfileDetails();
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to save experience' });
+      }
+    });
+  }
+
+  public onDeleteExperience(id: number): void {
+    this.profileServices.deleteUserExperience(id).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Experience removed' });
+        this.loadProfileDetails();
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to remove experience' });
+      }
+    });
   }
 }

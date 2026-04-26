@@ -7,13 +7,13 @@ import { ActivatedRoute } from '@angular/router';
 import { InterviewService } from '../../services/interview.service';
 import { finalize } from 'rxjs/operators';
 import { SkeletonModule } from 'primeng/skeleton';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import { DialogModule } from 'primeng/dialog';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-recruitment-summary',
   standalone: true,
-  imports: [CommonModule, ButtonModule, AccordionModule, SkeletonModule],
+  imports: [CommonModule, ButtonModule, AccordionModule, SkeletonModule, DialogModule],
   templateUrl: './recruitment-summary.component.html',
   styleUrl: './recruitment-summary.component.scss'
 })
@@ -21,14 +21,19 @@ export class RecruitmentSummaryComponent implements OnInit {
 
   public assessmentId!: number;
   public isLoading = false;
+  public isExporting = false;
   public summaryData: any = null;
 
   public activeAccordionIds: string[] = [];
+  
+  public showPdfModal = false;
+  public safePdfUrl: SafeResourceUrl | null = null;
 
   constructor(
     private location: Location,
     private route: ActivatedRoute,
-    private interviewService: InterviewService
+    private interviewService: InterviewService,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -62,31 +67,32 @@ export class RecruitmentSummaryComponent implements OnInit {
   }
 
   public printSummary(): void {
-    // Ensure all accordions are expanded before capturing
-    this.expandAllAccordions();
-    
-    // Delay to let Angular/PrimeNG DOM updates apply fully before capturing DOM
-    setTimeout(() => {
-      const data = document.querySelector('.printable-area') as HTMLElement;
-      if (!data) return;
+    if (this.isExporting) return;
 
-      html2canvas(data, { scale: 2, useCORS: true }).then(canvas => {
-        // Calculate dimensions to match exact aspect ratio in a continuous single-page PDF
-        const pdfWidth = 210; // standard A4 width in mm
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        const contentDataURL = canvas.toDataURL('image/png', 1.0);
-        
-        // Create PDF exactly the size of the content so there are no awkward page breaks cutting text
-        const pdf = new jsPDF('p', 'mm', [pdfWidth, pdfHeight]); 
-        
-        pdf.addImage(contentDataURL, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`${this.summaryData.recruitmentName.replace(/\s+/g, '_')}_Audit_Report.pdf`);
+    this.isExporting = true;
+    
+    this.interviewService.exportRecruitmentSummaryPdf(this.assessmentId)
+      .pipe(finalize(() => this.isExporting = false))
+      .subscribe({
+        next: (blob) => {
+          const blobURL = URL.createObjectURL(blob);
+          this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobURL);
+          this.showPdfModal = true;
+        },
+        error: (error) => {
+          console.error('Error exporting audit report:', error);
+        }
       });
-    }, 500); // 500ms allows animations/accordions adequate time to complete opening
   }
 
   public goBack(): void {
     this.location.back();
+  }
+
+  public maskAadhaar(id: string): string {
+    if (!id) return 'N/A';
+    const str = id.toString();
+    if (str.length < 4) return str;
+    return 'XXXX XXXX ' + str.slice(-4);
   }
 }

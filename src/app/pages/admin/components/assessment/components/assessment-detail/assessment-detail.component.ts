@@ -54,6 +54,7 @@ import { InterviewService } from '../../services/interview.service';
 import { PaginatedData } from './../../../../../../shared/models/pagination.models';
 import { ScheduleInterviewComponent } from './components/schedule-interview/schedule-interview.component';
 
+import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { CandidateService } from '../../services/candidate.service';
 import { RoundCompletionWarningComponent } from './components/round-completion-warning/round-completion-warning.component';
 import { SelectPanelDailogComponent } from './components/select-panel-dailog/select-panel-dailog.component';
@@ -242,32 +243,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     },
   ];
 
-  events = [
-    {
-      status: 'Created',
-      user: 'Sarath Cheerakkadan',
-      date: '2025-10-15T10:30:00',
-      icon: 'pi pi-plus',
-    },
-    {
-      status: 'Updated',
-      user: 'Sarath Cheerakkadan',
-      date: '2025-10-15T14:00:00',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Steve Jose',
-      date: '2025-10-15T16:15:00',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Lakshmipriya',
-      date: '2025-10-16T10:00:00',
-      icon: 'pi pi-pencil',
-    },
-  ];
+  public events: any[] = [];
+  public historyLoading: boolean = false;
+  public historyPagination = {
+    pageNumber: 1,
+    pageSize: 10,
+    totalRecords: 0
+  };
+  public currentHistoryInterviewId: string | null = null;
 
   private nextRoundId!: number | null;
   private candidatePanelAssignments = new Map<string, boolean>();
@@ -377,7 +360,99 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   public viewHistory(id: any) {
+    this.currentHistoryInterviewId = String(id);
+    this.historyPagination.pageNumber = 1;
+    this.events = [];
     this.visible = true;
+    this.fetchInterviewHistory();
+  }
+
+  public loadMoreHistory() {
+    this.historyPagination.pageNumber++;
+    this.fetchInterviewHistory();
+  }
+
+  private fetchInterviewHistory() {
+    this.historyLoading = true;
+    const payload = new PaginatedPayload();
+    payload.pagination.pageNumber = this.historyPagination.pageNumber;
+    payload.pagination.pageSize = this.historyPagination.pageSize;
+    payload.filterMap = {
+      assessmentRoundId: Number(this.currentStep),
+      interviewId: this.currentHistoryInterviewId || ''
+    };
+
+    payload.multiSortedColumns = [{ active: 'ChangedAt', direction: 'desc' }];
+
+    this.interviewService.getInterviewHistory(payload)
+      .pipe(finalize(() => this.historyLoading = false))
+      .subscribe({
+        next: (res: any) => {
+          const newEvents = res.data.map((item: any) => ({
+            status: this.formatAction(item.action),
+            user: item.changedByName,
+            date: new Date(item.changedAt + 'Z'),
+            icon: this.getHistoryIcon(item.action),
+            description: this.getHistoryDescription(item)
+          }));
+          this.events = [...this.events, ...newEvents];
+          this.historyPagination.totalRecords = res.totalRecords;
+        },
+        error: (err: any) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to fetch history.'
+          });
+        }
+      });
+  }
+
+  private formatAction(action: string): string {
+    if (!action) return '';
+    return action
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (str) => str.toUpperCase())
+      .trim();
+  }
+
+  private getStatusLabel(statusId: any): string {
+    if (!statusId) return '';
+    const id = Number(statusId);
+    return StatusEnum[id] || statusId;
+  }
+
+  private getHistoryDescription(item: any): string {
+    if (item.details) {
+      return item.details;
+    }
+    if (item.field?.toLowerCase() === 'statusid') {
+      const prev = this.getStatusLabel(item.previousValue);
+      const curr = this.getStatusLabel(item.currentValue);
+      if (curr === 'Selected') {
+        return `Candidate status updated as Selected`;
+      }
+      return `Status: ${prev || 'None'} → ${curr || 'None'}`;
+    }
+    if (item.field) {
+      return `${item.field}: ${item.previousValue || 'None'} → ${item.currentValue || 'None'}`;
+    }
+    return 'Candidate was modified';
+  }
+
+  private getHistoryIcon(action: string): string {
+    switch (action?.toLowerCase()) {
+      case 'created':
+        return 'pi pi-plus';
+      case 'scheduled':
+        return 'pi pi-calendar-clock';
+      case 'panelassigned':
+        return 'pi pi-users';
+      case 'statusupdated':
+        return 'pi pi-sync';
+      default:
+        return 'pi pi-info-circle';
+    }
   }
 
   public onButtonClick(data: { event: any; fName: string }): void {
@@ -1778,7 +1853,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           this.nextRoundId = this.assessmentRoundList[currentIndex + 1].id;
         }
       }
-      const scheduleDate = new Date(formValue.scheduleDate).toISOString();
+      const toLocalISOString = (date: Date) => {
+        const tzOffset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - tzOffset).toISOString().slice(0, -1);
+      };
+
+      const scheduleDate = new Date(formValue.scheduleDate);
+      const formattedDate = toLocalISOString(scheduleDate);
 
       // Create an array of observables for each candidate
       const requests = selectedCandidateIds.map((email: string, index: number) => {
@@ -1792,7 +1873,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           isActive: true,
           statusId: 2,
           assessmentId: this.assessmentId!,
-          date: scheduleDate,
+          date: formattedDate,
         };
 
         // If candidate already has an interviewId, update it; otherwise create new
@@ -2013,6 +2094,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   private proceedWithRoundCompletion(data: FilterMap) {
+    const isLastRound = this.step && this.step.length > 0 && this.currentStep === this.step[this.step.length - 1].id;
+
+    if (isLastRound) {
+      // For the final round, we skip the AssessmentRoundSummary check 
+      // (which usually validates if candidates are scheduled for the next round)
+      this.executeRoundCompletion();
+      return;
+    }
+
     const payload = {
       multiSortedColumns: [],
       filterMap: data || {},
@@ -2029,35 +2119,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: PaginatedData<AssesmentRoundResponse>) => {
           if (res.data.length == 0) {
-            const payloadData = {
-              assessmentId: this.assessmentId!,
-              assessmentRoundId: this.currentStep!,
-            };
-            const nextComplete = () => {
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Completed Assessment Round Successfully',
-              });
-              this.roundStatus = true;
-              // Refetch assessment rounds to update the status
-              // Keep isCompletingRound true until refetch completes
-              this.getAssessmentRoundDetails(this.assessmentId);
-            };
-            const errorComplete = () => {
-              this.isCompletingRound = false;
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Completion of Assessment Round failed',
-              });
-            };
-            this.assessmentService
-              .updateEntity(
-                'assessmentRound/assessmentRoundComplete',
-                payloadData,
-              )
-              .subscribe({ next: nextComplete, error: errorComplete });
+            this.executeRoundCompletion();
           } else {
             this.isCompletingRound = false;
             this.messageService.add({
@@ -2076,6 +2138,40 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  /**
+   * Internal method to execute the actual round completion API call
+   */
+  private executeRoundCompletion() {
+    const payloadData = {
+      assessmentId: this.assessmentId!,
+      assessmentRoundId: this.currentStep!,
+    };
+
+    const nextComplete = () => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Success',
+        detail: 'Completed Assessment Round Successfully',
+      });
+      this.roundStatus = true;
+      // Refetch assessment rounds to update the status
+      this.getAssessmentRoundDetails(this.assessmentId);
+    };
+
+    const errorComplete = () => {
+      this.isCompletingRound = false;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Completion of Assessment Round failed',
+      });
+    };
+
+    this.assessmentService
+      .updateEntity('assessmentRound/assessmentRoundComplete', payloadData)
+      .subscribe({ next: nextComplete, error: errorComplete });
   }
   public navigateToSummary(): void {
     if (!this.isAllRoundsCompleted) {

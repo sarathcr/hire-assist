@@ -86,7 +86,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       idFile: [null, this.validateFiles.bind(this)],
     });
 
-    this.candidateId = this.config.data?.candidateEmail;
+    this.candidateId = this.config.data?.candidateId || this.config.data?.candidateEmail;
 
     this.loadExistingImages();
   }
@@ -338,8 +338,10 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       })
       .subscribe({
         next: () => {
-          this.uploadedFileUrl?.splice(index, 1);
-          this.imageUrl.splice(index, 1);
+          if (this.uploadedFileUrl) {
+            this.uploadedFileUrl = this.uploadedFileUrl.filter((_, i) => i !== index);
+          }
+          this.imageUrl = this.imageUrl.filter((_, i) => i !== index);
           this.fGroup.patchValue({ idFile: null });
 
           this.messageService.add({
@@ -448,6 +450,8 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
           next: (blob: Blob) => {
             const url = URL.createObjectURL(blob);
             this.imageUrl[idx] = url;
+            // Force a new array reference for Angular change detection
+            this.imageUrl = [...this.imageUrl];
             loadedCount++;
 
             if (loadedCount === totalFiles) {

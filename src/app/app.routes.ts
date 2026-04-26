@@ -38,6 +38,7 @@ import { InterviewerCandidateListComponent } from './pages/interviewer/component
 import { InterviewerFeedbackComponent } from './pages/interviewer/components/Interviewer-list/components/interviewer-feedback/interviewer-feedback.component';
 import { InterviewerDashboardComponent } from './pages/interviewer/components/interviewer-dashboard/interviewer-dashboard.component';
 import { InterviewerRecruitmentPanelsComponent } from './pages/interviewer/components/interviewer-recruitment-panels/interviewer-recruitment-panels.component';
+import { ActivityLogsComponent } from './pages/admin/components/activity-logs/activity-logs.component';
 
 import { backButtonGuard } from './shared/guards/back-button.guard';
 import { DeviceWidthGuard } from './shared/guards/device-width.guard';
@@ -68,6 +69,7 @@ export const routes: Routes = [
 
     children: [
       { path: 'dashboard', component: AdminDashboardComponent },
+      { path: 'activity-logs', component: ActivityLogsComponent },
       {
         path: 'recruitments',
         component: AssessmentComponent,

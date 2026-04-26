@@ -1,188 +1,247 @@
 <div class="summary-container">
-  <!-- Top Action Bar -->
-  <div class="summary-actions no-print">
-    <p-button 
-      icon="pi pi-arrow-left" 
-      label="Back to Recruitment" 
-      [text]="true"
-      (onClick)="goBack()">
-    </p-button>
-    <p-button 
-      *ngIf="!isLoading && summaryData"
-      icon="pi pi-print" 
-      label="Download PDF" 
-      severity="primary"
-      (onClick)="printSummary()">
-    </p-button>
-  </div>
-
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-container">
-    <div class="hero-header skeleton">
-      <p-skeleton width="60%" height="3rem" marginBottom="1rem"></p-skeleton>
-      <p-skeleton width="40%" height="1.5rem"></p-skeleton>
+  <!-- Modern Header / Action Bar -->
+  <header class="summary-header no-print">
+    <div class="header-left">
+      <p-button 
+        icon="pi pi-arrow-left" 
+        label="Recruitments" 
+        [text]="true"
+        class="back-btn"
+        (onClick)="goBack()">
+      </p-button>
     </div>
-    <div class="stats-grid">
-      <div *ngFor="let i of [1,2,3,4]" class="stat-card skeleton">
-        <p-skeleton shape="circle" size="3rem"></p-skeleton>
-        <div style="flex: 1; margin-left: 1rem">
-          <p-skeleton width="30%" height="2rem" marginBottom="0.5rem"></p-skeleton>
-          <p-skeleton width="70%"></p-skeleton>
-        </div>
-      </div>
-    </div>
-    <div class="section-container">
-      <p-skeleton width="200px" height="2rem" marginBottom="1rem"></p-skeleton>
-      <div *ngFor="let i of [1,2]" class="pipeline-step skeleton">
-        <p-skeleton width="100%" height="100px" borderRadius="12px"></p-skeleton>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main Content Area to Print -->
-  <div *ngIf="!isLoading && summaryData" class="printable-area">
     
-    <!-- Hero Header -->
-    <div class="hero-header">
-      <div class="hero-content">
-        <h1 class="hero-title">{{ summaryData.recruitmentName }}</h1>
-        <div class="hero-meta">
-          <span class="meta-item"><i class="pi pi-tag"></i> {{ summaryData.recruitmentId }}</span>
-          <span class="meta-divider">•</span>
-          <span class="meta-item"><i class="pi pi-calendar"></i> {{ summaryData.dateCreated | date:'longDate' }}</span>
-          <span class="meta-divider">•</span>
-          <span class="meta-item status-badge" [ngClass]="'status-' + (summaryData.status?.toLowerCase().replace(' ', '-') || 'unknown')">
-            <i class="pi pi-circle-fill" style="font-size: 0.5rem; margin-right: 0.35rem;"></i>
-            {{ summaryData.status }}
-          </span>
-        </div>
-      </div>
+    <div class="header-right">
+      <p-button 
+        *ngIf="summaryData"
+        icon="pi pi-download" 
+        label="Export Audit Report" 
+        [raised]="true"
+        severity="contrast"
+        [loading]="isExporting"
+        (onClick)="printSummary()">
+      </p-button>
     </div>
+  </header>
 
-    <!-- Stats Overview Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon-wrapper bg-blue">
-          <i class="pi pi-users text-blue"></i>
-        </div>
-        <div class="stat-details">
-          <span class="stat-value">{{ summaryData.totalCandidates }}</span>
-          <span class="stat-label">Total Candidates</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon-wrapper bg-green">
-          <i class="pi pi-check-circle text-green"></i>
-        </div>
-        <div class="stat-details">
-          <span class="stat-value">{{ summaryData.selected }}</span>
-          <span class="stat-label">Candidates Selected</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon-wrapper bg-red">
-          <i class="pi pi-times-circle text-red"></i>
-        </div>
-        <div class="stat-details">
-          <span class="stat-value">{{ summaryData.rejected }}</span>
-          <span class="stat-label">Candidates Rejected</span>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon-wrapper bg-orange">
-          <i class="pi pi-sync text-orange"></i>
-        </div>
-        <div class="stat-details">
-          <span class="stat-value">{{ summaryData.inProgress }}</span>
-          <span class="stat-label">Active in Pipeline</span>
-        </div>
-      </div>
+  <!-- PDF Preview Modal -->
+  <p-dialog 
+    [(visible)]="showPdfModal" 
+    [modal]="true" 
+    [maximizable]="true"
+    [style]="{width: '90vw', height: '90vh'}"
+    header="Audit Report Preview"
+    [contentStyle]="{height: 'calc(90vh - 100px)', padding: '0'}">
+    
+    <div *ngIf="safePdfUrl" class="pdf-viewer-container" style="height: 100%; width: 100%;">
+      <iframe 
+        [src]="safePdfUrl" 
+        width="100%" 
+        height="100%" 
+        style="border: none;">
+      </iframe>
     </div>
+  </p-dialog>
 
-    <!-- Recruitment Journey Pipeline -->
-    <div class="section-container">
-      <div class="section-header-wrapper">
-        <h2 class="section-title"><span class="icon-wrapper blue"><i class="pi pi-sitemap"></i></span> Recruitment Pipeline</h2>
-        <p class="section-subtitle">Progression of candidates through each defined stage</p>
+  <!-- Content Skeleton -->
+  <div *ngIf="isLoading" class="skeleton-container">
+    <div class="skeleton-insights">
+      <div class="skeleton-hero">
+        <p-skeleton width="40%" height="2.5rem" styleClass="mb-2"></p-skeleton>
+        <p-skeleton width="20%" height="1.2rem"></p-skeleton>
       </div>
-      <div class="pipeline-container">
-        @for (round of summaryData.rounds; track round.id; let i = $index) {
-          <div class="pipeline-step">
-            <div class="step-header">
-              <div class="step-number">{{ i + 1 }}</div>
-              <h3 class="step-name">{{ round.name }}</h3>
-              <span class="step-status" [ngClass]="'status-' + (round.status?.toLowerCase().replace(' ', '-') || 'pending')">
-                {{ round.status }}
-              </span>
-            </div>
-            
-            <div class="step-body">
-              <div class="step-interviewer">
-                <i class="pi pi-user"></i> {{ round.interviewer }}
-              </div>
-              <div class="step-metrics">
-                <div class="metric-item">
-                  <span class="metric-label">Processed</span>
-                  <span class="metric-val text-blue">{{ round.completed }}</span>
-                </div>
-                <div class="metric-item">
-                  <span class="metric-label">Passed</span>
-                  <span class="metric-val text-green">{{ round.passed }}</span>
-                </div>
-                <div class="metric-item">
-                  <span class="metric-label">Failed</span>
-                  <span class="metric-val text-red">{{ round.failed }}</span>
-                </div>
-              </div>
-              
-              <!-- Completion Bar -->
-              <div class="completion-bar-wrapper">
-                <div class="completion-bar">
-                  <div class="completion-fill bg-green" [style.width.%]="round.completed > 0 ? (round.passed / round.completed) * 100 : 0"></div>
-                  <div class="completion-fill bg-red" [style.width.%]="round.completed > 0 ? (round.failed / round.completed) * 100 : 0"></div>
-                </div>
-              </div>
-            </div>
-            
-            @if (i < summaryData.rounds.length - 1) {
-              <div class="step-connector">
-                <i class="pi pi-arrow-down"></i>
-              </div>
-            }
-          </div>
+      <div class="skeleton-stats">
+        @for (i of [1,2,3,4]; track i) {
+          <p-skeleton width="150px" height="50px" borderRadius="12px"></p-skeleton>
+        }
+      </div>
+      <div class="skeleton-grid">
+        @for (i of [1,2,3,4,5]; track i) {
+          <p-skeleton height="70px" borderRadius="16px"></p-skeleton>
         }
       </div>
     </div>
+  </div>
 
-    <!-- Candidate Audit Report Section -->
-    <div class="section-container audit-report-section">
-      <div class="section-header-wrapper">
-        <h2 class="section-title"><span class="icon-wrapper indigo"><i class="pi pi-file-check"></i></span> Candidate Audit Report</h2>
-        <p class="section-subtitle">Comprehensive breakdown of feedbacks, scores, and attachments per candidate</p>
+  <!-- Main Content -->
+  <main *ngIf="!isLoading && summaryData" class="summary-content printable-area">
+    
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-main">
+        <div class="recruitment-id">#{{ summaryData.recruitmentId }}</div>
+        <h1 class="hero-title">{{ summaryData.recruitmentName }}</h1>
+        <div class="hero-meta">
+          <span class="meta-tag" [ngClass]="'status-' + (summaryData.status?.toLowerCase().replace(' ', '-') || 'unknown')">
+            {{ summaryData.status }}
+          </span>
+          <span class="meta-date">
+            <i class="pi pi-calendar-plus"></i> 
+            Created {{ summaryData.dateCreated | date: "MMM dd, yyyy" }}
+          </span>
+        </div>
       </div>
-      
-      <div class="audit-list">
+
+      <!-- Quick Metrics -->
+      <div class="metrics-row">
+        <div class="metric-card metric-total">
+          <div class="metric-icon"><i class="pi pi-users"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ summaryData.totalCandidates | number }}</span>
+            <span class="metric-label">Total Candidates</span>
+          </div>
+        </div>
+        <div class="metric-card metric-selected">
+          <div class="metric-icon"><i class="pi pi-check-circle"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ summaryData.selected | number }}</span>
+            <span class="metric-label">Selected</span>
+          </div>
+        </div>
+        <div class="metric-card metric-rejected">
+          <div class="metric-icon"><i class="pi pi-times-circle"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ summaryData.rejected | number }}</span>
+            <span class="metric-label">Rejected</span>
+          </div>
+        </div>
+        <div class="metric-card metric-pipeline">
+          <div class="metric-icon"><i class="pi pi-sync"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ summaryData.inProgress | number }}</span>
+            <span class="metric-label">In Pipeline</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recruitment Details Grid -->
+    <section class="details-section">
+      <div class="details-grid">
+        <div class="detail-item">
+          <div class="detail-icon"><i class="pi pi-user-edit"></i></div>
+          <div class="detail-content">
+            <label>Coordinators</label>
+            <p>{{ summaryData.coordinators?.length > 0 ? summaryData.coordinators.join(', ') : 'No coordinators assigned' }}</p>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon"><i class="pi pi-id-card"></i></div>
+          <div class="detail-content">
+            <label>Frontdesk Coordinators</label>
+            <p>{{ summaryData.frontDeskUsers?.length > 0 ? summaryData.frontDeskUsers.join(', ') : 'None assigned' }}</p>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon"><i class="pi pi-users"></i></div>
+          <div class="detail-content">
+            <label>Assigned Interviewers</label>
+            <p>{{ summaryData.interviewers?.length > 0 ? summaryData.interviewers.join(', ') : 'None' }}</p>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <div class="detail-icon"><i class="pi pi-list"></i></div>
+          <div class="detail-content">
+            <label>Assessment Flow</label>
+            <p>{{ summaryData.rounds?.length || 0 }} Structured Rounds</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pipeline Visualization -->
+    <section class="pipeline-section">
+      <div class="section-header">
+        <h2 class="section-title">Recruitment Journey</h2>
+        <p class="section-desc">Candidate progression through the assessment pipeline</p>
+      </div>
+
+      <div class="pipeline-journey">
+        @for (round of summaryData.rounds; track round.name; let i = $index) {
+          <div class="journey-step" [class.is-last]="i === summaryData.rounds.length - 1">
+            <div class="step-line">
+              <div class="step-node">{{ i + 1 }}</div>
+              <div class="line-connector" *ngIf="i !== summaryData.rounds.length - 1"></div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-header">
+                <div class="step-info">
+                  <h3 [attr.data-index]="i + 1">{{ round.name }}</h3>
+                  <span class="step-status" [ngClass]="'status-' + (round.status?.toLowerCase().replace(' ', '-') || 'pending')">
+                    {{ round.status }}
+                  </span>
+                </div>
+                <div class="step-interviewer" *ngIf="round.interviewer">
+                  <i class="pi pi-user"></i> {{ round.interviewer }}
+                </div>
+              </div>
+
+              <div class="step-body">
+                <div class="step-metrics">
+                  <div class="step-metric">
+                    <span class="v">{{ round.completed }}</span>
+                    <span class="l">Processed</span>
+                  </div>
+                  <div class="step-metric success">
+                    <span class="v">{{ round.passed }}</span>
+                    <span class="l">Passed</span>
+                  </div>
+                  <div class="step-metric failure">
+                    <span class="v">{{ round.failed }}</span>
+                    <span class="l">Failed</span>
+                  </div>
+                </div>
+
+                <div class="step-progress" *ngIf="round.completed > 0">
+                  <div class="progress-bar">
+                    <div class="fill success" [style.width.%]="(round.passed / round.completed) * 100"></div>
+                    <div class="fill failure" [style.width.%]="(round.failed / round.completed) * 100"></div>
+                  </div>
+                  <div class="progress-info">
+                    <span class="success-pct">{{ (round.passed / round.completed) * 100 | number:'1.0-0' }}% Success Rate</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Comprehensive Audit Report -->
+    <section class="audit-section">
+      <div class="section-header">
+        <h2 class="section-title">Candidate Audit Report</h2>
+        <p class="section-desc">Detailed feedback and scores for individual candidates</p>
+      </div>
+
+      <div class="audit-accordions">
         <p-accordion [multiple]="true" [value]="activeAccordionIds">
           @for (candidate of summaryData.detailedCandidates; track candidate.id) {
-            <p-accordion-panel [value]="candidate.id" class="audit-candidate-panel">
-              <p-accordion-header class="audit-accordion-header">
-                <div class="candidate-header-content">
-                  <div class="candidate-info-block">
-                    <div class="candidate-avatar large">{{ candidate.name?.charAt(0) }}</div>
+            <p-accordion-panel [value]="candidate.id" class="candidate-panel">
+              <p-accordion-header>
+                <div class="candidate-summary">
+                  <div class="candidate-identity">
+                    <div class="candidate-avatar">{{ candidate.name?.charAt(0) }}</div>
                     <div class="candidate-details">
-                      <h3 class="candidate-name">{{ candidate.name }} <span class="candidate-id">({{ candidate.id }})</span></h3>
-                      <div class="candidate-contact">
-                        <span><i class="pi pi-envelope"></i> {{ candidate.email }}</span>
-                        <span><i class="pi pi-phone"></i> {{ candidate.phone }}</span>
+                      <h4 class="candidate-name">{{ candidate.name }}</h4>
+                      <div class="candidate-meta">
+                        <span>{{ maskAadhaar(candidate.id) }}</span>
+                        <span class="dot"></span>
+                        <span>{{ candidate.email }}</span>
                       </div>
                     </div>
                   </div>
-                  <div class="candidate-score-block">
-                    <div class="final-score">
-                      <span class="score-label">Overall Score</span>
-                      <span class="score-value">{{ candidate.overallScore }}%</span>
+                  <div class="candidate-outcomes">
+                    <div class="score-display">
+                      <span class="score-label">OVERALL SCORE</span>
+                      <span class="score-value">{{ candidate.totalScore }}/{{ candidate.maxScore }}</span>
                     </div>
-                    <span class="candidate-status" [ngClass]="'status-' + (candidate.finalStatus?.toLowerCase().replace(' ', '-') || 'pending')">
+                    <span class="outcome-tag" [ngClass]="'status-' + (candidate.finalStatus?.toLowerCase().replace(' ', '-') || 'pending')">
                       {{ candidate.finalStatus }}
                     </span>
                   </div>
@@ -190,113 +249,124 @@
               </p-accordion-header>
 
               <p-accordion-content>
-                <div class="candidate-rounds">
-                  <h4 class="rounds-title">Round Details</h4>
-                  
-                  @for (round of candidate.roundsData; track round.roundId) {
-                    <div class="round-detail-block">
-                      
-                      <div class="round-header-info">
-                        <div class="round-title-group">
-                          <span class="round-badge">{{ round.roundId }}</span>
-                          <h5 class="round-name">{{ round.roundName }}</h5>
-                          <span class="round-status-badge" [ngClass]="'status-' + (round.status?.toLowerCase().replace(' ', '-') || 'pending')">
-                            {{ round.status }}
-                          </span>
-                          <span class="round-date" *ngIf="round.date">
-                            <i class="pi pi-calendar"></i> {{ round.date | date:'dd MMM yyyy' }}
-                          </span>
-                        </div>
-                        <div class="round-score-info">
-                          <div class="score-pill">
-                            <span class="pill-label">Score</span>
-                            <span class="pill-val">
-                              {{ round.score }}%
+                <div class="round-breakdown">
+                  @for (round of candidate.roundsData; track round.roundId; let last = $last) {
+                    <div class="round-item" [class.is-last]="last">
+                      <div class="round-timeline">
+                        <div class="round-marker">{{ round.roundId }}</div>
+                        <div class="round-connector" *ngIf="!last"></div>
+                      </div>
+
+                      <div class="round-content">
+                        <div class="round-header">
+                          <div class="round-title-group">
+                            <h5 [attr.data-round]="round.roundId">{{ round.roundName }}</h5>
+                            <span class="round-date" *ngIf="round.date">{{ round.date | date:'MMM dd, yyyy' }}</span>
+                          </div>
+                          <div class="round-status-group">
+                            <span class="round-status-tag" [ngClass]="'status-' + (round.status?.toLowerCase().replace(' ', '-') || 'pending')">
+                              {{ round.status }}
                             </span>
+                            <div class="round-interviewer" *ngIf="round.interviewer">
+                              <i class="pi pi-user"></i> {{ round.interviewer }}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div class="round-meta-grid" [ngClass]="{'three-cols': round.panelMembers && round.panelMembers.length > 0}">
-                        <div class="meta-field">
-                          <span class="field-label">Panel Name</span>
-                          <span class="field-value"><i class="pi pi-users"></i> {{ round.panelName }}</span>
-                        </div>
-                        <div class="meta-field">
-                          <span class="field-label">Primary Interviewer</span>
-                          <span class="field-value"><i class="pi pi-user"></i> {{ round.interviewer }}</span>
-                        </div>
-                        @if (round.panelMembers && round.panelMembers.length > 0) {
-                          <div class="meta-field">
-                            <span class="field-label">Panel Members</span>
-                            <span class="field-value"><i class="pi pi-users"></i> {{ round.panelMembers.join(', ') }}</span>
-                          </div>
-                        }
-                      </div>
+                        <div class="round-details">
+                          <!-- Aptitude View -->
+                          <div class="aptitude-summary" *ngIf="round.isAptitude">
+                            <div class="aptitude-grid">
+                              <div class="apt-card">
+                                <label>Batch</label>
+                                <span>{{ round.batchName }}</span>
+                              </div>
+                              <div class="apt-card">
+                                <label>Scheduled</label>
+                                <span>{{ round.scheduledDate | date:'short' }}</span>
+                              </div>
+                              <div class="apt-card">
+                                <label>Questions</label>
+                                <span>{{ round.attendedCount }} / {{ round.totalQuestions }}</span>
+                              </div>
+                              <div class="apt-card">
+                                <label>Correct</label>
+                                <span class="text-success">{{ round.correctCount }}</span>
+                              </div>
+                            </div>
 
-                      <div class="feedback-section">
-                        <h6 class="feedback-title">Feedback Breakdown</h6>
-                        <table class="feedback-table">
-                          <thead>
-                            <tr>
-                              <th>Criteria</th>
-                              <th style="width: 80px; text-align: center;">Score</th>
-                              <th>Remarks</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            @for (crit of round.feedbackCriteria; track crit.name) {
-                              <tr>
-                                <td class="crit-name">{{ crit.name }}</td>
-                                <td class="crit-score text-center">{{ crit.score }}/10</td>
-                                <td class="crit-remarks">{{ crit.remarks }}</td>
-                              </tr>
-                            }
-                          </tbody>
-                        </table>
-                      </div>
+                            <!-- Response Log -->
+                            <div class="aptitude-log">
+                              <button class="log-toggle" (click)="round.showDetails = !round.showDetails">
+                                {{ round.showDetails ? 'Hide' : 'View' }} Detailed Response Log 
+                                <i class="pi" [ngClass]="round.showDetails ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+                              </button>
 
-                      <div class="reason-section">
-                        <span class="reason-label"><i class="pi pi-comment"></i> Overall Comments:</span>
-                        <p class="reason-text">{{ round.overallReason }}</p>
-                      </div>
-
-                      @if (round.frontdeskAttachments?.length > 0 || round.worksheetAttachments?.length > 0) {
-                        <div class="attachments-section">
-                          <h6 class="attachments-title"><i class="pi pi-paperclip"></i> Documents & Attachments</h6>
-                          
-                          @if (round.frontdeskAttachments?.length > 0) {
-                            <div class="attachment-group">
-                              <span class="group-label">Frontdesk:</span>
-                              <div class="attachment-chips">
-                                @for (file of round.frontdeskAttachments; track file.name) {
-                                  <a [href]="file.url" target="_blank" class="doc-chip link">
-                                    <i class="pi" [ngClass]="{'pi-file-pdf text-red': file.type?.toLowerCase() === 'pdf', 'pi-file-word text-blue': file.type?.toLowerCase() === 'doc', 'pi-file': true}"></i>
-                                    <span class="doc-name">{{ file.name }}</span>
-                                    <span class="doc-size">({{ file.size }})</span>
-                                  </a>
+                              <div class="log-content" *ngIf="round.showDetails">
+                                @for (q of round.aptitudeQuestions; track q.questionText; let idx = $index) {
+                                  <div class="q-item">
+                                    <div class="q-number">{{ idx + 1 }}</div>
+                                    <div class="q-main">
+                                      <p class="q-text">{{ q.questionText }}</p>
+                                      <div class="q-answers">
+                                        <div class="ans-box" [class.is-wrong]="!q.isCorrect">
+                                          <label>Candidate Answer</label>
+                                          <span>{{ q.selectedOption }}</span>
+                                        </div>
+                                        <div class="ans-box is-correct" *ngIf="!q.isCorrect">
+                                          <label>Correct Answer</label>
+                                          <span>{{ q.correctOption }}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="q-status">
+                                      <span class="q-result" [ngClass]="q.isCorrect ? 'correct' : 'wrong'">
+                                        {{ q.isCorrect ? 'Correct' : 'Incorrect' }}
+                                      </span>
+                                      <span class="q-marks">{{ q.marks }} Marks</span>
+                                    </div>
+                                  </div>
                                 }
                               </div>
                             </div>
-                          }
-                          
-                          @if (round.worksheetAttachments?.length > 0) {
-                            <div class="attachment-group">
-                              <span class="group-label">Worksheet:</span>
-                              <div class="attachment-chips">
-                                @for (file of round.worksheetAttachments; track file.name) {
-                                  <a [href]="file.url" target="_blank" class="doc-chip link">
-                                    <i class="pi" [ngClass]="{'pi-file-pdf text-red': file.type?.toLowerCase() === 'pdf', 'pi-image text-green': file.type?.toLowerCase() === 'image', 'pi-code text-orange': file.type?.toLowerCase() === 'code', 'pi-file': true}"></i>
-                                    <span class="doc-name">{{ file.name }}</span>
-                                    <span class="doc-size">({{ file.size }})</span>
-                                  </a>
-                                }
-                              </div>
-                            </div>
-                          }
-                        </div>
-                      }
+                          </div>
 
+                          <!-- Feedback Table -->
+                          <div class="feedback-table-wrapper" *ngIf="!round.isAptitude || (round.feedbackCriteria?.length > 0)">
+                            <table class="feedback-table">
+                              <thead>
+                                <tr>
+                                  <th>Assessment Criteria</th>
+                                  <th>Score</th>
+                                  <th>Interviewer Remarks</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                @for (crit of round.feedbackCriteria; track crit.name) {
+                                  <tr>
+                                    <td data-label="Criteria">
+                                      <span class="crit-name">{{ crit.name }}</span>
+                                      <div class="crit-interviewer" *ngIf="crit.interviewerName">
+                                        <i class="pi pi-user"></i> {{ crit.interviewerName }}
+                                      </div>
+                                    </td>
+                                    <td data-label="Score" class="text-center">
+                                      <span class="score-pill">{{ crit.score }} / {{ crit.maxScore }}</span>
+                                    </td>
+                                    <td data-label="Remarks" class="remarks-cell" [innerHTML]="crit.remarks || 'No remarks'"></td>
+                                  </tr>
+                                }
+                              </tbody>
+                            </table>
+                          </div>
+
+                          <!-- Overall Comments -->
+                          <div class="overall-comments" *ngIf="round.overallReason">
+                            <label>Overall Assessment Comments</label>
+                            <p [innerHTML]="round.overallReason"></p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   }
                 </div>
@@ -305,19 +375,21 @@
           }
         </p-accordion>
       </div>
-    </div>
+    </section>
 
-    <!-- Footer for PDF only -->
-    <div class="print-footer only-print">
-      <p>Generated by HireAssist | {{ summaryData.recruitmentName }} Recruitment Summary</p>
-    </div>
+    <!-- Print Footer -->
+    <footer class="print-footer only-print">
+      <p>Report Generated by HireAssist System</p>
+      <p>{{ summaryData.recruitmentName }} | Confidential Recruitment Audit</p>
+    </footer>
 
-  </div>
-  
+  </main>
+
   <!-- Empty State -->
   <div *ngIf="!isLoading && !summaryData" class="empty-state">
-    <i class="pi pi-info-circle" style="font-size: 3rem; color: var(--text-secondary)"></i>
-    <h3>No Summary Data Available</h3>
-    <p>Please ensure all recruitment rounds are completed and data is processed.</p>
+    <div class="empty-icon"><i class="pi pi-database"></i></div>
+    <h3>No Data Available</h3>
+    <p>We couldn't find any recruitment summary data for this ID.</p>
+    <p-button label="Go Back" icon="pi pi-arrow-left" (onClick)="goBack()"></p-button>
   </div>
 </div>

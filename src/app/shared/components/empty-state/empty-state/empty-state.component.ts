@@ -11,4 +11,5 @@ import { CommonModule } from '@angular/common';
 export class EmptyStateComponent {
   @Input() message = 'No data available';
   @Input() icon = 'pi pi-inbox';
+  @Input() description = '';
 }

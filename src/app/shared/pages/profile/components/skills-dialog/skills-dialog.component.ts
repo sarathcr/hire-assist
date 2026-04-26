@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { SkeletonModule } from 'primeng/skeleton';
 import { ButtonComponent } from '../../../../components/button/button.component';
 import { InputMultiselectComponent } from '../../../../components/form/input-multiselect/input-multiselect.component';
 import { InputTextComponent } from '../../../../components/form/input-text/input-text.component';
@@ -25,6 +26,7 @@ export interface SkillsDialogData {
     InputMultiselectComponent,
     InputTextComponent,
     ReactiveFormsModule,
+    SkeletonModule,
   ],
   templateUrl: './skills-dialog.component.html',
   styleUrl: './skills-dialog.component.scss',
@@ -63,8 +65,10 @@ export class SkillsDialogComponent
     });
 
     // Set initial selected skills
-    if (this.data.userSkills && this.data.userSkills.length > 0) {
-      const selectedIds = this.data.userSkills.map((skill) => skill.id.toString());
+    if (this.data?.userSkills && this.data.userSkills.length > 0) {
+      const selectedIds = this.data.userSkills
+        .filter(s => s && s.id)
+        .map((skill) => skill.id.toString());
       this.skillsForm.patchValue({ skills: selectedIds });
     }
 
@@ -80,21 +84,23 @@ export class SkillsDialogComponent
     this.profileServices.getSkills().subscribe({
       next: (skills: SkillsDto[]) => {
         // Convert SkillsDto[] to Option[]
-        this.availableOptions = skills.map((skill) => ({
-          label: skill.name,
-          value: skill.id.toString(),
+        this.availableOptions = (skills || []).map((skill) => ({
+          label: skill.name || 'Unknown Skill',
+          value: (skill.id || 0).toString(),
         }));
 
         // Update config
         this.skillsConfig = {
           id: 'skills',
-          labelKey: 'Select Skills',
+          labelKey: 'Select Your Skills',
           options: this.availableOptions,
         };
 
         // Update form value after options are loaded to ensure multi-select displays correctly
-        if (this.data.userSkills && this.data.userSkills.length > 0) {
-          const selectedIds = this.data.userSkills.map((skill) => skill.id.toString());
+        if (this.data?.userSkills && this.data.userSkills.length > 0) {
+          const selectedIds = this.data.userSkills
+            .filter((s) => s && s.id)
+            .map((skill) => skill.id.toString());
           this.skillsForm.patchValue({ skills: selectedIds });
         }
 
@@ -119,9 +125,11 @@ export class SkillsDialogComponent
     this.skillsForm.markAllAsTouched();
     if (this.skillsForm.valid) {
       const selectedIds = this.skillsForm.get('skills')?.value as string[];
+      if (!selectedIds) return;
+
       const selectedSkills: SkillsDto[] = selectedIds
         .map((id) => {
-          const option = this.availableOptions.find(
+          const option = this.availableOptions?.find(
             (opt) => opt.value === id,
           );
           if (option) {
@@ -134,7 +142,7 @@ export class SkillsDialogComponent
         })
         .filter((skill): skill is SkillsDto => skill !== null);
 
-      if (this.data.onSave) {
+      if (this.data?.onSave) {
         this.data.onSave(selectedSkills);
       }
       this.ref.close(selectedSkills);
@@ -148,7 +156,7 @@ export class SkillsDialogComponent
   public onAddSkill(): void {
     const newSkillName = this.skillsForm.get('newSkill')?.value?.trim();
     if (!newSkillName || newSkillName.length < 2) {
-      this.messageService.add({
+      this.messageService?.add({
         severity: 'warn',
         summary: 'Validation',
         detail: 'Skill name must be at least 2 characters',
@@ -156,11 +164,11 @@ export class SkillsDialogComponent
       return;
     }
 
-    const skillExists = this.availableOptions.some(
-      (option) => option.label.toLowerCase() === newSkillName.toLowerCase(),
+    const skillExists = (this.availableOptions || []).some(
+      (option: Option) => option.label.toLowerCase() === newSkillName.toLowerCase(),
     );
     if (skillExists) {
-      this.messageService.add({
+      this.messageService?.add({
         severity: 'warn',
         summary: 'Duplicate',
         detail: 'This skill already exists',
@@ -171,33 +179,35 @@ export class SkillsDialogComponent
     this.isAddingSkill = true;
     this.profileServices.createSkill(newSkillName).subscribe({
       next: (newSkill: SkillsDto) => {
-        const newOption: Option = {
-          label: newSkill.name,
-          value: newSkill.id.toString(),
-        };
-        this.availableOptions.push(newOption);
+        if (newSkill) {
+          const newOption: Option = {
+            label: newSkill.name,
+            value: newSkill.id.toString(),
+          };
+          this.availableOptions = [...(this.availableOptions || []), newOption];
+ 
+          this.skillsConfig = {
+            id: 'skills',
+            labelKey: 'Select Your Skills',
+            options: [...this.availableOptions],
+          };
+ 
+          const currentSelected = [...(this.skillsForm.get('skills')?.value as string[] || [])];
+          currentSelected.push(newSkill.id.toString());
+          this.skillsForm.patchValue({ skills: currentSelected });
+          this.skillsForm.patchValue({ newSkill: '' });
+          this.skillsForm.get('newSkill')?.reset();
 
-        this.skillsConfig = {
-          id: 'skills',
-          labelKey: 'Select Skills',
-          options: this.availableOptions,
-        };
-
-        const currentSelected = this.skillsForm.get('skills')?.value as string[] || [];
-        currentSelected.push(newSkill.id.toString());
-        this.skillsForm.patchValue({ skills: currentSelected });
-        this.skillsForm.patchValue({ newSkill: '' });
-        this.skillsForm.get('newSkill')?.reset();
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Skill added successfully',
-        });
+          this.messageService?.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Skill added successfully',
+          });
+        }
         this.isAddingSkill = false;
       },
-      error: (error) => {
-        this.messageService.add({
+      error: (error: any) => {
+        this.messageService?.add({
           severity: 'error',
           summary: 'Error',
           detail: error?.error?.message || 'Failed to create skill',

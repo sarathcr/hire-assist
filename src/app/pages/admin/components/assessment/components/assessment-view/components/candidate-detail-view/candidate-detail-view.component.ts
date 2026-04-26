@@ -195,13 +195,11 @@ export class CandidateDetailViewComponent
     
     // Prioritize the blob URL if we already fetched it
     if (blobUrl) {
-      if (this.isImage(filename)) {
-        this.isViewerImage = true;
-        this.isViewerPdf = false;
-      } else {
-        this.isViewerImage = false;
-        this.isViewerPdf = true;
-      }
+      const isImg = this.isImage(filename);
+      const isPdf = filename.toLowerCase().endsWith('.pdf');
+      
+      this.isViewerImage = isImg;
+      this.isViewerPdf = isPdf;
       this.viewerUrl = blobUrl;
       this.displayViewer = true;
       return;
@@ -215,13 +213,11 @@ export class CandidateDetailViewComponent
       this.displayViewer = true;
       this.viewerUrl = ''; // Clear to trigger loading state
       
-      if (this.isImage(filename)) {
-        this.isViewerImage = true;
-        this.isViewerPdf = false;
-      } else {
-        this.isViewerImage = false;
-        this.isViewerPdf = true;
-      }
+      const isImg = this.isImage(filename);
+      const isPdf = filename.toLowerCase().endsWith('.pdf');
+      
+      this.isViewerImage = isImg;
+      this.isViewerPdf = isPdf;
       return;
     }
 

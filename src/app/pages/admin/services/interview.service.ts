@@ -64,4 +64,17 @@ export class InterviewService extends ApiService<any> {
       `${this.getResourceUrl()}/InterviewPanel/interviewer/${assessmentId}`,
     );
   }
+
+  public getInterviewHistory(payload: any) {
+    return this.httpClient.post(
+      `${this.getResourceUrl()}/History`,
+      payload
+    );
+  }
+
+  public getAssessmentSummary(assessmentId: number) {
+    return this.httpClient.get(
+      `${this.getResourceUrl()}/AssessmentSummary/${assessmentId}`,
+    );
+  }
 }

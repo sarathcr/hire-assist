@@ -331,7 +331,7 @@ export class ImportCandidateListStepComponent implements OnInit {
     this.loadData(payload);
   }
   public onView(data: CandidateModel) {
-    const userid = data.email;
+    const userid = data.id;
     const assessmentId = this.assessmentId();
     this.router.navigate([
       `admin/recruitments/candidateDetail/${assessmentId}/${userid}`,
@@ -446,7 +446,7 @@ export class ImportCandidateListStepComponent implements OnInit {
   }
 
   public onPreviousAssessment(data: CandidateModel) {
-    const userid = data.email;
+    const userid = data.id;
     const assessmentId = this.assessmentId();
     this.router.navigate([
       `admin/recruitments/previousAssessments/${assessmentId}/${userid}`,
@@ -844,14 +844,19 @@ export class ImportCandidateListStepComponent implements OnInit {
 
   private submitBatchAssignment(result: any): void {
     this.isLoading = true;
+    const toLocalISOString = (date: Date) => {
+      const tzOffset = date.getTimezoneOffset() * 60000;
+      return new Date(date.getTime() - tzOffset).toISOString().slice(0, -1);
+    };
+
     const payload = {
       candidatesIds: this.selectedUsers,
       questionSetIds: Array.isArray(result.questionSet)
         ? result.questionSet
         : [result.questionSet],
       batchId: result.batch,
-      StartDateTime: result.startDate,
-      EndDateTime: result.endDate,
+      StartDateTime: result.startDate ? toLocalISOString(new Date(result.startDate)) : null,
+      EndDateTime: result.endDate ? toLocalISOString(new Date(result.endDate)) : null,
       AssessmentId: Number(this.assessmentId()),
     };
 
@@ -885,7 +890,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       maximizable: true,
       width: '50vw',
       closable: false,
-      modal: false,
+      modal: true,
       focusOnShow: false,
       styleClass: 'manage-duplicate-records-dialog',
       breakpoints: {

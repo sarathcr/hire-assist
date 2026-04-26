@@ -85,4 +85,17 @@ export class ProfileServicesService extends ApiService<any> {
       { name: skillName },
     );
   }
+
+  public saveUserExperiences(experiences: any[]): Observable<void> {
+    return this.httpClient.post<void>(
+      `${this.getResourceUrl()}/post-user-experiences`,
+      experiences,
+    );
+  }
+
+  public deleteUserExperience(id: number): Observable<void> {
+    return this.httpClient.delete<void>(
+      `${this.getResourceUrl()}/delete-user-experience/${id}`,
+    );
+  }
 }

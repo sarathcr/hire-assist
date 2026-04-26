@@ -246,4 +246,21 @@ export class InterviewService extends ApiService<any> {
       `${this.getResourceUrl()}/assessment/selected-status/${assessmentId}`,
     );
   }
+
+  public exportRecruitmentSummaryPdf(assessmentId: number): Observable<Blob> {
+    return this.httpClient.get(
+      `${this.getResourceUrl()}/assessment/export-summary/${assessmentId}`,
+      { responseType: 'blob' }
+    );
+  }
+
+  /**
+   * Fetches the history of actions for a specific interview
+   */
+  public getInterviewHistory(payload: any) {
+    return this.httpClient.post(
+      `${this.getResourceUrl()}/History`,
+      payload
+    );
+  }
 }

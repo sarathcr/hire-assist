@@ -5,7 +5,6 @@
 
     <!-- Hero Banner -->
     <div class="profile__hero">
-      <div class="profile__hero-overlay"></div>
 
       <!-- Cover image (loads on top of overlay) -->
       <div class="profile__hero-cover" [class.profile__hero-cover--loading]="isLoadingCoverImage">
@@ -152,11 +151,11 @@
         <!-- Upcoming Interviews -->
         <div class="profile__card profile__card--interviews">
           <div class="profile__card-head">
-            <span class="profile__card-icon profile__card-icon--green"><i class="pi pi-video"></i></span>
+            <span class="profile__card-icon profile__card-icon--blue"><i class="pi pi-calendar"></i></span>
             <h2 class="profile__card-title">Upcoming Interviews</h2>
-            @if (profileDetailsDataSource.userUpcomingInterviews && profileDetailsDataSource.userUpcomingInterviews.length > 0) {
-              <span class="profile__badge profile__badge--green">{{ profileDetailsDataSource.userUpcomingInterviews.length }} scheduled</span>
-            }
+            <span class="profile__badge profile__badge--green" *if="profileDetailsDataSource.userUpcomingInterviews?.length">
+              {{ profileDetailsDataSource.userUpcomingInterviews?.length }} Scheduled
+            </span>
           </div>
 
           @if (profileDetailsDataSource.userUpcomingInterviews && profileDetailsDataSource.userUpcomingInterviews.length > 0) {
@@ -164,88 +163,81 @@
               @for (interview of profileDetailsDataSource.userUpcomingInterviews; track $index) {
                 <div class="profile__interview-item">
                   <div class="profile__interview-date">
-                    <span class="profile__interview-day">{{ interview.scheduleAt | date:'d' }}</span>
+                    <span class="profile__interview-day">{{ interview.scheduleAt | date:'dd' }}</span>
                     <span class="profile__interview-month">{{ interview.scheduleAt | date:'MMM' }}</span>
                   </div>
                   <div class="profile__interview-info">
                     <p class="profile__interview-time">{{ interview.scheduleAt | date:'hh:mm a' }}</p>
-                    <p class="profile__interview-label">Interview Session</p>
+                    <p class="profile__interview-label">Assessment Interview</p>
                   </div>
-                  <span class="profile__interview-status">Scheduled</span>
+                  <div class="profile__interview-status">Confirmed</div>
                 </div>
               }
             </div>
           } @else {
-            <div class="profile__empty profile__empty--center">
-              <div class="profile__empty-illustration">
+            <div class="profile__empty">
+              <div class="profile__empty-icon-wrap profile__empty-icon-wrap--blue">
                 <i class="pi pi-calendar"></i>
-                <div class="profile__empty-dots">
-                  <span></span><span></span><span></span>
-                </div>
               </div>
               <p class="profile__empty-title">No upcoming interviews</p>
-              <p class="profile__empty-sub">When you're invited to an interview, it will appear here with all the details and meeting links.</p>
+              <p class="profile__empty-sub">When you're invited to an interview, it will appear here.</p>
             </div>
           }
         </div>
 
-        <!-- Bottom Row: Resume + Profile Strength -->
-        <div class="profile__bottom-row">
-
-          <!-- Resume -->
-          <div class="profile__card profile__card--resume">
-            <div class="profile__card-head">
-              <span class="profile__card-icon profile__card-icon--orange"><i class="pi pi-file"></i></span>
-              <h2 class="profile__card-title">Resume</h2>
-            </div>
-            <div class="profile__upload-zone">
-              <div class="profile__upload-icon">
-                <i class="pi pi-cloud-upload"></i>
-              </div>
-              <p class="profile__upload-text">No resume uploaded</p>
-              <p class="profile__upload-sub">PDF, DOC or DOCX up to 5MB</p>
-              <button class="profile__empty-action" (click)="onEdit()">
-                <i class="pi pi-upload"></i> Upload Resume
-              </button>
-            </div>
+        <!-- Experience Timeline -->
+        <div class="profile__card">
+          <div class="profile__card-head">
+            <span class="profile__card-icon profile__card-icon--violet"><i class="pi pi-history"></i></span>
+            <h2 class="profile__card-title">Experience Timeline</h2>
+            <button class="profile__add-btn" (click)="onAddExperience()" title="Add Experience">
+              <i class="pi pi-plus"></i>
+            </button>
           </div>
-
-          <!-- Profile Strength -->
-          <div class="profile__card profile__card--strength">
-            <div class="profile__card-head">
-              <span class="profile__card-icon profile__card-icon--violet"><i class="pi pi-shield"></i></span>
-              <h2 class="profile__card-title">Profile Strength</h2>
-            </div>
-            <div class="profile__strength">
-              <div class="profile__strength-ring">
-                <svg viewBox="0 0 100 100" class="profile__strength-svg">
-                  <circle cx="50" cy="50" r="40" class="profile__strength-track"/>
-                  <circle cx="50" cy="50" r="40" class="profile__strength-fill"
-                    stroke-dasharray="251.2"
-                    stroke-dashoffset="188.4"/>
-                </svg>
-                <div class="profile__strength-pct">25%</div>
-              </div>
-              <div class="profile__strength-info">
-                <p class="profile__strength-label">Getting Started</p>
-                <div class="profile__strength-steps">
-                  <div class="profile__strength-step profile__strength-step--done">
-                    <i class="pi pi-check-circle"></i> Add your name &amp; email
+          <div class="profile__timeline">
+            @if (experienceTimeline && experienceTimeline.length > 0) {
+              <p-timeline [value]="experienceTimeline" align="left" styleClass="customized-timeline">
+                <ng-template pTemplate="marker" let-event>
+                  <span class="profile__timeline-marker" [style.background-color]="event.color">
+                    <i [class]="event.icon"></i>
+                  </span>
+                </ng-template>
+                <ng-template pTemplate="content" let-event>
+                  <div class="profile__timeline-card">
+                    <div class="profile__timeline-card-inner">
+                      <div class="profile__timeline-header">
+                        <div class="profile__timeline-main">
+                          <h3 class="profile__timeline-role">{{ event.status }}</h3>
+                          <span class="profile__timeline-company">{{ event.company }}</span>
+                        </div>
+                        <span class="profile__timeline-date">{{ event.date }}</span>
+                      </div>
+                      <p class="profile__timeline-desc">{{ event.description }}</p>
+                      <div class="profile__timeline-actions">
+                        <button class="profile__timeline-btn" (click)="onEditExperience(event.id)" title="Edit">
+                          <i class="pi pi-pencil"></i>
+                        </button>
+                        <button class="profile__timeline-btn profile__timeline-btn--delete" (click)="onDeleteExperience(event.id)" title="Delete">
+                          <i class="pi pi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div class="profile__strength-step">
-                    <i class="pi pi-circle"></i> Upload a profile photo
-                  </div>
-                  <div class="profile__strength-step">
-                    <i class="pi pi-circle"></i> Add technical skills
-                  </div>
-                  <div class="profile__strength-step">
-                    <i class="pi pi-circle"></i> Upload your resume
-                  </div>
+                </ng-template>
+              </p-timeline>
+            } @else {
+              <div class="profile__empty">
+                <div class="profile__empty-icon-wrap profile__empty-icon-wrap--violet">
+                  <i class="pi pi-history"></i>
                 </div>
+                <p class="profile__empty-title">No experience added</p>
+                <p class="profile__empty-sub">Share your professional journey with us.</p>
+                <button class="profile__empty-action" (click)="onAddExperience()">
+                  <i class="pi pi-plus"></i> Add Experience
+                </button>
               </div>
-            </div>
+            }
           </div>
-
         </div>
 
       </main>

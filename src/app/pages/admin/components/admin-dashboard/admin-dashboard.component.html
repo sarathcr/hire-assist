@@ -158,7 +158,7 @@
       <div class="activity-feed-card">
         <div class="panel-header">
           <h2 class="panel-title">Recent Activity</h2>
-          <a href="javascript:void(0)" class="panel-action">View All</a>
+          <a (click)="navigateTo('/admin/activity-logs')" class="panel-action" style="cursor: pointer;">View All</a>
         </div>
         <div class="activity-list">
           @for (activity of recentActivities(); track $index) {
@@ -170,6 +170,10 @@
                 <p class="activity-message" [innerHTML]="activity.message"></p>
                 <span class="activity-time">{{ activity.time }}</span>
               </div>
+            </div>
+          } @empty {
+            <div class="no-data-msg">
+              <p>No recent activity logs.</p>
             </div>
           }
         </div>
@@ -183,7 +187,7 @@
     <div class="widget-card">
       <div class="panel-header">
         <h2 class="panel-title">Upcoming Interviews</h2>
-        <a href="javascript:void(0)" class="panel-action">View Calendar</a>
+        <a (click)="navigateTo('/admin/interviews')" class="panel-action" style="cursor: pointer;">View All Schedules</a>
       </div>
       <div class="panel-content">
         <div class="interviews-list">
@@ -198,7 +202,11 @@
                 <span class="interview-time">{{ interview.time }}</span>
                 <span class="interview-date">Today</span>
               </div>
-              <button class="join-btn">Join</button>
+              <a (click)="navigateTo(['/admin/recruitments', interview.assessmentId])" class="join-btn" style="cursor: pointer;">Details</a>
+            </div>
+          } @empty {
+            <div class="no-data-msg">
+              <p>No upcoming interviews today.</p>
             </div>
           }
         </div>

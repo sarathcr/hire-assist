@@ -22,6 +22,7 @@ import { TabPanel, TabPanels, Tab, TabList, Tabs } from 'primeng/tabs';
 import { CardModule } from 'primeng/card';
 import { BadgeModule } from 'primeng/badge';
 import { finalize } from 'rxjs/operators';
+import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { CoordinatorPanelBridgeService } from '../../../../../coordinator/services/coordinator-panel-bridge.service';
 import { PanelService } from '../../../../services/panel.service';
@@ -112,32 +113,14 @@ export class InterviewCandidateListComponent implements OnInit {
   public assessmentName = '';
   public panelName = '';
   public visible: boolean = false;
-  events = [
-    {
-      status: 'Created',
-      user: 'Sarath Cheerakkadan',
-      date: '2025-10-15T10:30:00',
-      icon: 'pi pi-plus',
-    },
-    {
-      status: 'Updated',
-      user: 'Sarath Cheerakkadan',
-      date: '2025-10-15T14:00:00',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Steve Jose',
-      date: '2025-10-15T16:15:00',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Lakshmipriya',
-      date: '2025-10-16T10:00:00',
-      icon: 'pi pi-pencil',
-    },
-  ];
+  public events: any[] = [];
+  public historyLoading: boolean = false;
+  public historyPagination = {
+    pageNumber: 1,
+    pageSize: 10,
+    totalRecords: 0
+  };
+  public currentHistoryInterviewId: string | null = null;
 
   // Computed counts for summary cards
   get todayCount(): number {
@@ -279,7 +262,98 @@ export class InterviewCandidateListComponent implements OnInit {
   }
 
   public viewHistory(id: any) {
+    this.currentHistoryInterviewId = String(id);
+    this.historyPagination.pageNumber = 1;
+    this.events = [];
     this.visible = true;
+    this.fetchInterviewHistory();
+  }
+
+  public loadMoreHistory() {
+    this.historyPagination.pageNumber++;
+    this.fetchInterviewHistory();
+  }
+
+  private fetchInterviewHistory() {
+    this.historyLoading = true;
+    const payload = new PaginatedPayload();
+    payload.pagination.pageNumber = this.historyPagination.pageNumber;
+    payload.pagination.pageSize = this.historyPagination.pageSize;
+    payload.filterMap = {
+      interviewId: this.currentHistoryInterviewId || ''
+    };
+
+    payload.multiSortedColumns = [{ active: 'ChangedAt', direction: 'desc' }];
+
+    this.interviewService.getInterviewHistory(payload)
+      .pipe(finalize(() => this.historyLoading = false))
+      .subscribe({
+        next: (res: any) => {
+          const newEvents = res.data.map((item: any) => ({
+            status: this.formatAction(item.action),
+            user: item.changedByName,
+            date: new Date(item.changedAt + 'Z'),
+            icon: this.getHistoryIcon(item.action),
+            description: this.getHistoryDescription(item)
+          }));
+          this.events = [...this.events, ...newEvents];
+          this.historyPagination.totalRecords = res.totalRecords;
+        },
+        error: (err: any) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to fetch history.'
+          });
+        }
+      });
+  }
+
+  private formatAction(action: string): string {
+    if (!action) return '';
+    return action
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (str) => str.toUpperCase())
+      .trim();
+  }
+
+  private getStatusLabel(statusId: any): string {
+    if (!statusId) return '';
+    const id = Number(statusId);
+    return StatusEnum[id] || statusId;
+  }
+
+  private getHistoryDescription(item: any): string {
+    if (item.details) {
+      return item.details;
+    }
+    if (item.field?.toLowerCase() === 'statusid') {
+      const prev = this.getStatusLabel(item.previousValue);
+      const curr = this.getStatusLabel(item.currentValue);
+      if (curr === 'Selected') {
+        return `Candidate status updated as Selected`;
+      }
+      return `Status: ${prev || 'None'} → ${curr || 'None'}`;
+    }
+    if (item.field) {
+      return `${item.field}: ${item.previousValue || 'None'} → ${item.currentValue || 'None'}`;
+    }
+    return 'Candidate was modified';
+  }
+
+  private getHistoryIcon(action: string): string {
+    switch (action?.toLowerCase()) {
+      case 'created':
+        return 'pi pi-plus';
+      case 'scheduled':
+        return 'pi pi-calendar-clock';
+      case 'panelassigned':
+        return 'pi pi-users';
+      case 'statusupdated':
+        return 'pi pi-sync';
+      default:
+        return 'pi pi-info-circle';
+    }
   }
 
   // Private Methods

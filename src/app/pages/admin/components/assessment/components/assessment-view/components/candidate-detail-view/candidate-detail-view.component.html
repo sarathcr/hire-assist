@@ -161,7 +161,10 @@
                       }
                     </p-accordion>
                   } @else {
-                    <app-empty-state message="No application details available">
+                    <app-empty-state 
+                      icon="pi pi-file-edit"
+                      message="No application details available"
+                      description="The candidate hasn't provided any additional application information or answers yet.">
                     </app-empty-state>
                   }
                 }
@@ -601,7 +604,9 @@
                                                   feedback.feedbackScore !==
                                                     undefined &&
                                                   feedback.criteria !==
-                                                    "Attachments"
+                                                    "Attachments" &&
+                                                  feedback.criteria !==
+                                                    "Overall Comments"
                                                 ) {
                                                   <p-tag
                                                     [value]="
@@ -661,6 +666,7 @@
                               <app-empty-state
                                 icon="pi pi-info-circle"
                                 message="No details available for this round"
+                                description="This recruitment round might not have been completed, or the feedback is still being processed."
                               />
                             }
                           </p-accordion-content>
@@ -672,6 +678,7 @@
                   <app-empty-state
                     icon="pi pi-comments"
                     message="No interview feedbacks found"
+                    description="There are no recorded feedbacks for this candidate across any recruitment rounds yet."
                   />
                 }
               }
@@ -687,15 +694,17 @@
                 <i class="pi pi-paperclip"></i>
                 Candidate Attachments
               </h2>
-              <div class="candidate-detail__attachments-grid">
-                @if (isLoadingIdProofs) {
+              @if (isLoadingIdProofs) {
+                <div class="candidate-detail__attachments-grid">
                   @for (i of [1,2,3]; track i) {
                     <div class="candidate-detail__attachment-skeleton">
                       <p-skeleton width="100%" height="150px" borderRadius="10px"></p-skeleton>
                       <p-skeleton width="60%" height="1rem" styleClass="mt-2"></p-skeleton>
                     </div>
                   }
-                } @else if (idProofsDataSource.length > 0) {
+                </div>
+              } @else if (idProofsDataSource.length > 0) {
+                <div class="candidate-detail__attachments-grid">
                   @for (file of idProofsDataSource; track file.id) {
                     <div class="candidate-detail__attachment-card" (click)="viewFile(file)">
                       <div class="candidate-detail__attachment-preview">
@@ -721,14 +730,14 @@
                       </div>
                     </div>
                   }
-                } @else {
-                  <app-empty-state 
-                    icon="pi pi-paperclip" 
-                    message="No attachments found for this candidate"
-                    class="w-full">
-                  </app-empty-state>
-                }
-              </div>
+                </div>
+              } @else {
+                <app-empty-state
+                  icon="pi pi-paperclip"
+                  message="No Attachments Yet"
+                  description="This candidate hasn't uploaded any documents or identification proofs at this stage."
+                />
+              }
             </div>
           </div>
         </p-tabpanel>
@@ -750,12 +759,10 @@
 >
   <div class="candidate-detail__viewer-container">
     @if (!viewerUrl) {
-      <div class="candidate-detail__viewer-skeleton">
-        <p-skeleton width="100%" height="100%" />
-        <div class="candidate-detail__viewer-loader">
-          <i class="pi pi-spin pi-spinner"></i>
-          <span>Loading attachment...</span>
-        </div>
+      <div class="candidate-detail__viewer-loader">
+        <i class="pi pi-spinner"></i>
+        <h3>Fetching Document</h3>
+        <p>Please wait while we securely retrieve the attachment from our servers...</p>
       </div>
     } @else {
       @if (isViewerPdf) {
@@ -769,6 +776,15 @@
       } @else if (isViewerImage) {
         <div class="candidate-detail__viewer-image-wrapper">
           <app-image [imageUrl]="viewerUrl" [isZoomable]="true" [removeIcon]="true" />
+        </div>
+      } @else {
+        <div class="candidate-detail__viewer-error">
+          <i class="pi pi-exclamation-circle"></i>
+          <h3>Format Not Supported</h3>
+          <p>This file format cannot be previewed directly. You can try downloading it or opening it in another application.</p>
+          <a [href]="viewerUrl" target="_blank" class="view-btn">
+            <p-button label="Open in New Tab" icon="pi pi-external-link" [outlined]="true" />
+          </a>
         </div>
       }
     }

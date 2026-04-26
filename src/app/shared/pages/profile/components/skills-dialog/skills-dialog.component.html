@@ -1,43 +1,85 @@
-<div class="skills-form">
+<div class="skills-dialog">
   @if (isLoading) {
-    <div class="skills-form__loading">Loading skills...</div>
+    <div class="skills-dialog__skeleton">
+      <div class="skills-dialog__field-skeleton">
+        <p-skeleton width="150px" height="1.2rem" styleClass="mb-2" />
+        <p-skeleton height="45px" borderRadius="10px" />
+      </div>
+      <div class="skills-dialog__add-skeleton">
+        <div style="flex: 1">
+          <p-skeleton width="100px" height="1.2rem" styleClass="mb-2" />
+          <p-skeleton height="45px" borderRadius="10px" />
+        </div>
+        <p-skeleton width="80px" height="45px" borderRadius="10px" styleClass="mt-auto" />
+      </div>
+      <div class="skills-dialog__footer-skeleton">
+        <p-skeleton width="100px" height="45px" borderRadius="10px" />
+        <p-skeleton width="100px" height="45px" borderRadius="10px" />
+      </div>
+    </div>
   } @else {
-    <form [formGroup]="skillsForm">
-      <app-input-multiselect
-        class="skills-form__field"
-        [formGroup]="skillsForm"
-        [config]="skillsConfig"
-        placeholder="Select skills"
-      ></app-input-multiselect>
+    <form [formGroup]="skillsForm" class="skills-dialog__form">
+      <div class="skills-dialog__content">
+        <!-- Select Skills Section -->
+        <section class="skills-dialog__section">
+          <div class="skills-dialog__section-header">
+            <i class="pi pi-list skills-dialog__section-icon"></i>
+            <h3 class="skills-dialog__section-title">Select Skills</h3>
+          </div>
+          <app-input-multiselect
+            class="skills-dialog__input"
+            [formGroup]="skillsForm"
+            [config]="skillsConfig"
+          ></app-input-multiselect>
+        </section>
 
-      <div class="skills-form__add-skill">
-        <app-input-text
-          class="skills-form__add-skill__input"
-          [formGroup]="skillsForm"
-          type="text"
-          [config]="newSkillConfig"
-        ></app-input-text>
-        <app-button
-          [buttonLabel]="'Add'"
-          [disabled]="!skillsForm.get('newSkill')?.valid || isAddingSkill"
-          (btnClick)="onAddSkill()"
-          class="skills-form__add-skill__button"
-        ></app-button>
+        <!-- Divider -->
+        <div class="skills-dialog__divider">
+          <span>or</span>
+        </div>
+
+        <!-- Add New Skill Section -->
+        <section class="skills-dialog__section">
+          <div class="skills-dialog__section-header">
+            <i class="pi pi-plus-circle skills-dialog__section-icon"></i>
+            <h3 class="skills-dialog__section-title">Add a New Skill</h3>
+          </div>
+          <div class="skills-dialog__add-row">
+            <div class="skills-dialog__add-input-wrap">
+              <app-input-text
+                [formGroup]="skillsForm"
+                type="text"
+                [config]="newSkillConfig"
+                placeholder="e.g. Angular, C#, Azure..."
+              ></app-input-text>
+            </div>
+            <app-button
+              [buttonLabel]="isAddingSkill ? '' : 'Add'"
+              [icon]="isAddingSkill ? 'pi pi-spinner pi-spin' : 'pi pi-plus'"
+              [disabled]="!skillsForm.get('newSkill')?.value || skillsForm.get('newSkill')?.invalid || isAddingSkill"
+              (btnClick)="onAddSkill()"
+              class="skills-dialog__add-btn"
+            ></app-button>
+          </div>
+        </section>
       </div>
 
-      <div class="skills-form__button">
+      <!-- Footer Actions -->
+      <footer class="skills-dialog__footer">
         <app-button
           [buttonLabel]="'Cancel'"
           [buttonVariant]="'outlined'"
           (btnClick)="onClose()"
+          class="skills-dialog__cancel-btn"
         ></app-button>
         <app-button
-          [buttonLabel]="'Save'"
+          [buttonLabel]="'Save Changes'"
+          [icon]="'pi pi-check'"
           [disabled]="!skillsForm.get('skills')?.valid"
           (btnClick)="onSubmit()"
+          class="skills-dialog__save-btn"
         ></app-button>
-      </div>
+      </footer>
     </form>
   }
 </div>
-
