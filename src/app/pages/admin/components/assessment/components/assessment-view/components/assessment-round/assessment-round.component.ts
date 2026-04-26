@@ -267,7 +267,7 @@ export class AssessmentRoundComponent
       id: new FormControl(data?.id || null),
       title: new FormControl(data?.title || '', [
         Validators.required,
-        Validators.pattern(/^[a-zA-Z\s]*$/),
+        Validators.pattern(/^[^0-9]*$/),
       ]),
       description: new FormControl(data?.description || '', []),
       maxScore: new FormControl(data?.maxScore || 10, [

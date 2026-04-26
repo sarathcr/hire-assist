@@ -233,7 +233,7 @@
                                         @if (criteria.get('title')?.touched && criteria.get('title')?.invalid) {
                                           <small class="p-error">
                                             @if (criteria.get('title')?.errors?.['required']) { Title is required. }
-                                            @if (criteria.get('title')?.errors?.['pattern']) { Only letters allowed. }
+                                            @if (criteria.get('title')?.errors?.['pattern']) { Numbers are not allowed. }
                                           </small>
                                         }
                                       </div>
