@@ -38,7 +38,7 @@
       align-items: center;
       justify-content: center;
       background: rgba(0, 0, 0, 0.4);
-      z-index: 15; // Below the identity strip
+      z-index: 1; // Below the identity strip
       color: #fff;
       backdrop-filter: blur(4px);
     }
