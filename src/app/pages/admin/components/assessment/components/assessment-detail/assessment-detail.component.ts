@@ -1853,13 +1853,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           this.nextRoundId = this.assessmentRoundList[currentIndex + 1].id;
         }
       }
-      const toLocalISOString = (date: Date) => {
-        const tzOffset = date.getTimezoneOffset() * 60000;
-        return new Date(date.getTime() - tzOffset).toISOString().slice(0, -1);
+      const toISOString = (date: Date) => {
+        return date.toISOString();
       };
 
       const scheduleDate = new Date(formValue.scheduleDate);
-      const formattedDate = toLocalISOString(scheduleDate);
+      const formattedDate = toISOString(scheduleDate);
 
       // Create an array of observables for each candidate
       const requests = selectedCandidateIds.map((email: string, index: number) => {

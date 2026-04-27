@@ -211,11 +211,20 @@ export class CreateBatchDialogComponent implements OnInit {
       (c) =>
         c.startDateTime &&
         c.startDateTime !== '0001-01-01T00:00:00' &&
+        !c.startDateTime.startsWith('0001-01-01') &&
         c.endDateTime &&
-        c.endDateTime !== '0001-01-01T00:00:00',
+        c.endDateTime !== '0001-01-01T00:00:00' &&
+        !c.endDateTime.startsWith('0001-01-01'),
     );
 
-    if (validDates.length === 0 && batchCandidates.length === 0) return {};
+    if (validDates.length === 0) {
+      // Default to current time if no valid dates found in the batch
+      const now = new Date();
+      return {
+        startDate: now,
+        endDate: new Date(now.getTime() + 3600000), // 1 hour later
+      };
+    }
 
     const first = validDates[0];
     const startDate = new Date(first.startDateTime!);

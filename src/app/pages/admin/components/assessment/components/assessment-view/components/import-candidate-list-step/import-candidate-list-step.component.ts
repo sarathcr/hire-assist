@@ -844,9 +844,8 @@ export class ImportCandidateListStepComponent implements OnInit {
 
   private submitBatchAssignment(result: any): void {
     this.isLoading = true;
-    const toLocalISOString = (date: Date) => {
-      const tzOffset = date.getTimezoneOffset() * 60000;
-      return new Date(date.getTime() - tzOffset).toISOString().slice(0, -1);
+    const toISOString = (date: Date) => {
+      return date.toISOString();
     };
 
     const payload = {
@@ -855,8 +854,8 @@ export class ImportCandidateListStepComponent implements OnInit {
         ? result.questionSet
         : [result.questionSet],
       batchId: result.batch,
-      StartDateTime: result.startDate ? toLocalISOString(new Date(result.startDate)) : null,
-      EndDateTime: result.endDate ? toLocalISOString(new Date(result.endDate)) : null,
+      StartDateTime: result.startDate ? toISOString(new Date(result.startDate)) : null,
+      EndDateTime: result.endDate ? toISOString(new Date(result.endDate)) : null,
       AssessmentId: Number(this.assessmentId()),
     };
 
