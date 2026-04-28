@@ -1,7 +1,7 @@
 const hostname = typeof window !== 'undefined' ? window.location.hostname : '';
 
 export const environment = {
-  // Production is true only for the main production domain
+  // Production is true only for the main production domain  test
   isProduction:
     hostname.includes('hire-assist.vercel.app') &&
     !hostname.includes('prehire-assist'),
