@@ -110,12 +110,16 @@ export const routes: Routes = [
             component: AssessmentSummaryComponent,
           },
           {
+            path: 'recruitments/:id',
+            component: InterviewerRecruitmentPanelsComponent,
+          },
+          {
             path: ':id/:panel',
-            component: InterviewCandidateListComponent,
+            component: InterviewerCandidateListComponent,
           },
           {
             path: ':recruitmentId/:assessmentRoundId/:interviewId/:email',
-            component: InterviewDetailComponent,
+            component: InterviewerFeedbackComponent,
           },
         ],
       },

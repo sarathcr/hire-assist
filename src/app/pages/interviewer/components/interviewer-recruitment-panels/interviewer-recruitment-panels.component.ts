@@ -212,8 +212,11 @@ export class InterviewerRecruitmentPanelsComponent implements OnInit {
 
   /** Navigate to the feedback/interview page. */
   public onStartInterview(data: InterviewByPanel, panelId: number): void {
+    const basePath = this.router.url.includes('/admin/')
+      ? 'admin/interviews'
+      : 'interviewer';
     this.router.navigate([
-      `interviewer/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+      `${basePath}/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
     ]);
   }
 

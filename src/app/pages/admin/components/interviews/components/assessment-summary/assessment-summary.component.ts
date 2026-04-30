@@ -50,7 +50,7 @@ export class AssessmentSummaryComponent
 
   // Public Methods
   public onClickAssessment(id: number, panel: number): void {
-    if (id > 0) this.router.navigate([`admin/interviews/${id}/${panel}`]);
+    if (id > 0) this.router.navigate([`admin/interviews/recruitments/${id}`]);
   }
 
   // Private Methods

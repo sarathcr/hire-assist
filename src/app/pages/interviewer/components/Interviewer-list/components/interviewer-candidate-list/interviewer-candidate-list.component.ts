@@ -153,7 +153,10 @@ export class InterviewerCandidateListComponent implements OnInit {
 
   // Public Methods
   public onButtonClick(data: InterviewByPanel): void {
-    this.router.navigate([`interviewer/${this.assessmentId}/${data.email}`]);
+    const basePath = this.router.url.includes('/admin/')
+      ? 'admin/interviews'
+      : 'interviewer';
+    this.router.navigate([`${basePath}/${this.assessmentId}/${data.email}`]);
   }
 
   public onTablePayloadChange(payload: PaginatedPayload): void {
@@ -168,8 +171,11 @@ export class InterviewerCandidateListComponent implements OnInit {
   }
 
   public onStartInterview(data: InterviewByPanel): void {
+    const basePath = this.router.url.includes('/admin/')
+      ? 'admin/interviews'
+      : 'interviewer';
     this.router.navigate([
-      `interviewer/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+      `${basePath}/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
     ]);
   }
 
