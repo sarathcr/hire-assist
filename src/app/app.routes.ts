@@ -107,7 +107,7 @@ export const routes: Routes = [
         children: [
           {
             path: '',
-            component: AssessmentSummaryComponent,
+            component: InterviewerDashboardComponent,
           },
           {
             path: 'recruitments/:id',
