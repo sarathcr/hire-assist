@@ -56,7 +56,10 @@ export class InterviewerDashboardComponent
   public expandedRounds = new Set<number>();
 
   public onClickAssessment(id: number): void {
-    if (id > 0) this.router.navigate([`interviewer/recruitments/${id}`]);
+    const basePath = this.router.url.includes('/admin/')
+      ? 'admin/interviews'
+      : 'interviewer';
+    if (id > 0) this.router.navigate([`${basePath}/recruitments/${id}`]);
   }
 
   public getCandidateCount(assessment: any): number {

@@ -1173,7 +1173,8 @@ export class InterviewerFeedbackComponent
       if (assessmentId && this.stepsStatusService) {
         this.stepsStatusService.notifyStepStatusUpdate(assessmentId);
       }
-      this.router.navigate([`/interviewer/`]);
+      const basePath = this.router.url.includes('/admin/') ? '/admin/interviews' : '/interviewer';
+      this.router.navigate([basePath]);
     };
     const error = () => {
       this.isSubmitting = false;

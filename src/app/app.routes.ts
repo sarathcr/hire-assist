@@ -107,15 +107,19 @@ export const routes: Routes = [
         children: [
           {
             path: '',
-            component: AssessmentSummaryComponent,
+            component: InterviewerDashboardComponent,
+          },
+          {
+            path: 'recruitments/:id',
+            component: InterviewerRecruitmentPanelsComponent,
           },
           {
             path: ':id/:panel',
-            component: InterviewCandidateListComponent,
+            component: InterviewerCandidateListComponent,
           },
           {
             path: ':recruitmentId/:assessmentRoundId/:interviewId/:email',
-            component: InterviewDetailComponent,
+            component: InterviewerFeedbackComponent,
           },
         ],
       },
