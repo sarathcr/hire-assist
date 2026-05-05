@@ -1,0 +1,162 @@
+<div class="previous-recruitments">
+    <!-- Header Section -->
+    <div class="header-section">
+        <div class="header-content">
+            <p-button
+                icon="pi pi-arrow-left"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                class="back-btn"
+                (click)="navigateBack()"
+                pTooltip="Back to Candidates"
+                tooltipPosition="bottom"
+            ></p-button>
+            <div class="title-block">
+                <h1 class="m-0">Previous Recruitments</h1>
+                <p class="m-0">Detailed history for this candidate</p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <p-selectButton 
+                [options]="viewOptions" 
+                [(ngModel)]="viewMode" 
+                optionLabel="label" 
+                optionValue="value">
+                <ng-template let-item pTemplate="item">
+                    <i [class]="item.icon"></i>
+                </ng-template>
+            </p-selectButton>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    @if (candidateId) {
+        <div class="content-area">
+            @if (isLoading$ | async) {
+                <!-- Skeleton State -->
+                @if (viewMode === 'cards') {
+                    <div class="recruitment-grid">
+                        @for (i of [1,2,3,4,5,6,7,8]; track i) {
+                            <div class="recruitment-card skeleton">
+                                <div class="card-header">
+                                    <p-skeleton width="60%" height="1.5rem"></p-skeleton>
+                                    <p-skeleton width="4rem" height="1.25rem" borderRadius="16px"></p-skeleton>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <div class="info-item">
+                                        <p-skeleton size="1.75rem" borderRadius="0.4rem"></p-skeleton>
+                                        <div class="info-content">
+                                            <p-skeleton width="40%" height="0.6rem" styleClass="mb-1"></p-skeleton>
+                                            <p-skeleton width="70%" height="0.8rem"></p-skeleton>
+                                        </div>
+                                    </div>
+                                    <div class="info-item">
+                                        <p-skeleton size="1.75rem" borderRadius="0.4rem"></p-skeleton>
+                                        <div class="info-content">
+                                            <p-skeleton width="40%" height="0.6rem" styleClass="mb-1"></p-skeleton>
+                                            <p-skeleton width="60%" height="0.8rem"></p-skeleton>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer">
+                                    <p-skeleton width="3.5rem" height="0.7rem"></p-skeleton>
+                                    <p-skeleton width="4.5rem" height="0.8rem"></p-skeleton>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                } @else {
+                    <div class="table-skeleton-container">
+                        <p-skeleton width="100%" height="3.5rem" styleClass="mb-4"></p-skeleton>
+                        @for (i of [1,2,3,4,5,6,7,8]; track i) {
+                            <div class="table-row-skeleton">
+                                <p-skeleton width="35%" height="1.5rem"></p-skeleton>
+                                <p-skeleton width="20%" height="1.5rem"></p-skeleton>
+                                <p-skeleton width="20%" height="1.5rem"></p-skeleton>
+                                <p-skeleton width="20%" height="1.5rem"></p-skeleton>
+                            </div>
+                        }
+                    </div>
+                }
+            } @else {
+                @if (recruitmentDataSource.length > 0) {
+                    @if (viewMode === 'cards') {
+                        <div class="recruitment-grid">
+                            @for (recruitment of recruitmentDataSource; track (recruitment.assessmentId || recruitment.id)) {
+                                <div class="recruitment-card" (click)="onCardClick(recruitment)">
+                                    <div class="card-header">
+                                        <h3 class="title" [title]="recruitment.assessmentName">
+                                            {{ recruitment.assessmentName }}
+                                        </h3>
+                                        <p-tag 
+                                            [value]="recruitment.status" 
+                                            [severity]="getStatusSeverity(recruitment.status)"
+                                            class="status-tag">
+                                        </p-tag>
+                                    </div>
+                                    
+                                    <div class="card-body">
+                                        <div class="info-item">
+                                            <div class="icon-box">
+                                                <i class="pi pi-calendar-plus"></i>
+                                            </div>
+                                            <div class="info-content">
+                                                <label>Start Date</label>
+                                                <span>{{ recruitment.startDateTime | date:'mediumDate' }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="icon-box">
+                                                <i class="pi pi-calendar-minus"></i>
+                                            </div>
+                                            <div class="info-content">
+                                                <label>End Date</label>
+                                                <span>{{ recruitment.endDateTime | date:'mediumDate' }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-footer">
+                                        <span class="recruitment-id">ID: {{ recruitment.assessmentId || recruitment.id }}</span>
+                                        <div class="view-details">
+                                            Details 
+                                            <i class="pi pi-arrow-right"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    } @else {
+                        <div class="table-container">
+                            <app-table
+                                [tableData]="tableData"
+                                [columnsData]="tableColumns"
+                                [hasCheckbox]="false"
+                                (pageChangeAndSort)="onTablePayloadChange($event)"
+                                (buttonClick)="onCardClick($event)"
+                            ></app-table>
+                        </div>
+                    }
+                } @else {
+                    <app-empty-state
+                        icon="pi pi-history"
+                        message="No previous recruitments found for this candidate."
+                    ></app-empty-state>
+                }
+            }
+
+            @if (candidateId && viewMode === 'cards') {
+                <div class="pagination-footer" [hidden]="recruitmentDataSource.length === 0 || (isLoading$ | async)">
+                    <app-pagination
+                        [dataSource]="dataSource"
+                        [totalRecords]="totalRecords"
+                    ></app-pagination>
+                </div>
+            }
+        </div>
+    }
+</div>

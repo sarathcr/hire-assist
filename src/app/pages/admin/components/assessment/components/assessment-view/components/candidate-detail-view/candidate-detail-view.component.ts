@@ -25,6 +25,8 @@ import { Skeleton } from 'primeng/skeleton';
 import { Dialog } from 'primeng/dialog';
 import { SafePipe } from '../../../../../../../../shared/pipes/safepipe';
 import { forkJoin, map } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-candidate-detail-view',
@@ -75,6 +77,7 @@ export class CandidateDetailViewComponent
   public imageLoadingStates: Record<string, boolean> = {};
   public idProofsDataSource: FileDto[] = [];
   public isLoadingIdProofs = false;
+  public lastCompletedRoundId!: number;
   
   // Viewer state
   public displayViewer = false;
@@ -87,6 +90,7 @@ export class CandidateDetailViewComponent
     public activatedRoute: ActivatedRoute,
     public assessmentService: AssessmentService,
     public interviewService: InterviewService,
+    private messageService: MessageService,
   ) {
     super();
   }
@@ -102,12 +106,9 @@ export class CandidateDetailViewComponent
     this.candidateId = String(
       this.activatedRoute.snapshot.paramMap.get('candidateId'),
     );
-    this.interviewId = Number(
-      this.activatedRoute.snapshot.paramMap.get('interviewId'),
-    );
-    this.assessmentRoundId = Number(
-      this.activatedRoute.snapshot.queryParamMap.get('assessmentRoundId'),
-    );
+    this.interviewId = Number(this.activatedRoute.snapshot.paramMap.get('interviewId')) || 0;
+    this.assessmentRoundId = Number(this.activatedRoute.snapshot.queryParamMap.get('assessmentRoundId')) || 0;
+    this.lastCompletedRoundId = Number(this.activatedRoute.snapshot.queryParamMap.get('lastCompletedRoundId')) || 0;
     this.getCandidateDetails();
   }
 
@@ -140,20 +141,26 @@ export class CandidateDetailViewComponent
   }
 
   private getInterviewFeedbacks(): void {
+    if (!this.candidateDetailsDataSource?.email) return;
+
     this.isLoadingInterviewFeedbacks = true;
     this.interviewService
       .GetCurrentAndPreviousRounds(
-        this.candidateId,
+        this.candidateDetailsDataSource.email,
         this.assessmentId,
-        this.assessmentRoundId || 0,
+        this.lastCompletedRoundId || this.assessmentRoundId || 0,
       )
+      .pipe(finalize(() => (this.isLoadingInterviewFeedbacks = false)))
       .subscribe({
         next: (res: PreviousInterview[]) => {
           this.interviewFeedbacksDataSource = res;
-          this.isLoadingInterviewFeedbacks = false;
         },
         error: () => {
-          this.isLoadingInterviewFeedbacks = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load interview feedbacks',
+          });
         },
       });
   }

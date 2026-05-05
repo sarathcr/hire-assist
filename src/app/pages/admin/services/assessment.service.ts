@@ -192,4 +192,11 @@ export class AssessmentService extends ApiService<any> {
       `${ASSESSMENT_URL}/QuestionSetDelete?questionSetId=${id}&assessmentId=${assessmentId}`,
     );
   }
+
+  public getPreviousRecruitments(candidateId: string, payload: any) {
+    return this.httpClient.post<any>(
+      `${this.getResourceUrl()}/candidates/previous/${candidateId}`,
+      payload,
+    );
+  }
 }

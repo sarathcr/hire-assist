@@ -37,7 +37,7 @@
           <i class="pi pi-user mr-2"></i>
           Candidate Details
         </p-tab>
-        @if (interviewId > 0) {
+        @if (interviewId > 0 || lastCompletedRoundId > 0 || assessmentRoundId > 0) {
           <p-tab value="1">
             <i class="pi pi-comments mr-2"></i>
             Interview Feedbacks
@@ -174,7 +174,7 @@
         </p-tabpanel>
 
         <!-- Interview Feedbacks Tab -->
-        @if (interviewId > 0) {
+        @if (interviewId > 0 || lastCompletedRoundId > 0 || assessmentRoundId > 0) {
           <p-tabpanel value="1">
             <div class="candidate-detail__content">
               @if (isLoadingInterviewFeedbacks) {

@@ -44,6 +44,8 @@ import { backButtonGuard } from './shared/guards/back-button.guard';
 import { DeviceWidthGuard } from './shared/guards/device-width.guard';
 import { ProfileComponent } from './shared/pages/profile/profile.component';
 
+import { PreviousRecruitmentListComponent } from './pages/admin/components/assessment/components/assessment-view/components/previous-recruitment-list/previous-recruitment-list.component';
+
 export const routes: Routes = [
   {
     path: 'auth',
@@ -94,6 +96,10 @@ export const routes: Routes = [
           {
             path: 'previousAssessments/:recruitmentId/:candidateId',
             component: CandidatePreviousAssessmentComponent,
+          },
+          {
+            path: 'previous-recruitments/:recruitmentId/:candidateId',
+            component: PreviousRecruitmentListComponent,
           },
           {
             path: 'recruitment-summary/:id',

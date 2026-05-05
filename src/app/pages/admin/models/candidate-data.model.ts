@@ -130,6 +130,7 @@ export interface CandidateModel {
   startDateTime?: string;
   visibleButtonIndices?: number[];
   disabledButtonIndices?: number[];
+  previousRecruitmentIds?: number[];
 }
 
 export interface CandidateApplicationQuestions {

@@ -221,7 +221,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       case 'History':
         this.viewHistory(candidate);
         break;
-      case 'Previous Assessment':
+      case 'Previous Recruitments':
         this.onPreviousAssessment(candidate);
         break;
     }
@@ -278,23 +278,7 @@ export class ImportCandidateListStepComponent implements OnInit {
     const next = (res: PaginatedData<CandidateModel>) => {
       this.data = {
         ...res,
-        data: res.data.map((candidate) => {
-          const visibleButtonIndices = [0, 1, 2, 3];
-
-          const disabledButtonIndices: number[] = [];
-          if (this.isReadOnly()) {
-            disabledButtonIndices.push(1); // Delete
-          }
-          if (!candidate.isAlreadyExist) {
-            disabledButtonIndices.push(3);
-          }
-
-          return {
-            ...candidate,
-            visibleButtonIndices,
-            disabledButtonIndices,
-          };
-        }),
+        data: this.transformCandidates(res.data),
       };
       if (this.data.data.length == 0) {
         this.importStatus = false;
@@ -449,7 +433,7 @@ export class ImportCandidateListStepComponent implements OnInit {
     const userid = data.id;
     const assessmentId = this.assessmentId();
     this.router.navigate([
-      `admin/recruitments/previousAssessments/${assessmentId}/${userid}`,
+      `admin/recruitments/previous-recruitments/${assessmentId}/${userid}`,
     ]);
   }
   public onImport(event: FileUploadHandlerEvent): void {
@@ -918,9 +902,34 @@ export class ImportCandidateListStepComponent implements OnInit {
       .getData(payload)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe((response: PaginatedData<CandidateModel>) => {
-        this.data = response;
+        this.data = {
+          ...response,
+          data: this.transformCandidates(response.data),
+        };
         this.alreadySelectedCandidates = [...(this.selectedUsers as string[])];
       });
+  }
+
+  private transformCandidates(candidates: CandidateModel[]): CandidateModel[] {
+    return candidates.map((candidate) => {
+      const visibleButtonIndices = [0, 1, 2, 3];
+      const disabledButtonIndices: number[] = [];
+
+      if (this.isReadOnly()) {
+        disabledButtonIndices.push(1); // Delete
+      }
+      const hasPrevious = !!candidate.isAlreadyExist || (candidate.previousRecruitmentIds && candidate.previousRecruitmentIds.length > 0);
+      if (!hasPrevious) {
+        disabledButtonIndices.push(3);
+      }
+
+      return {
+        ...candidate,
+        currentLocation: candidate.currentLocation || 'N/A',
+        visibleButtonIndices,
+        disabledButtonIndices,
+      };
+    });
   }
   private getAllCandidatesApplicationQuestions() {
     const next = (res: CandidateApplicationQuestions[]) => {
