@@ -12,9 +12,9 @@ export class AssessmentWarningService {
     return stored ? parseInt(stored, 10) : 0;
   }
 
-  public setWarningCount(count: number) {
+  public increment() {
     this.warningCount.update((curr) => {
-      const newCount = curr + count;
+      const newCount = curr + 1;
       localStorage.setItem(this.STORAGE_KEY, newCount.toString());
       return newCount;
     });

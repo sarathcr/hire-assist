@@ -168,9 +168,24 @@ export class CandidateTestComponent
 
     // If state is present from a fresh navigation, save it for potential refresh recovery
     if (this.candidateInterview?.assessment) {
-      localStorage.setItem(this.ASSESSMENT_STORAGE_KEY, JSON.stringify(this.candidateInterview.assessment));
-      // Reset warning count for fresh session
-      this.warningService.reset();
+      localStorage.setItem(
+        this.ASSESSMENT_STORAGE_KEY,
+        JSON.stringify(this.candidateInterview.assessment),
+      );
+
+      // We only want to reset the warning count if it's a completely new navigation, not a refresh.
+      // history.state persists on refresh, so we check for browser refresh.
+      const navigationEntries = performance.getEntriesByType(
+        'navigation',
+      ) as PerformanceNavigationTiming[];
+      const isReload =
+        navigationEntries.length > 0 && navigationEntries[0].type === 'reload';
+      const isRefresh = !this.router.navigated || isReload;
+
+      if (!isRefresh) {
+        // Reset warning count only for truly fresh session (first time entering assessment)
+        this.warningService.reset();
+      }
     } else {
       // If history.state is empty (e.g., refresh), try to recover from localStorage
       const savedAssessment = localStorage.getItem(this.ASSESSMENT_STORAGE_KEY);
@@ -240,26 +255,30 @@ export class CandidateTestComponent
     }
 
     if (!this.isFullScreen && this.everEnteredFullScreen && !this.isSubmitting && !this.isTestEnded) {
-      this.saveTerminationTime();
-
-      if (this.warningCount < (this.data?.maxTerminationCount ?? 2)) {
-        this.showWarningDialog();
-      } else {
-        this.showTestTerminationDialog();
-      }
+      this.handleViolation();
     }
   }
 
   @HostListener('document:visibilitychange')
   public onVisibilityChange(): void {
     if (document.visibilityState === 'hidden' && this.everEnteredFullScreen && !this.isSubmitting && !this.isTestEnded) {
-      this.saveTerminationTime();
+      this.handleViolation();
+    }
+  }
 
-      if (this.warningCount < (this.data?.maxTerminationCount ?? 2)) {
-        this.showWarningDialog();
-      } else {
-        this.showTestTerminationDialog();
-      }
+  private handleViolation(): void {
+    if (this.ref) {
+      return; // Already showing a warning/termination dialog
+    }
+
+    this.saveTerminationTime();
+    this.warningService.increment();
+    const currentCount = this.warningService.getWarningCount();
+
+    if (currentCount < (this.data?.maxTerminationCount ?? 2)) {
+      this.showWarningDialog();
+    } else {
+      this.showTestTerminationDialog();
     }
   }
 
@@ -646,9 +665,6 @@ export class CandidateTestComponent
     });
     this.ref?.onClose.subscribe((result) => {
       if (result === true) {
-        if (!isInitial) {
-          this.warningService.setWarningCount(1);
-        }
         this.enterFullScreenMode();
       } else {
         this.quitAssessment();
@@ -659,12 +675,14 @@ export class CandidateTestComponent
 
   private getWarningDialogData(isInitial: boolean = false): DialogData {
     const maxAttempts = this.data?.maxTerminationCount ?? 2;
-    const remainingAttempts = maxAttempts - this.warningCount;
+    const remainingAttempts = maxAttempts - this.warningService.getWarningCount();
 
     if (isInitial) {
       return {
         headerTitle: 'Action Required',
-        message: 'To start the assessment, please enter full screen mode. This ensures a fair testing environment for all candidates.',
+        warningCount: remainingAttempts,
+        message:
+          'To start the assessment, please enter full screen mode. This ensures a fair testing environment for all candidates.',
         isChoice: true,
         closeOnNavigation: false,
         acceptButtonText: 'Enter Full Screen',
