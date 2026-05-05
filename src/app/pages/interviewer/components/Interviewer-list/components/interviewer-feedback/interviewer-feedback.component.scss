@@ -98,6 +98,7 @@ $white: #ffffff;
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  overflow: visible !important;
   max-width: 100%;
   box-sizing: border-box;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -453,6 +454,7 @@ $white: #ffffff;
   // ════════════════════════════════════════════════════
   &__card {
     background: $white;
+    overflow: visible !important;
     border-radius: 12px;
     border: 1px solid $slate-200;
     box-shadow: 0 1px 3px rgba($slate-900, 0.05);
@@ -579,6 +581,10 @@ $white: #ffffff;
           border-color: $slate-300 !important;
         }
 
+        // Higher z-index to cover content bleed when overflow is visible
+        z-index: 10;
+        position: relative;
+
         &[aria-expanded='true'] {
           background: $slate-50;
           border-radius: 12px 12px 0 0;
@@ -621,12 +627,28 @@ $white: #ffffff;
         border: 1px solid $slate-200 !important;
         border-top: none !important;
         display: block;
-        overflow: hidden;
+        overflow: hidden !important; // Hide content bleed during animations
+        position: relative;
+        z-index: 1;
 
         .p-accordion-content-container {
           padding: 0;
         }
       }
+
+      // ── THE ULTIMATE OVERFLOW FIX ──
+      // This delays overflow: visible until after the accordion expansion (0.4s) 
+      // is complete, preventing bleed during sliding. It reverts to hidden 
+      // immediately on collapse.
+      @keyframes delayedVisible {
+        from { overflow: hidden; }
+        to { overflow: visible; }
+      }
+
+      .p-accordionheader[aria-expanded="true"] + .p-accordion-content {
+        animation: delayedVisible 0.1s 0.4s forwards;
+      }
+
 
       .p-card {
         .p-card-content {
@@ -1062,6 +1084,7 @@ $white: #ffffff;
     flex-direction: column;
     gap: 20px;
     padding: 24px;
+    overflow: visible !important;
   }
 
   &__field-label {
@@ -1575,6 +1598,7 @@ $white: #ffffff;
   // ════════════════════════════════════════════════════
   ::ng-deep {
     .p-editor {
+      overflow: visible !important;
       .p-editor-toolbar {
         background: $slate-50;
         border: 1.5px solid $slate-200;
@@ -1597,7 +1621,8 @@ $white: #ffffff;
         border-top: none;
         background: $white;
         min-height: 200px;
-        overflow: hidden; // Clips internal editor to the rounded corners
+        height: auto !important;
+        overflow: visible !important; // Required for absolute tooltip
         transition: all 0.25s ease;
 
         &:focus-within {
@@ -1605,7 +1630,38 @@ $white: #ffffff;
           box-shadow: 0 0 0 3px rgba($indigo-500, 0.1);
         }
 
+        .ql-container {
+          overflow: visible !important;
+          height: auto !important;
+          border-radius: inherit;
+        }
+
+        .ql-tooltip {
+          // Extremely high z-index to stay on top of sidebars and other overlays
+          z-index: 999999 !important; 
+          
+          // Force it to stay within the editor bounds on the left to avoid sidebar overlap
+          left: 20px !important;
+          transform: none !important;
+
+          max-width: 90vw !important;
+          white-space: normal !important;
+          height: auto !important;
+          padding: 8px 12px !important;
+          background: $white !important;
+          box-shadow: 0 4px 15px rgba($slate-900, 0.15) !important;
+          border: 1px solid $slate-200 !important;
+          border-radius: 8px !important;
+
+          input {
+            max-width: 150px !important;
+          }
+        }
+
         .ql-editor {
+          height: 200px !important;
+          overflow-y: auto !important;
+          border-radius: inherit;
           font-size: 14px;
           line-height: 1.65;
           color: $slate-700;
