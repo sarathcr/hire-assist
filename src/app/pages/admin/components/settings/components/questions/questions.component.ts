@@ -345,7 +345,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
         const events = res.data.map((item: any) => ({
           status: item.action,
           user: item.changedByName,
-          date: new Date(item.changedAt + 'Z'),
+          date: new Date(item.changedAt),
           icon: this.getHistoryIcon(item.action),
           description: this.getHistoryDescription(item)
         }));
