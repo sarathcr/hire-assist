@@ -750,7 +750,20 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       const nextStatus = candidate.nextRoundStatus?.toLowerCase().trim();
       const isPendingOrScheduled = nextStatus === 'pending' || nextStatus === 'scheduled';
 
-      return !candidate.isScheduled || isPendingOrScheduled;
+      // 1. If an interview is already present (interviewId exists), 
+      // only allow rescheduling if the next round status is 'Pending' or 'Scheduled'.
+      if (candidate.interviewId) {
+        return isPendingOrScheduled;
+      }
+
+      // 2. If no interviewId exists, check if they are already marked as scheduled via the status string.
+      // If isScheduled is true but no interviewId, it's a fallback check for pending/scheduled status.
+      if (candidate.isScheduled) {
+        return isPendingOrScheduled;
+      }
+
+      // 3. No interview record at all means they can be scheduled for the first time.
+      return true;
     });
 
     if (!hasValidStatus) {
@@ -897,8 +910,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       const nextStatus = c.nextRoundStatus?.toLowerCase().trim();
       const isPendingOrScheduled = nextStatus === 'pending' || nextStatus === 'scheduled';
 
-      // Valid if not scheduled OR scheduled but pending/scheduled
-      const isValid = !c.isScheduled || isPendingOrScheduled;
+      // Valid if:
+      // - No interviewId yet (first time)
+      // - OR has interviewId AND it's pending/scheduled (reschedule)
+      let isValid = false;
+      if (!c.interviewId && !c.isScheduled) {
+        isValid = true;
+      } else if (isPendingOrScheduled) {
+        isValid = true;
+      }
 
       return !isValid;
     });

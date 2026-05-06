@@ -289,6 +289,15 @@ export class CandidateTestComponent
     // Store the selected value for this question
     this.selectedValues[questionId] = selectedValue;
   }
+
+  public isAnswerValid(): boolean {
+    if (!this.activeQuestion) return false;
+    const value = this.selectedValues[this.activeQuestion.id];
+    if (this.activeQuestion.isMultipleChoice) {
+      return Array.isArray(value) && value.length > 0;
+    }
+    return value !== null && value !== undefined && value !== '';
+  }
   public onButtonClick(buttonId: number) {
     this.activeButtonId = buttonId;
 
@@ -300,6 +309,12 @@ export class CandidateTestComponent
       this.activeQuestion = selectedQuestion; // Set the active question
       // Load images for the clicked question and its options
       this.loadQuestionAttachments(selectedQuestion);
+
+      // Sync selecteArray with the current question's selected values
+      if (selectedQuestion.isMultipleChoice) {
+        const val = this.selectedValues[buttonId];
+        this.selecteArray = Array.isArray(val) ? [...val] : [];
+      }
     }
   }
 
@@ -357,19 +372,10 @@ export class CandidateTestComponent
   }
 
   public onCheckboxChange(event: CheckboxChangeEvent, questionId: number) {
-    const selectedOptionId = (event.originalEvent?.target as HTMLInputElement)
-      ?.value;
-
-    if (this.selecteArray.includes(selectedOptionId)) {
-      const index = this.selecteArray.indexOf(selectedOptionId);
-
-      this.selecteArray.splice(index, 1);
-    } else if (this.selecteArray.length > 0) {
-      this.selecteArray = [...this.selecteArray, selectedOptionId];
-    } else {
-      this.selecteArray.push(selectedOptionId);
-    }
-    this.selectedValues[questionId] = this.selecteArray;
+    // Note: p-checkbox with ngModel already updates the array in selectedValues[questionId].
+    // We only need to sync our local selecteArray if we're using it for other logic.
+    const currentValues = this.selectedValues[questionId];
+    this.selecteArray = Array.isArray(currentValues) ? [...currentValues] : [];
   }
 
   public onTestSubmit() {

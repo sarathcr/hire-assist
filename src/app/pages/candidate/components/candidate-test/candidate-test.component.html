@@ -142,10 +142,10 @@
       @if (
       data.questions.indexOf(activeQuestion) + 1 === data.questions.length
       ) {
-      <app-button [buttonLabel]="'Finish'" [disabled]="!selectedValues[activeQuestion?.id] || isSaving || isSubmitting"
+      <app-button [buttonLabel]="'Finish'" [disabled]="!isAnswerValid() || isSaving || isSubmitting"
         [isLoading]="isSaving || isSubmitting" (btnClick)="onFinishBtnClick()"></app-button>
       } @else {
-      <app-button [buttonLabel]="'Save & Next'" [disabled]="!selectedValues[activeQuestion?.id] || isSaving"
+      <app-button [buttonLabel]="'Save & Next'" [disabled]="!isAnswerValid() || isSaving"
         [isLoading]="isSaving" (btnClick)="onSaveBtnClick()"></app-button>
       }
     </div>
