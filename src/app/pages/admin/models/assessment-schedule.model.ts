@@ -144,8 +144,10 @@ export interface InterviewSummary {
   score: number;
   status: string;
   isScheduled: boolean;
+  nextRoundStatus?: string;
   scheduledDate: Date;
   assessmentRoundId: number;
+  interviewId?: number;
 }
 
 export interface PanelSummary {

@@ -117,7 +117,7 @@ const tableColumns: TableColumnsData = {
       displayName: 'Interview Date',
       sortedColumn: true,
       hasChip: false,
-      fieldType: FieldType.StringToDate,
+      fieldType: FieldType.StringToDateTime,
     },
     {
       field: 'button',
@@ -315,11 +315,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             email: fullCandidate.email,
             score: Number(fullCandidate.score) || 0,
             status: fullCandidate.status,
-            isScheduled: fullCandidate.isScheduled === 'Scheduled',
+            isScheduled: !!fullCandidate.isScheduled && fullCandidate.isScheduled !== 'Not Scheduled',
+            nextRoundStatus: fullCandidate.isScheduled,
             scheduledDate: fullCandidate.scheduledDate
               ? new Date(fullCandidate.scheduledDate)
               : new Date(),
             assessmentRoundId: fullCandidate.assessmentRoundId,
+            interviewId: fullCandidate.interviewId,
           } as InterviewSummary;
         }
         return undefined;
@@ -741,10 +743,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         return false;
       }
       const status = candidate.status.toLowerCase().trim();
-      // Ensure candidate is 'Selected' and NOT already scheduled for the next round
-      const isNotScheduled = !candidate.isScheduled;
-      
-      return status === 'selected' && isNotScheduled;
+      if (status !== 'selected') return false;
+
+      // Allow scheduling if they are NOT scheduled for the next round
+      // OR if they are scheduled but the interview is still pending/scheduled (Rescheduling)
+      const nextStatus = candidate.nextRoundStatus?.toLowerCase().trim();
+      const isPendingOrScheduled = nextStatus === 'pending' || nextStatus === 'scheduled';
+
+      return !candidate.isScheduled || isPendingOrScheduled;
     });
 
     if (!hasValidStatus) {
@@ -886,9 +892,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     const hasInvalidStatus = selected.some((c: InterviewSummary) => {
       const status = c.status?.toLowerCase().trim() ?? '';
-      const isNotScheduled = !c.isScheduled;
-      // Now strictly allowing ONLY 'selected' candidates for scheduling for next round
-      return status !== 'selected' || !isNotScheduled;
+      if (status !== 'selected') return true;
+
+      const nextStatus = c.nextRoundStatus?.toLowerCase().trim();
+      const isPendingOrScheduled = nextStatus === 'pending' || nextStatus === 'scheduled';
+
+      // Valid if not scheduled OR scheduled but pending/scheduled
+      const isValid = !c.isScheduled || isPendingOrScheduled;
+
+      return !isValid;
     });
 
     if (hasInvalidStatus) {
@@ -1618,9 +1630,19 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   private mapCandidateData(item: CandidateData) {
+    let displayScheduled = 'Not Scheduled';
+    if (item.isScheduled) {
+      const isScheduledValue = String(item.isScheduled);
+      if (isScheduledValue === 'true' || isScheduledValue === 'Scheduled') {
+        displayScheduled = 'Scheduled';
+      } else {
+        displayScheduled = isScheduledValue;
+      }
+    }
+
     const mappedItem = {
       ...item,
-      isScheduled: item.isScheduled ? 'Scheduled' : 'Not Scheduled',
+      isScheduled: displayScheduled,
       disabledButtonIndices: [] as number[],
     };
 
