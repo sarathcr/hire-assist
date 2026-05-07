@@ -413,7 +413,11 @@ export class BatchesComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `${action ? 'Duplication' : 'Creation'} is failed`,
+          detail:
+            error.error.type ||
+            error.error.message ||
+            error.error.errorValue ||
+            `${action ? 'Duplication' : 'Creation'} is failed`,
         });
       }
     };
@@ -465,7 +469,11 @@ export class BatchesComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Updation is failed',
+          detail:
+            error.error.type ||
+            error.error.message ||
+            error.error.errorValue ||
+            'Updation is failed',
         });
         this.isLoading = false;
       }
@@ -505,7 +513,11 @@ export class BatchesComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Deletion is failed',
+          detail:
+            error.error.type ||
+            error.error.message ||
+            error.error.errorValue ||
+            'Deletion is failed',
         });
       }
     };
