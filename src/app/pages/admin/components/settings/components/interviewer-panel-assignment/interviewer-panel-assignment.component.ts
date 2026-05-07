@@ -250,6 +250,12 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
               this.isLoading = false;
             },
           });
+      } else {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Info',
+          detail: 'No updates made to panel interviewers',
+        });
       }
     });
   }
