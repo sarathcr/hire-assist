@@ -73,7 +73,7 @@
     padding: 0 2rem;
 
     &-inner {
-      max-width: 1200px;
+      // max-width: 1200px;
       margin: 0 auto;
       background: #fff;
       border-radius: 1.5rem;
@@ -233,7 +233,7 @@
   }
 
   &__grid {
-    max-width: 1200px;
+    // max-width: 1200px;
     margin: 2rem auto 0;
     display: grid;
     grid-template-columns: 380px 1fr;

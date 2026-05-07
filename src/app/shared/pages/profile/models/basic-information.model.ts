@@ -1,3 +1,4 @@
+import { Validators } from '@angular/forms';
 import { FormEntity, Metadata } from '../../../utilities/form.utility';
 
 export class BasicInformation extends FormEntity {
@@ -8,11 +9,19 @@ export class BasicInformation extends FormEntity {
   gender = '';
   memberSince: Date | undefined;
   metadata: Metadata = {
-    validatorsMap: {},
+    validatorsMap: {
+      email: [
+        Validators.required,
+        Validators.email,
+        Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/),
+      ],
+      phone: [Validators.required, Validators.pattern(/^\+?[0-9]{7,15}$/)],
+      dob: [Validators.required],
+    },
     configMap: {
       name: { id: 'name', labelKey: 'Name' },
       email: { id: 'email', labelKey: 'Email' },
-      phone: { id: 'phone', labelKey: 'Phone' },
+      phone: { id: 'phone', labelKey: 'Contact Number' },
       dob: { id: 'dob', labelKey: 'Date of Birth' },
       gender: {
         id: 'gender',

@@ -18,6 +18,10 @@ export abstract class BaseFormComponent {
       return errors['errorMessage'];
     }
 
+    if (errors['email']) {
+      return 'Please enter a valid email address.';
+    }
+
     if (errors['required']) {
       return 'This field is required.';
     }
@@ -48,7 +52,10 @@ export abstract class BaseFormComponent {
         return `Whitespace is not allowed at the beginning`;
       } else if (this.config.labelKey === 'User Name') {
         return `Please enter a valid user name`;
-      } else if (this.config.labelKey === 'Contact Number') {
+      } else if (
+        this.config.labelKey === 'Contact Number' ||
+        this.config.labelKey === 'Phone'
+      ) {
         return `Please enter a valid phone number`;
       } else if (this.config.labelKey === 'Email') {
         return `Please enter a valid email address`;

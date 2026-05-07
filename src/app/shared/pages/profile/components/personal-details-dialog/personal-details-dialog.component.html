@@ -25,6 +25,7 @@
           <app-input-text-calender 
             [formGroup]="formGroup" 
             [config]="configMap['dob']"
+            [maxDate]="today"
           ></app-input-text-calender>
         </div>
 
@@ -33,6 +34,7 @@
           <app-input-select 
             [formGroup]="formGroup" 
             [config]="configMap['gender']"
+            [showClear]="false"
           ></app-input-select>
         </div>
       </div>
@@ -47,7 +49,7 @@
       <app-button 
         [buttonLabel]="'Save Changes'" 
         (btnClick)="onSubmit()"
-        [disabled]="formGroup.invalid"
+        [disabled]="formGroup.invalid || isUnchanged"
       ></app-button>
     </footer>
   </form>

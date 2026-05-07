@@ -131,7 +131,7 @@ import { SkeletonModule } from 'primeng/skeleton';
       @media (max-width: 768px) { padding: 0 1rem; }
     }
     .sk-profile__identity-inner {
-      max-width: 1200px;
+      // max-width: 1200px;
       margin: 0 auto;
       display: flex;
       align-items: flex-end;
@@ -151,7 +151,7 @@ import { SkeletonModule } from 'primeng/skeleton';
     }
     .sk-profile__actions { padding-top: 1rem; }
     .sk-profile__grid {
-      max-width: 1200px;
+      // max-width: 1200px;
       margin: 1.75rem auto;
       padding: 0 2rem 3rem;
       display: grid;

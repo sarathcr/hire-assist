@@ -152,6 +152,10 @@ export const buildFormGroup = <T extends FormEntity>(myObj: T): FormGroup => {
 
 export const isFormUnchanged = (currentValue: any, initialValue: any): boolean => {
   if (currentValue === initialValue) return true;
+  
+  if (currentValue instanceof Date && initialValue instanceof Date) {
+    return currentValue.getTime() === initialValue.getTime();
+  }
 
   if (typeof currentValue === 'string' && typeof initialValue === 'string') {
     return currentValue.trim() === initialValue.trim();

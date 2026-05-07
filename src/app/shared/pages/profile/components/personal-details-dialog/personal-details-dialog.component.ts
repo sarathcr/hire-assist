@@ -7,7 +7,7 @@ import { InputTextComponent } from '../../../../components/form/input-text/input
 import { InputTextCalenderComponent } from '../../../../components/form/input-text-calender/input-text-calender.component';
 import { InputSelectComponent } from '../../../../components/form/input-select/input-select.component';
 import { BasicInformation, ProfileDetails } from '../../models/basic-information.model';
-import { buildFormGroup, ConfigMap } from '../../../../utilities/form.utility';
+import { buildFormGroup, ConfigMap, isFormUnchanged } from '../../../../utilities/form.utility';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -29,6 +29,8 @@ export class PersonalDetailsDialogComponent extends BaseComponent implements OnI
   public formGroup!: FormGroup;
   public configMap: ConfigMap;
   public basicInfoModel = new BasicInformation();
+  public today = new Date();
+  private initialValues: any;
 
   constructor(
     private ref: DynamicDialogRef,
@@ -44,7 +46,6 @@ export class PersonalDetailsDialogComponent extends BaseComponent implements OnI
   }
 
   private initializeForm(): void {
-    // We use buildFormGroup but override with current values
     this.formGroup = buildFormGroup(this.basicInfoModel);
     
     if (this.profileDetails) {
@@ -52,13 +53,14 @@ export class PersonalDetailsDialogComponent extends BaseComponent implements OnI
         email: this.profileDetails.email || '',
         phone: this.profileDetails.phoneNumber || '',
         dob: this.profileDetails.dob ? new Date(this.profileDetails.dob) : null,
-        gender: this.profileDetails.gender || '',
+        gender: this.profileDetails.gender || null,
       });
     }
+    this.initialValues = this.formGroup.getRawValue();
+  }
 
-    // Add specific validations if not already in model
-    this.formGroup.get('email')?.setValidators([Validators.required, Validators.email]);
-    this.formGroup.get('phone')?.setValidators([Validators.required]);
+  get isUnchanged(): boolean {
+    return isFormUnchanged(this.formGroup.getRawValue(), this.initialValues);
   }
 
   public onSubmit(): void {
