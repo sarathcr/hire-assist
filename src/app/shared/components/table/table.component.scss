@@ -3,30 +3,8 @@
 
   &.table-loading {
     ::ng-deep {
-      .p-paginator-rpp-options {
-        display: none;
-        width: 0 !important;
-        pointer-events: none;
-      }
-
-      .p-paginator-content-start {
-        display: block !important;
-      }
-
       .p-paginator {
         width: 100% !important;
-      }
-
-      .p-paginator-pages {
-        display: none;
-      }
-
-      .p-paginator-first,
-      .p-paginator-prev,
-      .p-paginator-next,
-      .p-paginator-last,
-      .p-paginator-rpp-dropdown {
-        display: none;
       }
     }
   }

@@ -101,6 +101,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
   public interviewersData!: interviewerFormGroup[];
   public isLoading = true;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
+  private previousFilterMap: any = {};
 
   constructor(
     public dialog: DialogService,
@@ -112,7 +113,10 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setPaginationEndpoint();
     this.setPanelPaginationEndpoint();
-    this.getPaginatedPanelData(new PaginatedPayload());
+    const initialPayload = new PaginatedPayload();
+    initialPayload.pagination.pageSize = 10;
+    this.currentPayload = initialPayload;
+    this.getPaginatedPanelData(initialPayload);
   }
   ngOnDestroy() {
     if (this.ref) {
@@ -120,13 +124,16 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
     }
   }
   public onTablePayloadChange(payload: PaginatedPayload): void {
-    this.currentPayload = {
-      ...payload,
-      pagination: {
-        ...payload.pagination,
-        pageNumber: 1,
-      },
-    };
+    const isSearch =
+      JSON.stringify(payload.filterMap) !==
+      JSON.stringify(this.previousFilterMap);
+
+    if (isSearch) {
+      payload.pagination.pageNumber = 1;
+    }
+
+    this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
+    this.currentPayload = payload;
     this.loadData(payload);
   }
   public getPaginatedPanelData(payload: PaginatedPayload) {
@@ -218,7 +225,10 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
                 this.messageService.add({
                   severity: 'error',
                   summary: 'Error',
-                  detail: `${error.error.errorValue}`,
+                  detail:
+                    error.error.type ||
+                    error.error.message ||
+                    error.error.errorValue,
                 });
               } else if (businerssErrorCode === 3103) {
                 this.messageService.add({
@@ -230,7 +240,11 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
                 this.messageService.add({
                   severity: 'error',
                   summary: 'Error',
-                  detail: 'Assigning interviewers failed',
+                  detail:
+                    error.error.type ||
+                    error.error.message ||
+                    error.error.errorValue ||
+                    'Assigning interviewers failed',
                 });
               }
               this.isLoading = false;
@@ -417,7 +431,11 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Deletion is failed',
+          detail:
+            error.error.type ||
+            error.error.message ||
+            error.error.errorValue ||
+            'Deletion is failed',
         });
       }
       this.isLoading = false;
@@ -504,7 +522,10 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: `${error.error.errorValue}`,
+              detail:
+                error.error.type ||
+                error.error.message ||
+                error.error.errorValue,
             });
           } else if (businessErrorCode === 3103) {
             this.messageService.add({
@@ -517,7 +538,11 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Failed to update Panel interviewers',
+              detail:
+                error.error.type ||
+                error.error.message ||
+                error.error.errorValue ||
+                'Failed to update Panel interviewers',
             });
           }
         },

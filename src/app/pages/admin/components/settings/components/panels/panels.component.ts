@@ -120,7 +120,10 @@ export class PanelsComponent implements OnInit, OnDestroy {
   // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
-    this.getAllPaginatedPanels(new PaginatedPayload());
+    const initialPayload = new PaginatedPayload();
+    initialPayload.pagination.pageSize = 10;
+    this.currentPayload = initialPayload;
+    this.getAllPaginatedPanels(initialPayload);
     this.setConfigMaps();
   }
   ngOnDestroy() {
@@ -163,10 +166,16 @@ export class PanelsComponent implements OnInit, OnDestroy {
       },
     });
 
-    this.ref?.onClose.subscribe((res) => {
+    this.ref.onClose.subscribe((payload: Panel) => {
       document.body.style.overflow = 'auto';
-      if (res) {
-        this.CreatePanel(res, false);
+      if (payload) {
+        this.CreatePanel(payload, false);
+      } else {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Info',
+          detail: 'No changes made to panels',
+        });
       }
       this.fGroup.reset();
     });
@@ -191,10 +200,16 @@ export class PanelsComponent implements OnInit, OnDestroy {
       },
     });
 
-    this.ref?.onClose.subscribe((res) => {
+    this.ref.onClose.subscribe((payload: Panel) => {
       document.body.style.overflow = 'auto';
-      if (res) {
-        this.updatePanel(res);
+      if (payload) {
+        this.updatePanel(payload);
+      } else {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Info',
+          detail: 'No changes made to panels',
+        });
       }
       this.fGroup.reset();
     });

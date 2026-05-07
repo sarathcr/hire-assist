@@ -121,7 +121,10 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
   // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
-    this.getAllPaginateddepartmentes(new PaginatedPayload());
+    const initialPayload = new PaginatedPayload();
+    initialPayload.pagination.pageSize = 10;
+    this.currentPayload = initialPayload;
+    this.getAllPaginateddepartmentes(initialPayload);
     this.setConfigMaps();
   }
   ngOnDestroy(): void {
@@ -162,10 +165,16 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       },
     });
 
-    this.ref?.onClose.subscribe((res) => {
+    this.ref.onClose.subscribe((res: Department) => {
       document.body.style.overflow = 'auto';
       if (res) {
         this.createDepartment(res);
+      } else {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Info',
+          detail: 'No changes made to departments',
+        });
       }
       this.fGroup.reset();
     });
@@ -190,10 +199,16 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       },
     });
 
-    this.ref?.onClose.subscribe((res) => {
+    this.ref.onClose.subscribe((res: Department) => {
       document.body.style.overflow = 'auto';
       if (res) {
         this.updateDepartment(res);
+      } else {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Info',
+          detail: 'No changes made to departments',
+        });
       }
       this.fGroup.reset();
     });

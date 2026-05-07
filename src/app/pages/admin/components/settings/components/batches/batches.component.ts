@@ -98,6 +98,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
   public historyLoading: boolean = false;
   public hasMoreHistory: boolean = true;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
+  private previousFilterMap: any = {};
 
   private ref: DynamicDialogRef | undefined;
 
@@ -115,7 +116,10 @@ export class BatchesComponent implements OnInit, OnDestroy {
   // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
-    this.getAllPaginatedBatches(new PaginatedPayload());
+    const initialPayload = new PaginatedPayload();
+    initialPayload.pagination.pageSize = 10;
+    this.currentPayload = initialPayload;
+    this.getAllPaginatedBatches(initialPayload);
     this.setConfigMaps();
   }
   ngOnDestroy(): void {
@@ -125,13 +129,16 @@ export class BatchesComponent implements OnInit, OnDestroy {
   }
   // Public Methods
   public onTablePayloadChange(payload: PaginatedPayload): void {
-    this.currentPayload = {
-      ...payload,
-      pagination: {
-        ...payload.pagination,
-        pageNumber: 1,
-      },
-    };
+    const isSearch =
+      JSON.stringify(payload.filterMap) !==
+      JSON.stringify(this.previousFilterMap);
+
+    if (isSearch) {
+      payload.pagination.pageNumber = 1;
+    }
+
+    this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
+    this.currentPayload = payload;
     this.loadData(payload);
   }
 
@@ -187,6 +194,12 @@ export class BatchesComponent implements OnInit, OnDestroy {
       document.body.style.overflow = 'auto';
       if (res) {
         this.updateBatch(res);
+      } else {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Info',
+          detail: 'No changes made to batches',
+        });
       }
       this.fGroup.reset();
     });
@@ -220,6 +233,12 @@ export class BatchesComponent implements OnInit, OnDestroy {
       document.body.style.overflow = 'auto';
       if (result) {
         this.deleteBatchItem(id);
+      } else {
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Info',
+          detail: 'No changes made to batches',
+        });
       }
       this.fGroup.reset();
     });
