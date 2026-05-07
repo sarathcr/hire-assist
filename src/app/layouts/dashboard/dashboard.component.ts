@@ -54,40 +54,43 @@ export class DashboardComponent implements OnInit {
   private loadProfileImageIfNeeded(): void {
     const isOnProfilePage = this.router.url.includes('/profile');
 
-    if (!this.storeService.getProfileImageUrl() && !this.storeService.isProfileDetailsLoading && !isOnProfilePage) {
+    if (!this.storeService.getProfileImageUrl() && !this.storeService.isProfileDetailsLoading) {
       this.storeService.setIsLoadingProfileImage(true);
-      this.storeService.setIsProfileDetailsLoading(true);
 
-      this.profileServices.GetProfileDetails().subscribe({
-        next: (profileDetails) => {
-          if (profileDetails.profilePhoto?.id && profileDetails.profilePhoto?.attachmentType) {
-            this.profileServices
-              .GetPhoto(
-                profileDetails.profilePhoto.id,
-                profileDetails.profilePhoto.attachmentType,
-              )
-              .subscribe({
-                next: (blob: Blob) => {
-                  const url = URL.createObjectURL(blob);
-                  this.storeService.setProfileImageUrl(url);
-                  this.storeService.setIsLoadingProfileImage(false);
-                  this.storeService.setIsProfileDetailsLoading(false);
-                },
-                error: () => {
-                  this.storeService.setIsLoadingProfileImage(false);
-                  this.storeService.setIsProfileDetailsLoading(false);
-                },
-              });
-          } else {
+      if (!isOnProfilePage) {
+        this.storeService.setIsProfileDetailsLoading(true);
+
+        this.profileServices.GetProfileDetails().subscribe({
+          next: (profileDetails) => {
+            if (profileDetails.profilePhoto?.id && profileDetails.profilePhoto?.attachmentType) {
+              this.profileServices
+                .GetPhoto(
+                  profileDetails.profilePhoto.id,
+                  profileDetails.profilePhoto.attachmentType,
+                )
+                .subscribe({
+                  next: (blob: Blob) => {
+                    const url = URL.createObjectURL(blob);
+                    this.storeService.setProfileImageUrl(url);
+                    this.storeService.setIsLoadingProfileImage(false);
+                    this.storeService.setIsProfileDetailsLoading(false);
+                  },
+                  error: () => {
+                    this.storeService.setIsLoadingProfileImage(false);
+                    this.storeService.setIsProfileDetailsLoading(false);
+                  },
+                });
+            } else {
+              this.storeService.setIsLoadingProfileImage(false);
+              this.storeService.setIsProfileDetailsLoading(false);
+            }
+          },
+          error: () => {
             this.storeService.setIsLoadingProfileImage(false);
             this.storeService.setIsProfileDetailsLoading(false);
-          }
-        },
-        error: () => {
-          this.storeService.setIsLoadingProfileImage(false);
-          this.storeService.setIsProfileDetailsLoading(false);
-        },
-      });
+          },
+        });
+      }
     }
   }
 

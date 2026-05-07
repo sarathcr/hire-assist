@@ -347,6 +347,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
   private loadProfileDetails(): void {
     this.isLoading = true;
     this.storeService.setIsProfileDetailsLoading(true);
+    this.storeService.setIsLoadingProfileImage(true);
     
     const next = (res: ProfileDetails) => {
       this.profileDetailsDataSource = res;
@@ -372,8 +373,11 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       if (res.designation != undefined)
         this.profileDataSource.designation = res.designation;
 
-      if (this.profileBlob != undefined && this.profileType != undefined)
+      if (this.profileBlob != undefined && this.profileType != undefined) {
         this.getProfilePhoto(this.profileBlob, this.profileType);
+      } else {
+        this.storeService.setIsLoadingProfileImage(false);
+      }
       if (this.coverBlob != undefined && this.coverType != undefined)
         this.getCoverPhoto(this.coverBlob, this.coverType);
       
@@ -383,11 +387,13 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     const error = () => {
       this.isLoading = false;
       this.storeService.setIsProfileDetailsLoading(false);
+      this.storeService.setIsLoadingProfileImage(false);
     };
     this.profileServices.GetProfileDetails().subscribe({ next, error });
   }
   private getProfilePhoto(blob: string, attachmentType: number): void {
     this.isLoadingProfileImage = true;
+    this.storeService.setIsLoadingProfileImage(true);
     if (this.ref) {
       const dialogData = (this.ref as any).config?.data;
       if (dialogData) {
@@ -404,6 +410,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
           this.storeService.setProfileImageUrl(url);
         }
         this.isLoadingProfileImage = false;
+        this.storeService.setIsLoadingProfileImage(false);
         if (this.ref) {
           const dialogData = (this.ref as any).config?.data;
           if (dialogData) {
@@ -413,6 +420,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       },
       error: () => {
         this.isLoadingProfileImage = false;
+        this.storeService.setIsLoadingProfileImage(false);
         if (this.ref) {
           const dialogData = (this.ref as any).config?.data;
           if (dialogData) {

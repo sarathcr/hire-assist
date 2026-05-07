@@ -166,6 +166,9 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   public editUser(userData: RolesAccess) {
+    if ((userData as any).isSelf) {
+      return;
+    }
     this.ref = this.dialog.open(UserDialogComponent, {
       data: userData,
       header: 'Update User',
@@ -220,6 +223,10 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   public deleteUser(userId: string) {
+    const user = this.data?.data?.find((u: any) => u.id === userId);
+    if (user?.isSelf) {
+      return;
+    }
     const modalData: DialogData = {
       message: 'Are you sure you want to delete the user?',
       isChoice: true,
@@ -310,6 +317,9 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
 
   public onButtonClick(data: { event: any; fName: string }): void {
     const { event, fName } = data;
+    if (event.isSelf) {
+      return;
+    }
     switch (fName) {
       case 'Edit':
         this.editUser(event);

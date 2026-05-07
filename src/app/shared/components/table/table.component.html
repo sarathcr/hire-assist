@@ -544,6 +544,7 @@
                   [outlined]="true"
                   [raised]="true"
                   [label]="headerColumn.buttonLabel"
+                  [disabled]="product.isSelf || product.isDisabled"
                   (onClick)="onButtonClick(product)"
                 >
                 </p-button>
@@ -576,7 +577,8 @@
                           [plain]="true"
                           [disabled]="
                             (product.disabledButtonIndices?.includes(i) ||
-                              product.isDisabled) ??
+                              product.isDisabled ||
+                              product.isSelf) ??
                             false
                           "
                           styleClass="w-full text-left justify-content-start"
@@ -597,7 +599,7 @@
                   [rounded]="true"
                   [text]="true"
                   [plain]="true"
-                  [disabled]="product.isDisabled"
+                  [disabled]="product.isDisabled || product.isSelf"
                   (onClick)="op.toggle($event)"
                 ></p-button>
               }
