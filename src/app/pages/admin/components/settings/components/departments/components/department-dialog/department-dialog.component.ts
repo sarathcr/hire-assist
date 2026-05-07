@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Metadata } from '../../../../../../../../shared/utilities/form.utility';
+import { isFormUnchanged, Metadata } from '../../../../../../../../shared/utilities/form.utility';
 
 import { NgClass } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -27,6 +27,7 @@ export class DepartmentDialogComponent implements OnInit, OnDestroy {
   public data!: DepartmentFormGroup;
   public metadata!: Metadata[];
   public isEdit = false;
+  private initialValue: any;
 
   constructor(
     private ref: DynamicDialogRef,
@@ -41,7 +42,13 @@ export class DepartmentDialogComponent implements OnInit, OnDestroy {
       const formData = this.data.formData;
       formData.id = this.data.formData.id;
       this.data.fGroup.patchValue({ ...formData });
+      this.initialValue = this.data.fGroup.value;
     }
+  }
+
+  public get isUnchanged(): boolean {
+    if (!this.isEdit) return false;
+    return isFormUnchanged(this.data.fGroup.value, this.initialValue);
   }
 
   public ngOnDestroy(): void {

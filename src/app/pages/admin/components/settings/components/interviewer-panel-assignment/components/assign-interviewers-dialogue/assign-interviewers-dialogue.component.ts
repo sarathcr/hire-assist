@@ -15,6 +15,7 @@ import { Option } from '../../../../../../../../shared/models/option';
 import { StoreService } from '../../../../../../../../shared/services/store.service';
 import {
   buildFormGroup,
+  isFormUnchanged,
   ConfigMap,
   CustomSelectConfig,
 } from '../../../../../../../../shared/utilities/form.utility';
@@ -51,6 +52,7 @@ export class AssignInterviewersDialogueComponent implements OnInit {
   public isEdit = false;
   public assessmentId?: number;
   public interviewId?: number;
+  private initialValue: any;
   constructor(
     private readonly ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
@@ -97,6 +99,12 @@ export class AssignInterviewersDialogueComponent implements OnInit {
         panels: null,
       });
     }
+    this.initialValue = this.fGroup.value;
+  }
+
+  public get isUnchanged(): boolean {
+    if (!this.isEdit) return false;
+    return isFormUnchanged(this.fGroup.value, this.initialValue);
   }
 
   public getPanelNames(): string {

@@ -42,6 +42,7 @@ import { DialogData } from '../../../../../../../../shared/models/dialog.models'
 import { Option } from '../../../../../../../../shared/models/option';
 import { StoreService } from '../../../../../../../../shared/services/store.service';
 import {
+  isFormUnchanged,
   ConfigMap,
   CustomSelectConfig,
 } from '../../../../../../../../shared/utilities/form.utility';
@@ -225,6 +226,7 @@ export class QuestionFormModalComponent
   public deletingOptionAttachments = new Map<number, boolean>();
   public isLoadingData = false;
   public isSubmitting = false;
+  private initialValue: any;
 
   // Private Properties
   private configMap!: ConfigMap;
@@ -1176,7 +1178,13 @@ export class QuestionFormModalComponent
     this.patchFormValues(formData);
     this.ensureFileDtoControl(formData);
     this.loadOptions(formData);
+    this.initialValue = this.data.fGroup.value;
     this.cdr.detectChanges();
+  }
+
+  public get isUnchanged(): boolean {
+    if (!this.isEdit) return false;
+    return isFormUnchanged(this.data.fGroup.value, this.initialValue);
   }
 
   private patchFormValues(formData: any): void {

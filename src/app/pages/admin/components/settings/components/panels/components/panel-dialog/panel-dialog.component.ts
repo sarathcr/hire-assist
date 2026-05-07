@@ -7,7 +7,7 @@ import { ButtonComponent } from '../../../../../../../../shared/components/butto
 import { InputTextComponent } from '../../../../../../../../shared/components/form/input-text/input-text.component';
 import { InputTextareaComponent } from '../../../../../../../../shared/components/form/input-textarea/input-textarea.component';
 import { ToggleSwitchComponent } from '../../../../../../../../shared/components/form/toggle-switch/toggle-switch.component';
-import { Metadata } from '../../../../../../../../shared/utilities/form.utility';
+import { isFormUnchanged, Metadata } from '../../../../../../../../shared/utilities/form.utility';
 import { PanelFormGroup } from '../../../../../../models/panel.model';
 
 @Component({
@@ -30,6 +30,7 @@ export class PanelDialogComponent
   public data!: PanelFormGroup;
   public metadata!: Metadata[];
   public isEdit = false;
+  private initialValue: any;
 
   constructor(
     private ref: DynamicDialogRef,
@@ -46,7 +47,13 @@ export class PanelDialogComponent
       const formData = this.data.formData;
       formData.id = this.data.formData.id;
       this.data.fGroup.patchValue({ ...formData });
+      this.initialValue = this.data.fGroup.value;
     }
+  }
+
+  public get isUnchanged(): boolean {
+    if (!this.isEdit) return false;
+    return isFormUnchanged(this.data.fGroup.value, this.initialValue);
   }
 
   override ngOnDestroy(): void {

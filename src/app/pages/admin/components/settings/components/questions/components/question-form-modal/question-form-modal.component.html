@@ -391,7 +391,7 @@
         ></app-button>
         <app-button
           buttonLabel="Submit"
-          [disabled]="!data.fGroup.valid || isSubmitting"
+          [disabled]="!data.fGroup.valid || isSubmitting || isUnchanged"
           (btnClick)="onSubmit()"
         >
         </app-button>

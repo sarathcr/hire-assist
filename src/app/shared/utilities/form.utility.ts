@@ -149,3 +149,36 @@ export const buildFormGroup = <T extends FormEntity>(myObj: T): FormGroup => {
   }
   return formBuilder.group(formControls);
 };
+
+export const isFormUnchanged = (currentValue: any, initialValue: any): boolean => {
+  if (currentValue === initialValue) return true;
+
+  if (typeof currentValue === 'string' && typeof initialValue === 'string') {
+    return currentValue.trim() === initialValue.trim();
+  }
+
+  if (Array.isArray(currentValue) && Array.isArray(initialValue)) {
+    if (currentValue.length !== initialValue.length) return false;
+    for (let i = 0; i < currentValue.length; i++) {
+      if (!isFormUnchanged(currentValue[i], initialValue[i])) return false;
+    }
+    return true;
+  }
+
+  if (
+    typeof currentValue === 'object' &&
+    currentValue !== null &&
+    typeof initialValue === 'object' &&
+    initialValue !== null
+  ) {
+    const currentKeys = Object.keys(currentValue);
+    const initialKeys = Object.keys(initialValue);
+    if (currentKeys.length !== initialKeys.length) return false;
+    for (const key of currentKeys) {
+      if (!isFormUnchanged(currentValue[key], initialValue[key])) return false;
+    }
+    return true;
+  }
+
+  return currentValue === initialValue;
+};

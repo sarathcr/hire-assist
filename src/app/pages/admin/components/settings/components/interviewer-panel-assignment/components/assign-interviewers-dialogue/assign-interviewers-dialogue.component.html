@@ -50,7 +50,7 @@
       ></app-button>
       <app-button
         [buttonLabel]="isEdit ? 'Update Assignment' : 'Assign Panel'"
-        [disabled]="!fGroup.valid"
+        [disabled]="!fGroup.valid || isUnchanged"
         (btnClick)="onSubmit()"
       ></app-button>
     </footer>

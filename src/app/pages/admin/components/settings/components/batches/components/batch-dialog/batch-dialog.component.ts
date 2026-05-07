@@ -8,7 +8,7 @@ import { InputTextComponent } from '../../../../../../../../shared/components/fo
 import { InputTextareaComponent } from '../../../../../../../../shared/components/form/input-textarea/input-textarea.component';
 import { ToggleSwitchComponent } from '../../../../../../../../shared/components/form/toggle-switch/toggle-switch.component';
 import { validateStartAndEndDates } from '../../../../../../../../shared/utilities/date.utility';
-import { Metadata } from '../../../../../../../../shared/utilities/form.utility';
+import { isFormUnchanged, Metadata } from '../../../../../../../../shared/utilities/form.utility';
 import { BatchFormGroup } from '../../../../../../models/batch.model';
 
 @Component({
@@ -32,6 +32,7 @@ export class BatchDialogComponent
   public metadata!: Metadata[];
   public showTime = true;
   public isEdit = false;
+  private initialValue: any;
 
   constructor(
     private ref: DynamicDialogRef,
@@ -49,7 +50,13 @@ export class BatchDialogComponent
       const formData = this.data.formData;
       formData.id = this.data.formData.id;
       this.data.fGroup.patchValue({ ...formData });
+      this.initialValue = this.data.fGroup.value;
     }
+  }
+
+  public get isUnchanged(): boolean {
+    if (!this.isEdit) return false;
+    return isFormUnchanged(this.data.fGroup.value, this.initialValue);
   }
 
   override ngOnDestroy(): void {
