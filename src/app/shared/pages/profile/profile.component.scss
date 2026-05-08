@@ -109,6 +109,7 @@
     }
   }
 
+
   &__action-group {
     display: flex;
     gap: 0.75rem;
@@ -640,7 +641,7 @@
 @media (max-width: 1024px) {
   .profile__grid {
     grid-template-columns: 1fr;
-    padding: 0 1rem;
+    padding: 0;
     gap: 1.5rem;
   }
 
@@ -675,6 +676,7 @@
 
   .profile__identity {
     margin-top: -40px;
+    padding: 0;
   }
 
   .profile__identity-name {
@@ -703,13 +705,50 @@
 }
 
 @media (max-width: 480px) {
+  .profile__identity-inner {
+    padding: 3.5rem 1.25rem 1.75rem;
+    gap: 0.75rem;
+  }
+
+  .profile__identity-name {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
   .profile__identity-meta {
-    gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
   }
 
   .profile__meta-chip {
     width: 100%;
+    max-width: 280px;
     justify-content: center;
+    padding: 0.5rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    color: #475569;
+
+    i {
+      color: #94a3b8;
+      margin-right: 0.5rem;
+    }
+
+    &--primary {
+      background: rgba(79, 70, 229, 0.04);
+      border-color: rgba(79, 70, 229, 0.1);
+      color: #4f46e5;
+      font-weight: 700;
+
+      i {
+        color: #4f46e5;
+      }
+    }
   }
 
   .profile__card-head {
@@ -718,5 +757,54 @@
 
   .profile__timeline-card-inner {
     padding: 1rem;
+  }
+
+  /* Optimize Timeline spacing for mobile */
+  :host ::ng-deep {
+    .p-timeline-event-content {
+      padding-left: 0.75rem !important;
+    }
+  }
+
+  .profile__timeline-marker {
+    width: 1.75rem;
+    height: 1.75rem;
+    i { font-size: 0.8rem; }
+  }
+
+  .profile__timeline-header {
+    margin-bottom: 0.5rem;
+  }
+
+  .profile__timeline-role {
+    font-size: 0.95rem;
+  }
+
+  .profile__timeline-company {
+    font-size: 0.8rem;
+  }
+
+  .profile__timeline-date {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  .profile__timeline-actions {
+    margin-top: 0.75rem;
+    padding: 0.2rem;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    gap: 0.25rem;
+  }
+
+  .profile__timeline-btn {
+    width: 32px;
+    height: 32px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 }

@@ -3,15 +3,27 @@
   flex-direction: column;
   gap: 0;
 
+  @media (max-width: 640px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1rem;
+  }
+
   &__group {
     display: flex;
     flex-direction: column;
     gap: .25rem;
-    padding: .75rem 0;
+    padding: .85rem 0;
     border-bottom: 1px solid #f8fafc;
 
     @media (max-width: 640px) {
-      padding: .6rem 0;
+      padding: 0.75rem 0;
+      
+      /* Email and Member Since take full width on mobile */
+      &:first-child,
+      &:last-child {
+        grid-column: span 2;
+      }
     }
 
     &:last-child {
@@ -23,21 +35,27 @@
     font-size: .7rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .07em;
+    letter-spacing: .05em;
     color: #94a3b8;
   }
 
   &__value {
-    font-size: .9rem;
-    font-weight: 500;
+    font-size: .95rem;
+    font-weight: 600;
     color: #1e293b;
     margin: 0;
-    word-break: break-all;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.4;
 
     &--empty {
       color: #cbd5e1;
       font-style: italic;
       font-weight: 400;
+    }
+
+    @media (max-width: 640px) {
+      font-size: 0.9rem;
     }
   }
 }

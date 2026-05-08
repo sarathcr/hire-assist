@@ -1,0 +1,113 @@
+.experience-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    overflow: visible;
+  }
+
+  &__field-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  &__field {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* Space for absolute error */
+
+    ::ng-deep .p-floatlabel {
+      width: 100%;
+
+      label {
+        font-weight: 300;
+      }
+    }
+
+    ::ng-deep input,
+    ::ng-deep .p-datepicker,
+    ::ng-deep textarea {
+      width: 100%;
+    }
+  }
+
+  &__error {
+    font-size: 0.7rem;
+    color: #ef4444;
+    position: absolute;
+    top: 100%;
+    margin-top: 4px;
+    left: 0.25rem;
+    width: 100%;
+    line-height: 1.2;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+
+    @media (max-width: 640px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__field-checkbox {
+    display: flex;
+    align-items: center;
+    padding-left: 0.25rem;
+
+    label {
+      font-size: 0.9rem;
+      color: #475569;
+      cursor: pointer;
+    }
+  }
+
+  &__footer {
+    padding: 1.25rem 1.5rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-shrink: 0;
+
+    ::ng-deep .p-button {
+      border-radius: 8px;
+    }
+  }
+
+  ::ng-deep {
+
+    app-input-text,
+    app-input-textarea {
+      display: block;
+    }
+
+    app-input-text .input-text,
+    app-input-textarea .text-area {
+      margin-bottom: 0 !important;
+      position: relative;
+    }
+
+    app-input-text .input-text__validation-label,
+    app-input-textarea .text-area__validation-label {
+      top: 100%;
+      margin-top: 4px;
+      bottom: auto;
+    }
+  }
+}

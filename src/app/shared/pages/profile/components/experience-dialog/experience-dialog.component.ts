@@ -5,7 +5,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FloatLabelModule } from 'primeng/floatlabel';
-import { CalendarModule } from 'primeng/calendar';
+import { DatePickerModule } from 'primeng/datepicker';
 import { InputTextComponent } from '../../../../components/form/input-text/input-text.component';
 import { InputTextareaComponent } from '../../../../components/form/input-textarea/input-textarea.component';
 import { ExperienceDto } from '../../models/basic-information.model';
@@ -21,174 +21,12 @@ import { Subject, takeUntil } from 'rxjs';
     ButtonModule,
     CheckboxModule,
     FloatLabelModule,
-    CalendarModule,
+    DatePickerModule,
     InputTextComponent,
     InputTextareaComponent
   ],
-  template: `
-    <div class="experience-dialog">
-      <form [formGroup]="experienceForm" (ngSubmit)="onSubmit()" class="experience-dialog__form">
-        <div class="experience-dialog__content">
-          <div class="experience-dialog__field">
-            <app-input-text
-              [formGroup]="experienceForm"
-              [config]="roleConfig"
-            ></app-input-text>
-          </div>
-
-          <div class="experience-dialog__field">
-            <app-input-text
-              [formGroup]="experienceForm"
-              [config]="companyConfig"
-            ></app-input-text>
-          </div>
-
-          <div class="experience-dialog__row">
-            <div class="experience-dialog__field">
-              <p-floatlabel variant="on">
-                <p-calendar 
-                  id="startDate" 
-                  formControlName="startDate" 
-                  [showIcon]="true" 
-                  dateFormat="M yy" 
-                  view="month" 
-                  [maxDate]="maxDate"
-                  [baseZIndex]="10000"
-                  class="w-full"
-                  [ngClass]="{'ng-invalid ng-dirty': experienceForm.get('startDate')?.touched && experienceForm.get('startDate')?.invalid}"
-                ></p-calendar>
-                <label for="startDate">Start Date</label>
-              </p-floatlabel>
-              @if (experienceForm.get('startDate')?.touched && experienceForm.get('startDate')?.errors) {
-                <span class="experience-dialog__error">
-                  @if (experienceForm.get('startDate')?.errors?.['required']) { This field is required. }
-                  @else if (experienceForm.get('startDate')?.errors?.['futureDate']) { Date cannot be in the future. }
-                </span>
-              }
-            </div>
-
-            @if (!experienceForm.get('isCurrent')?.value) {
-              <div class="experience-dialog__field">
-                <p-floatlabel variant="on">
-                  <p-calendar 
-                    id="endDate" 
-                    formControlName="endDate" 
-                    [showIcon]="true" 
-                    dateFormat="M yy" 
-                    view="month" 
-                    [maxDate]="maxDate"
-                    [baseZIndex]="10000"
-                    class="w-full"
-                    [ngClass]="{'ng-invalid ng-dirty': experienceForm.get('endDate')?.touched && experienceForm.get('endDate')?.invalid}"
-                  ></p-calendar>
-                  <label for="endDate">End Date</label>
-                </p-floatlabel>
-                @if (experienceForm.get('endDate')?.touched && experienceForm.get('endDate')?.errors) {
-                  <span class="experience-dialog__error">
-                    @if (experienceForm.get('endDate')?.errors?.['required']) { This field is required. }
-                    @else if (experienceForm.get('endDate')?.errors?.['futureDate']) { Date cannot be in the future. }
-                    @else if (experienceForm.get('endDate')?.errors?.['endDateInvalid']) { End date cannot be before start date. }
-                  </span>
-                }
-              </div>
-            }
-          </div>
-
-          <div class="experience-dialog__field-checkbox">
-            <p-checkbox formControlName="isCurrent" [binary]="true" inputId="isCurrent"></p-checkbox>
-            <label for="isCurrent" class="ml-2">I am currently working in this role</label>
-          </div>
-
-          <div class="experience-dialog__field">
-            <app-input-textarea
-              [formGroup]="experienceForm"
-              [config]="descriptionConfig"
-            ></app-input-textarea>
-          </div>
-        </div>
-
-        <footer class="experience-dialog__footer">
-          <button pButton type="button" label="Cancel" class="p-button-outlined" (click)="onCancel()"></button>
-          <button 
-            pButton 
-            type="submit" 
-            [label]="isEdit ? 'Save Changes' : 'Add Experience'" 
-            [disabled]="isSaveDisabled"
-          ></button>
-        </footer>
-      </form>
-    </div>
-  `,
-  styles: [`
-    .experience-dialog {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-
-      &__form {
-        display: flex;
-        flex-direction: column;
-      }
-
-      &__content {
-        padding: 1.5rem;
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        overflow: visible;
-      }
-
-      &__field {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        
-        ::ng-deep .p-floatlabel {
-          width: 100%;
-        }
-        ::ng-deep input, ::ng-deep .p-calendar, ::ng-deep textarea {
-          width: 100%;
-        }
-      }
-
-      &__error {
-        font-size: 0.75rem;
-        color: #ef4444;
-        margin-left: 0.25rem;
-      }
-
-      &__row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-      }
-
-      &__field-checkbox {
-        display: flex;
-        align-items: center;
-        margin-top: -0.5rem;
-        label {
-          font-size: 0.9rem;
-          color: #475569;
-          cursor: pointer;
-        }
-      }
-
-      &__footer {
-        padding: 1.25rem 1.5rem;
-        background: #f8fafc;
-        border-top: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.75rem;
-        flex-shrink: 0;
-        ::ng-deep .p-button {
-          border-radius: 8px;
-        }
-      }
-    }
-  `]
+  templateUrl: './experience-dialog.component.html',
+  styleUrl: './experience-dialog.component.scss'
 })
 export class ExperienceDialogComponent implements OnInit, OnDestroy {
   experienceForm: FormGroup;
@@ -225,10 +63,10 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
       role: ['', [Validators.required, Validators.maxLength(100), this.notOnlyNumbersValidator, this.noTrailingSpacesValidator]],
       company: ['', [Validators.required, Validators.maxLength(100), this.notOnlyNumbersValidator, this.noTrailingSpacesValidator]],
       startDate: [null, [Validators.required, this.dateValidator]],
-      endDate: [null, [this.dateValidator]],
+      endDate: [null, [Validators.required, this.dateValidator]],
       isCurrent: [false],
       description: ['', [Validators.maxLength(500), this.noTrailingSpacesValidator]]
-    });
+    }, { validators: [this.duplicateExperienceValidator.bind(this)] });
   }
 
   ngOnInit(): void {
@@ -307,6 +145,22 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
     today.setHours(23, 59, 59, 999);
     const selectedDate = new Date(control.value);
     return selectedDate > today ? { futureDate: true } : null;
+  }
+
+  private duplicateExperienceValidator(control: AbstractControl): ValidationErrors | null {
+    const role = control.get('role')?.value?.trim().toLowerCase();
+    const company = control.get('company')?.value?.trim().toLowerCase();
+    const id = control.get('id')?.value;
+
+    if (!company) return null;
+
+    const existing = this.config.data?.existingExperiences || [];
+    const isDuplicate = existing.some((exp: any) => 
+      exp.id !== id && 
+      exp.company?.trim().toLowerCase() === company
+    );
+
+    return isDuplicate ? { duplicateExperience: true } : null;
   }
 
   private validateDates(): void {

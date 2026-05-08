@@ -266,7 +266,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: 'File deleted successfully',
+            detail: 'Cover photo deleted successfully',
           });
           this.coverImageUrl = '';
         },
@@ -332,6 +332,9 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       header: 'Confirm Removal',
       width: '400px',
       modal: true,
+      breakpoints: {
+        '640px': '90vw',
+      },
       templates: {
         footer: DialogFooterComponent,
       },
@@ -494,6 +497,13 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     this.ref = this.dialog.open(ExperienceDialogComponent, {
       header: 'Add Experience',
       width: '550px',
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '95vw'
+      },
+      data: { 
+        existingExperiences: this.profileDetailsDataSource.userExperiences || [] 
+      },
       modal: true,
       focusOnShow: false,
       contentStyle: { overflow: 'visible', padding: '0' }
@@ -513,7 +523,14 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     this.ref = this.dialog.open(ExperienceDialogComponent, {
       header: 'Edit Experience',
       width: '550px',
-      data: { experience },
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '95vw'
+      },
+      data: { 
+        experience,
+        existingExperiences: this.profileDetailsDataSource.userExperiences || []
+      },
       modal: true,
       focusOnShow: false,
       contentStyle: { overflow: 'visible', padding: '0' }
@@ -565,6 +582,9 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       header: 'Confirm Removal',
       width: '400px',
       modal: true,
+      breakpoints: {
+        '640px': '90vw',
+      },
       templates: {
         footer: DialogFooterComponent,
       },

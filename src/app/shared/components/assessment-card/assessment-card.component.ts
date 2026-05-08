@@ -27,7 +27,6 @@ import { Assessment } from '../../../pages/admin/models/assessment.model';
 export class AssessmentCardComponent implements OnInit {
   public data = input<Assessment>();
   public edit = output<Assessment>();
-  public duplicate = output<Assessment>();
   public delete = output<number>();
   public showToggleButton = input<boolean>(true);
   public schedule = output<Assessment>();
@@ -71,11 +70,6 @@ export class AssessmentCardComponent implements OnInit {
         command: (e) => this.handleActionClick(e, 'edit'),
       },
       {
-        label: 'Duplicate',
-        icon: 'pi pi-copy',
-        command: (e) => this.handleActionClick(e, 'duplicate'),
-      },
-      {
         label: 'Delete',
         icon: 'pi pi-trash',
         command: (e) => this.handleActionClick(e, 'delete'),
@@ -90,7 +84,7 @@ export class AssessmentCardComponent implements OnInit {
 
   private handleActionClick(
     event: MenuItemCommandEvent,
-    type: 'edit' | 'duplicate' | 'delete' | 'schedule',
+    type: 'edit' | 'delete' | 'schedule',
   ): void {
     event.originalEvent?.stopPropagation();
     const assessment = this.data();
@@ -100,9 +94,6 @@ export class AssessmentCardComponent implements OnInit {
     switch (type) {
       case 'edit':
         this.edit.emit(assessment);
-        break;
-      case 'duplicate':
-        this.duplicate.emit(assessment);
         break;
       case 'delete':
         if (assessment.id) {

@@ -97,10 +97,6 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     this.openUpdateAssessmentDialog(assessment);
   }
 
-  public onDuplicateAssessment(assessment: Assessment): void {
-    const formData = assessment;
-    this.openDuplicateAssessmentDialog(formData);
-  }
 
   public onDeleteAssessment(assessmentId: number): void {
     this.openConfirmDeleteDialog(assessmentId);
@@ -196,34 +192,6 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     });
   }
 
-  private openDuplicateAssessmentDialog(assessment: Assessment): void {
-    const formGroup = buildFormGroup(new AssessmentForm());
-    const formData = { ...assessment };
-    formData.name = '';
-    const data = {
-      formData: formData,
-      fGroup: formGroup,
-      configMap: this.configMap,
-    };
-
-    this.ref = this.dialog.open(CreateUpdateAssessmentModalComponent, {
-      data,
-      header: 'Duplicate Assessment',
-      width: '50vw',
-      modal: true,
-      focusOnShow: false,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-    });
-
-    this.ref?.onClose.subscribe((res) => {
-      if (res) {
-        this.createAssessment(res, true);
-      }
-    });
-  }
 
   private openConfirmDeleteDialog(assessmentId: number): void {
     const modalData: DialogData = this.getConfirmDeleteDialogData();
