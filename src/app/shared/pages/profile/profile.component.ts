@@ -465,7 +465,6 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     });
   }
   private getCoverPhoto(blob: string, attachmentType: number): void {
-    this.isLoadingCoverImage = true;
     this.profileServices.GetPhoto(blob, attachmentType).subscribe({
       next: (blob: Blob) => {
         const url = URL.createObjectURL(blob);
