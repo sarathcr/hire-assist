@@ -79,7 +79,7 @@ export abstract class BaseFormComponent {
       return 'Special characters and numbers are not allowed.';
     }
     if (errors['notOnlyNumbers']) {
-      return 'Skill cannot be numeric only.';
+      return `${this.config.labelKey} cannot be numeric only.`;
     }
     if (errors['trailingSpaces']) {
       return 'Trailing spaces are not allowed.';
@@ -89,6 +89,12 @@ export abstract class BaseFormComponent {
     }
     if (errors['endDateTimeInvalid']) {
       return 'End date must be at least 1 hour after start date';
+    }
+    if (errors['futureDate']) {
+      return 'Date cannot be in the future.';
+    }
+    if (errors['endDateInvalid']) {
+      return 'End date cannot be before start date.';
     }
     return 'This field has an invalid value.';
   }

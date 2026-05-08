@@ -495,6 +495,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       header: 'Add Experience',
       width: '550px',
       modal: true,
+      focusOnShow: false,
       contentStyle: { overflow: 'visible', padding: '0' }
     });
 
@@ -514,6 +515,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       width: '550px',
       data: { experience },
       modal: true,
+      focusOnShow: false,
       contentStyle: { overflow: 'visible', padding: '0' }
     });
 
@@ -526,8 +528,9 @@ export class ProfileComponent extends BaseComponent implements OnInit {
 
   private onSaveExperience(experience: ExperienceDto): void {
     const experiences = [...(this.profileDetailsDataSource.userExperiences || [])];
+    const isEditing = !!experience.id;
     
-    if (experience.id) {
+    if (isEditing) {
       const index = experiences.findIndex(e => e.id === experience.id);
       if (index > -1) experiences[index] = experience;
     } else {
@@ -536,7 +539,11 @@ export class ProfileComponent extends BaseComponent implements OnInit {
 
     this.profileServices.saveUserExperiences(experiences).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Experience updated' });
+        this.messageService.add({ 
+          severity: 'success', 
+          summary: 'Success', 
+          detail: isEditing ? 'Experience updated' : 'Experience added' 
+        });
         this.loadProfileDetails();
       },
       error: () => {
@@ -546,13 +553,34 @@ export class ProfileComponent extends BaseComponent implements OnInit {
   }
 
   public onDeleteExperience(id: number): void {
-    this.profileServices.deleteUserExperience(id).subscribe({
-      next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Experience removed' });
-        this.loadProfileDetails();
+    const modalData: DialogData = {
+      message: 'Are you sure you want to remove this experience?',
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Remove',
+    };
+    
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Confirm Removal',
+      width: '400px',
+      modal: true,
+      templates: {
+        footer: DialogFooterComponent,
       },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to remove experience' });
+    });
+
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        this.profileServices.deleteUserExperience(id).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Experience removed' });
+            this.loadProfileDetails();
+          },
+          error: () => {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Failed to remove experience' });
+          }
+        });
       }
     });
   }
