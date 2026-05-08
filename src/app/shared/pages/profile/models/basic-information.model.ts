@@ -20,7 +20,7 @@ export class BasicInformation extends FormEntity {
     },
     configMap: {
       name: { id: 'name', labelKey: 'Name' },
-      email: { id: 'email', labelKey: 'Email' },
+      email: { id: 'email', labelKey: 'Email', readonly: true },
       phone: { id: 'phone', labelKey: 'Contact Number' },
       dob: { id: 'dob', labelKey: 'Date of Birth' },
       gender: {

@@ -12,7 +12,7 @@
   }
 
   &__content {
-    padding: 1rem 0.5rem;
+    padding: 2.5rem 0.5rem 0;
     overflow-y: auto;
     flex: 1;
     min-height: 0;
@@ -22,23 +22,42 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
-    padding-bottom: 1rem;
+    padding-bottom: 1.5rem;
 
     @media (max-width: 640px) {
       grid-template-columns: 1fr;
-      gap: 1.25rem;
+      gap: 1.75rem;
+    }
+  }
+
+  /* Force reset internal component margins to ensure grid gap is perfectly consistent */
+  ::ng-deep {
+    .input-text,
+    .input-text-calender,
+    .input-select {
+      margin-bottom: 0 !important;
+    }
+
+    /* Standardize validation label positioning to prevent overlapping */
+    .input-text__validation-label,
+    .input-text-calender__validation-label,
+    .input-select__validation-label {
+      position: absolute;
+      top: 100%;
+      margin-top: 4px;
     }
   }
 
   &__field {
     width: 100%;
+    position: relative;
   }
 
   &__footer {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-    padding: 1.25rem 0.5rem;
+    padding: 1.25rem 0.5rem 0;
     border-top: 1px solid #f1f5f9;
     flex-shrink: 0;
   }
