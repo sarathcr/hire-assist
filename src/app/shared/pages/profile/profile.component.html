@@ -113,8 +113,11 @@
           <div class="profile__card-head">
             <span class="profile__card-icon profile__card-icon--violet"><i class="pi pi-bolt"></i></span>
             <h2 class="profile__card-title">Technical Skills</h2>
-            <button class="profile__add-btn" (click)="onEditSkills()" title="Add Skills">
-              <i class="pi pi-plus"></i>
+            <button 
+              class="profile__add-btn" 
+              (click)="onEditSkills()" 
+              [title]="(profileDetailsDataSource.userSkills && profileDetailsDataSource.userSkills.length > 0) ? 'Edit Skills' : 'Add Skills'">
+              <i [class]="(profileDetailsDataSource.userSkills && profileDetailsDataSource.userSkills.length > 0) ? 'pi pi-pencil' : 'pi pi-plus'"></i>
             </button>
           </div>
 
@@ -153,9 +156,11 @@
           <div class="profile__card-head">
             <span class="profile__card-icon profile__card-icon--blue"><i class="pi pi-calendar"></i></span>
             <h2 class="profile__card-title">Upcoming Interviews</h2>
-            <span class="profile__badge profile__badge--green" *if="profileDetailsDataSource.userUpcomingInterviews?.length">
-              {{ profileDetailsDataSource.userUpcomingInterviews?.length }} Scheduled
-            </span>
+            @if (profileDetailsDataSource.userUpcomingInterviews?.length) {
+              <span class="profile__badge profile__badge--green">
+                {{ profileDetailsDataSource.userUpcomingInterviews?.length }} Scheduled
+              </span>
+            }
           </div>
 
           @if (profileDetailsDataSource.userUpcomingInterviews && profileDetailsDataSource.userUpcomingInterviews.length > 0) {

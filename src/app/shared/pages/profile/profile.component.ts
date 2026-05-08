@@ -22,6 +22,9 @@ import { ProfileDetails, SkillsDto, ExperienceDto } from './models/basic-informa
 import { Profile, ProfileForm } from './models/profile.model';
 import { ProfileServicesService } from './services/profile-services.service';
 import { ProfileSkeletonComponent } from './profile-skeleton.component';
+import { DialogComponent } from '../../components/dialog/dialog.component';
+import { DialogFooterComponent } from '../../components/dialog-footer/dialog-footer.component';
+import { DialogData } from '../../models/dialog.models';
 
 @Component({
   selector: 'app-profile',
@@ -274,6 +277,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
   }
 
   public onEditSkills(): void {
+    const hasSkills = this.profileDetailsDataSource?.userSkills && this.profileDetailsDataSource.userSkills.length > 0;
     const data: SkillsDialogData = {
       availableSkills: [],
       userSkills: this.profileDetailsDataSource?.userSkills || [],
@@ -281,7 +285,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     };
     this.ref = this.dialog.open(SkillsDialogComponent, {
       data: data,
-      header: 'Edit Skills',
+      header: hasSkills ? 'Edit Skills' : 'Add Skills',
       width: '50vw',
       modal: true,
       breakpoints: {
@@ -316,22 +320,43 @@ export class ProfileComponent extends BaseComponent implements OnInit {
   }
 
   public onDeleteSkill(skillId: number): void {
-    this.profileServices.deleteUserSkill(skillId).subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Skill removed successfully',
-        });
-        this.getProfileDetails();
+    const modalData: DialogData = {
+      message: 'Are you sure you want to remove this skill?',
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Remove',
+    };
+    
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Confirm Removal',
+      width: '400px',
+      modal: true,
+      templates: {
+        footer: DialogFooterComponent,
       },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to remove skill',
+    });
+
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        this.profileServices.deleteUserSkill(skillId).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Skill removed successfully',
+            });
+            this.getProfileDetails();
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to remove skill',
+            });
+          },
         });
-      },
+      }
     });
   }
 

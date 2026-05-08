@@ -131,7 +131,7 @@ import { SkeletonModule } from 'primeng/skeleton';
       @media (max-width: 768px) { padding: 0 1rem; }
     }
     .sk-profile__identity-inner {
-      // max-width: 1200px;
+      
       margin: 0 auto;
       display: flex;
       align-items: flex-end;

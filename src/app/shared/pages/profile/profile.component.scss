@@ -327,6 +327,9 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   &__skill-remove {

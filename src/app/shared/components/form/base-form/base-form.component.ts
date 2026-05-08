@@ -78,6 +78,12 @@ export abstract class BaseFormComponent {
     if (errors['hasSpecialCharsOrNumbers']) {
       return 'Special characters and numbers are not allowed.';
     }
+    if (errors['notOnlyNumbers']) {
+      return 'Skill cannot be numeric only.';
+    }
+    if (errors['trailingSpaces']) {
+      return 'Trailing spaces are not allowed.';
+    }
     if (errors['onlyNumbers']) {
       return 'Only numeric values are allowed.';
     }

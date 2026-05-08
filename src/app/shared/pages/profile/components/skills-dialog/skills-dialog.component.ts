@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -8,7 +8,7 @@ import { InputMultiselectComponent } from '../../../../components/form/input-mul
 import { InputTextComponent } from '../../../../components/form/input-text/input-text.component';
 import { BaseComponent } from '../../../../components/base/base.component';
 import { Option } from '../../../../models/option';
-import { CustomSelectConfig, CustomTextInputConfig } from '../../../../utilities/form.utility';
+import { CustomSelectConfig, CustomTextInputConfig, isFormUnchanged } from '../../../../utilities/form.utility';
 import { SkillsDto } from '../../models/basic-information.model';
 import { ProfileServicesService } from '../../services/profile-services.service';
 
@@ -42,6 +42,7 @@ export class SkillsDialogComponent
   public availableOptions: Option[] = [];
   public isLoading = false;
   public isAddingSkill = false;
+  private initialSkillsValue: string[] = [];
 
   constructor(
     private ref: DynamicDialogRef,
@@ -61,22 +62,44 @@ export class SkillsDialogComponent
   private initializeForm(): void {
     this.skillsForm = new FormGroup({
       skills: new FormControl<string[]>([], [Validators.required]),
-      newSkill: new FormControl<string>('', [Validators.minLength(2)]),
+      newSkill: new FormControl<string>('', [
+        Validators.minLength(1),
+        Validators.maxLength(20),
+        this.notOnlyNumbersValidator,
+        this.noTrailingSpacesValidator,
+      ]),
     });
 
     // Set initial selected skills
+    let selectedIds: string[] = [];
     if (this.data?.userSkills && this.data.userSkills.length > 0) {
-      const selectedIds = this.data.userSkills
+      selectedIds = this.data.userSkills
         .filter(s => s && s.id)
         .map((skill) => skill.id.toString());
       this.skillsForm.patchValue({ skills: selectedIds });
     }
+    this.initialSkillsValue = selectedIds;
 
     // Initialize new skill config
     this.newSkillConfig = {
       id: 'newSkill',
       labelKey: 'Add New Skill',
+      maxlength: 20,
     };
+  }
+
+  private notOnlyNumbersValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+    const isOnlyNumbers = /^\d+$/.test(value);
+    return isOnlyNumbers ? { notOnlyNumbers: true } : null;
+  }
+
+  private noTrailingSpacesValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+    const hasTrailingSpace = /\s$/.test(value);
+    return hasTrailingSpace ? { trailingSpaces: true } : null;
   }
 
   private loadSkills(): void {
@@ -97,12 +120,14 @@ export class SkillsDialogComponent
         };
 
         // Update form value after options are loaded to ensure multi-select displays correctly
+        let selectedIds: string[] = [];
         if (this.data?.userSkills && this.data.userSkills.length > 0) {
-          const selectedIds = this.data.userSkills
+          selectedIds = this.data.userSkills
             .filter((s) => s && s.id)
             .map((skill) => skill.id.toString());
           this.skillsForm.patchValue({ skills: selectedIds });
         }
+        this.initialSkillsValue = selectedIds;
 
         this.isLoading = false;
       },
@@ -119,6 +144,18 @@ export class SkillsDialogComponent
 
   override ngOnDestroy(): void {
     this.skillsForm.reset();
+  }
+
+  get isPristine(): boolean {
+    return isFormUnchanged(this.skillsForm.get('skills')?.value, this.initialSkillsValue);
+  }
+
+  get isSaveDisabled(): boolean {
+    return (
+      this.isPristine ||
+      this.skillsForm.get('skills')?.invalid ||
+      !!this.skillsForm.get('newSkill')?.value
+    );
   }
 
   public onSubmit(): void {
@@ -155,11 +192,11 @@ export class SkillsDialogComponent
 
   public onAddSkill(): void {
     const newSkillName = this.skillsForm.get('newSkill')?.value?.trim();
-    if (!newSkillName || newSkillName.length < 2) {
+    if (!newSkillName || newSkillName.length < 1) {
       this.messageService?.add({
         severity: 'warn',
         summary: 'Validation',
-        detail: 'Skill name must be at least 2 characters',
+        detail: 'Skill name must be at least 1 character',
       });
       return;
     }

@@ -75,7 +75,7 @@
         <app-button
           [buttonLabel]="'Save Changes'"
           [icon]="'pi pi-check'"
-          [disabled]="!skillsForm.get('skills')?.valid"
+          [disabled]="isSaveDisabled"
           (btnClick)="onSubmit()"
           class="skills-dialog__save-btn"
         ></app-button>
