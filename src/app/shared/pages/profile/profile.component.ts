@@ -8,7 +8,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TimelineModule } from 'primeng/timeline';
 import { TooltipModule } from 'primeng/tooltip';
 import { BaseComponent } from '../../components/base/base.component';
-import { AttachmentTypeEnum } from '../../enums/status.enum';
+import { AttachmentTypeEnum, StatusEnum } from '../../enums/status.enum';
 import { FileRequest } from '../../models/files.models';
 import { buildFormGroup, ConfigMap } from '../../utilities/form.utility';
 import { StoreService } from '../../services/store.service';
@@ -89,6 +89,11 @@ export class ProfileComponent extends BaseComponent implements OnInit {
         .map(r => r.charAt(0).toUpperCase() + r.slice(1))
         .join(', ');
     }
+  }
+
+  public get isInterviewer(): boolean {
+    const roles = this.storeService.getUserRole();
+    return roles?.includes('interviewer') || false;
   }
 
   private readonly MAX_IMAGE_SIZE_BYTES = 2 * 1024 * 1024; // 2 MB
@@ -385,6 +390,30 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     
     const next = (res: ProfileDetails) => {
       this.profileDetailsDataSource = res;
+
+      // Filter upcoming interviews: Hide past, completed, or unassigned interviews
+      if (res.userUpcomingInterviews) {
+        const now = new Date();
+        const currentUser = this.storeService.getUserData();
+        
+        res.userUpcomingInterviews = res.userUpcomingInterviews.filter(interview => {
+          if (!interview.scheduleAt) return false;
+          const scheduleDate = new Date(interview.scheduleAt);
+          
+          // 1. Hide interviews from previous days
+          const startOfToday = new Date();
+          startOfToday.setHours(0, 0, 0, 0);
+          if (scheduleDate < startOfToday) return false;
+          
+          // 2. Hide completed interviews
+          if (interview.statusId === StatusEnum.Completed) return false;
+          
+          // 3. Ensure it belongs to the current interviewer (if interviewerId is provided)
+          if (interview.interviewerId && interview.interviewerId !== currentUser.id) return false;
+
+          return true;
+        });
+      }
       
       // Map experiences to timeline
       if (res.userExperiences) {

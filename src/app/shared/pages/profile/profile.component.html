@@ -151,43 +151,48 @@
       <main class="profile__col profile__col--right">
 
         <!-- Upcoming Interviews -->
-        <div class="profile__card profile__card--interviews">
-          <div class="profile__card-head">
-            <span class="profile__card-icon profile__card-icon--blue"><i class="pi pi-calendar"></i></span>
-            <h2 class="profile__card-title">Upcoming Interviews</h2>
-            @if (profileDetailsDataSource.userUpcomingInterviews?.length) {
-              <span class="profile__badge profile__badge--green">
-                {{ profileDetailsDataSource.userUpcomingInterviews?.length }} Scheduled
-              </span>
-            }
-          </div>
-
-          @if (profileDetailsDataSource.userUpcomingInterviews && profileDetailsDataSource.userUpcomingInterviews.length > 0) {
-            <div class="profile__interviews-list">
-              @for (interview of profileDetailsDataSource.userUpcomingInterviews; track $index) {
-                <div class="profile__interview-item">
-                  <div class="profile__interview-date">
-                    <span class="profile__interview-day">{{ interview.scheduleAt | date:'dd' }}</span>
-                    <span class="profile__interview-month">{{ interview.scheduleAt | date:'MMM' }}</span>
-                  </div>
-                  <div class="profile__interview-info">
-                    <p class="profile__interview-time">{{ interview.scheduleAt | date:'hh:mm a' }}</p>
-                    <p class="profile__interview-label">Assessment Interview</p>
-                  </div>
-                  <div class="profile__interview-status">Confirmed</div>
-                </div>
+        @if (isInterviewer) {
+          <div class="profile__card profile__card--interviews">
+            <div class="profile__card-head">
+              <span class="profile__card-icon profile__card-icon--blue"><i class="pi pi-calendar"></i></span>
+              <h2 class="profile__card-title">Upcoming Interviews</h2>
+              @if (profileDetailsDataSource.userUpcomingInterviews?.length) {
+                <span class="profile__badge profile__badge--green">
+                  {{ profileDetailsDataSource.userUpcomingInterviews?.length }} Scheduled
+                </span>
               }
             </div>
-          } @else {
-            <div class="profile__empty">
-              <div class="profile__empty-icon-wrap profile__empty-icon-wrap--blue">
-                <i class="pi pi-calendar"></i>
+
+            @if (profileDetailsDataSource.userUpcomingInterviews && profileDetailsDataSource.userUpcomingInterviews.length > 0) {
+              <div class="profile__interviews-list">
+                @for (interview of profileDetailsDataSource.userUpcomingInterviews; track $index) {
+                  <div class="profile__interview-item">
+                    <div class="profile__interview-date">
+                      <span class="profile__interview-day">{{ interview.scheduleAt | date:'dd' }}</span>
+                      <span class="profile__interview-month">{{ interview.scheduleAt | date:'MMM' }}</span>
+                    </div>
+                    <div class="profile__interview-info">
+                      <p class="profile__interview-time">{{ interview.scheduleAt | date:'hh:mm a' }}</p>
+                      <p class="profile__interview-label">{{ interview.recruitmentName || 'Assessment Interview' }}</p>
+                      @if (interview.candidateName) {
+                        <p class="profile__interview-candidate">Candidate: {{ interview.candidateName }}</p>
+                      }
+                    </div>
+                    <div class="profile__interview-status">Confirmed</div>
+                  </div>
+                }
               </div>
-              <p class="profile__empty-title">No upcoming interviews</p>
-              <p class="profile__empty-sub">When you're invited to an interview, it will appear here.</p>
-            </div>
-          }
-        </div>
+            } @else {
+              <div class="profile__empty">
+                <div class="profile__empty-icon-wrap profile__empty-icon-wrap--blue">
+                  <i class="pi pi-calendar"></i>
+                </div>
+                <p class="profile__empty-title">No upcoming interviews</p>
+                <p class="profile__empty-sub">When you're invited to an interview, it will appear here.</p>
+              </div>
+            }
+          </div>
+        }
 
         <!-- Experience Timeline -->
         <div class="profile__card">

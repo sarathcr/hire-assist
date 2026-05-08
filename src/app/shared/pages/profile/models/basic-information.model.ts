@@ -66,6 +66,10 @@ export interface ExperienceDto {
 
 export interface UpcomingInterviewDto {
   scheduleAt: Date | null;
+  statusId?: number;
+  interviewerId?: string;
+  recruitmentName?: string;
+  candidateName?: string;
 }
 
 export interface SkillsDto {
