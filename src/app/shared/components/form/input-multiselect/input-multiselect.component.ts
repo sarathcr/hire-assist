@@ -1,4 +1,6 @@
 import {
+  Output,
+  EventEmitter,
   Component,
   Input,
   OnChanges,
@@ -9,7 +11,7 @@ import {
 } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { FloatLabelModule } from 'primeng/floatlabel';
-import { MultiSelect } from 'primeng/multiselect';
+import { MultiSelect, MultiSelectChangeEvent } from 'primeng/multiselect';
 import { Subscription } from 'rxjs';
 import { Option } from '../../../models/option';
 import {
@@ -32,6 +34,8 @@ export class InputMultiselectComponent
   @Input() config!: CustomFormControlConfig;
   @Input() dynamicSuffix!: string;
   @Input() disabled = false;
+  @Input() selectionLimit?: number;
+  @Output() onChange = new EventEmitter<MultiSelectChangeEvent>();
 
   public formControl!: FormControl<string>;
   public inputTextConfig!: CustomSelectConfig;

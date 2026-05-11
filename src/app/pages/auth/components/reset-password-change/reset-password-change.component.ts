@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormGroup, ReactiveFormsModule, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { CarouselModule } from 'primeng/carousel';
@@ -91,6 +91,36 @@ export class ResetPasswordChangeComponent implements OnInit {
 
   ngOnInit(): void {
     this.configMap = new ResetPasswordChangeData().metadata.configMap || {};
+    this.resetPasswordFormGroup.addValidators(this.passwordMatchValidator());
+  }
+
+  private passwordMatchValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const newPassword = control.get('newPassword')?.value;
+      const confirmPasswordControl = control.get('confirmPassword');
+      const confirmPassword = confirmPasswordControl?.value;
+
+      if (!newPassword || !confirmPassword) {
+        return null;
+      }
+
+      if (newPassword !== confirmPassword) {
+        confirmPasswordControl.setErrors({
+          ...confirmPasswordControl.errors,
+          passwordMismatch: true,
+        });
+        return { passwordMismatch: true };
+      } else {
+        const errors = confirmPasswordControl.errors;
+        if (errors) {
+          delete errors['passwordMismatch'];
+          confirmPasswordControl.setErrors(
+            Object.keys(errors).length ? errors : null,
+          );
+        }
+        return null;
+      }
+    };
   }
 
   public onSubmit(): void {
@@ -101,24 +131,20 @@ export class ResetPasswordChangeComponent implements OnInit {
 
     this.isLoading = true;
 
-    if (formValue.newPassword !== formValue.confirmPassword) {
-      this.handlePasswordMatchError();
-    } else {
-      this.route.queryParams.subscribe((params) => {
-        this.token = params['token'] || '';
-        this.id = params['id'] || '';
-      });
+    this.route.queryParams.subscribe((params) => {
+      this.token = params['token'] || '';
+      this.id = params['id'] || '';
+    });
 
-      if (this.token === '' || this.id === '') {
-        this.handleInvalidTokenOrIdError();
-      }
-
-      const payload = { token: this.token, id: this.id, ...formValue };
-      this.authService.ResetPasswordChange(payload).subscribe({
-        next: (res: boolean) => this.handleResetPasswordSuccess(res),
-        error: (e: HttpErrorResponse) => this.handleResetPasswordError(e),
-      });
+    if (this.token === '' || this.id === '') {
+      this.handleInvalidTokenOrIdError();
     }
+
+    const payload = { token: this.token, id: this.id, ...formValue };
+    this.authService.ResetPasswordChange(payload).subscribe({
+      next: (res: boolean) => this.handleResetPasswordSuccess(res),
+      error: (e: HttpErrorResponse) => this.handleResetPasswordError(e),
+    });
   }
 
   public backToLogin(): void {
@@ -145,14 +171,6 @@ export class ResetPasswordChangeComponent implements OnInit {
     });
   }
 
-  private handlePasswordMatchError(): void {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: 'Passwords must match',
-    });
-    this.isLoading = false;
-  }
 
   private handleInvalidTokenOrIdError(): void {
     this.messageService.add({

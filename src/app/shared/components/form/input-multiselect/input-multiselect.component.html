@@ -10,6 +10,7 @@
       [maxSelectedLabels]="maxSelectedLabels"
       selectedItemsLabel="{0} items selected"
       [disabled]="disabled"
+      (onChange)="onChange.emit($event)"
     /><label for="over_label">{{
       inputTextConfig.labelKey
     }}</label></p-floatlabel

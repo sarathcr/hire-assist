@@ -6,18 +6,23 @@ export function passwordStrengthValidator(
   const value = control.value;
   if (!value) return null;
 
-  const hasUpperCase = /[A-Z]/.test(value);
-  const hasLowerCase = /[a-z]/.test(value);
-  const hasNumber = /[0-9]/.test(value);
-  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
-  const isValidLength = value.length >= 8;
+  const errors: ValidationErrors = {};
 
-  const passwordValid =
-    hasUpperCase &&
-    hasLowerCase &&
-    hasNumber &&
-    hasSpecialChar &&
-    isValidLength;
+  if (!/[A-Z]/.test(value)) {
+    errors['requireUppercase'] = true;
+  }
+  if (!/[a-z]/.test(value)) {
+    errors['requireLowercase'] = true;
+  }
+  if (!/[0-9]/.test(value)) {
+    errors['requireNumber'] = true;
+  }
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+    errors['requireSpecialChar'] = true;
+  }
+  if (value.length < 8) {
+    errors['requireLength'] = true;
+  }
 
-  return passwordValid ? null : { weak: true };
+  return Object.keys(errors).length ? errors : null;
 }

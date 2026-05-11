@@ -49,6 +49,7 @@ import {
   RoundsInterface,
   FeedbackCriteriaConfig,
 } from '../../../../../../models/assessment-schedule.model';
+import { MultiSelectChangeEvent } from 'primeng/multiselect';
 import { AssessmentRoundFormGroup } from '../../../../../../models/assessment.model';
 import { AssessmentScheduleService } from '../../../../services/assessment-schedule.service';
 import { RoundModel } from '../../assessment-view.component';
@@ -85,6 +86,8 @@ import { CommonModule } from '@angular/common';
 export class AssessmentRoundComponent
   implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked
 {
+  public readonly MAX_ROUNDS = 10;
+  private isUpdatingRounds = false;
   public configMap!: ConfigMap;
   public fGroup!: FormGroup;
   public assessmentSchedule = new AssessmentScheduleModal();
@@ -182,8 +185,39 @@ export class AssessmentRoundComponent
     this.fGroup
       .get('round')
       ?.valueChanges.subscribe((selectedRoundIds: string[]) => {
+        if (this.isUpdatingRounds) {
+          return;
+        }
         this.syncSelectedRounds(selectedRoundIds);
       });
+  }
+
+  public onRoundSelectionChange(event: MultiSelectChangeEvent): void {
+    this.handleRoundSelectionChange(event.value);
+  }
+
+  private handleRoundSelectionChange(selectedRoundIds: string[]): void {
+    if (selectedRoundIds && selectedRoundIds.length > this.MAX_ROUNDS) {
+      this.isUpdatingRounds = true;
+      const truncatedIds = selectedRoundIds.slice(0, this.MAX_ROUNDS);
+      
+      // Use setTimeout to ensure the value update happens after the current event loop
+      setTimeout(() => {
+        this.fGroup.get('round')?.setValue([...truncatedIds], { emitEvent: false });
+        this.fGroup.get('round')?.updateValueAndValidity();
+        this.cdr.detectChanges();
+        this.isUpdatingRounds = false;
+      }, 100);
+
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Limit Reached',
+        detail: `Maximum ${this.MAX_ROUNDS} rounds are allowed. Extra selections have been removed.`,
+      });
+      this.syncSelectedRounds(truncatedIds);
+    } else {
+      this.syncSelectedRounds(selectedRoundIds);
+    }
   }
 
   private syncSelectedRounds(selectedRoundIds: string[]): void {
@@ -501,6 +535,15 @@ export class AssessmentRoundComponent
   }
 
   public openCreateRoundModal(): void {
+    if (this.submittedData.length >= this.MAX_ROUNDS) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Limit Reached',
+        detail: `Maximum ${this.MAX_ROUNDS} rounds are allowed. Please remove a round before creating a new one.`,
+      });
+      return;
+    }
+
     this.dialogRef = this.dialogService.open(CreateRoundModalComponent, {
       header: 'Create New Round',
       width: '500px',
@@ -650,6 +693,15 @@ export class AssessmentRoundComponent
         severity: 'warn',
         summary: 'Warning',
         detail: 'Please select or create at least one round.',
+      });
+      return;
+    }
+
+    if (this.submittedData.length > this.MAX_ROUNDS) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Limit Exceeded',
+        detail: `Maximum ${this.MAX_ROUNDS} rounds are allowed. Please remove some rounds before saving.`,
       });
       return;
     }
@@ -898,6 +950,12 @@ export class AssessmentRoundComponent
               })),
             };
           });
+          
+          // Truncate if existing rounds exceed limit
+          if (this.submittedData.length > this.MAX_ROUNDS) {
+            this.submittedData = this.submittedData.slice(0, this.MAX_ROUNDS);
+          }
+
           this.fGroup.patchValue(
             { round: this.submittedData.map((item) => item.id) },
             { emitEvent: false },

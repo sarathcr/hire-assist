@@ -8,7 +8,7 @@ export abstract class BaseFormComponent {
   get errorMsg(): string {
     const fc = this.formGroup.get(this.config.id);
 
-    if (!fc || !fc.touched || !fc.errors) {
+    if (!fc || (!fc.touched && !fc.dirty) || !fc.errors) {
       return '';
     }
 
@@ -95,6 +95,24 @@ export abstract class BaseFormComponent {
     }
     if (errors['endDateInvalid']) {
       return 'End date cannot be before start date.';
+    }
+    if (errors['passwordMismatch']) {
+      return 'Passwords do not match.';
+    }
+    if (errors['requireUppercase']) {
+      return 'Must contain at least one uppercase letter.';
+    }
+    if (errors['requireLowercase']) {
+      return 'Must contain at least one lowercase letter.';
+    }
+    if (errors['requireNumber']) {
+      return 'Must contain at least one number.';
+    }
+    if (errors['requireSpecialChar']) {
+      return 'Must contain at least one special character.';
+    }
+    if (errors['requireLength']) {
+      return 'Must be at least 8 characters long.';
     }
     return 'This field has an invalid value.';
   }

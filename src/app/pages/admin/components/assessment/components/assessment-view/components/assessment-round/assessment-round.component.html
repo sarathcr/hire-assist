@@ -30,6 +30,7 @@
               [config]="configMap['round']"
               [selectedItems]=""
               [disabled]="isReadOnly()"
+              (onChange)="onRoundSelectionChange($event)"
             />
             <app-button
               class="assessment-round__create-button"
@@ -39,6 +40,10 @@
               [disabled]="isReadOnly()"
               (btnClick)="openCreateRoundModal()"
             ></app-button>
+          </div>
+          <div class="assessment-round__limit-info">
+            <i class="pi pi-info-circle"></i>
+            <span>Maximum {{ MAX_ROUNDS }} rounds can be added for the recruitment.</span>
           </div>
         </div>
         <p class="assessment-round__description">
