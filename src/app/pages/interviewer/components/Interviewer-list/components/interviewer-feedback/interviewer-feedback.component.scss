@@ -1009,20 +1009,36 @@ $white: #ffffff;
     border-top: 1px solid $slate-100;
 
     ::ng-deep {
+      em, i {
+        font-style: italic !important;
+        // Ensure children (like <u>) also stay italic
+        &, & * {
+          font-style: italic !important;
+        }
+      }
+      u {
+        text-decoration: underline !important;
+      }
+      
+      // Explicitly handle combinations
+      strong, b {
+        font-weight: 700 !important;
+        color: $slate-800;
+        &, & * {
+          font-weight: 700 !important;
+        }
+      }
+
       p {
         margin: 0 0 6px 0;
-
         &:last-child {
           margin-bottom: 0;
         }
       }
-
-      ul,
-      ol {
+      ul, ol {
         margin: 6px 0;
         padding-left: 18px;
       }
-
       li {
         margin: 3px 0;
       }
@@ -1061,9 +1077,26 @@ $white: #ffffff;
     color: $slate-600;
 
     ::ng-deep {
+      em, i {
+        font-style: italic !important;
+        // Ensure children (like <u>) also stay italic
+        &, & * {
+          font-style: italic !important;
+        }
+      }
+      u {
+        text-decoration: underline !important;
+      }
+      
+      // Explicitly handle combinations
       strong, b {
         color: $slate-800;
+        font-weight: 700 !important;
+        &, & * {
+          font-weight: 700 !important;
+        }
       }
+      
       p {
         margin: 0 0 8px 0;
         &:last-child { margin-bottom: 0; }
