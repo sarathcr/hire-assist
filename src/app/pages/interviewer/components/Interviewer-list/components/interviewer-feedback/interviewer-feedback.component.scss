@@ -1022,10 +1022,11 @@ $white: #ffffff;
       
       // Explicitly handle combinations
       strong, b {
-        font-weight: 700 !important;
-        color: $slate-800;
+        font-weight: bold !important;
+        color: $slate-800 !important;
         &, & * {
-          font-weight: 700 !important;
+          font-weight: bold !important;
+          font-family: inherit !important;
         }
       }
 
@@ -1090,10 +1091,11 @@ $white: #ffffff;
       
       // Explicitly handle combinations
       strong, b {
-        color: $slate-800;
-        font-weight: 700 !important;
+        color: $slate-800 !important;
+        font-weight: bold !important;
         &, & * {
-          font-weight: 700 !important;
+          font-weight: bold !important;
+          font-family: inherit !important;
         }
       }
       
