@@ -193,6 +193,10 @@
                               <div class="assessment-round__criteria-header-text">
                                 <h4 class="assessment-round__criteria-title">Feedback Criteria</h4>
                                 <p class="assessment-round__criteria-subtitle">Candidate evaluation parameters</p>
+                                <div class="assessment-round__criteria-info-v2">
+                                  <i class="pi pi-info-circle"></i>
+                                  <span>Maximum allowed score for any criteria is 100.</span>
+                                </div>
                               </div>
                               <div class="assessment-round__criteria-actions">
                                 <p-multiSelect
@@ -256,12 +260,14 @@
                                             pInputText
                                             type="number"
                                             formControlName="maxScore"
-                                            placeholder="10"
+                                            placeholder=""
                                             [readonly]="isReadOnly()"
                                           />
                                           @if (criteria.get('maxScore')?.touched && criteria.get('maxScore')?.invalid) {
                                             <small class="p-error">
-                                              Min 1.
+                                              @if (criteria.get('maxScore')?.errors?.['min']) { Min 1. }
+                                              @else if (criteria.get('maxScore')?.errors?.['max']) { Max 100. }
+                                              @else { Required. }
                                             </small>
                                           }
                                         </div>

@@ -307,6 +307,7 @@ export class AssessmentRoundComponent
       maxScore: new FormControl(data?.maxScore || 10, [
         Validators.required,
         Validators.min(1),
+        Validators.max(100),
       ]),
       isImported: new FormControl(data?.isImported || false),
     });
