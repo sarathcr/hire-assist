@@ -182,6 +182,11 @@
                               styleClass="assessment-round__duration-picker"
                               [disabled]="isReadOnly()"
                             ></p-datepicker>
+                            @if (getRoundFormGroup(idx).get('duration')?.touched && getRoundFormGroup(idx).get('duration')?.invalid) {
+                              <small class="p-error">
+                                {{ getErrorMessage(idx, 'duration') }}
+                              </small>
+                            }
                           </div>
                         </div>
 
@@ -229,6 +234,13 @@
                                 ></app-button>
                               </div>
                             </div>
+                            
+                            @if (!data.name.toLowerCase().includes("aptitude") && getCriteriaFormArray(idx).length === 0 && (getCriteriaFormArray(idx).touched || getRoundFormGroup(idx).touched)) {
+                              <div class="assessment-round__criteria-error-msg">
+                                <i class="pi pi-exclamation-circle"></i>
+                                <span>At least one feedback criteria is required for this round.</span>
+                              </div>
+                            }
 
                             <div class="assessment-round__criteria-list" formArrayName="feedbackCriteria">
                               @for (criteria of getCriteriaFormArray(idx).controls; let cIdx = $index; track criteria) {
@@ -244,10 +256,11 @@
                                           class="criteria-title-input-v2"
                                           [readonly]="isReadOnly()"
                                         />
-                                        @if (criteria.get('title')?.touched && criteria.get('title')?.invalid) {
+                                        @if (criteria.get('title')?.invalid && (criteria.get('title')?.touched || getRoundFormGroup(idx).touched)) {
                                           <small class="p-error">
                                             @if (criteria.get('title')?.errors?.['required']) { Title is required. }
-                                            @if (criteria.get('title')?.errors?.['pattern']) { Numbers are not allowed. }
+                                            @else if (criteria.get('title')?.errors?.['pattern']) { Numbers are not allowed. }
+                                            @else { Invalid title. }
                                           </small>
                                         }
                                       </div>
@@ -263,7 +276,7 @@
                                             placeholder=""
                                             [readonly]="isReadOnly()"
                                           />
-                                          @if (criteria.get('maxScore')?.touched && criteria.get('maxScore')?.invalid) {
+                                          @if (criteria.get('maxScore')?.invalid && (criteria.get('maxScore')?.touched || getRoundFormGroup(idx).touched)) {
                                             <small class="p-error">
                                               @if (criteria.get('maxScore')?.errors?.['min']) { Min 1. }
                                               @else if (criteria.get('maxScore')?.errors?.['max']) { Max 100. }
@@ -303,7 +316,8 @@
                                 </div>
                               }
                               
-                              @if (getCriteriaFormArray(idx).invalid && getCriteriaFormArray(idx).touched && getCriteriaFormArray(idx).length === 0) {
+
+                              @if (!data.name.toLowerCase().includes("aptitude") && getCriteriaFormArray(idx).length === 0 && (getCriteriaFormArray(idx).touched || getRoundFormGroup(idx).touched)) {
                                 <div class="assessment-round__criteria-empty-v2">
                                   <i class="pi pi-info-circle"></i>
                                   <span>At least one feedback criteria is required for this round.</span>

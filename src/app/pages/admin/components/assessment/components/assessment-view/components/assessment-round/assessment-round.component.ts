@@ -632,6 +632,10 @@ export class AssessmentRoundComponent
       return `Value must be no more than ${errors['max'].max}.`;
     }
 
+    if (errors['invalidDuration']) {
+      return 'Duration cannot be 00:00.';
+    }
+
     return 'This field has an invalid value.';
   }
 

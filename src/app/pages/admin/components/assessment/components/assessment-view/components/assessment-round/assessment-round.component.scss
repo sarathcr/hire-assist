@@ -875,6 +875,23 @@
     }
   }
 
+  &__criteria-error-msg {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: -4px;
+    margin-bottom: 12px;
+    padding-left: 2px;
+    animation: fadeIn 0.3s ease;
+
+    i {
+      font-size: 14px;
+    }
+  }
+
   &__criteria-actions {
     display: flex;
     gap: 12px;
