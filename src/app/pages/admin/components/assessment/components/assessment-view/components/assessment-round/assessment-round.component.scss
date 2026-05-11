@@ -32,12 +32,22 @@
   padding: 32px;
   margin-bottom: 0;
   color: white;
+
+  @media screen and (max-width: 640px) {
+    padding: 16px;
+  }
 }
 
 .assessment-round__header-content {
   display: flex;
   align-items: center;
   gap: 20px;
+
+  @media screen and (max-width: 640px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
 }
 
 .assessment-round__header-icon {
@@ -50,6 +60,11 @@
   justify-content: center;
   backdrop-filter: blur(10px);
   flex-shrink: 0;
+
+  @media screen and (max-width: 640px) {
+    width: 48px;
+    height: 48px;
+  }
 
   i {
     font-size: clamp(24px, 3.5vw + 0.5rem, 28px);
@@ -86,6 +101,10 @@
   padding: 24px;
   border: none;
 
+  @media screen and (max-width: 640px) {
+    padding: 8px;
+  }
+
   // Main Content
   &__content {
     display: flex;
@@ -108,11 +127,17 @@
     width: 100%;
     position: relative;
 
+    @media screen and (max-width: 640px) {
+      flex-direction: column;
+      gap: 16px;
+    }
+
     ::ng-deep {
       .assessment-round__multiselect_skeleton {
         flex: 1;
         .p-multiselect {
-          height: 42px;
+          min-height: 42px;
+          height: auto;
           display: flex;
           align-items: center;
         }
@@ -145,6 +170,10 @@
     min-width: 140px;
     // border: 1px solid #2196f3;
     border-radius: 10px;
+
+    @media screen and (max-width: 640px) {
+      width: 100%;
+    }
   }
 
   // Rounds Section
@@ -174,6 +203,12 @@
     box-sizing: border-box;
     position: relative;
 
+    @media screen and (max-width: 640px) {
+      padding: 4px;
+      background: transparent;
+      border: none;
+    }
+
     &.sortable-dragging {
       .assessment-round__round-item {
         transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
@@ -183,6 +218,11 @@
     @media screen and (max-width: 768px) {
       flex-direction: column;
       flex-wrap: nowrap;
+
+      .assessment-round__round-item {
+        width: 100%;
+        min-width: unset;
+      }
     }
   }
 
@@ -213,6 +253,10 @@
     transition:
       transform 0.2s ease,
       box-shadow 0.2s ease;
+
+    @media screen and (max-width: 640px) {
+      padding: 8px 12px;
+    }
 
     &:not(.assessment-round__sortable-chosen) {
       transition:
@@ -337,7 +381,8 @@
     font-weight: 600;
     color: #2c3e50;
     white-space: normal;
-    word-break: break-word;
+    overflow-wrap: break-word;
+    word-break: normal;
     flex: 1;
     min-width: 0;
     letter-spacing: -0.01em;
@@ -396,6 +441,15 @@
     padding: 24px 0;
     border-top: 1px solid #e5e7eb;
     margin-top: 0;
+
+    @media screen and (max-width: 640px) {
+      padding: 16px 0;
+      justify-content: center;
+      
+      .assessment-round__submit-button {
+        width: 100%;
+      }
+    }
   }
 
   &__create-button {
@@ -498,6 +552,15 @@
     padding: 0;
   }
 
+  .p-error {
+    font-size: var(--font-size-small);
+    font-weight: 500;
+    color: #ef4444;
+    line-height: 1.2;
+    margin-top: 4px;
+    display: block;
+  }
+
   /* ---------------- Configuration Section ---------------- */
   &__config-section {
     margin-top: 24px;
@@ -592,6 +655,10 @@
         .p-accordioncontent-content {
           padding: 24px;
           border-top: 1px solid #f1f5f9;
+
+          @media screen and (max-width: 640px) {
+            padding: 16px;
+          }
         }
       }
     }
@@ -661,12 +728,20 @@
     display: flex;
     flex-direction: column;
     gap: 24px;
+
+    @media screen and (max-width: 640px) {
+      gap: 16px;
+    }
   }
 
   &__config-inputs {
     display: flex;
     gap: 32px;
     flex-wrap: wrap;
+
+    @media screen and (max-width: 640px) {
+      gap: 16px;
+    }
 
     .assessment-round__input-group {
       flex: 0 0 240px;
@@ -715,6 +790,11 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+
+    @media screen and (max-width: 640px) {
+      gap: 12px;
+      margin-top: 16px;
+    }
   }
 
   &__criteria-header {
@@ -723,6 +803,11 @@
     align-items: stretch;
     gap: 16px;
     margin-bottom: 8px;
+
+    @media screen and (max-width: 640px) {
+      gap: 8px;
+      margin-bottom: 4px;
+    }
 
     &-text {
       flex: 1;
@@ -748,20 +833,34 @@
     align-items: center;
     width: 100%;
 
+    @media screen and (max-width: 640px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
     .import-existing-wrapper {
       display: flex;
       align-items: stretch;
-      
+
       app-button {
          ::ng-deep .p-button {
            height: 38px;
          }
+      }
+      
+      @media screen and (max-width: 640px) {
+        width: 100%;
       }
     }
 
     ::ng-deep .assessment-round__criteria-multiselect {
       flex: 1;
       height: 42px; // Increased slightly to accommodate chips better
+
+      @media screen and (max-width: 640px) {
+        width: 100%;
+      }
+
       .p-multiselect {
         width: 100%;
         height: 100%;
@@ -821,6 +920,11 @@
 
   &__criteria-multiselect {
     min-width: 220px;
+
+    @media screen and (max-width: 640px) {
+      min-width: unset;
+      width: 100%;
+    }
   }
 
   &__criteria-list {
@@ -849,6 +953,11 @@
       gap: 20px;
       background: #f8fafc;
       border-bottom: 1px solid #f1f5f9;
+
+      @media screen and (max-width: 640px) {
+        padding: 10px 12px;
+        gap: 12px;
+      }
 
       @media screen and (max-width: 768px) {
         flex-direction: column;
@@ -915,6 +1024,8 @@
 
       @media screen and (max-width: 768px) {
         justify-content: space-between;
+        width: 100%;
+        gap: 10px;
       }
 
       .score-input-v2 {
@@ -950,13 +1061,6 @@
       }
     }
 
-    .p-error {
-      font-size: 10px;
-      font-weight: 600;
-      color: #ef4444;
-      line-height: 1;
-      margin-top: 2px;
-    }
 
     .criteria-imported-msg {
       display: flex;
@@ -993,6 +1097,10 @@
 
     .criteria-desc-row {
       padding: 16px;
+
+      @media screen and (max-width: 640px) {
+        padding: 12px;
+      }
 
       ::ng-deep .p-editor-container {
         border: 1px solid #f1f5f9;

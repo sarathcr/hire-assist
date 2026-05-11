@@ -155,6 +155,11 @@
                                 [attr.disabled]="isReadOnly() ? true : null"
                                 class="w-full"
                               />
+                              @if (getRoundFormGroup(idx).get('maxTerminationCount')?.touched && getRoundFormGroup(idx).get('maxTerminationCount')?.invalid) {
+                                <small class="p-error">
+                                  {{ getErrorMessage(idx, 'maxTerminationCount') }}
+                                </small>
+                              }
                             </div>
                           }
                           
@@ -250,7 +255,7 @@
                                             [readonly]="isReadOnly()"
                                           />
                                           @if (criteria.get('maxScore')?.touched && criteria.get('maxScore')?.invalid) {
-                                            <small class="p-error block text-xs">
+                                            <small class="p-error">
                                               Min 1.
                                             </small>
                                           }

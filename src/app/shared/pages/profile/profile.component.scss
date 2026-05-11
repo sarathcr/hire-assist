@@ -776,7 +776,10 @@
   .profile__timeline-marker {
     width: 1.75rem;
     height: 1.75rem;
-    i { font-size: 0.8rem; }
+
+    i {
+      font-size: 0.8rem;
+    }
   }
 
   .profile__timeline-header {

@@ -581,6 +581,13 @@ export class AssessmentRoundComponent
       return `Value must be at least ${errors['min'].min}.`;
     }
 
+    if (errors['max']) {
+      if (controlName === 'maxTerminationCount') {
+        return `Maximum ${errors['max'].max} tries allowed.`;
+      }
+      return `Value must be no more than ${errors['max'].max}.`;
+    }
+
     return 'This field has an invalid value.';
   }
 
@@ -601,7 +608,7 @@ export class AssessmentRoundComponent
         ]),
         maxTerminationCount: new FormControl(
           data.maxTerminationCount,
-          isAptitude ? [Validators.required, Validators.min(1)] : [],
+          isAptitude ? [Validators.required, Validators.min(1), Validators.max(10)] : [],
         ),
         feedbackCriteria: new FormArray(
           (data.feedbackCriteria || []).map((c) =>
