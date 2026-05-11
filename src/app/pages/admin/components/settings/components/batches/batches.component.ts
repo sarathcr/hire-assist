@@ -194,12 +194,6 @@ export class BatchesComponent implements OnInit, OnDestroy {
       document.body.style.overflow = 'auto';
       if (res) {
         this.updateBatch(res);
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'No changes made to batches',
-        });
       }
       this.fGroup.reset();
     });
@@ -233,12 +227,6 @@ export class BatchesComponent implements OnInit, OnDestroy {
       document.body.style.overflow = 'auto';
       if (result) {
         this.deleteBatchItem(id);
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'No changes made to batches',
-        });
       }
       this.fGroup.reset();
     });

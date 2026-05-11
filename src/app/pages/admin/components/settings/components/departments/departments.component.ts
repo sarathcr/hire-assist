@@ -169,12 +169,6 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       document.body.style.overflow = 'auto';
       if (res) {
         this.createDepartment(res);
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'No changes made to departments',
-        });
       }
       this.fGroup.reset();
     });
@@ -203,12 +197,6 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       document.body.style.overflow = 'auto';
       if (res) {
         this.updateDepartment(res);
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'No changes made to departments',
-        });
       }
       this.fGroup.reset();
     });

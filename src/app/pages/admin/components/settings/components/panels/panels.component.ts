@@ -170,12 +170,6 @@ export class PanelsComponent implements OnInit, OnDestroy {
       document.body.style.overflow = 'auto';
       if (payload) {
         this.CreatePanel(payload, false);
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'No changes made to panels',
-        });
       }
       this.fGroup.reset();
     });
@@ -204,12 +198,6 @@ export class PanelsComponent implements OnInit, OnDestroy {
       document.body.style.overflow = 'auto';
       if (payload) {
         this.updatePanel(payload);
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'No changes made to panels',
-        });
       }
       this.fGroup.reset();
     });

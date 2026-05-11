@@ -212,12 +212,6 @@ export class QuestionsComponent implements OnInit, OnDestroy {
           fileDto: formValue.fileDto ?? null,
         };
         this.Createquestion(transformed);
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'No changes made to questions',
-        });
       }
     });
   }

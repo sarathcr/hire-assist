@@ -204,12 +204,6 @@ export class ProfileComponent extends BaseComponent implements OnInit {
             });
           },
         });
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'No changes made to personal details',
-        });
       }
     });
   }

@@ -250,12 +250,6 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
               this.isLoading = false;
             },
           });
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'No updates made to panel interviewers',
-        });
       }
     });
   }
@@ -483,12 +477,6 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       document.body.style.overflow = 'auto';
       if (updatedData?.panels && updatedData?.interviewers?.length) {
         this.updatePanelAssignment(updatedData);
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'No updates made to panel interviewers',
-        });
       }
     });
   }
