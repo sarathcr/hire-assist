@@ -22,9 +22,11 @@
           <p class="history-drawer__description" *ngIf="event.description">
             {{ event.description }}
           </p>
-          <p class="history-drawer__date">
-            {{ event.date | date : "MMM d, y, hh:mm a" }}
-          </p>
+          @if (event.date && event.date !== "--") {
+            <p class="history-drawer__date">
+              {{ event.date | date : "MMM d, y, hh:mm a" }}
+            </p>
+          }
         </div>
       </ng-template>
     </p-timeline>

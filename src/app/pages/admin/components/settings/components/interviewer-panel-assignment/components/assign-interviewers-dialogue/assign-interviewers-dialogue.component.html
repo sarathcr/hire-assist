@@ -17,22 +17,12 @@
 
   <form [formGroup]="fGroup" class="interviewer-modal__form">
     <div class="interviewer-modal__fields">
-      @if (isEdit) {
-        <div class="interviewer-modal__panel-info">
-          <label class="interviewer-modal__field-label">Assigned Panel</label>
-          <div class="interviewer-modal__panel-name">
-            <i class="pi pi-id-card"></i>
-            {{ getPanelNames() }}
-          </div>
-        </div>
-      } @else {
-        <div class="interviewer-modal__field">
-          <app-input-select
-            [formGroup]="fGroup"
-            [config]="configMap['panels']"
-          />
-        </div>
-      }
+      <div class="interviewer-modal__field">
+        <app-input-select
+          [formGroup]="fGroup"
+          [config]="configMap['panels']"
+        />
+      </div>
 
       <div class="interviewer-modal__field">
         <app-input-multiselect
@@ -40,6 +30,15 @@
           [config]="configMap['interviewers']"
         />
       </div>
+
+      @if (isDuplicate) {
+        <div class="interviewer-modal__error">
+          <i class="pi pi-exclamation-circle"></i>
+          <span>
+            duplicate panel assignment and interviewer is already in the panel
+          </span>
+        </div>
+      }
     </div>
 
     <footer class="interviewer-modal__footer">
@@ -50,7 +49,7 @@
       ></app-button>
       <app-button
         [buttonLabel]="isEdit ? 'Update Assignment' : 'Assign Panel'"
-        [disabled]="!fGroup.valid || isUnchanged"
+        [disabled]="!fGroup.valid || isUnchanged || isDuplicate"
         (btnClick)="onSubmit()"
       ></app-button>
     </footer>

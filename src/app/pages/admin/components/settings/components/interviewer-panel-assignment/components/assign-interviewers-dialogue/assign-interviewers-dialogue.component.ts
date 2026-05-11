@@ -52,6 +52,7 @@ export class AssignInterviewersDialogueComponent implements OnInit {
   public isEdit = false;
   public assessmentId?: number;
   public interviewId?: number;
+  public existingAssignments: any[] = [];
   private initialValue: any;
   constructor(
     private readonly ref: DynamicDialogRef,
@@ -80,6 +81,7 @@ export class AssignInterviewersDialogueComponent implements OnInit {
       user.roles?.includes('Interviewer'),
     );
     this.panels = this.optionsMap['panels'] as unknown as Option[];
+    this.existingAssignments = this.config.data.existingAssignments || [];
     this.loadCollections();
     this.setConfigMaps();
     this.setOptions();
@@ -87,11 +89,13 @@ export class AssignInterviewersDialogueComponent implements OnInit {
     if (this.isEdit) {
       // In coordinator view, the ID of the PanelSummary is the panel's ID
       const panelId =
-        this.data.formData.panelId || this.data.formData.id || this.data.formData.panelName;
+        this.data.formData.panelId ||
+        this.data.formData.id ||
+        this.data.formData.panelName;
       const interviewers = this.data.formData.interviewers;
       this.fGroup.patchValue({
         interviewers: interviewers || [],
-        panels: panelId ?? null,
+        panels: panelId ? String(panelId) : null,
       });
     } else {
       this.fGroup.patchValue({
@@ -105,6 +109,41 @@ export class AssignInterviewersDialogueComponent implements OnInit {
   public get isUnchanged(): boolean {
     if (!this.isEdit) return false;
     return isFormUnchanged(this.fGroup.value, this.initialValue);
+  }
+
+  public get isDuplicate(): boolean {
+    const formValue = this.fGroup.value;
+    const selectedPanelId = formValue.panels;
+    const selectedInterviewerIds = formValue.interviewers || [];
+
+    if (!selectedPanelId || selectedInterviewerIds.length === 0) return false;
+
+    return this.existingAssignments.some((assignment: any) => {
+      if (
+        this.isEdit &&
+        String(assignment.id) === String(this.data.formData.id)
+      ) {
+        return false;
+      }
+
+      const assignmentPanelId = assignment.id || assignment.panelId;
+      const assignmentInterviewerIds =
+        assignment.interviewers?.map((i: any) => String(i.id)) || [];
+      const currentSelectionIds = (
+        Array.isArray(selectedInterviewerIds)
+          ? selectedInterviewerIds
+          : [selectedInterviewerIds]
+      ).map(String);
+
+      const panelsMatch = String(assignmentPanelId) === String(selectedPanelId);
+      const interviewersMatch =
+        currentSelectionIds.length === assignmentInterviewerIds.length &&
+        currentSelectionIds.every((id: any) =>
+          assignmentInterviewerIds.includes(id),
+        );
+
+      return panelsMatch && interviewersMatch;
+    });
   }
 
   public getPanelNames(): string {
@@ -232,17 +271,40 @@ export class AssignInterviewersDialogueComponent implements OnInit {
   }
 
   private setOptions() {
-    (this.configMap['interviewers'] as CustomSelectConfig).options = this
-      .optionsMap['interviewers'] as unknown as Option[];
-
-    (this.configMap['panels'] as CustomSelectConfig).options = this.optionsMap[
-      'panels'
+    let interviewerOptions = this.optionsMap[
+      'interviewers'
     ] as unknown as Option[];
+    let panelOptions = this.optionsMap['panels'] as unknown as Option[];
+
+    if (!this.isEdit && this.existingAssignments.length > 0) {
+      const assignedPanelIds = this.existingAssignments.map((a: any) =>
+        String(a.id || a.panelId),
+      );
+      panelOptions = panelOptions.filter(
+        (p) => !assignedPanelIds.includes(String(p.value)),
+      );
+
+      const assignedInterviewerIds = new Set();
+      this.existingAssignments.forEach((a: any) => {
+        a.interviewers?.forEach((i: any) =>
+          assignedInterviewerIds.add(String(i.id)),
+        );
+      });
+
+      interviewerOptions = interviewerOptions.filter(
+        (i) => !assignedInterviewerIds.has(String(i.value)),
+      );
+    }
+
+    (this.configMap['interviewers'] as CustomSelectConfig).options =
+      interviewerOptions;
+    (this.configMap['panels'] as CustomSelectConfig).options = panelOptions;
   }
 
   private loadCollections() {
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
     this.interviewers = this.optionsMap['interviewers'] as unknown as Option[];
+    this.panels = this.optionsMap['panels'] as unknown as Option[];
   }
 }

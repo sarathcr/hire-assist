@@ -175,6 +175,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
     const data = {
       fGroup: this.fGroup,
       configMap: this.configMap,
+      existingAssignments: this.panelData?.data || [],
     };
     document.body.style.overflow = 'hidden';
     this.ref = this.dialog.open(AssignInterviewersDialogueComponent, {
@@ -456,6 +457,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       fGroup: this.fGroup,
       configMap: this.configMap,
       formData: formData,
+      existingAssignments: this.panelData?.data || [],
     };
 
     document.body.style.overflow = 'hidden';

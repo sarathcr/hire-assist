@@ -123,19 +123,19 @@ export class SelectPanelDailogComponent implements OnInit {
     {
       status: 'Updated',
       user: 'Sarath Cheerakkadan',
-      date: '--',
+      date: '2025-10-16T14:15:00',
       icon: 'pi pi-pencil',
     },
     {
       status: 'Updated',
       user: 'Steve Jose',
-      date: '--',
+      date: '2025-10-17T09:45:00',
       icon: 'pi pi-pencil',
     },
     {
       status: 'Updated',
       user: 'Lakshmipriya',
-      date: '--',
+      date: '2025-10-18T11:20:00',
       icon: 'pi pi-pencil',
     },
   ];
