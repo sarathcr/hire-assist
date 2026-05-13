@@ -304,7 +304,9 @@ export class AssessmentRoundComponent
       title: new FormControl(data?.title || '', [
         Validators.required,
         Validators.pattern(/^[^0-9]*$/),
+        Validators.minLength(3),
         Validators.maxLength(30),
+        this.duplicateTitleValidator.bind(this)
       ]),
       description: new FormControl(data?.description || '', [
         this.plainTextMaxLengthValidator(1000),
@@ -469,6 +471,24 @@ export class AssessmentRoundComponent
       const text = control.value.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
       return text.length > limit ? { maxlength: { requiredLength: limit, actualLength: text.length } } : null;
     };
+  }
+
+  private duplicateTitleValidator(control: AbstractControl): ValidationErrors | null {
+    const title = control.value?.toLowerCase().trim();
+    if (!title) return null;
+
+    const formGroup = control.parent;
+    if (!formGroup) return null;
+
+    const formArray = formGroup.parent as FormArray;
+    if (!formArray) return null;
+
+    const isDuplicate = formArray.controls.some((group) => {
+      if (group === formGroup) return false;
+      return group.get('title')?.value?.toLowerCase().trim() === title;
+    });
+
+    return isDuplicate ? { duplicateTitle: true } : null;
   }
 
   public stripHtml(html: string): string {
@@ -718,6 +738,12 @@ export class AssessmentRoundComponent
 
       group.get('feedbackCriteria')?.valueChanges.subscribe((val) => {
         data.feedbackCriteria = val as FeedbackCriteriaConfig[] ?? [];
+        
+        // Trigger re-validation for all titles to catch duplicates
+        const criteriaArray = group.get('feedbackCriteria') as FormArray;
+        criteriaArray.controls.forEach(c => {
+          c.get('title')?.updateValueAndValidity({ emitEvent: false });
+        });
       });
 
       this.roundConfigForms.push(group);
