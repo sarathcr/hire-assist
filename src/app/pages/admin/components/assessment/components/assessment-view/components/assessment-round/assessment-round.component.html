@@ -255,14 +255,17 @@
                                           placeholder="Criteria Title"
                                           class="criteria-title-input-v2"
                                           [readonly]="isReadOnly()"
+                                          maxlength="31"
                                         />
-                                        @if (criteria.get('title')?.invalid && (criteria.get('title')?.touched || getRoundFormGroup(idx).touched)) {
+                                        @if (criteria.get('title')?.invalid && (criteria.get('title')?.dirty || criteria.get('title')?.touched || getRoundFormGroup(idx).touched)) {
                                           <small class="p-error">
                                             @if (criteria.get('title')?.errors?.['required']) { Title is required. }
                                             @else if (criteria.get('title')?.errors?.['pattern']) { Numbers are not allowed. }
+                                            @else if (criteria.get('title')?.errors?.['maxlength']) { Max 30 characters allowed. }
                                             @else { Invalid title. }
                                           </small>
                                         }
+
                                       </div>
                                     </div>
                                     <div class="criteria-controls">
@@ -301,6 +304,7 @@
                                       [readonly]="isReadOnly()"
                                       placeholder="Instructions for the interviewer..."
                                       [style]="{ height: '120px' }"
+                                      (onInit)="onEditorInit($event)"
                                     >
                                       <ng-template pTemplate="header">
                                         <span class="ql-formats">
@@ -312,6 +316,12 @@
                                         </span>
                                       </ng-template>
                                     </p-editor>
+                                    @if (criteria.get('description')?.invalid && (criteria.get('description')?.dirty || criteria.get('description')?.touched || getRoundFormGroup(idx).touched)) {
+                                      <small class="p-error">
+                                        @if (criteria.get('description')?.errors?.['maxlength']) { Description must be no more than 1000 characters. }
+                                      </small>
+                                    }
+
                                   </div>
                                 </div>
                               }

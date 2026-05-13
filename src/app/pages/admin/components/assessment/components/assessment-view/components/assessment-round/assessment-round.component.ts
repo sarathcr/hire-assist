@@ -14,10 +14,12 @@ import {
 } from '@angular/core';
 import Sortable from 'sortablejs';
 import {
+  AbstractControl,
   FormArray,
   FormControl,
   FormGroup,
   ReactiveFormsModule,
+  ValidationErrors,
   Validators,
 } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -302,8 +304,11 @@ export class AssessmentRoundComponent
       title: new FormControl(data?.title || '', [
         Validators.required,
         Validators.pattern(/^[^0-9]*$/),
+        Validators.maxLength(30),
       ]),
-      description: new FormControl(data?.description || '', []),
+      description: new FormControl(data?.description || '', [
+        this.plainTextMaxLengthValidator(1000),
+      ]),
       maxScore: new FormControl(data?.maxScore || 10, [
         Validators.required,
         Validators.min(1),
@@ -439,6 +444,38 @@ export class AssessmentRoundComponent
     }
 
     this.initializeSortableOnElement(element);
+  }
+
+  public onEditorInit(event: any): void {
+    const quill = event.editor;
+    const limit = 1000;
+
+    quill.on('text-change', (delta: any, oldDelta: any, source: any) => {
+      // Use setTimeout to ensure Quill finished internal updates
+      if (source === 'user') {
+        setTimeout(() => {
+          if (quill.getLength() > limit + 1) {
+            quill.deleteText(limit, quill.getLength());
+          }
+        }, 0);
+      }
+    });
+  }
+
+  private plainTextMaxLengthValidator(limit: number) {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) return null;
+      // Strip HTML and common entities to get true text length
+      const text = control.value.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+      return text.length > limit ? { maxlength: { requiredLength: limit, actualLength: text.length } } : null;
+    };
+  }
+
+  public stripHtml(html: string): string {
+    if (!html) return '';
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
   }
 
   private initializeSortableOnElement(element: HTMLElement): void {

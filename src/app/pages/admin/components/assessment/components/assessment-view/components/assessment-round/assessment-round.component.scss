@@ -581,6 +581,10 @@
     display: block;
   }
 
+
+
+
+
   /* ---------------- Configuration Section ---------------- */
   &__config-section {
     margin-top: 24px;
@@ -1034,7 +1038,7 @@
 
     .criteria-identity {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
       flex: 1;
 
@@ -1057,6 +1061,7 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        margin-top: 6px;
       }
 
       .criteria-title-input-v2 {
