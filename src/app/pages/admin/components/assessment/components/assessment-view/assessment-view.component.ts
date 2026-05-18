@@ -10,9 +10,9 @@ import { Subscription } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
-import { Option } from '../../../../../../shared/models/option';
+import type { Option } from '../../../../../../shared/models/option';
 import { CordinatorData } from '../../../../models/assessment-schedule.model';
-import { Assessment } from '../../../../models/assessment.model';
+import { Assessment, RoundModel } from '../../../../models/assessment.model';
 import {
   StepStatus,
   StepsStatusService,
@@ -25,7 +25,7 @@ import { ImportCandidateListStepComponent } from './components/import-candidate-
 import { SelectQuesionsetStepComponent } from './components/select-quesionset-step/select-quesionset-step.component';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
-import { forkJoin, of } from 'rxjs';
+import { forkJoin, of, Observable } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 
 export interface AssessmentViewModel {
@@ -45,19 +45,6 @@ export interface CollectionInterface {
   roles: Option[];
   questionType: Option[];
   panels: Option[];
-}
-
-export interface RoundModel {
-  id?: number;
-  assessment?: string;
-  isActive?: boolean;
-  round: string;
-  roundId: number;
-  sequence: number;
-  status?: string;
-  statusId?: number;
-  timerHour?: number;
-  maxTerminationCount?: number;
 }
 
 @Component({
@@ -86,7 +73,7 @@ export class AssessmentViewComponent
   public assessmentId!: number;
 
   public activeStep = 0;
-  public completedSteps: number[] = [0];
+  public completedSteps: number[] = [];
   public visitedSteps: number[] = [];
   public isdisableCompleted = false;
   public coordinatorData!: CordinatorData;
@@ -107,7 +94,7 @@ export class AssessmentViewComponent
     'frontDesk',
     'schedule',
   ];
-  private isQuestionSetIncomplete = false;
+  public isQuestionSetIncomplete = false;
 
   public stepConfig = [
     {
@@ -141,6 +128,40 @@ export class AssessmentViewComponent
       icon: 'pi pi-calendar-clock',
     },
   ];
+
+  public get hasOnlineAptitudeRound(): boolean {
+    return this.assessmentRounds.some((r) => r.roundTypeId === 1);
+  }
+
+  public get filteredStepConfig() {
+    if (!this.stepsLoaded) return [this.stepConfig[0]];
+
+    if (this.assessmentRounds.length === 0) {
+      return [this.stepConfig[0]];
+    }
+
+    return this.stepConfig.filter((step) => {
+      if (step.index === 1 || step.index === 2) {
+        return this.hasOnlineAptitudeRound;
+      }
+      return true;
+    });
+  }
+
+  public get filteredStepKeys(): (keyof StepStatus)[] {
+    if (!this.stepsLoaded) return ['rounds'];
+
+    if (this.assessmentRounds.length === 0) {
+      return ['rounds'];
+    }
+
+    return this.stepKeys.filter((key, index) => {
+      if (index === 1 || index === 2) {
+        return this.hasOnlineAptitudeRound;
+      }
+      return true;
+    });
+  }
 
   private stepStatusUpdateSubscription?: Subscription;
   private stepCompletedSubscription?: Subscription;
@@ -209,31 +230,48 @@ export class AssessmentViewComponent
     // when there are question sets created but not all have been submitted.
     if (this.activeStep === 1 && step !== 1) {
       const comp = this.questionSetStepComponent;
-      const hasUnsubmittedSets =
-        comp &&
-        comp.questionSets.length > 0 &&
-        !comp.hasSubmittedQuestionSets();
-
-      if (hasUnsubmittedSets) {
+      
+      // 1. Block EVERYTHING if server-side check says sets are incomplete
+      if (this.hasOnlineAptitudeRound && this.isQuestionSetIncomplete) {
         this.messageService.add({
           severity: 'warn',
           summary: 'Warning',
-          detail: 'Please select questions for all created Question Sets before proceeding to other steps.',
+          detail: 'Please create question sets and add questions in each set under the rounds before leaving.',
         });
-        return; // Prevent navigation
+        return;
+      }
+
+      if (comp) {
+        // 2. Block only FORWARD navigation if rounds are missing sets
+        if (step > 1 && !comp.hasAllRoundsConfigured) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Warning',
+            detail: 'Please create at least one question set for every assessment round and add questions before proceeding.',
+          });
+          return;
+        }
       }
     }
     this.activeStep = step;
+    if (!this.visitedSteps.includes(step)) {
+      this.visitedSteps.push(step);
+    }
   }
 
   public onNextStep(currentStep: number): void {
-    const nextStep = currentStep + 1;
+    const currentConfig = this.filteredStepConfig;
+    const currentIndex = currentConfig.findIndex((s) => s.index === currentStep);
 
-    if (this.completedSteps.includes(currentStep)) {
-      this.activeStep = nextStep;
+    if (currentIndex !== -1 && currentIndex < currentConfig.length - 1) {
+      const nextStep = currentConfig[currentIndex + 1].index;
 
-      if (!this.visitedSteps.includes(nextStep)) {
-        this.visitedSteps.push(nextStep);
+      if (this.completedSteps.includes(currentStep)) {
+        this.activeStep = nextStep;
+
+        if (!this.visitedSteps.includes(nextStep)) {
+          this.visitedSteps.push(nextStep);
+        }
       }
     }
   }
@@ -260,17 +298,24 @@ export class AssessmentViewComponent
     }
   }
 
-  public canActivateStep(step: number): boolean {
-    if (step === 1) {
-      return true;
-    }
+  public canActivateStep(stepIndex: number): boolean {
+    const currentConfig = this.filteredStepConfig;
+    const itemIndex = currentConfig.findIndex((s) => s.index === stepIndex);
+
+    if (itemIndex <= 0) return true;
 
     // If question set is incomplete, block any step beyond index 1
-    if (this.isQuestionSetIncomplete && step > 1) {
+    if (this.isQuestionSetIncomplete && stepIndex > 1) {
       return false;
     }
 
-    const canActivate = this.completedSteps.includes(step - 1);
+    const prevStep = currentConfig[itemIndex - 1];
+    const prevStatus = this.stepsStatus[this.stepKeys[prevStep.index]];
+    const canActivate =
+      this.completedSteps.includes(prevStep.index) ||
+      prevStatus === 'Completed' ||
+      prevStatus === 'Active';
+
     return canActivate;
   }
 
@@ -290,58 +335,71 @@ export class AssessmentViewComponent
 
   public loadStepsStatus(shouldUpdateActiveStep: boolean = true): void {
     if (this.assessmentId) {
-      this.stepsStatusService
-        .getAssessmentStepsStatus(this.assessmentId)
+      // 1. Load Rounds first so we know if Aptitude logic applies
+      this.assessmentScheduleService
+        .GetAssessmentRound(this.assessmentId)
         .pipe(
-          switchMap((response) => {
-            this.stepsStatus = response;
+          switchMap((rounds: RoundModel[]) => {
+            this.assessmentRounds = rounds;
+            // 2. Load Step Status
+            return this.stepsStatusService.getAssessmentStepsStatus(
+              this.assessmentId,
+            );
+          }),
+          switchMap((statusResponse) => {
+            this.stepsStatus = statusResponse;
             this.stepsLoaded = true;
+            this.updateCompletedStepsFromStatus();
 
-            // If questionSets is marked as Completed, verify it's actually finished
-            if (this.stepsStatus.questionSets === 'Completed') {
+            let checkObservable: Observable<any> = of(null);
+
+            // 3. Perform Question Set validation ONLY if Aptitude rounds exist
+            if (this.hasOnlineAptitudeRound) {
               const payload = new PaginatedPayload();
               payload.filterMap = { assessmentId: this.assessmentId };
               payload.pagination.pageSize = -1;
 
-              return this.assessmentService.paginationEntity<any>('QuestionSetSummary', payload).pipe(
-                switchMap((res) => {
-                  const questionSets = res.data || [];
-                  if (questionSets.length === 0) {
-                    this.isQuestionSetIncomplete = true;
-                    return of(null);
-                  }
+              checkObservable = this.assessmentService
+                .paginationEntity<any>('QuestionSetSummary', payload)
+                .pipe(
+                  switchMap((res) => {
+                    const questionSets = res.data || [];
+                    if (questionSets.length === 0) {
+                      this.isQuestionSetIncomplete = true;
+                      return of(null);
+                    }
 
-                  // For each set, check if it has questions
-                  const questionChecks = questionSets.map((set: any) =>
-                    this.assessmentService.getQuestionsBySet(set.id.toString())
-                  );
+                    const questionChecks = questionSets.map((set: any) =>
+                      this.assessmentService.getQuestionsBySet(
+                        set.id.toString(),
+                      ),
+                    );
 
-                  return forkJoin(questionChecks).pipe(
-                    map((results: any[]) => {
-                      this.isQuestionSetIncomplete = results.some(
-                        (res) => !res.questions || res.questions.length === 0
-                      );
-                      if (this.isQuestionSetIncomplete) {
-                        this.stepsStatus.questionSets = 'Active';
-                        // Force later steps back to Pending to land on Question Set and block navigation
-                        this.stepsStatus.coordinators = 'Pending';
-                        this.stepsStatus.frontDesk = 'Pending';
-                        this.stepsStatus.schedule = 'Pending';
-                      }
-                      return null;
-                    })
-                  );
-                })
-              );
+                    return forkJoin(questionChecks).pipe(
+                      map((results: any[]) => {
+                        this.isQuestionSetIncomplete = results.some(
+                          (res) => !res.questions || res.questions.length === 0,
+                        );
+                        if (this.isQuestionSetIncomplete) {
+                          this.stepsStatus.questionSets = 'Active';
+                          this.stepsStatus.coordinators = 'Pending';
+                          this.stepsStatus.frontDesk = 'Pending';
+                          this.stepsStatus.schedule = 'Pending';
+                        }
+                        return null;
+                      }),
+                    );
+                  }),
+                );
             } else {
               this.isQuestionSetIncomplete = false;
-              return of(null);
             }
-          })
+
+            return checkObservable;
+          }),
         )
         .subscribe({
           next: () => {
-            this.loadAssessmentRounds();
             if (shouldUpdateActiveStep) {
               this.setActiveStepFromStatus();
             }
@@ -353,71 +411,55 @@ export class AssessmentViewComponent
     }
   }
 
+  private updateCompletedStepsFromStatus(): void {
+    if (!this.stepsStatus) return;
+    this.completedSteps = [];
+    this.stepKeys.forEach((key, index) => {
+      if (this.stepsStatus[key] === 'Completed') {
+        this.completedSteps.push(index);
+      }
+    });
+  }
+
   private setActiveStepFromStatus(): void {
     if (!this.stepsStatus || !this.stepsLoaded) return;
 
+    const currentKeys = this.filteredStepKeys;
+
     // Find the step with 'Active' status
-    for (let i = 0; i < this.stepKeys.length; i++) {
-      const key = this.stepKeys[i];
+    for (const key of currentKeys) {
       if (this.stepsStatus[key] === 'Active') {
-        this.activeStep = i;
+        this.activeStep = this.stepKeys.indexOf(key);
         return;
       }
     }
 
     // If no active step found, find the first pending step
-    for (let i = 0; i < this.stepKeys.length; i++) {
-      const key = this.stepKeys[i];
+    for (const key of currentKeys) {
       if (this.stepsStatus[key] === 'Pending') {
-        this.activeStep = i;
+        this.activeStep = this.stepKeys.indexOf(key);
         return;
       }
     }
 
     // If all steps are completed, stay on the last step
-    const allCompleted = this.stepKeys.every(
+    const allCompleted = currentKeys.every(
       (key) => this.stepsStatus[key] === 'Completed',
     );
-    if (allCompleted) {
-      this.activeStep = this.stepKeys.length - 1;
+    if (allCompleted && currentKeys.length > 0) {
+      this.activeStep = this.stepKeys.indexOf(
+        currentKeys[currentKeys.length - 1],
+      );
+    }
+
+    if (!this.visitedSteps.includes(this.activeStep)) {
+      this.visitedSteps.push(this.activeStep);
     }
   }
 
-  public loadAssessmentRounds(): void {
-    if (this.assessmentId) {
-      this.assessmentScheduleService
-        .GetAssessmentRound(this.assessmentId)
-        .subscribe({
-          next: (response: RoundModel[]) => {
-            this.assessmentRounds = response;
-          },
-          error: () => {
-            // Error handling
-          },
-        });
-    }
-  }
 
   public moveToNextStep(): void {
-    if (this.assessmentId) {
-      // Reload step status to get updated status
-      this.stepsStatusService
-        .getAssessmentStepsStatus(this.assessmentId)
-        .subscribe({
-          next: (response) => {
-            this.stepsStatus = response;
-            this.loadAssessmentRounds();
-            // Find the next active step
-            this.setActiveStepFromStatus();
-          },
-          error: () => {
-            // Error handling - try to move to next step anyway
-            if (this.activeStep < this.stepConfig.length - 1) {
-              this.activeStep = this.activeStep + 1;
-            }
-          },
-        });
-    }
+    this.loadStepsStatus(true);
   }
 
   public isStepEnabled(stepIndex: number): boolean {
@@ -428,10 +470,20 @@ export class AssessmentViewComponent
       return false;
     }
 
+    if (stepIndex === this.activeStep || this.visitedSteps.includes(stepIndex)) {
+      return true;
+    }
+
     const key = this.stepKeys[stepIndex];
     if (!key) return false;
     const status = this.stepsStatus[key];
-    return status === 'Active' || status === 'Completed';
+
+    // Check if it's explicitly active/completed or if it can be activated based on previous steps
+    return (
+      status === 'Active' ||
+      status === 'Completed' ||
+      this.canActivateStep(stepIndex)
+    );
   }
 
   private getStepKey(stepIndex: number): keyof StepStatus | null {
@@ -492,8 +544,11 @@ export class AssessmentViewComponent
 
   public getProgressPercentage(): number {
     if (!this.stepsLoaded || !this.stepsStatus) return 0;
-    const totalSteps = this.stepKeys.length;
-    const completedSteps = this.stepKeys.filter(
+    const currentKeys = this.filteredStepKeys;
+    const totalSteps = currentKeys.length;
+    if (totalSteps === 0) return 0;
+
+    const completedSteps = currentKeys.filter(
       (key) => this.stepsStatus[key] === 'Completed',
     ).length;
     return Math.round((completedSteps / totalSteps) * 100);

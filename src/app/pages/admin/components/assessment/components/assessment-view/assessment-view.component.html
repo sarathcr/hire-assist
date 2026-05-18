@@ -59,14 +59,14 @@
   <!-- Modern Step Navigation -->
   <div class="assessment-schedule__stepper-wrapper">
     <div class="assessment-schedule__stepper">
-      @for (step of stepConfig; track step.index; let i = $index) {
+      @for (step of filteredStepConfig; track step.index; let i = $index) {
         <div
           class="assessment-schedule__stepper-item"
           [ngClass]="{
             'active': activeStep === step.index,
             'completed': stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed',
             'disabled': !stepsLoaded || !isStepEnabled(step.index),
-            'pending': stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Pending'
+            'pending': stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Pending' && activeStep !== step.index
           }"
         >
           <button
@@ -92,7 +92,7 @@
               </div>
             }
           </button>
-          @if (i < stepConfig.length - 1) {
+          @if (i < filteredStepConfig.length - 1) {
             <div class="assessment-schedule__stepper-connector"
                  [ngClass]="{'completed': stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed'}">
             </div>
@@ -140,6 +140,9 @@
         <app-select-quesionset-step
           [assessmentId]="assessmentId"
           [isReadOnly]="isSchedulingConfigReadOnly"
+          [stepStatus]="stepsStatus.questionSets"
+          [isIncomplete]="isQuestionSetIncomplete"
+          [isParentLoading]="!stepsLoaded"
         ></app-select-quesionset-step>
       } @else if (this.activeStep === 2) {
         <app-coordinator-step

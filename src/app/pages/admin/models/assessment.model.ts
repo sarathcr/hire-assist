@@ -7,6 +7,20 @@ import {
   Metadata,
 } from '../../../shared/utilities/form.utility';
 
+export interface RoundModel {
+  id?: number;
+  assessment?: string;
+  isActive?: boolean;
+  round: string;
+  roundId: number;
+  sequence: number;
+  status?: string;
+  statusId?: number;
+  timerHour?: number;
+  maxTerminationCount?: number;
+  roundTypeId?: number;
+}
+
 export interface Assessment {
   id?: number;
   name: string;
@@ -98,6 +112,7 @@ export interface AssessmentRoundFormGroup {
   durationDate?: Date;
   maxTerminationCount?: number;
   feedbackCriteria?: FeedbackCriteriaConfig[]; 
+  roundType?: string;
 }
 
 export interface CoordinatorRoundDto {

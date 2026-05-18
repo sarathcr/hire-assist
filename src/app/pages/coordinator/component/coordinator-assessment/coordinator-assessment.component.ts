@@ -34,7 +34,7 @@ export class CoordinatorAssessmentComponent
 
   // LifeCycle Hooks
   ngOnInit(): void {
-    const routeId = this.activatedRoute.snapshot.paramMap.get('id');
+    const routeId = this.activatedRoute.snapshot.paramMap.get('recruitmentId') || this.activatedRoute.snapshot.paramMap.get('id');
 
     if (routeId) {
       this.assessmentId = Number(routeId);

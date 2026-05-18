@@ -6,7 +6,7 @@ import {
   OnInit
 } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AccordionModule, AccordionTabOpenEvent } from 'primeng/accordion';
+import { AccordionModule } from 'primeng/accordion';
 import { MessageService } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
 import { Knob } from 'primeng/knob';
@@ -120,6 +120,7 @@ interface QuestionSetAccordionData {
   questionFileData?: Record<number, FileDto>;
   optionFileData?: Record<number, FileDto>;
   selectionResetCounter?: number;
+  originalSelectedIds?: string[];
 }
 @Component({
   selector: 'app-select-quesionset-step',
@@ -154,6 +155,11 @@ export class SelectQuesionsetStepComponent
 {
   public assessmentId = input<number>();
   public isReadOnly = input<boolean>(false);
+  public stepStatus = input<string>('Pending');
+  public isIncomplete = input<boolean>(false);
+  public isParentLoading = input<boolean>(true);
+
+  private hasLocalModifications = false;
 
   public data!: QuestionSetForm;
   public metadata!: Metadata[];
@@ -163,6 +169,7 @@ export class SelectQuesionsetStepComponent
   public questionSetModal = new QuestionSetFormModal();
   public fGroup!: FormGroup;
   public questionSets: QuestionSetModel[] = [];
+  public assessmentRounds: QuestionSetModel[] = [];
   public opt!: OptionsForQuestionSetInterface[];
   public tabledata!: PaginatedData<QuestionsModel>;
   public columns: TableColumnsData = tableColumns;
@@ -489,6 +496,18 @@ export class SelectQuesionsetStepComponent
     }
   }
 
+  public isDirtyForAccordion(questionSetId: string): boolean {
+    const data = this.questionSetAccordionData.get(questionSetId);
+    if (!data || !data.originalSelectedIds) return false;
+
+    if (data.selectedIds.length !== data.originalSelectedIds.length) return true;
+
+    const current = [...data.selectedIds].sort();
+    const original = [...data.originalSelectedIds].sort();
+
+    return current.some((id, index) => id !== original[index]);
+  }
+
   public onSubmit(questionSetId: string) {
     const accordionData = this.questionSetAccordionData.get(questionSetId);
     if (!accordionData) {
@@ -497,7 +516,7 @@ export class SelectQuesionsetStepComponent
 
     this.isLoading = true;
     this.questionSetSubmittedData = {
-      questionSetId: questionSetId,
+      questionSetId: accordionData.questionSet.id.toString(),
       questionIds: accordionData.selectedIds,
     };
     const next = () => {
@@ -509,6 +528,7 @@ export class SelectQuesionsetStepComponent
       });
       accordionData.isUpdate = true;
       accordionData.hasLoadedSelectedQuestions = false;
+      accordionData.originalSelectedIds = [...accordionData.selectedIds];
       this.questionSetAccordionData.set(questionSetId, { ...accordionData });
       this.loadQuestionsForAccordion(questionSetId);
     };
@@ -540,7 +560,7 @@ export class SelectQuesionsetStepComponent
 
     this.isLoading = true;
     this.questionSetSubmittedData = {
-      questionSetId: questionSetId,
+      questionSetId: accordionData.questionSet.id.toString(),
       questionIds: accordionData.selectedIds,
     };
     const next = () => {
@@ -551,6 +571,7 @@ export class SelectQuesionsetStepComponent
       });
       this.isLoading = false;
       accordionData.hasLoadedSelectedQuestions = false;
+      accordionData.originalSelectedIds = [...accordionData.selectedIds];
       this.questionSetAccordionData.set(questionSetId, { ...accordionData });
       this.loadQuestionsForAccordion(questionSetId);
     };
@@ -572,9 +593,10 @@ export class SelectQuesionsetStepComponent
         error,
       });
   }
-  public onCreateQuestionSet() {
+  public onCreateQuestionSet(assessmentRoundId?: number) {
     const data = {
       assessmentId: Number(this.assessmentId()),
+      assessmentRoundId: assessmentRoundId
     };
 
     const childRef = this.dialog.open(QuestionSetModalComponent, {
@@ -592,6 +614,7 @@ export class SelectQuesionsetStepComponent
     childRef.onClose.subscribe(
       (result: { isCreateSuccess?: boolean } | undefined) => {
         if (result?.isCreateSuccess !== false) {
+          this.hasLocalModifications = true;
           this.getAllQuestionSets(new PaginatedPayload());
           this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
         }
@@ -627,10 +650,25 @@ export class SelectQuesionsetStepComponent
 
     const next = (res: PaginatedData<QuestionSetModel>) => {
       this.questionSets = res.data;
+
+      // Extract unique rounds
+      const roundsMap = new Map<number, QuestionSetModel>();
       res.data.forEach((qs) => {
-        const qsId = qs.id.toString();
-        if (!this.questionSetAccordionData.has(qsId)) {
-          this.questionSetAccordionData.set(qsId, {
+        const roundId = qs.assessmentRoundId || 0;
+        if (!roundsMap.has(roundId)) {
+          roundsMap.set(roundId, qs);
+        }
+      });
+      this.assessmentRounds = Array.from(roundsMap.values()).sort((a, b) => {
+        return (a.assessmentRoundId || 0) - (b.assessmentRoundId || 0);
+      });
+
+      res.data.forEach((qs) => {
+        if (qs.id === 0) return;
+
+        const setId = qs.id.toString();
+        if (!this.questionSetAccordionData.has(setId)) {
+          this.questionSetAccordionData.set(setId, {
             questionSet: qs,
             selectedIds: [],
             allSelectedQuestions: [],
@@ -649,18 +687,15 @@ export class SelectQuesionsetStepComponent
             isImageLoadings: {},
             questionFileData: {},
             optionFileData: {},
+            originalSelectedIds: [],
           });
-          this.loadQuestionsForAccordion(qsId);
         } else {
-          const existingData = this.questionSetAccordionData.get(qsId);
+          const existingData = this.questionSetAccordionData.get(setId);
           if (existingData) {
             existingData.questionSet = qs;
-            this.questionSetAccordionData.set(qsId, {
+            this.questionSetAccordionData.set(setId, {
               ...existingData,
             });
-            if (!existingData.hasLoadedSelectedQuestions && !existingData.isLoadingSelectedQuestions) {
-              this.loadQuestionsForAccordion(qsId);
-            }
           }
         }
       });
@@ -843,15 +878,13 @@ export class SelectQuesionsetStepComponent
     }, 0);
   }
 
-  public onAccordionOpen(event: AccordionTabOpenEvent): void {
-    const questionSetId = event.index?.toString() || '';
-
+  public onAccordionOpen(questionSetId: string): void {
     if (!questionSetId) {
       return;
     }
 
     const questionSet = this.questionSets.find(
-      (qs) => qs.id.toString() === questionSetId,
+      (qs) => qs.id.toString() === questionSetId || qs.id === Number(questionSetId),
     );
 
     if (questionSet) {
@@ -859,6 +892,10 @@ export class SelectQuesionsetStepComponent
       const accordionData = this.questionSetAccordionData.get(questionSetId);
 
       if (!accordionData) {
+        return;
+      }
+
+      if (questionSet.id === 0) {
         return;
       }
 
@@ -875,9 +912,13 @@ export class SelectQuesionsetStepComponent
         };
       }
 
-      if (!accordionData.hasLoadedSelectedQuestions) {
+      const shouldReloadSummary = !accordionData.hasLoadedSelectedQuestions || 
+                                 (!accordionData.isLoadingSelectedQuestions && (!accordionData.groupedSelectedData || accordionData.groupedSelectedData.length === 0));
+
+      if (shouldReloadSummary) {
         this.loadQuestionsForAccordion(questionSetId, () => {
-          if (!accordionData.hasLoadedTableData) {
+          const freshData = this.questionSetAccordionData.get(questionSetId);
+          if (freshData && !freshData.hasLoadedTableData) {
             const initialPayload = new PaginatedPayload();
             initialPayload.pagination.pageNumber = 1;
             initialPayload.pagination.pageSize = 10;
@@ -914,7 +955,9 @@ export class SelectQuesionsetStepComponent
     accordionData.isLoadingSelectedQuestions = true;
     this.questionSetAccordionData.set(questionSetId, { ...accordionData });
 
-    this.assessmentService.getQuestionsBySet(questionSetId).subscribe({
+    const realQuestionSetId = accordionData.questionSet.id.toString();
+
+    this.assessmentService.getQuestionsBySet(realQuestionSetId).subscribe({
       next: (res: GetSelectedQuestionsForSet) => {
         const serverQuestions = res.questions || [];
         const uniqueQuestionsMap = new Map<number, QuestionsSetQuesions>();
@@ -927,6 +970,8 @@ export class SelectQuesionsetStepComponent
         accordionData.selectedIds = accordionData.allSelectedQuestions.map(
           (item: QuestionsSetQuesions) => item.questionId.toString(),
         );
+
+        accordionData.originalSelectedIds = [...accordionData.selectedIds];
 
         if (accordionData.selectedIds.length > 0) {
           accordionData.isUpdate = true;
@@ -960,6 +1005,7 @@ export class SelectQuesionsetStepComponent
         });
         accordionData.hasLoadedSelectedQuestions = true;
         accordionData.isLoadingSelectedQuestions = false;
+        accordionData.originalSelectedIds = [...accordionData.selectedIds];
         this.questionSetAccordionData.set(questionSetId, { ...accordionData });
         if (onComplete) {
           onComplete();
@@ -1103,7 +1149,7 @@ export class SelectQuesionsetStepComponent
   }
 
   public onCompleteQuestionSetStep(): void {
-    if (!this.hasSubmittedQuestionSets()) {
+    if (!this.hasSubmittedQuestionSets) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
@@ -1119,6 +1165,7 @@ export class SelectQuesionsetStepComponent
         next: () => {
           this.isLoading = false;
           this.stepsStatusService.notifyStepCompleted(assessmentId);
+          this.hasLocalModifications = false;
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -1128,6 +1175,7 @@ export class SelectQuesionsetStepComponent
         error: () => {
           this.isLoading = false;
           this.stepsStatusService.notifyStepCompleted(assessmentId);
+          this.hasLocalModifications = false;
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -1138,16 +1186,86 @@ export class SelectQuesionsetStepComponent
     }
   }
 
-  public hasSubmittedQuestionSets(): boolean {
+  public getQuestionSetsForRound(roundId: number): QuestionSetModel[] {
+    return this.questionSets.filter(
+      (qs) => qs.assessmentRoundId === roundId && qs.id > 0,
+    );
+  }
 
-    if (this.questionSets.length === 0) {
-      return false;
+  /**
+   * Returns true if any created question set is missing selected questions.
+   * If this is true, we should block ANY navigation away from this step.
+   */
+  public get hasIncompleteQuestionSets(): boolean {
+    // 1. If server-side check (passed from parent) says it's incomplete, it's incomplete
+    if (this.isIncomplete()) return true;
+
+    // 2. Check if any question set we've loaded or modified locally is empty
+    for (const data of this.questionSetAccordionData.values()) {
+      if (data.hasLoadedSelectedQuestions && (!data.selectedIds || data.selectedIds.length === 0)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns true if every assessment round has at least one question set.
+   * Required for forward navigation.
+   */
+  public get hasAllRoundsConfigured(): boolean {
+    const createdSets = this.questionSets.filter((qs) => qs.id > 0);
+    if (createdSets.length === 0) return false;
+
+    const roundIdsWithSets = new Set(createdSets.map((qs) => qs.assessmentRoundId));
+    const allRoundIds = new Set(
+      this.questionSets.map((qs) => qs.assessmentRoundId),
+    );
+
+    return roundIdsWithSets.size === allRoundIds.size;
+  }
+
+  public get isDirty(): boolean {
+    if (this.hasLocalModifications) return true;
+
+    // 1. Check if any question set's selections have changed
+    for (const data of this.questionSetAccordionData.values()) {
+      const current = [...(data.selectedIds || [])].sort().join(',');
+      const original = [...(data.originalSelectedIds || [])].sort().join(',');
+      if (current !== original) return true;
+    }
+    return false;
+  }
+
+  public get hasSubmittedQuestionSets(): boolean {
+    if (this.isParentLoading()) return false;
+
+    const allRounds = this.hasAllRoundsConfigured;
+    const isIncomplete = this.isIncomplete();
+    const isValid = allRounds && !isIncomplete;
+    const isDirty = this.isDirty;
+    const status = this.stepStatus();
+    
+    console.log(`[Button Debug]`, {
+      label: 'Complete Button State',
+      isEnabled: isValid && (status !== 'Completed' || isDirty),
+      isValid,
+      isDirty,
+      status,
+      allRounds,
+      isIncomplete,
+      hasLocalModifications: this.hasLocalModifications
+    });
+
+    if (!isValid) return false;
+
+    // If step is already completed, it only stays enabled if there are new changes (isDirty)
+    if (status === 'Completed') {
+      return isDirty;
     }
 
-    return this.questionSets.every((set) => {
-        const accordionData = this.questionSetAccordionData.get(set.id.toString());
-        return accordionData && accordionData.isUpdate && accordionData.selectedIds.length > 0;
-    });
+    // If step is not yet completed (Active/Pending), allow completion if valid
+    return true;
   }
 
   private restoreSearchValueOnly(questionSetId: string): void {
@@ -1158,7 +1276,7 @@ export class SelectQuesionsetStepComponent
 
     try {
       const questionSetIndex = this.questionSets.findIndex(
-        (qs) => qs.id.toString() === questionSetId,
+        (qs) => (qs.assessmentRoundId || qs.id).toString() === questionSetId,
       );
       if (questionSetIndex === -1) {
         return;

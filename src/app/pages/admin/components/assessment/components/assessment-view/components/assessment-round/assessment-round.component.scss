@@ -800,6 +800,14 @@
           border-radius: 8px;
         }
       }
+
+      ::ng-deep .p-select {
+        width: 100% !important;
+        border-radius: 8px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+      }
     }
   }
 
@@ -1314,4 +1322,11 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.assessment-round__criteria-empty-v2.error-state {
+  background: #fef2f2 !important;
+  border-color: #ef4444 !important;
+  i { color: #ef4444 !important; }
+  p { color: #b91c1c !important; }
 }

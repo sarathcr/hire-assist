@@ -16,7 +16,7 @@ import { ButtonComponent } from '../../../../../../../../shared/components/butto
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
-import { Option } from '../../../../../../../../shared/models/option';
+import type { Option } from '../../../../../../../../shared/models/option';
 import { StoreService } from '../../../../../../../../shared/services/store.service';
 import {
   ConfigMap,
@@ -29,11 +29,11 @@ import {
 import {
   CoordinatorDto,
   CoordinatorRoundItemDto,
+  RoundModel,
 } from '../../../../../../models/assessment.model';
 import { AssessmentService } from '../../../../../../services/assessment.service';
 import { AssessmentScheduleService } from '../../../../services/assessment-schedule.service';
 import { StepsStatusService } from '../../../../services/steps-status.service';
-import { RoundModel } from '../../assessment-view.component';
 import { CoordinatorSkeletonComponent } from './coordinator-step-skeleton.component';
 
 interface RoundFormGroup {

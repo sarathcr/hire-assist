@@ -44,7 +44,7 @@ export class FrontdeskAssessmentRoundsComponent
 
   private getAssessmentId() {
     this.route.paramMap.subscribe((params) => {
-      this.assessmentId = params.get('id')! as unknown as number;
+      this.assessmentId = (params.get('recruitmentId') || params.get('id'))! as unknown as number;
       if (this.assessmentId) {
         this.getAllAssessmentRounds();
       }

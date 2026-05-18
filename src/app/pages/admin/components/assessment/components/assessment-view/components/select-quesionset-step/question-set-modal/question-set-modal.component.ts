@@ -99,6 +99,7 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
   private CreateQuestionSet(payload: QuestionSetFormInterface) {
     this.isLoading = true;
     payload.assessmentId = Number(this.data.assessmentId);
+    payload.assessmentRoundId = this.data.assessmentRoundId;
     const next = () => {
       this.isLoading = false;
       this.messageService.add({
@@ -125,6 +126,7 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
   private updateQuestionSet(payload: QuestionSetFormInterface) {
     this.isLoading = true;
     payload.assessmentId = Number(this.data.formData.assessmentId);
+    payload.assessmentRoundId = this.data.formData.assessmentRoundId;
     payload.id = this.data.formData.id;
     const next = () => {
       this.isLoading = false;

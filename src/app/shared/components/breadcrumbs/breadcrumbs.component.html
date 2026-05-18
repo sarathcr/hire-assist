@@ -1,0 +1,3 @@
+<div class="breadcrumbs-container" *ngIf="(breadcrumbs$ | async)?.length">
+  <p-breadcrumb [model]="(breadcrumbs$ | async)!" [home]="home"></p-breadcrumb>
+</div>

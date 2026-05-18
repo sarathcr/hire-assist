@@ -136,7 +136,7 @@
                           } @else if (getRoundFormGroup(idx).valid && getRoundFormGroup(idx).touched) {
                             <span class="success-badge"><i class="pi pi-check-circle"></i> Configured</span>
                           }
-                          @if (data.name.toLowerCase().includes("aptitude") && getRoundFormGroup(idx).get('maxTerminationCount')?.value) {
+                          @if (isAptitudeRound(getRoundFormGroup(idx).get('roundType')?.value) && getRoundFormGroup(idx).get('maxTerminationCount')?.value) {
                              <span class="info-badge">{{ getRoundFormGroup(idx).get('maxTerminationCount')?.value }} Tries</span>
                           }
                         </div>
@@ -146,8 +146,23 @@
                     <p-accordioncontent>
                       <div class="assessment-round__config-item-body" [formGroup]="getRoundFormGroup(idx)">
                         <div class="assessment-round__config-inputs">
-                          <!-- Max Attempts Input (Only for Aptitude Round) -->
-                          @if (data.name.toLowerCase().includes("aptitude")) {
+                          <div class="assessment-round__input-group">
+                            <label [for]="'round-type-' + idx">Round Type <span class="assessment-round__required">*</span></label>
+                            <p-select
+                              [id]="'round-type-' + idx"
+                              formControlName="roundType"
+                              [options]="roundTypeOptions"
+                              optionLabel="label"
+                              optionValue="value"
+                              placeholder="Select Round Type"
+                              appendTo="body"
+                              class="w-full"
+                              [disabled]="isReadOnly()"
+                            ></p-select>
+                          </div>
+ 
+                           <!-- Max Attempts Input (Only for Aptitude Round) -->
+                          @if (isAptitudeRound(getRoundFormGroup(idx).get('roundType')?.value)) {
                             <div class="assessment-round__input-group">
                               <label [for]="'attempts-' + idx">Number of Tries <span class="assessment-round__required">*</span></label>
                               <input
@@ -160,7 +175,7 @@
                                 [attr.disabled]="isReadOnly() ? true : null"
                                 class="w-full"
                               />
-                              @if (getRoundFormGroup(idx).get('maxTerminationCount')?.touched && getRoundFormGroup(idx).get('maxTerminationCount')?.invalid) {
+                              @if ((getRoundFormGroup(idx).get('maxTerminationCount')?.touched || submitted) && getRoundFormGroup(idx).get('maxTerminationCount')?.invalid) {
                                 <small class="p-error">
                                   {{ getErrorMessage(idx, 'maxTerminationCount') }}
                                 </small>
@@ -182,16 +197,16 @@
                               styleClass="assessment-round__duration-picker"
                               [disabled]="isReadOnly()"
                             ></p-datepicker>
-                            @if (getRoundFormGroup(idx).get('duration')?.touched && getRoundFormGroup(idx).get('duration')?.invalid) {
+                            @if ((getRoundFormGroup(idx).get('duration')?.touched || submitted) && getRoundFormGroup(idx).get('duration')?.invalid) {
                               <small class="p-error">
                                 {{ getErrorMessage(idx, 'duration') }}
                               </small>
                             }
                           </div>
                         </div>
-
-                        <!-- Feedback Criteria Section -->
-                        @if (!data.name.toLowerCase().includes("aptitude")) {
+ 
+                         <!-- Feedback Criteria Section -->
+                        @if (!isAptitudeRound(getRoundFormGroup(idx).get('roundType')?.value)) {
                           <div class="assessment-round__criteria-section">
                             <p-divider></p-divider>
                             <div class="assessment-round__criteria-header">
@@ -235,13 +250,6 @@
                               </div>
                             </div>
                             
-                            @if (!data.name.toLowerCase().includes("aptitude") && getCriteriaFormArray(idx).length === 0 && (getCriteriaFormArray(idx).touched || getRoundFormGroup(idx).touched)) {
-                              <div class="assessment-round__criteria-error-msg">
-                                <i class="pi pi-exclamation-circle"></i>
-                                <span>At least one feedback criteria is required for this round.</span>
-                              </div>
-                            }
-
                             <div class="assessment-round__criteria-list" formArrayName="feedbackCriteria">
                               @for (criteria of getCriteriaFormArray(idx).controls; let cIdx = $index; track criteria) {
                                 <div class="assessment-round__criteria-item-v2" [formGroupName]="cIdx">
@@ -257,7 +265,7 @@
                                           [readonly]="isReadOnly()"
                                           maxlength="31"
                                         />
-                                        @if (criteria.get('title')?.invalid && (criteria.get('title')?.dirty || criteria.get('title')?.touched || getRoundFormGroup(idx).touched)) {
+                                        @if (criteria.get('title')?.invalid && (criteria.get('title')?.dirty || criteria.get('title')?.touched || submitted)) {
                                           <small class="p-error">
                                             @if (criteria.get('title')?.errors?.['required']) { Title is required. }
                                             @else if (criteria.get('title')?.errors?.['pattern']) { Numbers are not allowed. }
@@ -281,7 +289,7 @@
                                             placeholder=""
                                             [readonly]="isReadOnly()"
                                           />
-                                          @if (criteria.get('maxScore')?.invalid && (criteria.get('maxScore')?.touched || getRoundFormGroup(idx).touched)) {
+                                          @if (criteria.get('maxScore')?.invalid && (criteria.get('maxScore')?.touched || submitted)) {
                                             <small class="p-error">
                                               @if (criteria.get('maxScore')?.errors?.['min']) { Min 1. }
                                               @else if (criteria.get('maxScore')?.errors?.['max']) { Max 100. }
@@ -318,7 +326,7 @@
                                         </span>
                                       </ng-template>
                                     </p-editor>
-                                    @if (criteria.get('description')?.invalid && (criteria.get('description')?.dirty || criteria.get('description')?.touched || getRoundFormGroup(idx).touched)) {
+                                    @if (criteria.get('description')?.invalid && (criteria.get('description')?.dirty || criteria.get('description')?.touched || submitted)) {
                                       <small class="p-error">
                                         @if (criteria.get('description')?.errors?.['maxlength']) { Description must be no more than 1000 characters. }
                                       </small>
@@ -328,11 +336,13 @@
                                 </div>
                               }
                               
-
-                              @if (!data.name.toLowerCase().includes("aptitude") && getCriteriaFormArray(idx).length === 0 && (getCriteriaFormArray(idx).touched || getRoundFormGroup(idx).touched)) {
-                                <div class="assessment-round__criteria-empty-v2">
+                              @if (getCriteriaFormArray(idx).length === 0) {
+                                <div class="assessment-round__criteria-empty-v2" [class.error-state]="submitted">
                                   <i class="pi pi-info-circle"></i>
-                                  <span>At least one feedback criteria is required for this round.</span>
+                                  <p>No feedback criteria added. Click "Add New" or "Import Existing" to define evaluation parameters.</p>
+                                  @if (submitted) {
+                                    <span class="p-error">At least one feedback criteria is required for this round.</span>
+                                  }
                                 </div>
                               }
                             </div>
@@ -355,7 +365,7 @@
           class="assessment-round__submit-button"
           [buttonLabel]="'Complete Rounds'"
           [isLoading]="isLoading"
-          [disabled]="isReadOnly() || !submittedData || submittedData.length === 0"
+          [disabled]="isReadOnly() || !submittedData || submittedData.length === 0 || !isDirty"
           [buttonSize]="'small'"
           (btnClick)="onSubmitAll()"
         ></app-button>

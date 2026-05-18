@@ -51,6 +51,7 @@ export interface QuestionSetFormInterface {
   title: string;
   description: string;
   assessmentId: number;
+  assessmentRoundId?: number;
 }
 
 export interface AssessmentRoundsInterface {
@@ -64,6 +65,7 @@ export interface AssessmentRoundsInterface {
   isActive?: boolean;
   timerHour?: string;
   maxTerminationCount?: number;
+  roundTypeId?: number;
   assessmentRoundFeedbackCriteria?: any[];
 }
 

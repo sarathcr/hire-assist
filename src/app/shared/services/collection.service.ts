@@ -179,4 +179,9 @@ export class CollectionService implements OnDestroy {
     const updatedCollection = { ...currentCollection, [key]: updatedItems };
     this.storeService.setCollection(updatedCollection);
   }
+
+  public GetRoundTypes(): Observable<Option[]> {
+    const url = `${this.collectionUrl}/api/collection/RoundTypes`;
+    return this.http.get<Option[]>(url);
+  }
 }

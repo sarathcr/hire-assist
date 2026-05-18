@@ -153,7 +153,7 @@ export class InterviewerRecruitmentPanelsComponent implements OnInit {
       `${INTERVIEW_URL}/InterviewByPanelSummary`,
     );
     this.route.paramMap.subscribe((params) => {
-      this.assessmentId = Number(params.get('id'));
+      this.assessmentId = Number(params.get('recruitmentId') || params.get('id'));
       if (this.assessmentId) {
         this.loadPanels();
       }
@@ -216,7 +216,7 @@ export class InterviewerRecruitmentPanelsComponent implements OnInit {
       ? 'admin/interviews'
       : 'interviewer';
     this.router.navigate([
-      `${basePath}/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+      `${basePath}/recruitments/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
     ]);
   }
 

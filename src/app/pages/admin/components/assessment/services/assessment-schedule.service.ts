@@ -5,6 +5,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { ASSESSMENT_URL, INTERVIEW_URL } from '../../../../../shared/constants/api';
 import { ApiService } from '../../../../../shared/services/api.service';
 import { StoreService } from '../../../../../shared/services/store.service';
+import type { Option } from '../../../../../shared/models/app-state.models';
 import {
   AssessmentRoundsInterface,
   RoundsInterface,

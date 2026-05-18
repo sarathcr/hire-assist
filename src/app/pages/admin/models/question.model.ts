@@ -89,6 +89,8 @@ export interface QuestionSetModel {
   createdBy: string;
   updatedAt?: string;
   updatedBy?: string;
+  assessmentRoundId?: number;
+  roundName?: string;
 }
 
 export interface QuestionSet {

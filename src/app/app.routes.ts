@@ -70,62 +70,79 @@ export const routes: Routes = [
     component: DashboardComponent,
 
     children: [
-      { path: 'dashboard', component: AdminDashboardComponent },
-      { path: 'activity-logs', component: ActivityLogsComponent },
+      { path: 'dashboard', component: AdminDashboardComponent, data: { breadcrumb: 'Dashboard' } },
+      { path: 'activity-logs', component: ActivityLogsComponent, data: { breadcrumb: 'Activity Logs' } },
       {
         path: 'recruitments',
         component: AssessmentComponent,
+        data: { breadcrumb: 'Recruitments' },
         children: [
           {
             path: '',
             component: AssessmentListComponent,
           },
-          { path: ':id', component: AssessmentDetailComponent },
+          { path: ':id', component: AssessmentDetailComponent, data: { breadcrumb: 'Recruitment Details' } },
           {
             path: 'schedule/:id',
             component: AssessmentViewComponent,
+            data: { breadcrumb: 'Schedule' }
           },
           {
             path: 'candidateDetail/:recruitmentId/:candidateId/:interviewId',
             component: CandidateDetailViewComponent,
+            data: { breadcrumb: 'Candidate Detail' }
           },
           {
             path: 'candidateDetail/:recruitmentId/:candidateId',
             component: CandidateDetailViewComponent,
+            data: { breadcrumb: 'Candidate Detail' }
           },
           {
             path: 'previousAssessments/:recruitmentId/:candidateId',
             component: CandidatePreviousAssessmentComponent,
+            data: { breadcrumb: 'Previous Assessments' }
           },
           {
             path: 'previous-recruitments/:recruitmentId/:candidateId',
             component: PreviousRecruitmentListComponent,
+            data: { breadcrumb: 'Previous Recruitments' }
           },
           {
             path: 'recruitment-summary/:id',
             component: RecruitmentSummaryComponent,
+            data: { breadcrumb: 'Summary' }
           },
         ],
       },
       {
         path: 'interviews',
         component: InterviewsComponent,
+        data: { breadcrumb: 'Interviews', breadcrumbDisabled: true },
         children: [
           {
             path: '',
             component: InterviewerDashboardComponent,
           },
           {
-            path: 'recruitments/:id',
-            component: InterviewerRecruitmentPanelsComponent,
+            path: 'recruitments',
+            children: [
+              {
+                path: ':recruitmentId',
+                data: { breadcrumb: 'My Interview Panels' },
+                children: [
+                  { path: '', component: InterviewerRecruitmentPanelsComponent },
+                  {
+                    path: ':assessmentRoundId/:interviewId/:email',
+                    component: InterviewerFeedbackComponent,
+                    data: { breadcrumb: 'Interview Session' }
+                  }
+                ]
+              }
+            ]
           },
           {
             path: ':id/:panel',
             component: InterviewerCandidateListComponent,
-          },
-          {
-            path: ':recruitmentId/:assessmentRoundId/:interviewId/:email',
-            component: InterviewerFeedbackComponent,
           },
         ],
       },
@@ -133,33 +150,39 @@ export const routes: Routes = [
         // Route for admin users accessing coordinator features
         // Full path: /admin/coordinator
         path: 'coordinator',
-        component: CoordinatorDashboardComponent,
+        data: { breadcrumb: 'Coordinator', breadcrumbDisabled: true },
         children: [
-          { path: ':id', component: CoordinatorAssessmentComponent },
+          { path: '', component: CoordinatorDashboardComponent, data: { breadcrumb: 'Dashboard' } },
+          { path: ':id', component: CoordinatorAssessmentComponent, data: { breadcrumb: 'Assessment Details' } },
           {
             path: ':recruitmentId/:assessmentRoundId',
             component: CoordinatorAssignmentComponent,
+            data: { breadcrumb: 'Assignment' }
           },
         ],
       },
       {
         path: 'roles-access',
         component: RolesAccessComponent,
+        data: { breadcrumb: 'Roles & Access' }
       },
       {
         path: 'settings',
         component: SettingsComponent,
+        data: { breadcrumb: 'Settings', breadcrumbDisabled: true },
         children: [
-          { path: 'questions', component: QuestionsComponent },
+          { path: 'questions', component: QuestionsComponent, data: { breadcrumb: 'Questions' } },
           {
             path: 'batches',
             component: BatchesComponent,
+            data: { breadcrumb: 'Batches' }
           },
-          { path: 'departments', component: DepartmentsComponent },
-          { path: 'panels', component: PanelsComponent },
+          { path: 'departments', component: DepartmentsComponent, data: { breadcrumb: 'Departments' } },
+          { path: 'panels', component: PanelsComponent, data: { breadcrumb: 'Panels' } },
           {
             path: 'panel-assignment',
             component: InterviewerPanelAssignmentComponent,
+            data: { breadcrumb: 'Panel Assignment' }
           },
         ],
       },
@@ -168,34 +191,47 @@ export const routes: Routes = [
   {
     path: 'profile',
     component: DashboardComponent,
+    data: { breadcrumb: 'Profile', breadcrumbDisabled: true },
     children: [
       {
         path: '',
         component: ProfileComponent,
+        data: { breadcrumb: 'My Profile' }
       },
       {
         path: ':userid/:recruitmentId',
         component: ProfileComponent,
+        data: { breadcrumb: 'User Profile' }
       },
     ],
   },
   {
     path: 'interviewer',
     component: DashboardComponent,
-
+    data: { breadcrumb: 'Dashboard' },
     children: [
       { path: '', component: InterviewerDashboardComponent },
       {
-        path: 'recruitments/:id',
-        component: InterviewerRecruitmentPanelsComponent,
+        path: 'recruitments',
+        children: [
+          {
+            path: ':recruitmentId',
+            data: { breadcrumb: 'My Interview Panels' },
+            children: [
+              { path: '', component: InterviewerRecruitmentPanelsComponent },
+              {
+                path: ':assessmentRoundId/:interviewId/:email',
+                component: InterviewerFeedbackComponent,
+                data: { breadcrumb: 'Interview Session' }
+              }
+            ]
+          }
+        ]
       },
       {
         path: ':id/:panel',
         component: InterviewerCandidateListComponent,
-      },
-      {
-        path: ':recruitmentId/:assessmentRoundId/:interviewId/:email',
-        component: InterviewerFeedbackComponent,
+        data: { breadcrumb: 'Candidates' }
       },
     ],
   },
@@ -203,12 +239,14 @@ export const routes: Routes = [
   {
     path: 'candidate',
     component: DashboardComponent,
+    data: { breadcrumb: 'Dashboard' },
     children: [
       { path: '', component: CandidateComponent },
 
       {
         path: 'thank-you',
         component: CandidateThankyouComponent,
+        data: { breadcrumb: 'Thank You' }
       },
     ],
   },
@@ -225,16 +263,24 @@ export const routes: Routes = [
     // Note: This is different from /admin/coordinator above - both routes are needed
     path: 'coordinator',
     component: DashboardComponent,
+    data: { breadcrumb: 'Dashboard' },
     children: [
       { path: '', component: CoordinatorDashboardComponent },
       {
         path: 'recruitments',
         component: CoordinatorDetailsComponent,
         children: [
-          { path: ':id', component: CoordinatorAssessmentComponent },
           {
-            path: ':recruitmentId/:assessmentRoundId',
-            component: CoordinatorAssignmentComponent,
+            path: ':recruitmentId',
+            data: { breadcrumb: 'Assigned Rounds' },
+            children: [
+              { path: '', component: CoordinatorAssessmentComponent },
+              {
+                path: ':assessmentRoundId',
+                component: CoordinatorAssignmentComponent,
+                data: { breadcrumb: 'Panel Assignment' }
+              },
+            ],
           },
         ],
       },
@@ -243,17 +289,23 @@ export const routes: Routes = [
   {
     path: 'frontdesk',
     component: DashboardComponent,
-
+    data: { breadcrumb: 'Dashboard' },
     children: [
       { path: '', component: FrontdeskDashboardComponent },
       {
         path: 'recruitments',
         children: [
-          { path: ':id', component: FrontdeskAssessmentRoundsComponent },
           {
-            path: ':recruitmentId/round',
+            path: ':recruitmentId',
+            data: { breadcrumb: 'Recruitment Rounds' },
             children: [
-              { path: ':id', component: FrontdeskBatchAssignmentComponent },
+              { path: '', component: FrontdeskAssessmentRoundsComponent },
+              {
+                path: 'round',
+                children: [
+                  { path: ':id', component: FrontdeskBatchAssignmentComponent, data: { breadcrumb: 'Batch Details' } },
+                ],
+              },
             ],
           },
         ],

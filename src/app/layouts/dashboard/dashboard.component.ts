@@ -3,6 +3,7 @@ import { Router, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { HeaderComponent } from '../../shared/components/header/header.component';
 import { SideNavComponent } from '../../shared/components/side-nav/side-nav.component';
+import { BreadcrumbsComponent } from '../../shared/components/breadcrumbs/breadcrumbs.component';
 import { CollectionService } from '../../shared/services/collection.service';
 import { SidebarCollapseService } from '../../shared/services/sidebar-collapse.service';
 import { ProfileServicesService } from '../../shared/pages/profile/services/profile-services.service';
@@ -10,7 +11,7 @@ import { StoreService } from '../../shared/services/store.service';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterOutlet, SideNavComponent, HeaderComponent],
+  imports: [RouterOutlet, SideNavComponent, HeaderComponent, BreadcrumbsComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
