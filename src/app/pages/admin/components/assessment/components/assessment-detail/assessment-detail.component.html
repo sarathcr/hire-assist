@@ -383,16 +383,6 @@
           <span class="flow-step__title">Selection</span>
         </div>
       </div>
-      <div class="flow-step__connector"></div>
-      <div class="flow-step">
-        <div class="flow-step__icon flow-step__icon--schedule">
-          <i class="pi pi-calendar-plus"></i>
-        </div>
-        <div class="flow-step__content">
-          <span class="flow-step__label">Phase 4</span>
-          <span class="flow-step__title">Schedule Next</span>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -466,4 +456,40 @@
     (visibleChange)="visible = $event"
     (loadMore)="loadMoreHistory()"
   ></app-history-drawer>
+  <p-confirmDialog
+    #cd
+    [style]="{ width: '450px' }"
+    styleClass="custom-confirm-dialog"
+  >
+    <ng-template pTemplate="header">
+      <div class="confirm-dialog-header">
+        <i class="pi pi-calendar-plus"></i>
+        <span>Confirm Scheduling</span>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="message" let-message>
+      <div class="confirm-dialog-content">
+        <div class="confirm-dialog-icon">
+          <i class="pi pi-info-circle"></i>
+        </div>
+        <div class="confirm-dialog-text">
+          <p>{{ message.message }}</p>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+      <div class="confirm-dialog-footer">
+        <app-button
+          buttonLabel="Cancel"
+          buttonVariant="outlined"
+          (btnClick)="rejectSchedule()"
+        ></app-button>
+        <app-button
+          buttonLabel="Confirm Schedule"
+          [isLoading]="isLoading"
+          (btnClick)="confirmSchedule()"
+        ></app-button>
+      </div>
+    </ng-template>
+  </p-confirmDialog>
 </div>

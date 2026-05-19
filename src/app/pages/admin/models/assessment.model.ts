@@ -1,5 +1,4 @@
 import { FormGroup } from '@angular/forms';
-import { FeedbackCriteriaConfig } from './assessment-schedule.model';
 import { PaginatedPayload } from '../../../shared/models/pagination.models';
 import {
   ConfigMap,
@@ -88,6 +87,7 @@ export interface AssessmentRound {
   status: string;
   sequence: number;
   isActive: boolean;
+  roundTypeId?: number;
 }
 
 export class Score extends FormEntity {
@@ -103,6 +103,14 @@ export class Score extends FormEntity {
       },
     },
   };
+}
+
+export interface FeedbackCriteriaConfig {
+  id?: number | string;
+  title: string;
+  description: string;
+  maxScore: number;
+  isImported?: boolean;
 }
 
 export interface AssessmentRoundFormGroup {

@@ -45,7 +45,7 @@ export class BreadcrumbService {
 
     // Automatically disable the last item (current page)
     if (breadcrumbs.length > 0) {
-      breadcrumbs[breadcrumbs.length - 1].disabled = true;
+      this.disableBreadcrumb(breadcrumbs[breadcrumbs.length - 1]);
     }
 
     this._breadcrumbs$.next(breadcrumbs);
@@ -54,20 +54,27 @@ export class BreadcrumbService {
   private addBreadcrumb(
     route: ActivatedRouteSnapshot,
     parentUrl: string[],
-    breadcrumbs: MenuItem[]
+    breadcrumbs: MenuItem[],
   ) {
     if (route) {
       const routeUrl = parentUrl.concat(route.url.map((url) => url.path));
 
       const staticLabel = route.routeConfig?.data?.['breadcrumb'];
-      const isDisabled = route.routeConfig?.data?.['breadcrumbDisabled'];
+      const isDisabled =
+        route.routeConfig?.data?.['breadcrumbDisabled'] || !this.hasPage(route);
 
       if (staticLabel) {
+        this.addCandidateDetailParentBreadcrumb(route, breadcrumbs);
+
         const breadcrumb: MenuItem = {
           label: this.labelOverrides[staticLabel] || staticLabel,
-          routerLink: '/' + routeUrl.join('/'),
           disabled: isDisabled,
         };
+
+        if (!isDisabled) {
+          breadcrumb.routerLink = '/' + routeUrl.join('/');
+        }
+
         breadcrumbs.push(breadcrumb);
       }
 
@@ -75,5 +82,39 @@ export class BreadcrumbService {
         this.addBreadcrumb(route.firstChild, routeUrl, breadcrumbs);
       }
     }
+  }
+
+  private hasPage(route: ActivatedRouteSnapshot): boolean {
+    return !!route.routeConfig?.component || !!route.routeConfig?.loadComponent;
+  }
+
+  private disableBreadcrumb(breadcrumb: MenuItem): void {
+    breadcrumb.disabled = true;
+    breadcrumb.routerLink = undefined;
+    breadcrumb.url = undefined;
+  }
+
+  private addCandidateDetailParentBreadcrumb(
+    route: ActivatedRouteSnapshot,
+    breadcrumbs: MenuItem[],
+  ): void {
+    if (!route.routeConfig?.path?.startsWith('candidateDetail')) {
+      return;
+    }
+
+    const recruitmentId = route.paramMap.get('recruitmentId');
+    if (!recruitmentId) {
+      return;
+    }
+
+    const isFromSchedule =
+      route.queryParamMap.get('breadcrumbSource') === 'schedule';
+
+    breadcrumbs.push({
+      label: isFromSchedule ? 'Schedule' : 'Recruitment Details',
+      routerLink: isFromSchedule
+        ? `/admin/recruitments/schedule/${recruitmentId}`
+        : `/admin/recruitments/${recruitmentId}`,
+    });
   }
 }

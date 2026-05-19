@@ -3,16 +3,9 @@ import { AuthComponent } from './layouts/auth/auth.component';
 import { DashboardComponent } from './layouts/dashboard/dashboard.component';
 import { AdminDashboardComponent } from './pages/admin/components/admin-dashboard/admin-dashboard.component';
 import { AssessmentComponent } from './pages/admin/components/assessment/assessment.component';
-import { AssessmentDetailComponent } from './pages/admin/components/assessment/components/assessment-detail/assessment-detail.component';
-import { AssessmentListComponent } from './pages/admin/components/assessment/components/assessment-list/assessment-list.component';
-
-import { AssessmentViewComponent } from './pages/admin/components/assessment/components/assessment-view/assessment-view.component';
-import { CandidateDetailViewComponent } from './pages/admin/components/assessment/components/assessment-view/components/candidate-detail-view/candidate-detail-view.component';
+import { ActivityLogsComponent } from './pages/admin/components/activity-logs/activity-logs.component';
 import { CandidatePreviousAssessmentComponent } from './pages/admin/components/assessment/components/assessment-view/components/candidate-previous-assessment/candidate-previous-assessment.component';
-import { AssessmentSummaryComponent } from './pages/admin/components/interviews/components/assessment-summary/assessment-summary.component';
 import { RecruitmentSummaryComponent } from './pages/admin/components/assessment/components/recruitment-summary/recruitment-summary.component';
-import { InterviewCandidateListComponent } from './pages/admin/components/interviews/components/interview-candidate-list/interview-candidate-list.component';
-import { InterviewDetailComponent } from './pages/admin/components/interviews/components/interview-detail/interview-detail.component';
 import { InterviewsComponent } from './pages/admin/components/interviews/interviews.component';
 import { RolesAccessComponent } from './pages/admin/components/roles-access/roles-access.component';
 import { BatchesComponent } from './pages/admin/components/settings/components/batches/batches.component';
@@ -38,12 +31,14 @@ import { InterviewerCandidateListComponent } from './pages/interviewer/component
 import { InterviewerFeedbackComponent } from './pages/interviewer/components/Interviewer-list/components/interviewer-feedback/interviewer-feedback.component';
 import { InterviewerDashboardComponent } from './pages/interviewer/components/interviewer-dashboard/interviewer-dashboard.component';
 import { InterviewerRecruitmentPanelsComponent } from './pages/interviewer/components/interviewer-recruitment-panels/interviewer-recruitment-panels.component';
-import { ActivityLogsComponent } from './pages/admin/components/activity-logs/activity-logs.component';
 
 import { backButtonGuard } from './shared/guards/back-button.guard';
 import { DeviceWidthGuard } from './shared/guards/device-width.guard';
 import { ProfileComponent } from './shared/pages/profile/profile.component';
 
+import { AssessmentDetailComponent } from './pages/admin/components/assessment/components/assessment-detail/assessment-detail.component';
+import { AssessmentViewComponent } from './pages/admin/components/assessment/components/assessment-view/assessment-view.component';
+import { CandidateDetailViewComponent } from './pages/admin/components/assessment/components/assessment-view/components/candidate-detail-view/candidate-detail-view.component';
 import { PreviousRecruitmentListComponent } from './pages/admin/components/assessment/components/assessment-view/components/previous-recruitment-list/previous-recruitment-list.component';
 
 export const routes: Routes = [
@@ -79,7 +74,17 @@ export const routes: Routes = [
         children: [
           {
             path: '',
-            component: AssessmentListComponent,
+            loadComponent: () =>
+              import(
+                './pages/admin/components/assessment/components/assessment-list/assessment-list.component'
+              ).then((m) => m.AssessmentListComponent),
+          },
+          {
+            path: ':id',
+            loadComponent: () =>
+              import(
+                './pages/admin/components/assessment/components/assessment-detail/assessment-detail.component'
+              ).then((m) => m.AssessmentDetailComponent),
           },
           { path: ':id', component: AssessmentDetailComponent, data: { breadcrumb: 'Recruitment Details' } },
           {
@@ -191,7 +196,6 @@ export const routes: Routes = [
   {
     path: 'profile',
     component: DashboardComponent,
-    data: { breadcrumb: 'Profile', breadcrumbDisabled: true },
     children: [
       {
         path: '',

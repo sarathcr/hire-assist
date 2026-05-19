@@ -1,51 +1,69 @@
 .breadcrumbs-container {
   padding: 0.5rem 0;
   margin-bottom: 1rem;
+}
 
-  :host ::v-deep {
-    .p-breadcrumb {
-      background: transparent;
-      border: none;
-      padding: 0 !important;
+:host ::ng-deep {
+  .p-breadcrumb {
+    background: transparent;
+    border: none;
+    padding: 0 !important;
 
-      .p-breadcrumb-list {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+    .p-breadcrumb-list {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
 
-        .p-breadcrumb-home {
-           .p-breadcrumb-item-link {
-              color: var(--primary-color);
-              transition: color 0.2s;
-              
-              &:hover {
-                color: var(--secondary-color);
-              }
-           }
+      .p-breadcrumb-home-item,
+      .p-breadcrumb-home {
+        .p-breadcrumb-item-link {
+          color: var(--color-grey);
+          transition: color 0.2s;
+
+          &:hover {
+            color: var(--color-black);
+          }
+        }
+      }
+
+      .p-breadcrumb-separator {
+        color: var(--color-grey-light);
+        font-size: 0.8rem;
+        margin: 0;
+      }
+
+      .p-breadcrumb-item {
+        .p-breadcrumb-item-link {
+          text-decoration: none;
+          color: var(--color-grey);
+          font-size: 0.90rem;
+          font-weight: 400;
+          transition: color 0.2s;
+
+          &:hover {
+            color: var(--secondary-color);
+          }
         }
 
-        .p-breadcrumb-separator {
-          color: var(--color-grey-light);
-          font-size: 0.8rem;
-          margin: 0;
-        }
+        &.p-disabled {
+          pointer-events: auto !important;
 
-        .p-breadcrumb-item {
+          .p-breadcrumb-item-link,
+          .p-breadcrumb-item-label,
+          .p-breadcrumb-item-icon {
+            pointer-events: auto !important;
+          }
+
           .p-breadcrumb-item-link {
-            text-decoration: none;
-            color: var(--color-grey);
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.2s;
+            color: var(--color-grey) !important;
+            cursor:text !important;
+          }
 
-            &:hover {
-              color: var(--primary-color);
-            }
-
-            &.p-disabled {
-               color: var(--color-black);
-               cursor: default;
-               font-weight: 600;
+          &:hover {
+            .p-breadcrumb-item-link,
+            .p-breadcrumb-item-label,
+            .p-breadcrumb-item-icon {
+              color: var(--color-black) !important;
             }
           }
         }

@@ -27,6 +27,8 @@ import { AssessmentForm } from '../../../../models/assessment-form.model';
 import { Assessment } from '../../../../models/assessment.model';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { CreateUpdateAssessmentModalComponent } from '../create-update-assessment-modal/create-update-assessment-modal.component';
+import { StepsStatusService, StepStatus } from '../../services/steps-status.service';
+import { RecruitmentChoiceModalComponent } from '../recruitment-choice-modal/recruitment-choice-modal.component';
 import { SkeletonComponent } from '../../../../../../shared/components/assessment-card/assessment-card-skeleton';
 import { EmptyStateComponent } from "../../../../../../shared/components/empty-state/empty-state/empty-state.component";
 import { SearchBarComponent } from '../../../../../../shared/components/search-bar/search-bar/search-bar.component';
@@ -65,6 +67,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     public dialog: DialogService,
     public messageService: MessageService,
     private readonly assessmentService: AssessmentService,
+    private readonly stepsStatusService: StepsStatusService,
     public router: Router,
   ) {
     super();
@@ -120,15 +123,60 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   }
 
   public onScheduleAssessment(assessment: Assessment): void {
-    if (assessment) {
-      this.router.navigate([`admin/recruitments/schedule/${assessment.id}`], {
-        state: { assessment },
-      });
+    if (assessment && assessment.id) {
+      this.handleRecruitmentNavigation(assessment.id, assessment);
     }
   }
 
   public onClickAssessment(id: number): void {
-    if (id > 0) this.router.navigate([`admin/recruitments/${id}`]);
+    if (id > 0) {
+      this.handleRecruitmentNavigation(id);
+    }
+  }
+
+  private handleRecruitmentNavigation(id: number, assessment?: Assessment): void {
+    this.isLoading = true;
+    this.stepsStatusService.getAssessmentStepsStatus(id).subscribe({
+      next: (status: StepStatus) => {
+        this.isLoading = false;
+        const isScheduleCompleted = status.schedule === 'Completed';
+
+        if (isScheduleCompleted) {
+          this.showRecruitmentChoice(id, status, assessment);
+        } else {
+          this.router.navigate([`admin/recruitments/schedule/${id}`], {
+            state: { assessment, stepsStatus: status },
+          });
+        }
+      },
+      error: () => {
+        this.isLoading = false;
+        this.router.navigate([`admin/recruitments/schedule/${id}`], {
+          state: { assessment },
+        });
+      }
+    });
+  }
+
+  private showRecruitmentChoice(id: number, status: StepStatus, assessment?: Assessment): void {
+    this.ref = this.dialog.open(RecruitmentChoiceModalComponent, {
+      header: 'Selection Required',
+      width: '450px',
+      modal: true,
+      closable: true,
+      showHeader: false, // We have a custom header in the template
+      styleClass: 'choice-dialog'
+    });
+
+    this.ref.onClose.subscribe((choice: 'schedule' | 'detail') => {
+      if (choice === 'schedule') {
+        this.router.navigate([`admin/recruitments/schedule/${id}`], {
+          state: { assessment, stepsStatus: status },
+        });
+      } else if (choice === 'detail') {
+        this.router.navigate([`admin/recruitments/${id}`]);
+      }
+    });
   }
 
   // Private Methods

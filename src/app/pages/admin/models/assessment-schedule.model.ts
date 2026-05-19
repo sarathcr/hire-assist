@@ -12,6 +12,7 @@ import {
   Metadata,
 } from '../../../shared/utilities/form.utility';
 import { CoordinatorDto } from './assessment.model';
+export type { FeedbackCriteriaConfig } from './assessment.model';
 
 export interface Candidate {
   id: number;
@@ -36,14 +37,6 @@ export interface RoundsInterface {
   id: number;
   name: string;
   description: string;
-}
-
-export interface FeedbackCriteriaConfig {
-  id?: number | string;
-  title: string;
-  description: string;
-  maxScore: number;
-  isImported?: boolean;
 }
 
 export interface QuestionSetFormInterface {

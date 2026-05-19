@@ -6,6 +6,7 @@ import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
+import { StoreService } from '../../services/store.service';
 
 @Component({
   selector: 'app-breadcrumbs',
@@ -20,7 +21,8 @@ export class BreadcrumbsComponent implements OnInit {
 
   constructor(
     private breadcrumbService: BreadcrumbService,
-    private router: Router
+    private router: Router,
+    private storeService: StoreService
   ) {
     this.breadcrumbs$ = this.breadcrumbService.breadcrumbs$;
     this.home = { icon: 'pi pi-home', routerLink: '/admin/dashboard' };
@@ -47,9 +49,35 @@ export class BreadcrumbsComponent implements OnInit {
     } else if (url.startsWith('/frontdesk')) {
       this.home = { icon: 'pi pi-home', routerLink: '/frontdesk' };
     } else if (url.startsWith('/profile')) {
-      this.home = { icon: 'pi pi-home', routerLink: '/profile' };
+      this.home = { icon: 'pi pi-home', routerLink: this.getDashboardRoute() };
     } else {
       this.home = { icon: 'pi pi-home', routerLink: '/' };
     }
+  }
+
+  private getDashboardRoute(): string {
+    const userRole = this.storeService.getUserRole();
+
+    if (userRole?.includes('admin') || userRole?.includes('superadmin')) {
+      return '/admin/dashboard';
+    }
+
+    if (userRole?.includes('candidate')) {
+      return '/candidate';
+    }
+
+    if (userRole?.includes('interviewer')) {
+      return '/interviewer';
+    }
+
+    if (userRole?.includes('coordinator')) {
+      return '/coordinator';
+    }
+
+    if (userRole?.includes('frontdesk')) {
+      return '/frontdesk';
+    }
+
+    return '/admin/dashboard';
   }
 }

@@ -140,7 +140,7 @@
                     class="interview-detail__accordion-content"
                   >
                     <!-- Aptitude Round -->
-                    @if (round.roundId === 1) {
+                    @if (isAptitudeRound(round)) {
                       <div class="interview-detail__round-details">
                         <div class="interview-detail__round-grid">
                           <div class="interview-detail__round-item">

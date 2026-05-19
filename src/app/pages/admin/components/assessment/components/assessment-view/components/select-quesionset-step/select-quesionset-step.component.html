@@ -244,6 +244,15 @@
 
   <!-- Complete Step Button - Always Visible -->
   <div class="QuestionSet__complete-section">
+    @if (emptyQuestionSets.length > 0) {
+      <div class="QuestionSet__validation-message">
+        <i class="pi pi-exclamation-triangle"></i>
+        <span>
+          Please select questions for the following question sets to mark step as complete: 
+          <strong>{{ emptyQuestionSets.join(', ') }}</strong>
+        </span>
+      </div>
+    }
     <app-button
       class="QuestionSet__complete-button"
       [buttonLabel]="'Complete Question Set Step'"

@@ -70,9 +70,12 @@ export class CandidateDetailViewComponent
   public interviewId!: number;
   public assessmentRoundId!: number;
   public isAadhaarVisible = false;
-  public aptitudeReport: CandidateAptitudeReport | null = null;
-  public isReportLoading = false;
-  public showReport = false;
+  /** Per-round report data keyed by assessmentRoundId */
+  public aptitudeReportMap: Record<number, CandidateAptitudeReport | null> = {};
+  /** Per-round loading state keyed by assessmentRoundId */
+  public isReportLoadingMap: Record<number, boolean> = {};
+  /** Per-round visibility toggle keyed by assessmentRoundId */
+  public showReportMap: Record<number, boolean> = {};
   public reportImages: Record<string, string> = {};
   public imageLoadingStates: Record<string, boolean> = {};
   public idProofsDataSource: FileDto[] = [];
@@ -292,9 +295,16 @@ export class CandidateDetailViewComponent
     return new DatePipe('en-US').transform(dateString, 'mediumDate') || 'N/A';
   }
 
-  public isAptitudeRound(roundName: string | undefined): boolean {
+  public isAptitudeRound(round: any): boolean {
+    if (!round) return false;
+    const roundName = typeof round === 'string' ? round : round.roundName;
+    const roundTypeId = typeof round === 'string' ? null : round.roundTypeId;
+    const roundId = typeof round === 'string' ? null : round.roundId;
+
+    if (roundTypeId === 1 || roundId === 1) return true;
     if (!roundName) return false;
-    return roundName.trim().toLowerCase().includes('aptitude');
+    const nameLower = roundName.trim().toLowerCase();
+    return nameLower.includes('aptitude') || nameLower.includes('online');
   }
 
   public hasValue(value: any): boolean {
@@ -366,34 +376,48 @@ export class CandidateDetailViewComponent
     }, 2000);
   }
 
-  public fetchAptitudeReport(): void {
-    if (this.aptitudeReport) {
-      this.showReport = !this.showReport;
+  public fetchAptitudeReport(round: PreviousInterview): void {
+    if (!round) {
+      console.warn('fetchAptitudeReport: round is undefined. Attempting to locate the aptitude round from data source.');
+      const foundRound = this.interviewFeedbacksDataSource?.find(r => this.isAptitudeRound(r));
+      if (foundRound) {
+        round = foundRound;
+      } else {
+        console.error('fetchAptitudeReport: No aptitude round found in data source.');
+        return;
+      }
+    }
+
+    const roundId = round.assessmentRoundId;
+
+    // Toggle off if already loaded
+    if (this.aptitudeReportMap[roundId]) {
+      this.showReportMap[roundId] = !this.showReportMap[roundId];
       return;
     }
 
-    this.isReportLoading = true;
-    this.showReport = true;
+    this.isReportLoadingMap[roundId] = true;
+    this.showReportMap[roundId] = true;
 
     this.interviewService
-      .getCandidateAptitudeReport(this.assessmentId, this.candidateDetailsDataSource.email)
+      .getCandidateAptitudeReport(this.assessmentId, this.candidateDetailsDataSource.email, roundId)
       .subscribe({
         next: (res: CandidateAptitudeReport) => {
-          this.aptitudeReport = res;
-          this.isReportLoading = false;
-          this.loadReportImages();
+          this.aptitudeReportMap[roundId] = res;
+          this.isReportLoadingMap[roundId] = false;
+          this.loadReportImagesForRound(res);
         },
         error: () => {
-          this.isReportLoading = false;
-          this.showReport = false;
+          this.isReportLoadingMap[roundId] = false;
+          this.showReportMap[roundId] = false;
         },
       });
   }
 
-  private loadReportImages(): void {
-    if (!this.aptitudeReport) return;
+  private loadReportImagesForRound(report: CandidateAptitudeReport): void {
+    if (!report) return;
 
-    this.aptitudeReport.answers.forEach((ans: QuestionAnswerDetail) => {
+    report.answers.forEach((ans: QuestionAnswerDetail) => {
       // Question attachments (attachmentId = 7)
       ans.questionAttachments.forEach((id) => this.fetchFileBlob(id, 7));
 
@@ -408,7 +432,7 @@ export class CandidateDetailViewComponent
   }
 
   public onPreviousRoundAccordionOpen(round: PreviousInterview): void {
-    if (round.roundName === 'APTITUDE ROUND') return;
+    if (this.isAptitudeRound(round)) return;
 
     round.assessmentDetails?.forEach((detail: AssessmentDetails) => {
       detail.feedbackListDto?.forEach((feedback: Feedback) => {

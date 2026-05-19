@@ -52,7 +52,7 @@
                       </p-accordion-header>
                       <p-accordion-content>
                         <!-- Aptitude Round Details -->
-                        @if (round.roundId === 1) {
+                        @if (isAptitudeRound(round)) {
                           @if (
                             round.assessmentDetails &&
                             round.assessmentDetails.length > 0

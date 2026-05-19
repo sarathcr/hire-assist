@@ -1,4 +1,4 @@
-<div class="input-select" [formGroup]="formGroup">
+<div class="input-select" [formGroup]="formGroup" (mousedown)="onShow.emit()">
   @if (floatLabel) {
     <p-floatlabel variant="on">
       <p-select
@@ -9,6 +9,10 @@
         optionLabel="label"
         optionValue="value"
         [showClear]="showClear"
+        [loading]="loading"
+        (onShow)="onShow.emit()"
+        (onFocus)="onFocus.emit()"
+        (click)="onShow.emit()"
         class="w-full md:w-56"
         [formControlName]="selectConfig.id"
       />
@@ -28,6 +32,10 @@
         optionLabel="label"
         optionValue="value"
         [showClear]="showClear"
+        [loading]="loading"
+        (onShow)="onShow.emit()"
+        (onFocus)="onFocus.emit()"
+        (click)="onShow.emit()"
         class="w-full md:w-56"
         [formControlName]="selectConfig.id"
       />

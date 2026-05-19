@@ -1,0 +1,31 @@
+<div class="choice-modal">
+  <div class="choice-modal__header">
+    <i class="pi pi-question-circle choice-modal__icon"></i>
+    <h2 class="choice-modal__title">Where would you like to go?</h2>
+    <p class="choice-modal__subtitle">This recruitment schedule is fully completed. Choose your destination.</p>
+  </div>
+
+  <div class="choice-modal__grid">
+    <button class="choice-modal__item" (click)="onChoice('schedule')">
+      <div class="choice-modal__item-icon choice-modal__item-icon--schedule">
+        <i class="pi pi-calendar-plus"></i>
+      </div>
+      <div class="choice-modal__item-content">
+        <span class="choice-modal__item-title">Recruitment Schedule</span>
+        <span class="choice-modal__item-desc">View or edit the configuration steps.</span>
+      </div>
+      <i class="pi pi-chevron-right choice-modal__item-arrow"></i>
+    </button>
+
+    <button class="choice-modal__item" (click)="onChoice('detail')">
+      <div class="choice-modal__item-icon choice-modal__item-icon--detail">
+        <i class="pi pi-file-edit"></i>
+      </div>
+      <div class="choice-modal__item-content">
+        <span class="choice-modal__item-title">Recruitment Detail</span>
+        <span class="choice-modal__item-desc">View assessment overview and candidates.</span>
+      </div>
+      <i class="pi pi-chevron-right choice-modal__item-arrow"></i>
+    </button>
+  </div>
+</div>

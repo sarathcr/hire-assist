@@ -704,4 +704,16 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
       .updateEntity('InterviewStatus', payload)
       .subscribe({ next, error });
   }
+
+  public isAptitudeRound(round: any): boolean {
+    if (!round) return false;
+    const roundName = typeof round === 'string' ? round : round.roundName;
+    const roundTypeId = typeof round === 'string' ? null : round.roundTypeId;
+    const roundId = typeof round === 'string' ? null : round.roundId;
+
+    if (roundTypeId === 1 || roundId === 1) return true;
+    if (!roundName) return false;
+    const nameLower = roundName.trim().toLowerCase();
+    return nameLower.includes('aptitude') || nameLower.includes('online');
+  }
 }

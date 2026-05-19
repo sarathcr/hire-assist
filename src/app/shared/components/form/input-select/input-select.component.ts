@@ -4,6 +4,8 @@ import {
   OnChanges,
   OnDestroy,
   OnInit,
+  Output,
+  EventEmitter,
   SimpleChanges,
 } from '@angular/core';
 import {
@@ -54,6 +56,9 @@ export class InputSelectComponent
 
   // Added to support the toggle, defaults to true to maintain existing behavior
   @Input() floatLabel = true;
+  @Input() loading = false;
+  @Output() onShow = new EventEmitter<void>();
+  @Output() onFocus = new EventEmitter<void>();
 
   public formControl!: FormControl<string>;
   public selectConfig!: CustomSelectConfig;

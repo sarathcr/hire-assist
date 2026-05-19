@@ -92,9 +92,15 @@ export class InterviewService extends ApiService<any> {
     );
   }
   public addinterviewpanel(payload: InterviewPanels) {
-    return this.httpClient.post<InterviewPanels>(
+    const flatPayload = {
+      panelId: Number(payload.panelId),
+      interviewers: payload.interviewers,
+      interviewId: Number(payload.interviewId),
+      assessmentId: Number(payload.assessmentId),
+    };
+    return this.httpClient.post<any>(
       `${this.getResourceUrl()}/InterviewPanel`,
-      payload,
+      flatPayload,
     );
   }
 
@@ -235,10 +241,12 @@ export class InterviewService extends ApiService<any> {
     );
   }
 
-  public getCandidateAptitudeReport(recruitmentId: number, email: string) {
-    return this.httpClient.get<CandidateAptitudeReport>(
-      `${this.getResourceUrl()}/assessment/aptitude-report/${recruitmentId}/${email}`,
-    );
+  public getCandidateAptitudeReport(recruitmentId: number, email: string, assessmentRoundId?: number) {
+    let url = `${this.getResourceUrl()}/assessment/aptitude-report/${recruitmentId}/${email}`;
+    if (assessmentRoundId) {
+      url += `?assessmentRoundId=${assessmentRoundId}`;
+    }
+    return this.httpClient.get<CandidateAptitudeReport>(url);
   }
 
   public getSelectedStatus(assessmentId: number) {

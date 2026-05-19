@@ -1,4 +1,4 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, effect, input, output, signal } from '@angular/core';
 import { DividerModule } from 'primeng/divider';
 import { FormsModule } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -17,6 +17,7 @@ export class CandidateDetailsComponent {
   public data = input<CandidateData>();
   public isEditable = input<boolean>(false);
   public editField = input<string | null>(null);
+  public showInlineActions = input<boolean>(true);
   public onUpdate = output<any>();
   public onCancel = output<void>();
 
@@ -25,6 +26,20 @@ export class CandidateDetailsComponent {
   public localEditKey = signal<string | null>(null);
   public isAadhaarVisible = signal<boolean>(false);
   public errorMessage = signal<string | null>(null);
+
+  constructor() {
+    effect(() => {
+      const isEdit = this.isEditable();
+      const field = this.editField();
+      const rawData = this.data();
+      if (isEdit && field && rawData) {
+        const entry = this.filteredEntries().find(e => e.label === this.normalizeLabel(field) || e.key === field);
+        if (entry) {
+          this.editedValue.set(entry.value ? entry.value.toString() : '');
+        }
+      }
+    }, { allowSignalWrites: true });
+  }
 
   private basicFieldKeys = ['Candidate Name', 'Email Address', 'Mobile Number', 'Aadhaar Number'];
 
@@ -90,7 +105,7 @@ export class CandidateDetailsComponent {
     return score;
   }
 
-  private normalizeLabel(key: string): string {
+  public normalizeLabel(key: string): string {
     const lowerKey = (key || '').toLowerCase().trim();
     
     // TIER 1: EXACT OR HIGHLY SPECIFIC MATCHES (Highest Priority)
@@ -254,6 +269,41 @@ export class CandidateDetailsComponent {
     this.localEditKey.set(null);
     this.errorMessage.set(null);
     this.onCancel.emit();
+  }
+
+  public onAadhaarInputChange(newValue: string, entryKey: string) {
+    this.editedValue.set(newValue);
+    this.validateField(entryKey, newValue);
+    
+    const entry = this.filteredEntries().find(e => e.key === entryKey);
+    if (!entry) return;
+
+    const targetLabel = entry.label;
+    const rawData = this.data() ?? {};
+    const updatedData: any = JSON.parse(JSON.stringify(rawData));
+    
+    Object.keys(updatedData).forEach(key => {
+      if (this.normalizeLabel(key) === targetLabel) {
+        updatedData[key] = newValue;
+      }
+    });
+
+    if (updatedData.dynamicAnswers && typeof updatedData.dynamicAnswers === 'object') {
+      Object.keys(updatedData.dynamicAnswers).forEach(key => {
+        if (this.normalizeLabel(key) === targetLabel) {
+          updatedData.dynamicAnswers[key] = newValue;
+        }
+      });
+    }
+
+    if (targetLabel === 'Aadhaar Number') {
+      updatedData['aadhaarNumber'] = newValue;
+      ['Aadhar Number', 'adhar number', 'Aadhaar Number', 'aadhaar_number', 'adhar_number', 'Adhaar Number'].forEach(v => {
+        if (updatedData[v] !== undefined) updatedData[v] = newValue;
+      });
+    }
+
+    this.onUpdate.emit(updatedData);
   }
 
   public getIconForField(fieldName: string): string {

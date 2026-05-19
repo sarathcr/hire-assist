@@ -700,6 +700,17 @@ export class SelectQuesionsetStepComponent
         }
       });
       this.setOptions();
+
+      // Eagerly load selected questions for all sets so we can validate if they are empty
+      res.data.forEach((qs) => {
+        if (qs.id !== 0) {
+          const setId = qs.id.toString();
+          if (!this.questionSetAccordionData.get(setId)?.hasLoadedSelectedQuestions) {
+            this.loadQuestionsForAccordion(setId);
+          }
+        }
+      });
+
       this.isLoading = false;
     };
 
@@ -1192,6 +1203,18 @@ export class SelectQuesionsetStepComponent
     );
   }
 
+  public get emptyQuestionSets(): string[] {
+    const emptyNames: string[] = [];
+    for (const data of this.questionSetAccordionData.values()) {
+      if (data.questionSet.id > 0) {
+        if (data.hasLoadedSelectedQuestions && (!data.selectedIds || data.selectedIds.length === 0)) {
+          emptyNames.push(data.questionSet.title);
+        }
+      }
+    }
+    return emptyNames;
+  }
+
   /**
    * Returns true if any created question set is missing selected questions.
    * If this is true, we should block ANY navigation away from this step.
@@ -1200,13 +1223,15 @@ export class SelectQuesionsetStepComponent
     // 1. If server-side check (passed from parent) says it's incomplete, it's incomplete
     if (this.isIncomplete()) return true;
 
-    // 2. Check if any question set we've loaded or modified locally is empty
+    // 2. If any set is still loading, it's incomplete
     for (const data of this.questionSetAccordionData.values()) {
-      if (data.hasLoadedSelectedQuestions && (!data.selectedIds || data.selectedIds.length === 0)) {
+      if (data.questionSet.id > 0 && !data.hasLoadedSelectedQuestions) {
         return true;
       }
     }
-    return false;
+
+    // 3. Check if any question set is confirmed empty
+    return this.emptyQuestionSets.length > 0;
   }
 
   /**
@@ -1241,7 +1266,7 @@ export class SelectQuesionsetStepComponent
     if (this.isParentLoading()) return false;
 
     const allRounds = this.hasAllRoundsConfigured;
-    const isIncomplete = this.isIncomplete();
+    const isIncomplete = this.hasIncompleteQuestionSets;
     const isValid = allRounds && !isIncomplete;
     const isDirty = this.isDirty;
     const status = this.stepStatus();

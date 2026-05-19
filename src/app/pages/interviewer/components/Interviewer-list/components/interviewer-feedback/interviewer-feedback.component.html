@@ -334,26 +334,26 @@
                             <div class="ifb__report-toggle">
                               <p-button
                                 [label]="
-                                  showReport
+                                  showReportMap[round.assessmentRoundId]
                                     ? 'Hide Detailed Report'
                                     : 'View Detailed Report'
                                 "
                                 [icon]="
-                                  showReport
+                                  showReportMap[round.assessmentRoundId]
                                     ? 'pi pi-chevron-up'
                                     : 'pi pi-chevron-down'
                                 "
-                                [loading]="isReportLoading"
+                                [loading]="isReportLoadingMap[round.assessmentRoundId]"
                                 severity="secondary"
                                 [outlined]="true"
-                                (onClick)="fetchAptitudeReport()"
+                                (click)="fetchAptitudeReport(round)"
                               />
                             </div>
 
-                            @if (showReport && aptitudeReport) {
+                            @if (showReportMap[round.assessmentRoundId] && aptitudeReportMap[round.assessmentRoundId]) {
                               <div class="ifb__report-grid">
                                 @for (
-                                  ans of aptitudeReport.answers;
+                                  ans of aptitudeReportMap[round.assessmentRoundId]!.answers;
                                   track ans.questionId
                                 ) {
                                   <!-- Question Card -->

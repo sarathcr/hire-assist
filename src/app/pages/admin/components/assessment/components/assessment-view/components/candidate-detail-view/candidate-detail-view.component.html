@@ -477,22 +477,22 @@
                                     </div>
 
                                     <!-- Aptitude Report Section [V2.1] -->
-                                    @if (isAptitudeRound(round.roundName)) {
+                                    @if (isAptitudeRound(round)) {
                                       <div class="candidate-detail__aptitude-report">
                                         <div class="candidate-detail__report-toggle">
                                           <p-button
-                                            [label]="showReport ? 'Hide Detailed Report' : 'View Detailed Report'"
-                                            [icon]="showReport ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-                                            [loading]="isReportLoading"
+                                            [label]="showReportMap[round.assessmentRoundId] ? 'Hide Detailed Report' : 'View Detailed Report'"
+                                            [icon]="showReportMap[round.assessmentRoundId] ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                                            [loading]="isReportLoadingMap[round.assessmentRoundId]"
                                             severity="secondary"
                                             [outlined]="true"
-                                            (onClick)="fetchAptitudeReport()"
+                                            (click)="fetchAptitudeReport(round)"
                                           />
                                         </div>
 
-                                        @if (showReport && aptitudeReport) {
+                                        @if (showReportMap[round.assessmentRoundId] && aptitudeReportMap[round.assessmentRoundId]) {
                                           <div class="candidate-detail__report-grid">
-                                            @for (ans of aptitudeReport.answers; track ans.questionId) {
+                                            @for (ans of aptitudeReportMap[round.assessmentRoundId]!.answers; track ans.questionId) {
                                               <!-- Question Card -->
                                               <div class="candidate-detail__question-card">
                                                   <div class="candidate-detail__question-header">

@@ -508,11 +508,15 @@
             <td>
               <div class="flex flex-wrap gap-1">
                 @for (role of product[headerColumn.field]; track $index) {
-                  <p-chip [label]="role" [removable]="false" />
+                  @if (role && (role.toString().toLowerCase().includes('unassigned') || role.toString().toLowerCase().includes('not scheduled') || role.toString().toLowerCase().includes('not reported'))) {
+                    <p-tag [value]="role" severity="warn" />
+                  } @else {
+                    <p-chip [label]="role" [removable]="false" />
+                  }
                 }
               </div>
             </td>
-          } @else if (headerColumn.field === "status") {
+          } @else if (headerColumn.field === "status" || headerColumn.field === "nextRoundStatus") {
             <td>
               <p-tag
                 [value]="product[headerColumn.field]"
@@ -530,11 +534,9 @@
             </td>
           } @else if (headerColumn.field === "score") {
             <td>
-              <p-badge
-                [value]="product[headerColumn.field] ?? 'Nil'"
-                [severity]="
-                  `${product[headerColumn.field] ? 'success' : 'warn'}`
-                "
+              <p-tag
+                [value]="product[headerColumn.field]"
+                severity="info"
               />
             </td>
           } @else if (headerColumn.field === "button") {
@@ -617,14 +619,18 @@
             <td>
               <ng-container
                 *ngIf="
-                  product[headerColumn.field] !== '0001-01-01T00:00:00';
+                  product[headerColumn.field] && product[headerColumn.field] !== '0001-01-01T00:00:00';
                   else nilTpl
                 "
               >
                 {{ product[headerColumn.field] | date: "dd/MM/yyyy, hh:mm a" }}
               </ng-container>
               <ng-template #nilTpl>
-                <p-chip label="Not Reported" />
+                @if (headerColumn.field === 'reportingTime') {
+                  <p-tag value="Not reported" severity="warn" />
+                } @else {
+                  <p-tag value="Not scheduled" severity="warn" />
+                }
               </ng-template>
             </td>
           } @else if (headerColumn.fieldType === "masked") {
@@ -653,7 +659,13 @@
               </div>
             </td>
           } @else {
-            <td>{{ product[headerColumn.field] }}</td>
+            <td>
+              @if (product[headerColumn.field] && (product[headerColumn.field].toString().toLowerCase().includes('unassigned') || product[headerColumn.field].toString().toLowerCase().includes('not scheduled') || product[headerColumn.field].toString().toLowerCase().includes('not reported'))) {
+                <p-tag [value]="product[headerColumn.field]" severity="warn" />
+              } @else {
+                {{ product[headerColumn.field] }}
+              }
+            </td>
           }
         }
       </tr>

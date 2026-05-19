@@ -17,6 +17,7 @@ export interface InterviewerCandidate {
 export interface PreviousInterview {
   roundName: string;
   roundId: number;
+  roundTypeId?: number;
   assessmentRoundId: number;
   comments: string;
   status: string;

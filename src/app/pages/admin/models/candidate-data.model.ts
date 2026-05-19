@@ -199,6 +199,7 @@ export interface feedbackList {
 export interface CandidateImportResponseDto {
   duplicateEntries?: string | any[]; 
   invalidRecords: InvalidCandidateRecordDto[];
+  nonEligibleCandidateList?: InvalidCandidateRecordDto[];
 }
 
 export interface InvalidCandidateRecordDto {

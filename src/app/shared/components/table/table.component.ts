@@ -811,7 +811,12 @@ export class TableComponent<
     | 'secondary'
     | 'contrast'
     | undefined {
-    switch (status?.toLowerCase()) {
+    const lowerStatus = status?.toLowerCase() || '';
+    if (lowerStatus.includes('unassigned') || lowerStatus.includes('not scheduled') || lowerStatus.includes('not reported')) {
+      return 'warn';
+    }
+
+    switch (lowerStatus) {
       case 'inactive':
         return 'danger';
       case 'completed':
@@ -831,8 +836,6 @@ export class TableComponent<
       case 'terminated':
         return 'danger';
       case 'quit':
-        return 'warn';
-      case 'not scheduled':
         return 'warn';
       case 'assigned':
         return 'success';

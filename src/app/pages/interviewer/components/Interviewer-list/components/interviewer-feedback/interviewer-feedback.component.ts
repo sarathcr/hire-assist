@@ -127,9 +127,12 @@ export class InterviewerFeedbackComponent
   public isImageLoading = false;
   public isUploadingFiles = false;
   public isDragOver = false;
-  public aptitudeReport: CandidateAptitudeReport | null = null;
-  public isReportLoading = false;
-  public showReport = false;
+  /** Per-round report data keyed by assessmentRoundId */
+  public aptitudeReportMap: Record<number, CandidateAptitudeReport | null> = {};
+  /** Per-round loading state keyed by assessmentRoundId */
+  public isReportLoadingMap: Record<number, boolean> = {};
+  /** Per-round visibility toggle keyed by assessmentRoundId */
+  public showReportMap: Record<number, boolean> = {};
   public reportImages: Record<string, string> = {};
   public imageLoadingStates: Record<string, boolean> = {};
 
@@ -466,7 +469,8 @@ export class InterviewerFeedbackComponent
    */
   public isAptitudeRound(roundName: string): boolean {
     if (!roundName) return false;
-    return roundName.toLowerCase().includes('aptitude');
+    const nameLower = roundName.toLowerCase();
+    return nameLower.includes('aptitude') || nameLower.includes('online');
   }
 
   /**
@@ -1375,36 +1379,50 @@ export class InterviewerFeedbackComponent
     }
   }
 
-  public fetchAptitudeReport(): void {
-    if (this.aptitudeReport) {
-      this.showReport = !this.showReport;
+  public fetchAptitudeReport(round: PreviousInterview): void {
+    if (!round) {
+      console.warn('fetchAptitudeReport: round is undefined. Attempting to locate the aptitude round from previousInterviews.');
+      const foundRound = this.responseData?.previousInterviews?.find(r => this.isAptitudeRound(r.roundName));
+      if (foundRound) {
+        round = foundRound;
+      } else {
+        console.error('fetchAptitudeReport: No aptitude round found in previousInterviews.');
+        return;
+      }
+    }
+
+    const roundId = round.assessmentRoundId;
+
+    // Toggle off if already loaded
+    if (this.aptitudeReportMap[roundId]) {
+      this.showReportMap[roundId] = !this.showReportMap[roundId];
       return;
     }
 
     if (!this.assessmentId || !this.candidateid) return;
 
-    this.isReportLoading = true;
-    this.showReport = true;
+    this.isReportLoadingMap[roundId] = true;
+    this.showReportMap[roundId] = true;
 
     this.interviewService
-      .getCandidateAptitudeReport(Number(this.assessmentId), this.candidateid)
+      .getCandidateAptitudeReport(Number(this.assessmentId), this.candidateid, roundId)
       .subscribe({
         next: (res: CandidateAptitudeReport) => {
-          this.aptitudeReport = res;
-          this.isReportLoading = false;
-          this.loadReportImages();
+          this.aptitudeReportMap[roundId] = res;
+          this.isReportLoadingMap[roundId] = false;
+          this.loadReportImagesForRound(res);
         },
         error: () => {
-          this.isReportLoading = false;
-          this.showReport = false;
+          this.isReportLoadingMap[roundId] = false;
+          this.showReportMap[roundId] = false;
         },
       });
   }
 
-  private loadReportImages(): void {
-    if (!this.aptitudeReport) return;
+  private loadReportImagesForRound(report: CandidateAptitudeReport): void {
+    if (!report) return;
 
-    this.aptitudeReport.answers.forEach((ans: QuestionAnswerDetail) => {
+    report.answers.forEach((ans: QuestionAnswerDetail) => {
       // Question attachments (attachmentId = 7)
       ans.questionAttachments.forEach((id) => this.fetchImage(id, 7));
 

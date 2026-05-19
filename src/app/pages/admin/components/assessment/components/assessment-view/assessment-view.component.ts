@@ -133,6 +133,10 @@ export class AssessmentViewComponent
     return this.assessmentRounds.some((r) => r.roundTypeId === 1);
   }
 
+  public get onlyHasOneOnlineAptitudeRound(): boolean {
+    return this.assessmentRounds.length === 1 && this.assessmentRounds[0].roundTypeId === 1;
+  }
+
   public get filteredStepConfig() {
     if (!this.stepsLoaded) return [this.stepConfig[0]];
 
@@ -141,8 +145,11 @@ export class AssessmentViewComponent
     }
 
     return this.stepConfig.filter((step) => {
-      if (step.index === 1 || step.index === 2) {
+      if (step.index === 1) {
         return this.hasOnlineAptitudeRound;
+      }
+      if (step.index === 2) {
+        return this.hasOnlineAptitudeRound && !this.onlyHasOneOnlineAptitudeRound;
       }
       return true;
     });
@@ -156,8 +163,11 @@ export class AssessmentViewComponent
     }
 
     return this.stepKeys.filter((key, index) => {
-      if (index === 1 || index === 2) {
+      if (index === 1) {
         return this.hasOnlineAptitudeRound;
+      }
+      if (index === 2) {
+        return this.hasOnlineAptitudeRound && !this.onlyHasOneOnlineAptitudeRound;
       }
       return true;
     });
@@ -190,6 +200,12 @@ export class AssessmentViewComponent
       if (saved) {
         this.assessment = JSON.parse(saved);
       }
+    }
+
+    // Reuse steps status if passed via navigation state to avoid redundant API call
+    if (history.state.stepsStatus) {
+      this.stepsStatus = history.state.stepsStatus;
+      this.stepsLoaded = true;
     }
     if (this.assessment) {
       this.normalizeDates(this.assessment);
@@ -328,87 +344,70 @@ export class AssessmentViewComponent
       const idParam = params.get('id');
       this.assessmentId = idParam ? Number(idParam) : 0;
       if (this.assessmentId) {
-        this.loadStepsStatus();
+        // Only load if status wasn't already provided via state
+        if (!this.stepsLoaded) {
+          this.loadStepsStatus();
+        } else {
+          // If already loaded from state, we still need to process rounds and active step
+          this.loadStepsStatus(true, this.stepsStatus);
+        }
       }
     });
   }
 
-  public loadStepsStatus(shouldUpdateActiveStep: boolean = true): void {
-    if (this.assessmentId) {
-      // 1. Load Rounds first so we know if Aptitude logic applies
-      this.assessmentScheduleService
-        .GetAssessmentRound(this.assessmentId)
-        .pipe(
+  public loadStepsStatus(shouldUpdateActiveStep: boolean = true, providedStatus?: StepStatus): void {
+    if (!this.assessmentId) return;
+
+    // Use provided status if available, otherwise fetch from API
+    const statusObs = providedStatus 
+      ? of(providedStatus) 
+      : this.stepsStatusService.getAssessmentStepsStatus(this.assessmentId);
+
+    statusObs.pipe(
+      switchMap((status: StepStatus) => {
+        this.stepsStatus = status;
+        this.stepsLoaded = true;
+        this.updateCompletedStepsFromStatus();
+
+        // 2. Load rounds ONLY if we don't have them yet
+        const roundsObs: Observable<RoundModel[]> = this.assessmentRounds.length > 0 
+          ? of(this.assessmentRounds) 
+          : this.assessmentScheduleService.GetAssessmentRound(this.assessmentId!);
+
+        return roundsObs.pipe(
           switchMap((rounds: RoundModel[]) => {
             this.assessmentRounds = rounds;
-            // 2. Load Step Status
-            return this.stepsStatusService.getAssessmentStepsStatus(
-              this.assessmentId,
-            );
-          }),
-          switchMap((statusResponse) => {
-            this.stepsStatus = statusResponse;
-            this.stepsLoaded = true;
-            this.updateCompletedStepsFromStatus();
+            
+            // 3. Set Active Step now that we have rounds (and thus structure)
+            if (shouldUpdateActiveStep) {
+              this.setActiveStepFromStatus();
+            }
 
-            let checkObservable: Observable<any> = of(null);
-
-            // 3. Perform Question Set validation ONLY if Aptitude rounds exist
-            if (this.hasOnlineAptitudeRound) {
+            // 4. Perform deep validation ONLY if we are on the Question Set step (Active Step 1)
+            if (this.hasOnlineAptitudeRound && this.activeStep === 1) {
               const payload = new PaginatedPayload();
               payload.filterMap = { assessmentId: this.assessmentId };
               payload.pagination.pageSize = -1;
 
-              checkObservable = this.assessmentService
-                .paginationEntity<any>('QuestionSetSummary', payload)
-                .pipe(
-                  switchMap((res) => {
-                    const questionSets = res.data || [];
-                    if (questionSets.length === 0) {
-                      this.isQuestionSetIncomplete = true;
-                      return of(null);
-                    }
-
-                    const questionChecks = questionSets.map((set: any) =>
-                      this.assessmentService.getQuestionsBySet(
-                        set.id.toString(),
-                      ),
-                    );
-
-                    return forkJoin(questionChecks).pipe(
-                      map((results: any[]) => {
-                        this.isQuestionSetIncomplete = results.some(
-                          (res) => !res.questions || res.questions.length === 0,
-                        );
-                        if (this.isQuestionSetIncomplete) {
-                          this.stepsStatus.questionSets = 'Active';
-                          this.stepsStatus.coordinators = 'Pending';
-                          this.stepsStatus.frontDesk = 'Pending';
-                          this.stepsStatus.schedule = 'Pending';
-                        }
-                        return null;
-                      }),
-                    );
-                  }),
-                );
-            } else {
-              this.isQuestionSetIncomplete = false;
+              return this.assessmentService.paginationEntity<any>('QuestionSetSummary', payload).pipe(
+                map(res => {
+                  const questionSets = res.data || [];
+                  this.isQuestionSetIncomplete = questionSets.length === 0;
+                  
+                  if (this.isQuestionSetIncomplete && this.stepsStatus.questionSets === 'Completed') {
+                    this.stepsStatus.questionSets = 'Active';
+                  }
+                  return null;
+                })
+              );
             }
-
-            return checkObservable;
-          }),
-        )
-        .subscribe({
-          next: () => {
-            if (shouldUpdateActiveStep) {
-              this.setActiveStepFromStatus();
-            }
-          },
-          error: () => {
-            // Error handling
-          },
-        });
-    }
+            
+            this.isQuestionSetIncomplete = false;
+            return of(null);
+          })
+        );
+      })
+    ).subscribe();
   }
 
   private updateCompletedStepsFromStatus(): void {

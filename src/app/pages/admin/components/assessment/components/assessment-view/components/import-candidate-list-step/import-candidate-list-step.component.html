@@ -16,7 +16,7 @@
           <app-button
             class="candidate__schedule-btn"
             tooltipPosition="top"
-            [buttonLabel]="'Schedule Assessment'"
+            [buttonLabel]="'Schedule Recruitment'"
             [icon]="'pi pi-calendar-times'"
             [disabled]="disableScheduleButton || isReadOnly()"
             (btnClick)="scheduleAssessment()"
@@ -57,13 +57,6 @@
         [icon]="'pi pi-trash'"
         [disabled]="!selectedUsers || selectedUsers.length === 0 || isReadOnly()"
         (btnClick)="deleteSelectedCandidates()"
-      ></app-button>
-      <app-button
-        class="candidate__action-btn"
-        [buttonLabel]="'Add to Batch'"
-        [icon]="'pi pi-layer-group'"
-        [disabled]="!selectedUsers || selectedUsers.length === 0 || isReadOnly()"
-        (btnClick)="createBatchSelectedCandidates()"
       ></app-button>
     </div>
   </div>

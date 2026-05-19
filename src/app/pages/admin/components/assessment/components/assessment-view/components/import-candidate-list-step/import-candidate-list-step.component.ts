@@ -28,11 +28,8 @@ import {
   groupCandidatesByContact,
   parseCsvToJson,
 } from '../../../../../../../../shared/utilities/csvParse.utility';
-import { BatchSummaryModel } from '../../../../../../models/assessment-schedule.model';
 import {
   CandidateApplicationQuestions,
-  CandidateBatchCheckRequest,
-  CandidateBatchCheckResponse,
   CandidateImportResponseDto,
   CandidateModel,
 } from '../../../../../../models/candidate-data.model';
@@ -42,7 +39,6 @@ import { CandidateService } from '../../../../services/candidate.service';
 import { QuestionSetStateService } from '../../../../services/question-set-state.service';
 import { AssessmentViewModel } from '../../assessment-view.component';
 import { CandidateDialogComponent } from '../candidate-dialog/candidate-dialog.component';
-import { CreateBatchDialogComponent } from '../create-batch-dialog/create-batch-dialog.component';
 import { ManageDuplicateRecordsComponent } from '../manage-duplicate-records/manage-duplicate-records.component';
 import { StoreService } from '../../../../../../../../shared/services/store.service';
 import { StepsStatusService } from '../../../../services/steps-status.service';
@@ -78,14 +74,6 @@ const tableColumns: TableColumnsData = {
       field: 'aadhaarNumber',
       displayName: 'Aadhaar Number',
       fieldType: FieldType.Masked,
-      sortedColumn: true,
-      hasChip: false,
-      hasTextFilter: true,
-      filterAlias: 'textFilter',
-    },
-    {
-      field: 'batchName',
-      displayName: 'Batch',
       sortedColumn: true,
       hasChip: false,
       hasTextFilter: true,
@@ -145,9 +133,6 @@ export class ImportCandidateListStepComponent implements OnInit {
   public disableScheduleButton = true;
   public importStatus = false;
   public newStatus = false;
-  public isAllCandidatesAssigned = false;
-  public unassignedCandidatesCount = 0;
-  public UnassignedCandidate = '';
   public isLoading = false;
   public alreadySelectedCandidates: string[] = [];
   public visible: boolean = false;
@@ -181,7 +166,6 @@ export class ImportCandidateListStepComponent implements OnInit {
     return tableColumns;
   });
 
-  private batches!: PaginatedData<BatchSummaryModel>;
   private questionSets!: QuestionSetModel[];
   private ref: DynamicDialogRef | undefined;
   private candidateApplicationQuestions!: CandidateApplicationQuestions[];
@@ -202,7 +186,6 @@ export class ImportCandidateListStepComponent implements OnInit {
   ngOnInit(): void {
     this.setPaginationEndpoint();
     this.getAllCandidates(new PaginatedPayload());
-    this.getBatchesFromStore();
     this.getAllQuestionSets(new PaginatedPayload());
     this.getAllCandidatesApplicationQuestions();
   }
@@ -317,9 +300,12 @@ export class ImportCandidateListStepComponent implements OnInit {
   public onView(data: CandidateModel) {
     const userid = data.id;
     const assessmentId = this.assessmentId();
-    this.router.navigate([
-      `admin/recruitments/candidateDetail/${assessmentId}/${userid}`,
-    ]);
+    this.router.navigate(
+      [`admin/recruitments/candidateDetail/${assessmentId}/${userid}`],
+      {
+        queryParams: { breadcrumbSource: 'schedule' },
+      },
+    );
   }
 
   public handleUnmask(event: { product: CandidateModel; field: string }): void {
@@ -595,6 +581,74 @@ export class ImportCandidateListStepComponent implements OnInit {
             allFailedRecords = [...allFailedRecords, ...mappedInvalid];
           }
 
+          // 3. Handle Non-Eligible Records
+          if (
+            response.nonEligibleCandidateList &&
+            Array.isArray(response.nonEligibleCandidateList) &&
+            response.nonEligibleCandidateList.length > 0
+          ) {
+            const mappedNonEligible = response.nonEligibleCandidateList.map((record) => {
+              const rowData =
+                typeof record.dynamicAnswers === 'string'
+                  ? {}
+                  : record.dynamicAnswers || {};
+              // Ensure we have common fields even if misspelled in CSV or at root of record
+              const name =
+                record.name ||
+                rowData['Candidate Name'] ||
+                rowData['name'] ||
+                'N/A';
+              const email =
+                record.email ||
+                rowData['Email Id'] ||
+                rowData['Email address'] ||
+                rowData['email'] ||
+                'N/A';
+              const phone =
+                record.phoneNumber ||
+                rowData['Mobile number'] ||
+                rowData['phoneNumber'] ||
+                rowData['phone'] ||
+                'N/A';
+              const aadhaarNumber =
+                record.aadhaarNumber ||
+                rowData['Aadhaar Number'] ||
+                rowData['Adhar Number'] ||
+                rowData['aadhaarNumber'] ||
+                'N/A';
+
+              const normalizedData = {
+                ...rowData,
+                name,
+                email,
+                phoneNumber: phone,
+                aadhaarNumber,
+                // Also keep CSV header names for display if needed
+                'Candidate Name': name,
+                'Email Id': email,
+                'Mobile number': phone,
+                'Aadhaar Number': aadhaarNumber,
+                isNonEligibleRecord: true,
+                failureReason: record.reason,
+              };
+
+              return {
+                ...normalizedData,
+                key: record.reason || 'Not Eligible',
+                groupId:
+                  'noneligible-' + Math.random().toString(36).substring(2, 9),
+                isNonEligibleGroup: true,
+                type: 'NonEligible',
+                candidates: [
+                  {
+                    ...normalizedData,
+                  },
+                ],
+              };
+            });
+            allFailedRecords = [...allFailedRecords, ...mappedNonEligible];
+          }
+
           if (allFailedRecords.length > 0) {
             this.manageDuplicateRecords(allFailedRecords);
           } else {
@@ -619,7 +673,6 @@ export class ImportCandidateListStepComponent implements OnInit {
   public addNewCandidate() {
     this.ref = this.dialog.open(CandidateDialogComponent, {
       data: {
-        batches: this.batches,
         questionSets: this.questionSets,
         applicationQuestions: this.candidateApplicationQuestions,
         candidateData: this.data,
@@ -645,7 +698,6 @@ export class ImportCandidateListStepComponent implements OnInit {
           });
 
           this.getAllCandidates(new PaginatedPayload());
-          this.checkIsAllCandidatesAssigned();
         };
         const error = (error: CustomErrorResponse) => {
           this.errorMessage(error);
@@ -692,7 +744,6 @@ export class ImportCandidateListStepComponent implements OnInit {
           });
           this.tableComponent?.clearAllSelections();
           this.getAllCandidates(new PaginatedPayload(), true);
-          this.checkIsAllCandidatesAssigned();
         };
         const error = (error: CustomErrorResponse) => {
           this.isLoading = false;
@@ -711,7 +762,7 @@ export class ImportCandidateListStepComponent implements OnInit {
         assessmentId: this.assessmentId(),
       };
       const modalData: DialogData = {
-        message: 'Are you sure you want to schedule the assessment?',
+        message: 'Are you sure you want to schedule the recruitment?',
         isChoice: true,
         cancelButtonText: 'Cancel',
         acceptButtonText: 'Yes',
@@ -740,7 +791,7 @@ export class ImportCandidateListStepComponent implements OnInit {
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
-                detail: 'Scheduled the Assessment Successfully',
+                detail: 'Scheduled the Recruitment Successfully',
               });
               const scheduledCandidateIds = [...this.selectedUsers] as string[];
               this.skipAutoSelection = true;
@@ -759,109 +810,6 @@ export class ImportCandidateListStepComponent implements OnInit {
       });
     }
   }
-  public createBatchSelectedCandidates() {
-    this.ref = this.dialog.open(CreateBatchDialogComponent, {
-      data: {
-        batches: this.batches,
-        questionSets: this.questionSets,
-        candidateData: this.data,
-      },
-      header: 'Add Candidates to Batch',
-      maximizable: false,
-      width: '40vw',
-      modal: true,
-      focusOnShow: false,
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-    });
-    this.ref.onClose.subscribe((result) => {
-      if (result) {
-        // Check which candidates are already assigned to a batch
-        const alreadyAssignedCandidates = this.data.data.filter(
-          (candidate) =>
-            this.selectedUsers.includes(candidate.id) && candidate.batchId > 0,
-        );
-
-        if (alreadyAssignedCandidates.length > 0) {
-          // Show warning modal with list of already assigned candidates
-          const candidateNames = alreadyAssignedCandidates.map((c) => c.name);
-          const modalData: DialogData = {
-            message: `The following candidate(s) are already assigned to a batch. By clicking Submit, the existing batch assignment will be replaced with the currently selected batch.`,
-            candidateNames: candidateNames,
-            isChoice: true,
-            cancelButtonText: 'Cancel',
-            acceptButtonText: 'Submit',
-          };
-
-          const warningRef = this.dialog.open(DialogComponent, {
-            data: modalData,
-            header: 'Warning',
-            maximizable: false,
-            width: '50vw',
-            modal: true,
-            focusOnShow: false,
-            breakpoints: {
-              '960px': '75vw',
-              '640px': '90vw',
-            },
-            templates: {
-              footer: DialogFooterComponent,
-            },
-          });
-
-          warningRef.onClose.subscribe((proceed) => {
-            if (proceed === true) {
-              // User clicked Submit, proceed with batch assignment
-              this.submitBatchAssignment(result);
-            }
-            // If user clicked Cancel or closed dialog, do nothing
-          });
-        } else {
-          // No candidates are already assigned, proceed directly
-          this.submitBatchAssignment(result);
-        }
-      }
-    });
-  }
-
-  private submitBatchAssignment(result: any): void {
-    this.isLoading = true;
-    const toISOString = (date: Date) => {
-      return date.toISOString();
-    };
-
-    const payload = {
-      candidatesIds: this.selectedUsers,
-      questionSetIds: Array.isArray(result.questionSet)
-        ? result.questionSet
-        : [result.questionSet],
-      batchId: result.batch,
-      StartDateTime: result.startDate ? toISOString(new Date(result.startDate)) : null,
-      EndDateTime: result.endDate ? toISOString(new Date(result.endDate)) : null,
-      AssessmentId: Number(this.assessmentId()),
-    };
-
-    const next = () => {
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Success',
-        detail: 'Added the Candidates Successfully',
-      });
-
-      this.getAllCandidates(new PaginatedPayload());
-      this.checkIsAllCandidatesAssigned();
-    };
-    const error = (error: CustomErrorResponse) => {
-      this.isLoading = false;
-      this.errorMessage(error);
-    };
-    this.candidateService
-      .createEntity(payload, 'add-batch')
-      .subscribe({ next, error });
-  }
-
   private manageDuplicateRecords(duplicateRecords: unknown[]): void {
     this.ref = this.dialog.open(ManageDuplicateRecordsComponent, {
       data: {
@@ -869,7 +817,7 @@ export class ImportCandidateListStepComponent implements OnInit {
         assessmentId: this.assessmentId(),
         applicationQuestions: this.candidateApplicationQuestions,
       },
-      header: 'Duplicate Records',
+      header: 'Resolve Candidate Import Exceptions',
       maximizable: true,
       width: '50vw',
       closable: false,
@@ -944,37 +892,6 @@ export class ImportCandidateListStepComponent implements OnInit {
       .getEntityById(Number(this.assessmentId()))
       .subscribe({ next, error });
   }
-  private getBatchesFromStore(): void {
-    const collection = this.storeService.getCollection();
-    const batchesFromStore = collection?.['batches'] || [];
-
-    const batchData = batchesFromStore
-      .filter((batch: Option) => batch.value && batch.label)
-      .map((batch: Option) => ({
-        id: Number(batch.value),
-        title: batch.label || '',
-        description: '',
-        assessmentId: Number(this.assessmentId()),
-        assessmentName: null,
-        isActive: true,
-        startDate: '',
-        endDate: '',
-        active: '',
-        descriptionNew: '',
-      }));
-
-    this.batches = {
-      pageNumber: 1,
-      pageSize: batchData.length,
-      totalPages: 1,
-      totalRecords: batchData.length,
-      data: batchData,
-      sum: '',
-      succeeded: true,
-      errors: [],
-      message: '',
-    };
-  }
   private getAllQuestionSets(payload: PaginatedPayload): void {
     payload.filterMap = {
       assessmentId: Number(this.assessmentId()),
@@ -999,24 +916,6 @@ export class ImportCandidateListStepComponent implements OnInit {
     this.dataSourceService.setEndpoint(`${this.url}`);
   }
 
-  private checkIsAllCandidatesAssigned(): void {
-    const payload: CandidateBatchCheckRequest = {
-      assessmentId: this.assessmentId()?.toString() || '',
-      candidateIds: this.selectedUsers as string[],
-    };
-    this.assessmentService
-      .checkAllCandidatesAssignedToBatches(payload)
-      .subscribe({
-        next: (res: CandidateBatchCheckResponse) => {
-          this.isAllCandidatesAssigned = res.isAllCandidatesAssigned;
-          this.unassignedCandidatesCount = res.unassignedCandidatesCount;
-          this.UnassignedCandidate = res.UnassignedCandidate;
-        },
-        error: (error: CustomErrorResponse) => {
-          this.errorMessage(error);
-        },
-      });
-  }
 
   private errorMessage(error: CustomErrorResponse): void {
     const errorBody = error?.error;
@@ -1075,11 +974,6 @@ export class ImportCandidateListStepComponent implements OnInit {
       return;
     }
 
-    const hasUnassignedCandidate = this.data.data.some(
-      (candidate: CandidateModel) =>
-        this.selectedUsers.includes(candidate.id) && candidate.batchId === 0,
-    );
-
-    this.disableScheduleButton = hasUnassignedCandidate;
+    this.disableScheduleButton = false;
   }
 }
