@@ -9,8 +9,10 @@ import { DialogComponent } from '../../../../../../shared/components/dialog/dial
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import {
+  getDefaultPayload,
   PaginatedData,
   PaginatedPayload,
+  setSavedPayload,
 } from '../../../../../../shared/models/pagination.models';
 import {
   FieldType,
@@ -122,8 +124,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
   // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
-    const initialPayload = new PaginatedPayload();
-    initialPayload.pagination.pageSize = 10;
+    const initialPayload = getDefaultPayload('departments');
     this.currentPayload = initialPayload;
     this.getAllPaginateddepartmentes(initialPayload);
     this.setConfigMaps();
@@ -145,6 +146,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
 
     this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
     this.currentPayload = payload;
+    setSavedPayload('departments', payload);
     this.loadData(payload);
   }
 

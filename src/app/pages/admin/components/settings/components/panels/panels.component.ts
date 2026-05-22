@@ -14,7 +14,7 @@ import { TableComponent } from '../../../../../../shared/components/table/table.
 import { Panel_URL } from '../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../../../shared/models/dialog.models';
-import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
+import { getDefaultPayload, PaginatedPayload, setSavedPayload } from '../../../../../../shared/models/pagination.models';
 import {
   FieldType,
   PaginatedDataActions,
@@ -120,8 +120,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
   // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
-    const initialPayload = new PaginatedPayload();
-    initialPayload.pagination.pageSize = 10;
+    const initialPayload = getDefaultPayload('PanelsComponent');
     this.currentPayload = initialPayload;
     this.getAllPaginatedPanels(initialPayload);
     this.setConfigMaps();
@@ -144,6 +143,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
 
     this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
     this.currentPayload = payload;
+    setSavedPayload('PanelsComponent', payload);
     this.loadData(payload);
   }
 

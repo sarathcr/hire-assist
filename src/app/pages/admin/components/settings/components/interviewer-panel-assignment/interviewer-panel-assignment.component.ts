@@ -15,7 +15,7 @@ import { CustomErrorResponse } from '../../../../../../shared/models/custom-erro
 import { DialogData } from '../../../../../../shared/models/dialog.models';
 import {
   FilterMap,
-  PaginatedPayload,
+  getDefaultPayload, PaginatedPayload, setSavedPayload,
 } from '../../../../../../shared/models/pagination.models';
 import {
   FieldType,
@@ -113,8 +113,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setPaginationEndpoint();
     this.setPanelPaginationEndpoint();
-    const initialPayload = new PaginatedPayload();
-    initialPayload.pagination.pageSize = 10;
+    const initialPayload = getDefaultPayload('InterviewerPanelAssignmentComponent');
     this.currentPayload = initialPayload;
     this.getPaginatedPanelData(initialPayload);
   }
@@ -134,6 +133,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
 
     this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
     this.currentPayload = payload;
+    setSavedPayload('InterviewerPanelAssignmentComponent', payload);
     this.loadData(payload);
   }
   public getPaginatedPanelData(payload: PaginatedPayload) {

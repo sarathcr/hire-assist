@@ -62,3 +62,37 @@ export const initialPaginatedData: PaginatedData<any> = {
     totals: [],
   },
 };
+
+export function getDefaultPayload(storageKey: string, defaultPageSize: number = 10): PaginatedPayload {
+  const newPayload = new PaginatedPayload();
+  newPayload.pagination.pageSize = defaultPageSize;
+
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = sessionStorage.getItem(`table-payload-${storageKey}`);
+      if (stored) {
+        const payload = JSON.parse(stored) as PaginatedPayload;
+        if (payload.pagination) {
+          newPayload.pagination = payload.pagination;
+        }
+        if (payload.multiSortedColumns) {
+          newPayload.multiSortedColumns = payload.multiSortedColumns;
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing stored payload', e);
+    }
+  }
+  
+  return newPayload;
+}
+
+export function setSavedPayload(storageKey: string, payload: PaginatedPayload): void {
+  if (typeof window !== 'undefined') {
+    try {
+      sessionStorage.setItem(`table-payload-${storageKey}`, JSON.stringify(payload));
+    } catch (e) {
+      console.error('Error saving payload', e);
+    }
+  }
+}

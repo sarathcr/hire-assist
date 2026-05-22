@@ -13,7 +13,7 @@ import { TableComponent } from '../../../../../../shared/components/table/table.
 import { BATCH_URL } from '../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../../../shared/models/dialog.models';
-import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
+import { getDefaultPayload, PaginatedPayload, setSavedPayload } from '../../../../../../shared/models/pagination.models';
 import {
   FieldType,
   PaginatedData,
@@ -120,8 +120,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
   // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
-    const initialPayload = new PaginatedPayload();
-    initialPayload.pagination.pageSize = 10;
+    const initialPayload = getDefaultPayload('batches');
     this.currentPayload = initialPayload;
     this.getAllPaginatedBatches(initialPayload);
     this.setConfigMaps();
@@ -143,6 +142,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
 
     this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
     this.currentPayload = payload;
+    setSavedPayload('batches', payload);
     this.loadData(payload);
   }
 

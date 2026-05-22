@@ -12,7 +12,7 @@ import { TableComponent } from '../../../../shared/components/table/table.compon
 import { USER_URL } from '../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../shared/models/dialog.models';
-import { PaginatedPayload } from '../../../../shared/models/pagination.models';
+import { getDefaultPayload, PaginatedPayload, setSavedPayload } from '../../../../shared/models/pagination.models';
 import {
   FieldType,
   TableColumnsData,
@@ -104,7 +104,9 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   // LifeCycle Hooks
   ngOnInit(): void {
     this.setPaginationEndpoint();
-    this.getAllUsers(new PaginatedPayload());
+    const initialPayload = getDefaultPayload('RolesAccessComponent');
+    this.currentPayload = initialPayload;
+    this.getAllUsers(initialPayload);
   }
   ngOnDestroy() {
     if (this.ref) {
@@ -423,6 +425,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
 
     this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
     this.currentPayload = payload;
+    setSavedPayload('RolesAccessComponent', payload);
     this.loadData(payload);
   }
 

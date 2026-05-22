@@ -17,7 +17,7 @@ import { OptionsMap } from '../../../../../../shared/models/app-state.models';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { Option } from '../../../../../../shared/models/option';
-import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
+import { getDefaultPayload, PaginatedPayload, setSavedPayload } from '../../../../../../shared/models/pagination.models';
 import {
   FieldType,
   PaginatedData,
@@ -126,8 +126,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setPaginationEndpoint();
     // Initialize with pageSize 10 to match table's default and prevent duplicate calls
-    const initialPayload = new PaginatedPayload();
-    initialPayload.pagination.pageSize = 10;
+    const initialPayload = getDefaultPayload('QuestionsComponent');
     this.currentPayload = initialPayload;
     this.getAllPaginatedQuestion(initialPayload);
     this.optionsMap =
@@ -158,6 +157,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
     this.previousFilterMap = JSON.parse(JSON.stringify(payload.filterMap));
     this.currentPayload = payload;
+    setSavedPayload('QuestionsComponent', payload);
     this.loadData(payload);
   }
 
@@ -322,6 +322,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
                 'Deletion is failed',
             });
           }
+          this.getAllPaginatedQuestion(this.currentPayload);
         };
         this.questionService.deleteQuestion(id).subscribe({ next, error });
       }
@@ -634,6 +635,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       this.getAllPaginatedQuestion(this.currentPayload);
     };
     const error = (error: CustomErrorResponse) => {
+      this.storeService.setIsLoading(false);
+      this.isLoading = false;
       const businerssErrorCode = error.error.businessError;
       if (businerssErrorCode == 3106) {
         this.messageService.add({
@@ -653,6 +656,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             'Creation is failed',
         });
       }
+      this.getAllPaginatedQuestion(this.currentPayload);
     };
 
     this.questionService.addQuestion(payload).subscribe({ next, error });
@@ -680,6 +684,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       this.getAllPaginatedQuestion(this.currentPayload);
     };
     const error = (error: CustomErrorResponse) => {
+      this.storeService.setIsLoading(false);
+      this.isLoading = false;
       const businerssErrorCode = error.error.businessError;
       if (businerssErrorCode == 3108) {
         this.messageService.add({
@@ -699,6 +705,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             'Updation is failed',
         });
       }
+      this.getAllPaginatedQuestion(this.currentPayload);
     };
     this.questionService.updateQuestion(payload).subscribe({ next, error });
   }

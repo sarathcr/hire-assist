@@ -9,7 +9,7 @@ import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import {
   FilterMap,
-  PaginatedPayload,
+  getDefaultPayload, PaginatedPayload, setSavedPayload,
 } from '../../../../../../shared/models/pagination.models';
 import {
   FieldType,
@@ -165,7 +165,8 @@ export class InterviewCandidateListComponent implements OnInit {
     this.getCurrentRouteId();
     this.loadAssessmentDetails();
     this.loadPanelDetails();
-    this.getPaginatedCandidateData(new PaginatedPayload());
+    const initialPayload = getDefaultPayload('InterviewCandidateListComponent');
+    this.getPaginatedCandidateData(initialPayload);
   }
 
   private loadAssessmentDetails(): void {
@@ -252,6 +253,7 @@ export class InterviewCandidateListComponent implements OnInit {
     };
 
     payload.filterMap = { ...payload.filterMap, ...this.filterMap };
+    setSavedPayload('InterviewCandidateListComponent', payload);
     this.loadData({ ...payload });
   }
 
