@@ -35,7 +35,7 @@
   <div class="dialog-footer__btn-wrapper">
     <app-button
       buttonLabel="Submit"
-      [disabled]="!fGroup.valid"
+      [disabled]="!fGroup.valid || !isFormChanged()"
       (btnClick)="onSubmit()"
     ></app-button>
   </div>

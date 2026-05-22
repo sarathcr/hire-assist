@@ -41,6 +41,8 @@ export class UserDialogComponent implements OnInit {
   public userRoleAccessData = new UserRoleAccessDataModel();
   public configMap!: ConfigMap;
   public optionsMap!: OptionsMap;
+  public isEditMode = false;
+  private initialFormValues: any = null;
 
   public departments!: Option[];
 
@@ -63,10 +65,12 @@ export class UserDialogComponent implements OnInit {
     this.roleAccessData = this.config.data;
 
     if (this.config.header != 'Create User') {
+      this.isEditMode = true;
       const updatedUser = this.replaceRoleAndDepartmentNamesWithCodes(
         this.roleAccessData,
       );
       this.fGroup.patchValue(updatedUser);
+      this.initialFormValues = JSON.parse(JSON.stringify(this.fGroup.value));
     }
 
     this.fGroup.updateValueAndValidity();
@@ -78,6 +82,11 @@ export class UserDialogComponent implements OnInit {
   private setConfigMaps(): void {
     const { metadata } = new UserRoleAccessDataModel();
     this.configMap = metadata.configMap || {};
+  }
+
+  public isFormChanged(): boolean {
+    if (!this.isEditMode) return true;
+    return JSON.stringify(this.fGroup.value) !== JSON.stringify(this.initialFormValues);
   }
 
   public onSubmit() {
