@@ -36,7 +36,6 @@ import { backButtonGuard } from './shared/guards/back-button.guard';
 import { DeviceWidthGuard } from './shared/guards/device-width.guard';
 import { ProfileComponent } from './shared/pages/profile/profile.component';
 
-import { AssessmentDetailComponent } from './pages/admin/components/assessment/components/assessment-detail/assessment-detail.component';
 import { AssessmentViewComponent } from './pages/admin/components/assessment/components/assessment-view/assessment-view.component';
 import { CandidateDetailViewComponent } from './pages/admin/components/assessment/components/assessment-view/components/candidate-detail-view/candidate-detail-view.component';
 import { PreviousRecruitmentListComponent } from './pages/admin/components/assessment/components/assessment-view/components/previous-recruitment-list/previous-recruitment-list.component';
@@ -85,8 +84,8 @@ export const routes: Routes = [
               import(
                 './pages/admin/components/assessment/components/assessment-detail/assessment-detail.component'
               ).then((m) => m.AssessmentDetailComponent),
+            data: { breadcrumb: 'Recruitment Details' },
           },
-          { path: ':id', component: AssessmentDetailComponent, data: { breadcrumb: 'Recruitment Details' } },
           {
             path: 'schedule/:id',
             component: AssessmentViewComponent,

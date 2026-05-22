@@ -171,7 +171,7 @@
                                 [id]="'attempts-' + idx"
                                 formControlName="maxTerminationCount"
                                 min="1"
-                                placeholder="e.g., 3"
+                                placeholder="Enter number of tries"
                                 [attr.disabled]="isReadOnly() ? true : null"
                                 class="w-full"
                               />
@@ -192,7 +192,7 @@
                               [timeOnly]="true"
                               [hourFormat]="'24'"
                               inputId="timeonly"
-                              placeholder="00:00"
+                              placeholder="Enter duration"
                               appendTo="body"
                               styleClass="assessment-round__duration-picker"
                               [disabled]="isReadOnly()"

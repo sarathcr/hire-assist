@@ -790,6 +790,12 @@
         width: 100%;
         border-radius: 8px;
         padding: 10px 12px;
+
+        &.ng-invalid, &.ng-dirty {
+          &::placeholder {
+            color: #6c757d;
+          }
+        }
       }
 
       ::ng-deep .assessment-round__duration-picker {
