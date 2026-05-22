@@ -138,6 +138,29 @@ export class TableComponent<
   private readonly persistedSelectedIds = new Set<string>();
   public expandedRows: Record<string, boolean> = {};
   public matchModeOptions: SelectItem[] = matchOptions;
+
+  public getColumnWidth(col: any): string | null {
+    if (col.width != null) {
+      if (typeof col.width === 'number' || !isNaN(Number(col.width))) {
+        return `${Number(col.width) * 10}%`;
+      }
+      return String(col.width);
+    }
+    if (col.field === 'actions' || col.field === 'button') {
+      return '140px';
+    }
+    return null;
+  }
+
+  public getColumnMinWidth(col: any): string | null {
+    if (col.minWidth != null) {
+      if (typeof col.minWidth === 'number' || !isNaN(Number(col.minWidth))) {
+        return `${Number(col.minWidth) * 10}%`;
+      }
+      return String(col.minWidth);
+    }
+    return '120px';
+  }
   public activeStatusOptions: SelectItem[] = uniquesActives;
   public statusOptions: SelectItem[] = uniqueStatuses;
   public statusOptionsForSchedule: SelectItem[] = uniqueStatusesForIsSchedule;
@@ -635,6 +658,11 @@ export class TableComponent<
   }
 
   public unmaskedRows: Record<string, boolean> = {};
+
+  public get skeletonArray(): number[] {
+    const size = this.tableData()?.pageSize || 10;
+    return Array.from({ length: size }, (_, i) => i);
+  }
 
   public maskData(val: any): string {
     if (!val) return 'N/A';

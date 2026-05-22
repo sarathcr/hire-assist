@@ -411,12 +411,7 @@
     max-height: none;
     overflow: visible;
 
-    ::ng-deep {
-      .p-datatable-table-container {
-        height: auto;
-        width: 100%;
-      }
-    }
+
   }
 
   &__table-container {

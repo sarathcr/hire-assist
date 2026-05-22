@@ -33,14 +33,20 @@
       gap: 1rem;
     }
 
+    .p-datatable-table-container {
+      overflow-y: scroll !important;
+      overflow-x: hidden; // We use table-layout fixed, no horizontal scroll needed
+    }
+
     .p-datatable-table {
-      min-width: 1200px;
+      // min-width removed to allow flex sizing
     }
 
     // Body overrides for specific table behavior
     .p-datatable-tbody>tr {
       &>td {
-        white-space: wrap !important;
+        white-space: normal !important;
+        word-break: break-word !important;
 
         span {
           display: flex;
@@ -324,5 +330,51 @@
   .p-datatable-thead>tr>th p-columnfilter {
     pointer-events: all;
     cursor: pointer;
+  }
+}
+
+.table.table-loading-mask {
+  pointer-events: none;
+  
+  ::ng-deep .p-datatable-tbody > tr > td {
+    position: relative;
+    color: transparent !important;
+    border-color: transparent !important;
+    
+    > * {
+      opacity: 0 !important;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      width: calc(100% - 24px);
+      max-width: 250px;
+      height: 20px;
+      transform: translateY(-50%);
+      border-radius: 4px;
+      background-color: #e2e8f0;
+      background-image: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0),
+        rgba(255, 255, 255, 0.5),
+        rgba(255, 255, 255, 0)
+      );
+      background-size: 200px 100%;
+      background-repeat: no-repeat;
+      animation: table-skeleton-shimmer 1.5s infinite linear;
+      z-index: 10;
+    }
+  }
+}
+
+@keyframes table-skeleton-shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
   }
 }

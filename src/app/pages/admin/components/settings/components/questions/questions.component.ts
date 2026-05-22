@@ -4,11 +4,12 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
+import { finalize } from 'rxjs/operators';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
 import { FileComponent } from '../../../../../../shared/components/file/file.component';
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
 import { ASSESSMENT_URL } from '../../../../../../shared/constants/api';
@@ -20,9 +21,9 @@ import { PaginatedPayload } from '../../../../../../shared/models/pagination.mod
 import {
   FieldType,
   PaginatedData,
-  PaginatedDataActions,
   TableColumnsData,
 } from '../../../../../../shared/models/table.models';
+import { CollectionService } from '../../../../../../shared/services/collection.service';
 import { StoreService } from '../../../../../../shared/services/store.service';
 import {
   buildFormGroup,
@@ -38,8 +39,6 @@ import {
 import { QuestionService } from '../../../../services/question.service';
 import { InterviewService } from '../../../assessment/services/interview.service';
 import { QuestionFormModalComponent } from './components/question-form-modal/question-form-modal.component';
-import { CollectionService } from '../../../../../../shared/services/collection.service';
-import { finalize } from 'rxjs/operators';
 const tableColumns: TableColumnsData = {
   columns: [
     {
@@ -49,6 +48,7 @@ const tableColumns: TableColumnsData = {
       hasChip: false,
       hasTextFilter: true,
       filterAlias: 'textFilter',
+      width: 9,
     },
     {
       field: 'button',
@@ -60,6 +60,7 @@ const tableColumns: TableColumnsData = {
       sortedColumn: false,
       hasChip: false,
       hasTextFilter: false,
+      width: 1,
     },
   ],
   displayedColumns: ['question', 'actions'],
@@ -103,7 +104,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   public historyPagination = {
     pageNumber: 1,
     pageSize: 10,
-    totalRecords: 0
+    totalRecords: 0,
   };
   public historyLoading: boolean = false;
   public currentHistoryQuestionId!: number;
@@ -342,54 +343,67 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     payload.multiSortedColumns = [{ active: 'ChangedAt', direction: 'desc' }];
 
     this.historyLoading = true;
-    this.questionService.getQuestionHistoryPaginated(payload).pipe(
-      finalize(() => this.historyLoading = false)
-    ).subscribe({
-      next: (res: any) => {
-        const events = res.data.map((item: any) => ({
-          status: item.action,
-          user: item.changedByName,
-          date: new Date(item.changedAt),
-          icon: this.getHistoryIcon(item.action),
-          description: this.getHistoryDescription(item)
-        }));
+    this.questionService
+      .getQuestionHistoryPaginated(payload)
+      .pipe(finalize(() => (this.historyLoading = false)))
+      .subscribe({
+        next: (res: any) => {
+          const events = res.data.map((item: any) => ({
+            status: item.action,
+            user: item.changedByName,
+            date: new Date(item.changedAt),
+            icon: this.getHistoryIcon(item.action),
+            description: this.getHistoryDescription(item),
+          }));
 
-        if (pageNumber === 1) {
-          this.historyEvents = events;
-        } else {
-          this.historyEvents = [...this.historyEvents, ...events];
-        }
-        this.historyPagination.totalRecords = res.totalRecords;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to fetch question history'
-        });
-      }
-    });
+          if (pageNumber === 1) {
+            this.historyEvents = events;
+          } else {
+            this.historyEvents = [...this.historyEvents, ...events];
+          }
+          this.historyPagination.totalRecords = res.totalRecords;
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to fetch question history',
+          });
+        },
+      });
   }
 
   private getHistoryIcon(action: string): string {
     switch (action.toLowerCase()) {
-      case 'created': return 'pi pi-plus';
-      case 'updated': return 'pi pi-pencil';
-      case 'deleted': return 'pi pi-trash';
-      default: return 'pi pi-info-circle';
+      case 'created':
+        return 'pi pi-plus';
+      case 'updated':
+        return 'pi pi-pencil';
+      case 'deleted':
+        return 'pi pi-trash';
+      default:
+        return 'pi pi-info-circle';
     }
   }
 
   private getHistoryDescription(item: any): string {
-    if (item.field && item.previousValue !== undefined && item.currentValue !== undefined) {
-      return `${item.field}: ${item.previousValue || 'None'} → ${item.currentValue || 'None'}`;
+    if (
+      item.field &&
+      item.previousValue !== undefined &&
+      item.currentValue !== undefined
+    ) {
+      const formatVal = (v: any) => v === '' || v === null || v === undefined ? 'null' : v;
+      return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
     }
     return item.details || '';
   }
 
   public loadMoreHistory() {
     this.historyPagination.pageNumber++;
-    this.fetchQuestionHistory(this.currentHistoryQuestionId, this.historyPagination.pageNumber);
+    this.fetchQuestionHistory(
+      this.currentHistoryQuestionId,
+      this.historyPagination.pageNumber,
+    );
   }
 
   public onButtonClick(data: { event: any; fName: string }): void {
@@ -531,12 +545,14 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: any) => {
           if (res && Array.isArray(res.data)) {
-            const transformedData = res.data.map((item: Questionsinterface) => ({
+            const transformedData = res.data.map(
+              (item: Questionsinterface) => ({
                 ...item,
                 options: this.transformOptions(item.options),
                 isExpanded: false,
                 questionUrl: item.file?.url,
-            }));
+              }),
+            );
             res.data.forEach((response: any) => {
               if (response.hasAttachment && response.files) {
                 // Store file data for lazy loading, don't load image yet

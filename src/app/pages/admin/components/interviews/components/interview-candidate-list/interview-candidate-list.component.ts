@@ -327,16 +327,17 @@ export class InterviewCandidateListComponent implements OnInit {
     if (item.details) {
       return item.details;
     }
+    const formatVal = (v: any) => v === '' || v === null || v === undefined ? 'null' : v;
     if (item.field?.toLowerCase() === 'statusid') {
       const prev = this.getStatusLabel(item.previousValue);
       const curr = this.getStatusLabel(item.currentValue);
       if (curr === 'Selected') {
         return `Candidate status updated as Selected`;
       }
-      return `Status: ${prev || 'None'} → ${curr || 'None'}`;
+      return `Status: ${formatVal(prev)} → ${formatVal(curr)}`;
     }
     if (item.field) {
-      return `${item.field}: ${item.previousValue || 'None'} → ${item.currentValue || 'None'}`;
+      return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
     }
     return 'Candidate was modified';
   }

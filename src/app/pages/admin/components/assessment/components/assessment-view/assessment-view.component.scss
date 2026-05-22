@@ -563,12 +563,7 @@
     max-height: none;
     overflow: visible;
 
-    ::ng-deep {
-      .p-datatable-table-container {
-        height: auto;
-        width: 100%;
-      }
-    }
+
   }
 
   // ============================================
@@ -811,13 +806,7 @@
     }
 
     &__content {
-      ::ng-deep {
-        .p-datatable-table-container {
-          max-height: calc(100vh - 400px);
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-      }
+
     }
   }
 
@@ -971,14 +960,7 @@
       width: 100%;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-
       ::ng-deep {
-        .p-datatable-table-container {
-          max-height: calc(100vh - 350px);
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-
         // Fix skeleton loaders on mobile
         .p-skeleton {
           max-width: 100% !important;

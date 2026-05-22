@@ -53,6 +53,7 @@ const tableColumns: TableColumnsData = {
       hasChip: false,
       hasTextFilter: true,
       filterAlias: 'textFilter',
+      width: 5,
     },
     {
       field: 'active',
@@ -251,17 +252,17 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
     const payload = {
       pagination: {
         pageNumber: this.historyPageNumber,
-        pageSize: 10
+        pageSize: 10,
       },
       filterMap: {
-        departmentId: `${this.selectedDepartmentId}`
+        departmentId: `${this.selectedDepartmentId}`,
       },
       multiSortedColumns: [
         {
-          active: "ChangedAt",
-          direction: "desc"
-        }
-      ]
+          active: 'ChangedAt',
+          direction: 'desc',
+        },
+      ],
     };
 
     this.departmentService.getDepartmentHistory(payload).subscribe({
@@ -271,7 +272,7 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
           user: item.changedByName,
           date: new Date(item.changedAt + 'Z'),
           icon: this.getHistoryIcon(item.action),
-          description: this.getHistoryDescription(item)
+          description: this.getHistoryDescription(item),
         }));
 
         this.events = [...this.events, ...newEvents];
@@ -282,16 +283,20 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.historyLoading = false;
-      }
+      },
     });
   }
 
   private getHistoryIcon(action: string): string {
     switch (action) {
-      case 'Created': return 'pi pi-plus';
-      case 'Updated': return 'pi pi-pencil';
-      case 'Deleted': return 'pi pi-trash';
-      default: return 'pi pi-info-circle';
+      case 'Created':
+        return 'pi pi-plus';
+      case 'Updated':
+        return 'pi pi-pencil';
+      case 'Deleted':
+        return 'pi pi-trash';
+      default:
+        return 'pi pi-info-circle';
     }
   }
 
@@ -300,7 +305,8 @@ export class DepartmentsComponent implements OnInit, OnDestroy {
       return item.details || '';
     }
     if (item.field) {
-      return `${item.field}: ${item.previousValue} → ${item.currentValue}`;
+      const formatVal = (v: any) => v === '' || v === null || v === undefined ? 'null' : v;
+      return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
     }
     return item.details || 'Department was modified';
   }

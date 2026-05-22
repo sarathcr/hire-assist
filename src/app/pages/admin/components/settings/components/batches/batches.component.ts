@@ -30,7 +30,7 @@ import { Batch } from '../../../../models/batch.model';
 import { BatchService } from '../../../../services/batch.service';
 import { BatchDialogComponent } from './components/batch-dialog/batch-dialog.component';
 import { finalize } from 'rxjs/operators';
-import { HistoryDrawerComponent } from "../../../../../../shared/components/history-drawer/history-drawer.component";
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 import { CollectionService } from '../../../../../../shared/services/collection.service';
 
 const tableColumns: TableColumnsData = {
@@ -42,6 +42,7 @@ const tableColumns: TableColumnsData = {
       hasChip: false,
       hasTextFilter: true,
       filterAlias: 'textFilter',
+      width: 2,
     },
     {
       field: 'description',
@@ -50,6 +51,7 @@ const tableColumns: TableColumnsData = {
       hasChip: false,
       hasTextFilter: true,
       filterAlias: 'textFilter',
+      width: 3,
     },
     {
       field: 'active',
@@ -59,6 +61,7 @@ const tableColumns: TableColumnsData = {
       hasTextFilter: true,
       filterAlias: 'selectFilter',
       hasMultiStatus: false,
+      width: 3,
     },
     {
       field: 'button',
@@ -69,6 +72,7 @@ const tableColumns: TableColumnsData = {
       buttonTooltips: ['Edit', 'Delete', 'History'],
       sortedColumn: false,
       hasChip: false,
+      width: 1,
     },
   ],
   displayedColumns: ['title', 'description', 'active', 'actions'],
@@ -248,17 +252,17 @@ export class BatchesComponent implements OnInit, OnDestroy {
     const payload = {
       pagination: {
         pageNumber: this.historyPageNumber,
-        pageSize: 10
+        pageSize: 10,
       },
       filterMap: {
-        batchId: `${this.selectedBatchId}`
+        batchId: `${this.selectedBatchId}`,
       },
       multiSortedColumns: [
         {
-          active: "ChangedAt",
-          direction: "desc"
-        }
-      ]
+          active: 'ChangedAt',
+          direction: 'desc',
+        },
+      ],
     };
 
     this.batchService.getBatchHistory(payload).subscribe({
@@ -268,7 +272,7 @@ export class BatchesComponent implements OnInit, OnDestroy {
           user: item.changedByName,
           date: new Date(item.changedAt),
           icon: this.getHistoryIcon(item.action),
-          description: this.getHistoryDescription(item)
+          description: this.getHistoryDescription(item),
         }));
 
         this.events = [...this.events, ...newEvents];
@@ -279,16 +283,20 @@ export class BatchesComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.historyLoading = false;
-      }
+      },
     });
   }
 
   private getHistoryIcon(action: string): string {
     switch (action) {
-      case 'Created': return 'pi pi-plus';
-      case 'Updated': return 'pi pi-pencil';
-      case 'Deleted': return 'pi pi-trash';
-      default: return 'pi pi-info-circle';
+      case 'Created':
+        return 'pi pi-plus';
+      case 'Updated':
+        return 'pi pi-pencil';
+      case 'Deleted':
+        return 'pi pi-trash';
+      default:
+        return 'pi pi-info-circle';
     }
   }
 
@@ -297,7 +305,8 @@ export class BatchesComponent implements OnInit, OnDestroy {
       return item.details || '';
     }
     if (item.field) {
-      return `${item.field}: ${item.previousValue} → ${item.currentValue}`;
+      const formatVal = (v: any) => v === '' || v === null || v === undefined ? 'null' : v;
+      return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
     }
     return item.details || 'Batch was modified';
   }
@@ -436,35 +445,16 @@ export class BatchesComponent implements OnInit, OnDestroy {
 
     const error = (error: HttpErrorResponse) => {
       this.storeService.setIsLoading(false);
-      if (error?.status === 422 && error?.error?.businessError === 3107) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'This title already exists.',
-        });
-        this.isLoading = false;
-      } else if (
-        error?.status === 422 &&
-        error?.error?.businessError === 3103
-      ) {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: `The update is not possible. ${error?.error?.errorValue} already assigned to assessments.`,
-        });
-        this.isLoading = false;
-      } else {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail:
-            error.error.type ||
-            error.error.message ||
-            error.error.errorValue ||
-            'Updation is failed',
-        });
-        this.isLoading = false;
-      }
+      this.isLoading = false;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail:
+          error?.error?.type ||
+          error?.error?.message ||
+          error?.error?.errorValue ||
+          'Updation is failed',
+      });
     };
     this.batchService.updateEntity('', payload).subscribe({ next, error });
   }

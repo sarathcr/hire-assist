@@ -353,7 +353,8 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
       return item.details || '';
     }
     if (item.field) {
-      return `${item.field}: ${item.previousValue} → ${item.currentValue}`;
+      const formatVal = (v: any) => v === '' || v === null || v === undefined ? 'null' : v;
+      return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
     }
     return item.details || 'Panel was modified';
   }

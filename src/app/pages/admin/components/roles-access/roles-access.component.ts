@@ -2,28 +2,27 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { finalize } from 'rxjs';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
+import { HistoryDrawerComponent } from '../../../../shared/components/history-drawer/history-drawer.component';
 import { TableDataSourceService } from '../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../shared/components/table/table.component';
-import { HistoryDrawerComponent } from '../../../../shared/components/history-drawer/history-drawer.component';
 import { USER_URL } from '../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../shared/models/dialog.models';
 import { PaginatedPayload } from '../../../../shared/models/pagination.models';
 import {
   FieldType,
-  PaginatedDataActions,
   TableColumnsData,
 } from '../../../../shared/models/table.models';
+import { UserState } from '../../../../shared/models/user.models';
+import { CollectionService } from '../../../../shared/services/collection.service';
 import { StoreService } from '../../../../shared/services/store.service';
 import { RolesAccess } from '../../models/roles-access.model';
 import { UserService } from '../../services/user.service';
 import { UserDialogComponent } from './components/user-dialog/user-dialog.component';
-import { CollectionService } from '../../../../shared/services/collection.service';
-import { UserState } from '../../../../shared/models/user.models';
-import { finalize } from 'rxjs';
 
 const tableColumns: TableColumnsData = {
   columns: [
@@ -33,6 +32,7 @@ const tableColumns: TableColumnsData = {
       sortedColumn: true,
       hasChip: false,
       hasTextFilter: true,
+      width: 2,
       filterAlias: 'textFilter',
     },
     {
@@ -42,6 +42,7 @@ const tableColumns: TableColumnsData = {
       hasChip: true,
       hasTextFilter: true,
       filterAlias: 'textFilter',
+      width: 4,
     },
     {
       field: 'department',
@@ -50,6 +51,7 @@ const tableColumns: TableColumnsData = {
       hasChip: false,
       hasTextFilter: true,
       filterAlias: 'textFilter',
+      width: 2,
     },
 
     {
@@ -61,6 +63,7 @@ const tableColumns: TableColumnsData = {
       buttonTooltips: ['Edit', 'Delete', 'History'],
       sortedColumn: false,
       hasChip: false,
+      width: 1,
     },
   ],
   displayedColumns: [],
@@ -85,9 +88,9 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   private currentPayload: PaginatedPayload = new PaginatedPayload();
   private previousFilterMap: any = {};
   private isManualRefresh = false;
-  public visible: boolean = false;
+  public visible = false;
   public historyEvents: any[] = [];
-  public historyLoading: boolean = false;
+  public historyLoading = false;
 
   constructor(
     public dialog: DialogService,
@@ -285,34 +288,35 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
 
   public viewHistory(id: string) {
     this.historyLoading = true;
-    this.userService.getUserHistory(id).pipe(
-      finalize(() => this.historyLoading = false)
-    ).subscribe({
-      next: (res: any[]) => {
-        this.historyEvents = res.map((event) => {
-          let description = '';
-          if (event.action === 'Updated' && event.field) {
-            description = `${event.field} changed from "${event.previousValue}" to "${event.currentValue}"`;
-          }
+    this.userService
+      .getUserHistory(id)
+      .pipe(finalize(() => (this.historyLoading = false)))
+      .subscribe({
+        next: (res: any[]) => {
+          this.historyEvents = res.map((event) => {
+            let description = '';
+            if (event.action === 'Updated' && event.field) {
+              description = `${event.field} changed from "${event.previousValue}" to "${event.currentValue}"`;
+            }
 
-          return {
-            status: event.action,
-            description: description,
-            user: event.changedByName,
-            date: new Date(event.changedAt + 'Z'),
-            icon: event.action === 'Created' ? 'pi pi-plus' : 'pi pi-pencil',
-          };
-        });
-        this.visible = true;
-      },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load user history',
-        });
-      }
-    });
+            return {
+              status: event.action,
+              description: description,
+              user: event.changedByName,
+              date: new Date(event.changedAt + 'Z'),
+              icon: event.action === 'Created' ? 'pi pi-plus' : 'pi pi-pencil',
+            };
+          });
+          this.visible = true;
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load user history',
+          });
+        },
+      });
   }
 
   public onButtonClick(data: { event: any; fName: string }): void {

@@ -9,6 +9,8 @@ export interface ColumnField {
   displayName: string;
   fieldType?: FieldType;
   columnType?: ColumnType;
+  width?: string | number;
+  minWidth?: string | number;
   actions?: PaginatedDataActions[];
   actionsConfig?: ActionConfig;
   sortedColumn?: boolean;

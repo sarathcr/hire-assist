@@ -33,8 +33,8 @@
     </div>
     <div class="validation-banner__text">
       @if (activeCategory() === 'duplicate') {
-        <h3>Resolve Duplicate Aadhaar Records</h3>
-        <p>Multiple candidates share the same Aadhaar card number. Review the records below, select the correct one to keep, and reject the others to continue.</p>
+        <h3>Resolve Duplicate Records</h3>
+        <p>Multiple candidates share the same contact or identity details. Review the records below, select the correct one to keep, and reject the others to continue.</p>
       } @else if (activeCategory() === 'invalid') {
         <h3>Correct Invalid Aadhaar Formats</h3>
         <p>Aadhaar format or checksum verification failed for these candidate records. Correct the values inline or reject the records to proceed.</p>
@@ -63,7 +63,7 @@
           <!-- Cluster Stepper Header -->
           <div class="cluster-stepper">
             <div class="cluster-stepper__info">
-              <span class="cluster-stepper__title">Duplicate Aadhaar Cluster</span>
+              <span class="cluster-stepper__title">Duplicate Cluster</span>
               <span class="cluster-stepper__count">({{ currentClusterIndex() + 1 }} of {{ duplicateGroups().length }} remaining)</span>
             </div>
             
@@ -111,7 +111,7 @@
                   </div>
 
                   <div class="duplicate-panel__footer">
-                    <p-tag value="Duplicate Aadhaar" severity="warn" [rounded]="true"></p-tag>
+                    <p-tag [value]="candidate['failureReason'] || 'Duplicate Record'" severity="warn" [rounded]="true"></p-tag>
                   </div>
                 </div>
               </div>
@@ -163,7 +163,7 @@
                 </div>
 
                 <div class="exception-card__footer">
-                  <p-tag [value]="candidate.failureReason || 'Aadhaar Checksum Failed'" severity="danger" [rounded]="true"></p-tag>
+                  <p-tag [value]="candidate['failureReason'] || 'Aadhaar Checksum Failed'" severity="danger" [rounded]="true"></p-tag>
                 </div>
               </div>
             }
@@ -194,7 +194,7 @@
                 <div class="exception-card__footer">
                   <div class="noneligible-reason">
                     <i class="pi pi-info-circle"></i>
-                    <span>{{ candidate.failureReason || 'Candidate is active in another recruitment.' }}</span>
+                    <span>{{ candidate['failureReason'] || 'Candidate is active in another recruitment.' }}</span>
                   </div>
                 </div>
               </div>

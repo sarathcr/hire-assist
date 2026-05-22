@@ -2,10 +2,12 @@
   class="table"
   [class.table--fill]="fillHeight"
   [class.table-loading]="isLoading()"
+  [class.table-loading-mask]="isLoading() && displayData().length > 0"
 >
   <p-table
     #dt
     [value]="displayData() || []"
+    [tableStyle]="{ 'min-width': '50rem', 'table-layout': 'fixed', 'width': '100%' }"
     [columns]="columnsData()?.columns"
     [rows]="tableData()?.pageSize"
     [totalRecords]="tableData()?.totalRecords || 0"
@@ -24,11 +26,11 @@
     [resizableColumns]="true"
     [scrollable]="true"
     [scrollDirection]="'both'"
-    [scrollHeight]="scrollHeight() || 'Flex'"
-    [autoLayout]="true"
+    [scrollHeight]="scrollHeight() || 'calc(100vh - 310px)'"
+    [autoLayout]="false"
     paginatorPosition="bottom"
     [globalFilterFields]=""
-    [loading]="isLoading()"
+    [loading]="isLoading() && displayData().length === 0"
     [showLoader]="false"
     [selectionMode]="selectionMode"
     (selectionChange)="onSelectionChange($event)"
@@ -80,7 +82,7 @@
     <ng-template pTemplate="header" let-columns>
       <tr>
         @if (hasCheckbox) {
-          <th scope="col" class="table__headerCheckbox">
+          <th scope="col" class="table__headerCheckbox" style="width: 4rem; min-width: 4rem; max-width: 4rem;">
             <p-tableHeaderCheckbox
               (click)="$event.stopPropagation()"
               [disabled]="selectionDisabled()"
@@ -88,7 +90,7 @@
           </th>
         }
         @if (columnsData()?.hasExpanded) {
-          <th scope="col"></th>
+          <th scope="col" style="width: 4rem; min-width: 4rem; max-width: 4rem;"></th>
         }
         @for (
           headerColumn of columnsData()?.columns;
@@ -103,7 +105,9 @@
                 ? headerColumn.field
                 : ''
             "
-            [style.minWidth.px]="120"
+            [style.minWidth]="getColumnMinWidth(headerColumn)"
+            [style.width]="getColumnWidth(headerColumn)"
+            [style.maxWidth]="getColumnWidth(headerColumn)"
             [ngClass]="
               headerColumn.field === 'actions' ||
               headerColumn.field === 'button' ||
@@ -785,11 +789,12 @@
       </tr>
     </ng-template>
 
+
     <ng-template pTemplate="loadingbody" let-columns>
-      @for (item of [1, 2, 3, 4, 5]; track item) {
+      @for (item of skeletonArray; track item) {
         <tr>
           @if (hasCheckbox) {
-            <td>
+            <td class="table__headerCheckbox" style="width: 4rem; min-width: 4rem; max-width: 4rem;">
               <p-skeleton
                 width="1.5rem"
                 height="1.5rem"
@@ -799,7 +804,7 @@
           }
 
           @if (columnsData()?.hasExpanded) {
-            <td>
+            <td style="width: 4rem; min-width: 4rem; max-width: 4rem;">
               <p-skeleton
                 shape="circle"
                 size="2rem"
@@ -809,13 +814,31 @@
           }
 
           @for (col of columns; track col.field) {
-            <td>
-              <p-skeleton height="2rem" styleClass="mb-2"></p-skeleton>
+            <td
+              [style.minWidth]="getColumnMinWidth(col)"
+              [style.width]="getColumnWidth(col)"
+              [style.maxWidth]="getColumnWidth(col)"
+              [ngClass]="
+                col.field === 'actions' ||
+                col.field === 'button' ||
+                col.field === 'active'
+                  ? 'table__header-no-pointer'
+                  : ''
+              "
+            >
+              @if (col.field === 'actions' || col.field === 'button') {
+                <div style="display: flex; gap: 0.5rem;">
+                  <p-skeleton shape="circle" size="2rem"></p-skeleton>
+                </div>
+              } @else {
+                <p-skeleton height="2rem" styleClass="mb-2"></p-skeleton>
+              }
             </td>
           }
         </tr>
       }
     </ng-template>
+
     <ng-template pTemplate="emptymessage">
       <tr>
         <td [attr.colspan]="(columnsData()?.columns?.length || 0) + 2">
