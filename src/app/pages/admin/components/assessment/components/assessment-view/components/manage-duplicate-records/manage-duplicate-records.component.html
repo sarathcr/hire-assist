@@ -89,7 +89,7 @@
               >
                 <div class="duplicate-panel__card">
                   <div class="duplicate-panel__header">
-                    <button class="action-icon action-icon--danger" (click)="$event.stopPropagation(); onRejectRecord(candidate, activeGroupId!)" pTooltip="Reject/Delete Candidate">
+                    <button class="action-icon action-icon--danger" (click)="$event.stopPropagation(); onRejectRecord(candidate, activeGroupId()!)" pTooltip="Reject/Delete Candidate">
                       <i class="pi pi-trash"></i>
                     </button>
                     
@@ -120,7 +120,7 @@
 
           <!-- Bottom Action Confirmation Bar for Duplicates -->
           <div class="duplicate-actions-bar">
-            <button class="btn btn--outlined" (click)="onRejectRecord(splitPanelList()[0], activeGroupId!)">
+            <button class="btn btn--outlined" (click)="onRejectRecord(splitPanelList()[0], activeGroupId()!)">
               <i class="pi pi-trash"></i> Discard Entire Cluster
             </button>
             <button 

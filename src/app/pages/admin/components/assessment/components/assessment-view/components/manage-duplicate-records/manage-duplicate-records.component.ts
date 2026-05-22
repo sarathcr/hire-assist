@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, computed, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  computed,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { AccordionModule } from 'primeng/accordion';
 import { AvatarModule } from 'primeng/avatar';
 import { BadgeModule } from 'primeng/badge';
@@ -46,19 +52,29 @@ import { DialogFooterComponent } from '../../../../../../../../shared/components
 })
 export class ManageDuplicateRecordsComponent implements OnInit {
   public data = signal<CandidateData[]>([]);
-  public duplicateGroups = computed(() => this.data().filter(g => g['isDuplicateGroup']));
-  public invalidGroups = computed(() => this.data().filter(g => g['isInvalidGroup']));
-  public nonEligibleGroups = computed(() => this.data().filter(g => g['isNonEligibleGroup']));
-  
-  public activeCategory = signal<'duplicate' | 'invalid' | 'noneligible'>('duplicate');
+  public duplicateGroups = computed(() =>
+    this.data().filter((g) => g['isDuplicateGroup']),
+  );
+  public invalidGroups = computed(() =>
+    this.data().filter((g) => g['isInvalidGroup']),
+  );
+  public nonEligibleGroups = computed(() =>
+    this.data().filter((g) => g['isNonEligibleGroup']),
+  );
+
+  public activeCategory = signal<'duplicate' | 'invalid' | 'noneligible'>(
+    'duplicate',
+  );
 
   // Duplicate Cluster Navigation
   public currentClusterIndex = computed(() => {
-    const activeId = this.activeGroupId;
-    return this.duplicateGroups().findIndex(g => g.groupId === activeId);
+    const activeId = this.activeGroupId();
+    return this.duplicateGroups().findIndex((g) => g.groupId === activeId);
   });
   public isFirstCluster = computed(() => this.currentClusterIndex() <= 0);
-  public isLastCluster = computed(() => this.currentClusterIndex() >= this.duplicateGroups().length - 1);
+  public isLastCluster = computed(
+    () => this.currentClusterIndex() >= this.duplicateGroups().length - 1,
+  );
 
   public prevCluster() {
     const idx = this.currentClusterIndex();
@@ -76,7 +92,9 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     }
   }
 
-  public getGroupsForCategory(cat: 'duplicate' | 'invalid' | 'noneligible'): CandidateData[] {
+  public getGroupsForCategory(
+    cat: 'duplicate' | 'invalid' | 'noneligible',
+  ): CandidateData[] {
     if (cat === 'duplicate') return this.duplicateGroups();
     if (cat === 'invalid') return this.invalidGroups();
     return this.nonEligibleGroups();
@@ -90,7 +108,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
       this.onDuplicateRecordClick(groups[0].candidates, groups[0].groupId);
     } else {
       this.splitPanelList.set([]);
-      this.activeGroupId = null;
+      this.activeGroupId.set(null);
     }
   }
 
@@ -106,7 +124,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     let selectedCandidate: CandidateData | null = null;
     let isFromInvalidGroup = false;
     for (const group of this.data()) {
-      const found = group.candidates.find(c => c.panelId === selectedId);
+      const found = group.candidates.find((c) => c.panelId === selectedId);
       if (found) {
         selectedCandidate = found;
         isFromInvalidGroup = !!group['isInvalidGroup'];
@@ -117,7 +135,10 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     if (!selectedCandidate) return false;
 
     if (selectedCandidate['isInvalidRecord'] || isFromInvalidGroup) {
-      const aadhaar = selectedCandidate['aadhaarNumber'] || selectedCandidate['Aadhaar Number'] || '';
+      const aadhaar =
+        selectedCandidate['aadhaarNumber'] ||
+        selectedCandidate['Aadhaar Number'] ||
+        '';
       const cleaned = String(aadhaar).replace(/\s/g, '');
       return /^\d{12}$/.test(cleaned) && validateVerhoeff(cleaned);
     }
@@ -127,12 +148,12 @@ export class ManageDuplicateRecordsComponent implements OnInit {
 
   public assessmentId!: string;
   public isLoading = signal(false);
-  
+
   // Inline edit state
   public editPanelId = signal<number | null>(null);
   public editFieldKey = signal<string | null>(null);
-  
-  public activeGroupId: string | null = null;
+
+  public activeGroupId = signal<string | null>(null);
 
   // Helper method to get initials for avatar
   public getInitials(name: string): string {
@@ -160,7 +181,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
 
   // Public Events
   public onDuplicateRecordClick(candidates: CandidateData[], groupId: string) {
-    this.activeGroupId = groupId;
+    this.activeGroupId.set(groupId);
     this.selectedPanelId.set(null);
     this.splitPanelRendered.set(false);
 
@@ -184,7 +205,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
 
     let selectedCandidate: CandidateData | null = null;
     for (const group of this.data()) {
-      const found = group.candidates.find(c => c.panelId === selectedId);
+      const found = group.candidates.find((c) => c.panelId === selectedId);
       if (found) {
         selectedCandidate = found;
         break;
@@ -197,11 +218,12 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   public onSaveRecord(candidate: CandidateData, groupId: string) {
-    this.activeGroupId = groupId;
+    this.activeGroupId.set(groupId);
     this.selectedPanelId.set(candidate.panelId ?? null);
 
     // Validate Aadhaar format
-    const aadhaar = candidate['aadhaarNumber'] || candidate['Aadhaar Number'] || '';
+    const aadhaar =
+      candidate['aadhaarNumber'] || candidate['Aadhaar Number'] || '';
     const cleaned = String(aadhaar).replace(/\s/g, '');
     const isValid = /^\d{12}$/.test(cleaned) && validateVerhoeff(cleaned);
 
@@ -215,7 +237,8 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     }
 
     const modalData = {
-      message: 'Are you sure you want to save and validate this candidate record?',
+      message:
+        'Are you sure you want to save and validate this candidate record?',
       isChoice: true,
       cancelButtonText: 'Cancel',
       acceptButtonText: 'Save',
@@ -240,13 +263,14 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   public isAadhaarValid(candidate: CandidateData): boolean {
-    const aadhaar = candidate['aadhaarNumber'] || candidate['Aadhaar Number'] || '';
+    const aadhaar =
+      candidate['aadhaarNumber'] || candidate['Aadhaar Number'] || '';
     const cleaned = String(aadhaar).replace(/\s/g, '');
     return /^\d{12}$/.test(cleaned) && validateVerhoeff(cleaned);
   }
 
   public onEditRecord(candidate: CandidateData, groupId: string) {
-    this.activeGroupId = groupId;
+    this.activeGroupId.set(groupId);
     this.selectedPanelId.set(candidate.panelId ?? null);
 
     const fieldToEdit = 'aadhaarNumber';
@@ -255,20 +279,24 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   public handleCandidateUpdate(updatedCandidate: CandidateData) {
-    this.data.update(groups => groups.map(g => ({
-      ...g,
-      candidates: g.candidates.map(c => c.panelId === updatedCandidate.panelId ? updatedCandidate : c)
-    })));
-    
+    this.data.update((groups) =>
+      groups.map((g) => ({
+        ...g,
+        candidates: g.candidates.map((c) =>
+          c.panelId === updatedCandidate.panelId ? updatedCandidate : c,
+        ),
+      })),
+    );
+
     // Also update splitPanelList if this candidate was in it
-    const updatedList = this.splitPanelList().map(c => {
+    const updatedList = this.splitPanelList().map((c) => {
       if (c.panelId === updatedCandidate.panelId) {
         return updatedCandidate;
       }
       return c;
     });
     this.splitPanelList.set(updatedList);
-    
+
     this.cdr.detectChanges();
   }
 
@@ -298,17 +326,23 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     ref.onClose.subscribe((result) => {
       if (result) {
         // Filter out the rejected candidate globally
-        this.data.update(groups => groups.map(g => {
-          if (g.groupId === groupId) {
-            return {
-              ...g,
-              candidates: g.candidates.filter(c => c.panelId !== candidate.panelId)
-            };
-          }
-          return g;
-        }).filter(g => g.candidates.length > 0));
+        this.data.update((groups) =>
+          groups
+            .map((g) => {
+              if (g.groupId === groupId) {
+                return {
+                  ...g,
+                  candidates: g.candidates.filter(
+                    (c) => c.panelId !== candidate.panelId,
+                  ),
+                };
+              }
+              return g;
+            })
+            .filter((g) => g.candidates.length > 0),
+        );
 
-        this.activeGroupId = groupId;
+        this.activeGroupId.set(groupId);
         this.updateModifiedCandidateData();
       }
     });
@@ -317,7 +351,8 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   public onClose() {
     if (this.data().length > 0) {
       const modalData = {
-        message: 'Pending candidates details will be lost and cannot be scheduled. Are you sure you want to cancel?',
+        message:
+          'Pending candidates details will be lost and cannot be scheduled. Are you sure you want to cancel?',
         isChoice: true,
         cancelButtonText: 'No',
         acceptButtonText: 'Yes, Cancel',
@@ -347,19 +382,20 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   private setConfigData() {
     const configData = this.config.data as DialogData;
     this.assessmentId = configData.assessmentId;
-    
+
     // Assign stable panelIds to all candidates across all groups
     let idCounter = 1;
-    const records = configData.duplicateRecords.map(group => ({
+    const records = configData.duplicateRecords.map((group) => ({
       ...group,
-      candidates: group.candidates.map(c => ({
+      candidates: group.candidates.map((c) => ({
         ...c,
         panelId: idCounter++,
-        failureReason: group['failureReason'] || c['failureReason'] || c['reason']
-      }))
+        failureReason:
+          group['failureReason'] || c['failureReason'] || c['reason'],
+      })),
     }));
     this.data.set(records);
-    
+
     // Determine initial active category
     if (this.duplicateGroups().length > 0) {
       this.activeCategory.set('duplicate');
@@ -371,37 +407,38 @@ export class ManageDuplicateRecordsComponent implements OnInit {
 
     const groups = this.getGroupsForCategory(this.activeCategory());
     if (groups.length > 0) {
-      this.activeGroupId = groups[0].groupId;
+      this.activeGroupId.set(groups[0].groupId);
       this.splitPanelList.set(groups[0].candidates);
     }
   }
 
   private updateCandidateData(selectedCandidate: CandidateData) {
     const headers = Object.keys(selectedCandidate).filter(
-      (key) => ![
-        'panelId', 
-        'groupId', 
-        'isInvalidRecord', 
-        'failureReason', 
-        'candidates', 
-        'visibleButtonIndices', 
-        'disabledButtonIndices',
-        'dynamicAnswers',
-        'isDuplicateRecord',
-        '_detectedAadhaar',
-        'isDuplicateGroup',
-        'isInvalidGroup',
-        'type'
-      ].includes(key),
+      (key) =>
+        ![
+          'panelId',
+          'groupId',
+          'isInvalidRecord',
+          'failureReason',
+          'candidates',
+          'visibleButtonIndices',
+          'disabledButtonIndices',
+          'dynamicAnswers',
+          'isDuplicateRecord',
+          '_detectedAadhaar',
+          'isDuplicateGroup',
+          'isInvalidGroup',
+          'type',
+        ].includes(key),
     );
-    
+
     const escapeCsvValue = (val: any): string => {
-        if (val === null || val === undefined) return '';
-        const str = String(val);
-        if (str.includes('"') || str.includes(',') || str.includes('\n')) {
-            return `"${str.replace(/"/g, '""')}"`;
-        }
-        return str;
+      if (val === null || val === undefined) return '';
+      const str = String(val);
+      if (str.includes('"') || str.includes(',') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
     };
 
     const values = headers.map((key) => escapeCsvValue(selectedCandidate[key]));
@@ -413,41 +450,51 @@ export class ManageDuplicateRecordsComponent implements OnInit {
 
     const next = (res: any) => {
       this.isLoading.set(false);
-      
+
       // 1. Check if the candidate is already in another active recruitment
-      if (res && res.nonEligibleCandidateList && res.nonEligibleCandidateList.length > 0) {
-        const reason = res.nonEligibleCandidateList[0].reason || 'This candidate is already part of another active recruitment which is not completed.';
+      if (
+        res &&
+        res.nonEligibleCandidateList &&
+        res.nonEligibleCandidateList.length > 0
+      ) {
+        const reason =
+          res.nonEligibleCandidateList[0].reason ||
+          'This candidate is already part of another active recruitment which is not completed.';
         this.messageService.add({
           severity: 'error',
           summary: 'Validation Error',
           detail: reason,
         });
-        
+
         // Update the candidate's failureReason locally so the UI displays it immediately
-        this.data.update(groups => groups.map(g => {
-          if (g.groupId === this.activeGroupId) {
-            return {
-              ...g,
-              candidates: g.candidates.map(c => {
-                if (c.panelId === selectedCandidate.panelId) {
-                  return {
-                    ...c,
-                    failureReason: reason
-                  };
-                }
-                return c;
-              })
-            };
-          }
-          return g;
-        }));
-        
+        this.data.update((groups) =>
+          groups.map((g) => {
+            if (g.groupId === this.activeGroupId()) {
+              return {
+                ...g,
+                candidates: g.candidates.map((c) => {
+                  if (c.panelId === selectedCandidate.panelId) {
+                    return {
+                      ...c,
+                      failureReason: reason,
+                    };
+                  }
+                  return c;
+                }),
+              };
+            }
+            return g;
+          }),
+        );
+
         return;
       }
 
       // 2. Check if the updated Aadhaar remains invalid
       if (res && res.invalidRecords && res.invalidRecords.length > 0) {
-        const reason = res.invalidRecords[0].reason || 'The provided Aadhaar number is invalid.';
+        const reason =
+          res.invalidRecords[0].reason ||
+          'The provided Aadhaar number is invalid.';
         this.messageService.add({
           severity: 'error',
           summary: 'Validation Error',
@@ -465,12 +512,13 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     };
     const error = (err: CustomErrorResponse) => {
       this.isLoading.set(false);
-      const errorMessage = err?.error?.type || err?.error?.message || 'Operation failed';
-       this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: errorMessage,
-        });
+      const errorMessage =
+        err?.error?.type || err?.error?.message || 'Operation failed';
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: errorMessage,
+      });
     };
     this.manageDuplicateRecordsService
       .createEntity(
@@ -481,18 +529,20 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   private updateModifiedCandidateData() {
-    if (!this.activeGroupId) return;
+    if (!this.activeGroupId()) return;
 
     this.data.update((items) =>
-      items.filter((item: CandidateData) => item.groupId !== this.activeGroupId),
+      items.filter(
+        (item: CandidateData) => item.groupId !== this.activeGroupId(),
+      ),
     );
-    this.activeGroupId = null;
+    this.activeGroupId.set(null);
     this.splitPanelList.set([]);
 
     // Refresh active category and find next group
     const currentCat = this.activeCategory();
     let groups = this.getGroupsForCategory(currentCat);
-    
+
     if (groups.length > 0) {
       this.onDuplicateRecordClick(groups[0].candidates, groups[0].groupId);
     } else {
