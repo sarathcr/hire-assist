@@ -20,7 +20,6 @@
   }
 
   ::ng-deep {
-
     // Component specific UI elements
     .p-badge,
     .p-tag,
@@ -43,8 +42,8 @@
     }
 
     // Body overrides for specific table behavior
-    .p-datatable-tbody>tr {
-      &>td {
+    .p-datatable-tbody > tr {
+      & > td {
         white-space: normal !important;
         word-break: break-word !important;
 
@@ -110,12 +109,12 @@
     }
 
     // Selection styling with custom left accent
-    .p-datatable-tbody>tr.p-highlight {
+    .p-datatable-tbody > tr.p-highlight {
       position: relative;
       transition: all 0.2s ease;
 
       &::after {
-        content: '';
+        content: "";
         position: absolute;
         left: 0;
         top: 0;
@@ -139,7 +138,6 @@
         // Highlight tags and badges should stand out
         .p-tag,
         .p-badge {
-
           .p-tag-label,
           .p-tag-value,
           .p-badge-value,
@@ -150,7 +148,7 @@
       }
 
       &:hover,
-      &:hover>td {
+      &:hover > td {
         // Theme preset handles this, but we can refinement if needed
         background: #bae6fd !important;
       }
@@ -204,7 +202,7 @@
   }
 
   @media screen and (max-width: 470px) {
-    &__globalFilters>div {
+    &__globalFilters > div {
       width: 100%;
     }
   }
@@ -260,7 +258,6 @@
   }
 
   &__expanded {
-
     &__optionList,
     &__optionListForImage {
       list-style-type: lower-alpha;
@@ -327,7 +324,7 @@
 }
 
 :host ::ng-deep {
-  .p-datatable-thead>tr>th p-columnfilter {
+  .p-datatable-thead > tr > th p-columnfilter {
     pointer-events: all;
     cursor: pointer;
   }
@@ -335,18 +332,18 @@
 
 .table.table-loading-mask {
   pointer-events: none;
-  
+
   ::ng-deep .p-datatable-tbody > tr > td {
     position: relative;
     color: transparent !important;
     border-color: transparent !important;
-    
+
     > * {
       opacity: 0 !important;
     }
 
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       top: 50%;
       left: 12px;
@@ -376,5 +373,10 @@
   }
   100% {
     background-position: calc(200px + 100%) 0;
+  }
+}
+.table-empty {
+  ::ng-deep .p-datatable-table {
+    table-layout: auto !important;
   }
 }

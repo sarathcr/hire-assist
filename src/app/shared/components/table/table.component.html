@@ -3,6 +3,7 @@
   [class.table--fill]="fillHeight"
   [class.table-loading]="isLoading()"
   [class.table-loading-mask]="isLoading() && displayData().length > 0"
+  [class.table-empty]="displayData().length === 0 && !isLoading()"
 >
   <p-table
     #dt
@@ -106,8 +107,7 @@
                 : ''
             "
             [style.minWidth]="getColumnMinWidth(headerColumn)"
-            [style.width]="getColumnWidth(headerColumn)"
-            [style.maxWidth]="getColumnWidth(headerColumn)"
+            [style.width]="(displayData().length === 0 && !isLoading()) ? null : getColumnWidth(headerColumn)"
             [ngClass]="
               headerColumn.field === 'actions' ||
               headerColumn.field === 'button' ||
@@ -817,7 +817,6 @@
             <td
               [style.minWidth]="getColumnMinWidth(col)"
               [style.width]="getColumnWidth(col)"
-              [style.maxWidth]="getColumnWidth(col)"
               [ngClass]="
                 col.field === 'actions' ||
                 col.field === 'button' ||
