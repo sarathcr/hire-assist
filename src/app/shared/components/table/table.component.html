@@ -675,7 +675,7 @@
       </tr>
 
       <tr *ngIf="product.isExpanded">
-        <td colspan="100%">
+        <td [attr.colspan]="(columnsData()?.columns?.length || 0) + (hasCheckbox ? 1 : 0) + (columnsData()?.hasExpanded ? 1 : 0)">
           <div>
             @for (
               headerColumn of columnsData()?.columns;
@@ -840,7 +840,7 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td [attr.colspan]="(columnsData()?.columns?.length || 0) + 2">
+        <td [attr.colspan]="(columnsData()?.columns?.length || 0) + (hasCheckbox ? 1 : 0) + (columnsData()?.hasExpanded ? 1 : 0)">
           No Records found.
         </td>
       </tr>
