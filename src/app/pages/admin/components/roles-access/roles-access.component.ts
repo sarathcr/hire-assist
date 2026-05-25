@@ -12,7 +12,11 @@ import { TableComponent } from '../../../../shared/components/table/table.compon
 import { USER_URL } from '../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../shared/models/dialog.models';
-import { getDefaultPayload, PaginatedPayload, setSavedPayload } from '../../../../shared/models/pagination.models';
+import {
+  getDefaultPayload,
+  PaginatedPayload,
+  setSavedPayload,
+} from '../../../../shared/models/pagination.models';
 import {
   FieldType,
   TableColumnsData,
@@ -207,12 +211,6 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
               severity: 'error',
               summary: 'Error',
               detail: 'You do not have permission to add this user role.',
-            });
-          } else if (businerssErrorCode === 3103) {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: error.error.type,
             });
           } else {
             this.messageService.add({
