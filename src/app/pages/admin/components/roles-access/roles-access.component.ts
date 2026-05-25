@@ -152,7 +152,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'User Already Exists',
+              detail: error.error.type || 'User Already Exists',
             });
           } else if (businerssErrorCode === 5002) {
             this.messageService.add({
@@ -164,7 +164,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Creation failed',
+              detail: error.error.type || 'Creation failed',
             });
           }
         };
