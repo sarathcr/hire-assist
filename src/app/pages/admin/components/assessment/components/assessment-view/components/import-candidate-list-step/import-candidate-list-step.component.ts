@@ -713,7 +713,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       assessmentId: this.assessmentId(),
     };
     const modalData: DialogData = {
-      message: 'Are you sure you want to delete the selected candidates?',
+      message: `Are you sure you want to delete the selected candidate${this.selectedUsers.length > 1 ? 's' : ''}?`,
       isChoice: true,
       cancelButtonText: 'Cancel',
       acceptButtonText: 'Delete',

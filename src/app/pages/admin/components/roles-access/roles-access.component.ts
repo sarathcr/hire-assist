@@ -345,7 +345,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
 
   public deleteSelectedUsers() {
     const modalData: DialogData = {
-      message: 'Are you sure you want to delete the selected users?',
+      message: `Are you sure you want to delete the selected user${this.selectedUsers.length > 1 ? 's' : ''}?`,
       isChoice: true,
       cancelButtonText: 'Cancel',
       acceptButtonText: 'Delete',
