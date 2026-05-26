@@ -1137,15 +1137,54 @@ export class QuestionFormModalComponent
 
   // ==================== Form Data Management ====================
 
+  private previousOptionsValue: any[] = [];
+
   private subscribeToOptionArray(): void {
+    this.previousOptionsValue = this.data.fGroup.controls['options'].value || [];
     const sub = this.data.fGroup.controls['options'].valueChanges.subscribe(
       (value) => {
+        this.syncAnswerWithEditedOptions(this.previousOptionsValue, value);
+        this.previousOptionsValue = value;
         this.updateAnswerFieldOptions(value);
         // Re-validate all options when any option changes
         this.validateAllOptionsForDuplicates();
       },
     );
     this.subscriptionList.push(sub);
+  }
+
+  private syncAnswerWithEditedOptions(oldValue: any[], newValue: any[]): void {
+    if (!oldValue || !newValue || oldValue.length !== newValue.length) return;
+    
+    const answerCtrl = this.data.fGroup.get('answer');
+    if (!answerCtrl || !answerCtrl.value) return;
+
+    let answerChanged = false;
+    let currentAnswers = Array.isArray(answerCtrl.value) ? [...answerCtrl.value] : answerCtrl.value;
+
+    for (let i = 0; i < newValue.length; i++) {
+      const oldOpt = oldValue[i]?.options;
+      const newOpt = newValue[i]?.options;
+      
+      if (oldOpt !== undefined && newOpt !== undefined && oldOpt !== newOpt) {
+        if (Array.isArray(currentAnswers)) {
+          const answerIndex = currentAnswers.indexOf(oldOpt);
+          if (answerIndex > -1) {
+            currentAnswers[answerIndex] = newOpt;
+            answerChanged = true;
+          }
+        } else {
+          if (currentAnswers === oldOpt) {
+            currentAnswers = newOpt;
+            answerChanged = true;
+          }
+        }
+      }
+    }
+
+    if (answerChanged) {
+      answerCtrl.setValue(currentAnswers);
+    }
   }
 
   private updateAnswerFieldOptions(value: any): void {

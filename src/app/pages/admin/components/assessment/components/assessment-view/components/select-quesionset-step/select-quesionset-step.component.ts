@@ -1375,38 +1375,64 @@ export class SelectQuesionsetStepComponent
       accordionData.previewImageUrls = {};
     }
 
-    accordionData.isImageLoadings[id] = true;
+    accordionData.isImageLoadings = { ...accordionData.isImageLoadings, [id]: true };
     this.questionSetAccordionData.set(questionSetId, { ...accordionData });
 
-    this.interviewService
+    this.questionService
       .GetFiles({
         blobId: file.blobId || file.id,
         attachmentType: file.attachmentType,
       })
       .subscribe({
         next: (blob: Blob) => {
-          const imageUrl = URL.createObjectURL(blob);
-          if (!accordionData.previewImageUrls![id]) {
-            accordionData.previewImageUrls![id] = [];
+          const latestAccordionData = this.questionSetAccordionData.get(questionSetId);
+          if (!latestAccordionData) return;
+
+          if (!latestAccordionData.previewImageUrls) {
+            latestAccordionData.previewImageUrls = {};
           }
-          accordionData.previewImageUrls![id].push(imageUrl);
+
+          const imageUrl = URL.createObjectURL(blob);
+          const currentUrls = latestAccordionData.previewImageUrls[id]
+            ? [...latestAccordionData.previewImageUrls[id]]
+            : [];
+          currentUrls.push(imageUrl);
+
+          latestAccordionData.previewImageUrls = {
+            ...latestAccordionData.previewImageUrls,
+            [id]: currentUrls,
+          };
+          this.questionSetAccordionData.set(questionSetId, {
+            ...latestAccordionData,
+          });
+          this.cdr.markForCheck();
+
           setTimeout(() => {
-            if (accordionData.isImageLoadings) {
-              accordionData.isImageLoadings[id] = false;
+            const finalAccordionData = this.questionSetAccordionData.get(questionSetId);
+            if (finalAccordionData && finalAccordionData.isImageLoadings) {
+              finalAccordionData.isImageLoadings = {
+                ...finalAccordionData.isImageLoadings,
+                [id]: false,
+              };
+              this.questionSetAccordionData.set(questionSetId, {
+                ...finalAccordionData,
+              });
+              this.cdr.markForCheck();
             }
-            this.questionSetAccordionData.set(questionSetId, {
-              ...accordionData,
-            });
-            this.cdr.markForCheck();
           }, 300);
         },
         error: () => {
-          if (accordionData.isImageLoadings) {
-            accordionData.isImageLoadings[id] = false;
+          const errorAccordionData = this.questionSetAccordionData.get(questionSetId);
+          if (errorAccordionData && errorAccordionData.isImageLoadings) {
+            errorAccordionData.isImageLoadings = {
+              ...errorAccordionData.isImageLoadings,
+              [id]: false,
+            };
+            this.questionSetAccordionData.set(questionSetId, {
+              ...errorAccordionData,
+            });
+            this.cdr.markForCheck();
           }
-          this.questionSetAccordionData.set(questionSetId, {
-            ...accordionData,
-          });
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -1429,7 +1455,7 @@ export class SelectQuesionsetStepComponent
       if (!accordionData.isImageLoadings) {
         accordionData.isImageLoadings = {};
       }
-      accordionData.isImageLoadings[id] = true;
+      accordionData.isImageLoadings = { ...accordionData.isImageLoadings, [id]: true };
       this.questionSetAccordionData.set(questionSetId, { ...accordionData });
       this.previewImage(accordionData.questionFileData[id], id, questionSetId);
     }
@@ -1448,7 +1474,7 @@ export class SelectQuesionsetStepComponent
       if (!accordionData.isImageLoadings) {
         accordionData.isImageLoadings = {};
       }
-      accordionData.isImageLoadings[id] = true;
+      accordionData.isImageLoadings = { ...accordionData.isImageLoadings, [id]: true };
       this.questionSetAccordionData.set(questionSetId, { ...accordionData });
       this.previewImage(accordionData.optionFileData[id], id, questionSetId);
     }

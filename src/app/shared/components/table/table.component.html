@@ -683,9 +683,7 @@
             ) {
               @if (headerColumn.field === "questionText") {
                 @if (product.hasAttachment) {
-                  @if (isImageLoadings[product.id]) {
-                    <app-image-skeleton></app-image-skeleton>
-                  } @else if (
+                  @if (
                     previewImageUrls[product.id] &&
                     previewImageUrls[product.id].length
                   ) {
@@ -708,16 +706,8 @@
                       </div>
                     }
                   } @else {
-                    <div
-                      class="table__previewImage table__previewImage--placeholder"
-                    >
-                      <i
-                        class="pi pi-image"
-                        style="font-size: 2rem; color: #ccc"
-                      ></i>
-                      <span style="font-size: 0.75rem; color: #999"
-                        >Image area</span
-                      >
+                    <div class="table__previewImage" style="width: 100px; height: 70px; border-radius: 4px; overflow: hidden; display: inline-block;">
+                      <app-image-skeleton></app-image-skeleton>
                     </div>
                   }
                 }
@@ -744,9 +734,7 @@
                   </li>
                 }
                 @if (option.hasAttachments) {
-                  @if (isImageLoadings[option.id]) {
-                    <app-image-skeleton></app-image-skeleton>
-                  } @else if (
+                  @if (
                     previewImageUrls[option.id] &&
                     previewImageUrls[option.id].length
                   ) {
@@ -769,16 +757,8 @@
                       </div>
                     }
                   } @else {
-                    <div
-                      class="table__previewImage table__previewImage--placeholder"
-                    >
-                      <i
-                        class="pi pi-image"
-                        style="font-size: 2rem; color: #ccc"
-                      ></i>
-                      <span style="font-size: 0.75rem; color: #999"
-                        >Option image</span
-                      >
+                    <div class="table__previewImage" style="width: 100px; height: 70px; border-radius: 4px; overflow: hidden; display: inline-block;">
+                      <app-image-skeleton></app-image-skeleton>
                     </div>
                   }
                 }

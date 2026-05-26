@@ -74,7 +74,9 @@
 
       @if (option.hasAttachments) {
       @if (isImageLoadings[option.id]) {
-      <app-image-skeleton></app-image-skeleton>
+      <div class="assessment__previewImage" style="width: 100px; height: 70px; border-radius: 4px; overflow: hidden; display: inline-block;">
+        <app-image-skeleton></app-image-skeleton>
+      </div>
       } @else if (previewImageUrls[option.id] && previewImageUrls[option.id].length) {
       @for (
       imgUrl of previewImageUrls[option.id];
@@ -104,7 +106,9 @@
 
     @if (item.hasAttachments) {
     @if (isImageLoadings[item.id]) {
-    <app-image-skeleton></app-image-skeleton>
+    <div class="assessment__previewImage" style="width: 100px; height: 70px; border-radius: 4px; overflow: hidden; display: inline-block;">
+      <app-image-skeleton></app-image-skeleton>
+    </div>
     } @else if (previewImageUrls[item.id] && previewImageUrls[item.id].length) {
     @for (
     imgUrl of previewImageUrls[item.id];

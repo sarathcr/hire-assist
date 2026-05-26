@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -118,6 +118,7 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     public interviewService: InterviewService,
     private readonly dataSourceService: TableDataSourceService<any>,
     private readonly collectionService: CollectionService,
+    private readonly cdr: ChangeDetectorRef,
   ) {
     this.fGroup = buildFormGroup(this.questionFormData);
   }
@@ -217,8 +218,9 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     });
   }
   public previewImage(file: FileDto, id: number): void {
-    this.isImageLoadings[id] = true;
-    this.interviewService
+    this.isImageLoadings = { ...this.isImageLoadings, [id]: true };
+    this.cdr.detectChanges();
+    this.questionService
       .GetFiles({
         blobId: file.blobId || file.id,
         attachmentType: file.attachmentType,
@@ -226,17 +228,16 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (blob: Blob) => {
           const imageUrl = URL.createObjectURL(blob);
-          if (!this.previewImageUrls[id]) {
-            this.previewImageUrls[id] = [];
-          }
-          this.previewImageUrls[id].push(imageUrl);
-          setTimeout(() => {
-            this.isImageLoadings[id] = false;
-          }, 300);
+          const currentUrls = this.previewImageUrls[id] ? [...this.previewImageUrls[id]] : [];
+          currentUrls.push(imageUrl);
+          this.previewImageUrls = { ...this.previewImageUrls, [id]: currentUrls };
+          this.isImageLoadings = { ...this.isImageLoadings, [id]: false };
+          this.cdr.detectChanges();
         },
 
         error: () => {
-          this.isImageLoadings[id] = false;
+          this.isImageLoadings = { ...this.isImageLoadings, [id]: false };
+          this.cdr.detectChanges();
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -249,7 +250,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   public loadQuestionImage(id: number): void {
     if (this.questionFileData[id] && !this.previewImageUrls[id]) {
       // Set loading state immediately to show loader
-      this.isImageLoadings[id] = true;
+      this.isImageLoadings = { ...this.isImageLoadings, [id]: true };
+      this.cdr.detectChanges();
       this.previewImage(this.questionFileData[id], id);
     }
   }
@@ -257,7 +259,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   public loadOptionImage(id: number): void {
     if (this.optionFileData[id] && !this.previewImageUrls[id]) {
       // Set loading state immediately to show loader
-      this.isImageLoadings[id] = true;
+      this.isImageLoadings = { ...this.isImageLoadings, [id]: true };
+      this.cdr.detectChanges();
       this.previewImage(this.optionFileData[id], id);
     }
   }
@@ -565,8 +568,19 @@ export class QuestionsComponent implements OnInit, OnDestroy {
             );
             res.data.forEach((response: any) => {
               if (response.hasAttachment && response.files) {
-                // Store file data for lazy loading, don't load image yet
-                this.questionFileData[response.id] = response.files;
+                // API returns attachment data under 'files' object
+                // 'filename' is the field name (not 'name')
+                const f = response.files;
+                const fileDto: FileDto = {
+                  blobId: f.blobId,
+                  attachmentType: f.attachmentType,
+                  url: f.url,
+                  path: f.path,
+                  name: f.filename,
+                };
+                if (fileDto.blobId) {
+                  this.questionFileData[response.id] = fileDto;
+                }
               }
             });
             this.data = { ...res, data: transformedData };
@@ -753,8 +767,19 @@ export class QuestionsComponent implements OnInit, OnDestroy {
 
         response.data.forEach((response: any) => {
           if (response.hasAttachment && response.files) {
-            // Store file data for lazy loading, don't load image yet
-            this.questionFileData[response.id] = response.files;
+            // API returns attachment data under 'files' object
+            // 'filename' is the field name (not 'name')
+            const f = response.files;
+            const fileDto: FileDto = {
+              blobId: f.blobId,
+              attachmentType: f.attachmentType,
+              url: f.url,
+              path: f.path,
+              name: f.filename,
+            };
+            if (fileDto.blobId) {
+              this.questionFileData[response.id] = fileDto;
+            }
           }
         });
         this.data = { ...response, data: transformedData };

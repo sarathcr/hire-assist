@@ -424,7 +424,7 @@ export class CandidateTestComponent
   public previewImage(file: FileDto, id: number): Promise<void> {
     return new Promise((resolve, reject) => {
       this.isImageLoading = true;
-      this.isImageLoadings[id] = true;
+      this.isImageLoadings = { ...this.isImageLoadings, [id]: true };
       this.interviewService
         .GetFiles({
           blobId: file.blobId || file.id,
@@ -433,10 +433,9 @@ export class CandidateTestComponent
         .subscribe({
           next: (blob: Blob) => {
             const imageUrl = URL.createObjectURL(blob);
-            if (!this.previewImageUrls[id]) {
-              this.previewImageUrls[id] = [];
-            }
-            this.previewImageUrls[id].push(imageUrl);
+            const currentUrls = this.previewImageUrls[id] ? [...this.previewImageUrls[id]] : [];
+            currentUrls.push(imageUrl);
+            this.previewImageUrls = { ...this.previewImageUrls, [id]: currentUrls };
             setTimeout(() => {
               this.isImageLoading = false;
               // Don't set isImageLoadings[id] to false here - let the Promise.allSettled handle it
@@ -446,7 +445,7 @@ export class CandidateTestComponent
 
           error: (error) => {
             this.isImageLoading = false;
-            this.imageLoadErrors[id] = true;
+            this.hasImageErrors = { ...this.hasImageErrors, [id]: true };
             reject(error);
           },
         });
@@ -1153,7 +1152,7 @@ export class CandidateTestComponent
         this.expectedFileCounts[question.id] = questionFiles.length;
         this.failedFileCounts[question.id] = 0;
         // Set loading state
-        this.isImageLoadings[question.id] = true;
+        this.isImageLoadings = { ...this.isImageLoadings, [question.id]: true };
 
         const questionPromises: Promise<void>[] = [];
         questionFiles.forEach((file: FileDto) => {
@@ -1179,7 +1178,7 @@ export class CandidateTestComponent
           if (successCount === 0 && questionFiles.length > 0) {
             this.hasImageErrors[question.id] = true;
           }
-          this.isImageLoadings[question.id] = false;
+          this.isImageLoadings = { ...this.isImageLoadings, [question.id]: false };
         });
       }
     }
@@ -1203,7 +1202,7 @@ export class CandidateTestComponent
             this.expectedFileCounts[opt.id] = optionFiles.length;
             this.failedFileCounts[opt.id] = 0;
             // Set loading state
-            this.isImageLoadings[opt.id] = true;
+            this.isImageLoadings = { ...this.isImageLoadings, [opt.id]: true };
 
             const optionPromises: Promise<void>[] = [];
             optionFiles.forEach((file: FileDto) => {
@@ -1227,7 +1226,7 @@ export class CandidateTestComponent
               if (successCount === 0 && optionFiles.length > 0) {
                 this.hasImageErrors[opt.id] = true;
               }
-              this.isImageLoadings[opt.id] = false;
+              this.isImageLoadings = { ...this.isImageLoadings, [opt.id]: false };
             });
           }
         }
