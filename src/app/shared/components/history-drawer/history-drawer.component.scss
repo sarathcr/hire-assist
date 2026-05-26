@@ -61,6 +61,9 @@
     background-color: #f1f5f9;
     border-radius: 6px;
     border-left: 3px solid #cbd5e1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   &__date {

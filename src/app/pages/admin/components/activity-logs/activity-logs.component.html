@@ -1,45 +1,93 @@
 <div class="logs-container">
-    <div class="logs-header">
-        <div class="header-left">
-            <a routerLink="/admin/dashboard" class="back-link">
-                <i class="pi pi-arrow-left"></i>
-                Back to Dashboard
-            </a>
-            <h1 class="page-title">System Activity Logs</h1>
-            <p class="page-subtitle">Track all recent recruitment and administrative actions</p>
-        </div>
+  <div class="logs-header">
+    <div class="header-left">
+      <a routerLink="/admin/dashboard" class="back-link">
+        <i class="pi pi-arrow-left"></i>
+        Back to Dashboard
+      </a>
+      <h1 class="page-title">System Activity Logs</h1>
+      <p class="page-subtitle">
+        Track all recent recruitment and administrative actions
+      </p>
     </div>
+  </div>
 
-    <div class="logs-card">
-        <p-table [value]="activities()" [loading]="isLoading()" [rows]="10" [paginator]="true" 
-                 styleClass="p-datatable-sm p-datatable-gridlines">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th style="width: 80px">Type</th>
-                    <th>Activity Details</th>
-                    <th style="width: 200px">Time</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-activity>
-                <tr>
-                    <td class="text-center">
-                        <div class="activity-icon" [ngClass]="'icon-' + activity.type">
-                            <i [class]="activity.icon"></i>
-                        </div>
-                    </td>
-                    <td>
-                        <span [innerHTML]="activity.message"></span>
-                    </td>
-                    <td>
-                        <span class="time-text">{{ activity.time }}</span>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="3" class="text-center p-4">No activity logs found.</td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
+  <div class="logs-card">
+    @if (isLoading()) {
+      <p-table
+        [value]="activityLogSkeletonRows"
+        [rows]="5"
+        styleClass="p-datatable-sm p-datatable-gridlines activity-logs-skeleton"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 80px">Type</th>
+            <th>Activity Details</th>
+            <th style="width: 200px">Time</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body">
+          <tr class="activity-logs-skeleton__row">
+            <td class="text-center">
+              <p-skeleton width="32px" height="32px" borderRadius="8px" styleClass="activity-logs-skeleton__icon" />
+            </td>
+            <td>
+              <div class="activity-logs-skeleton__message">
+                <p-skeleton width="75%" height="14px" borderRadius="6px" />
+                <p-skeleton width="40%" height="10px" borderRadius="6px" />
+              </div>
+            </td>
+            <td>
+              <p-skeleton width="110px" height="14px" borderRadius="6px" />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+      <div class="activity-logs-skeleton__footer">
+        <div class="activity-logs-skeleton__pages">
+          <p-skeleton width="40px" height="40px" borderRadius="8px" />
+          <p-skeleton width="40px" height="40px" borderRadius="8px" />
+          <p-skeleton width="40px" height="40px" borderRadius="8px" styleClass="activity-logs-skeleton__active-page" />
+          <p-skeleton width="40px" height="40px" borderRadius="8px" />
+          <p-skeleton width="40px" height="40px" borderRadius="8px" />
+        </div>
+      </div>
+    } @else {
+      <p-table
+        [value]="activities()"
+        [loading]="isLoading()"
+        [rows]="10"
+        [paginator]="true"
+        styleClass="p-datatable-sm p-datatable-gridlines"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 80px">Type</th>
+            <th>Activity Details</th>
+            <th style="width: 200px">Time</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-activity>
+          <tr>
+            <td class="text-center">
+              <div class="activity-icon" [ngClass]="'icon-' + activity.type">
+                <i [class]="activity.icon"></i>
+              </div>
+            </td>
+            <td>
+              <span [innerHTML]="activity.message"></span>
+            </td>
+            <td>
+              <span class="time-text">{{ activity.time }}</span>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="3" class="text-center p-4">No activity logs found.</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </div>
 </div>

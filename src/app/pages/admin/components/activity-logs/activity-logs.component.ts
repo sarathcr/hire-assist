@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
+import { SkeletonModule } from 'primeng/skeleton';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DashboardService } from '../../services/dashboard.service';
 import { StoreService } from '../../../../shared/services/store.service';
@@ -11,13 +12,14 @@ import { DashboardData } from '../../models/dashboard.model';
 @Component({
   selector: 'app-activity-logs',
   standalone: true,
-  imports: [CommonModule, RouterLink, TableModule, CardModule],
+  imports: [CommonModule, RouterLink, TableModule, CardModule, SkeletonModule],
   templateUrl: './activity-logs.component.html',
   styleUrl: './activity-logs.component.scss'
 })
 export class ActivityLogsComponent implements OnInit {
   public activities = signal<any[]>([]);
   public isLoading = signal<boolean>(true);
+  public readonly activityLogSkeletonRows = [1, 2, 3, 4, 5];
   
   private readonly dashboardService = inject(DashboardService) as DashboardService<DashboardData>;
   private readonly storeService = inject(StoreService);
@@ -34,7 +36,7 @@ export class ActivityLogsComponent implements OnInit {
       this.dashboardService.getEntityById(userData.id)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: (res) => {
+          next: (res: DashboardData) => {
             this.activities.set(res.data.recentActivities || []);
             this.isLoading.set(false);
           },
@@ -43,6 +45,8 @@ export class ActivityLogsComponent implements OnInit {
             this.isLoading.set(false);
           }
         });
+    } else {
+      this.isLoading.set(false);
     }
   }
 }

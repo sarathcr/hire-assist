@@ -728,6 +728,9 @@ export class QuestionFormModalComponent
     this.questionService.deleteFiles(deletePayload).subscribe({
       next: () => {
         this.clearOptionAttachment(optionIndex);
+        if (!this.hasAnyOptionAttachment()) {
+          this.data.fGroup.get('optionHasAttachments')?.setValue(false);
+        }
         this.deletingOptionAttachments.set(optionIndex, false);
         this.cdr.detectChanges();
         this.isSubmitting = false;
@@ -1002,7 +1005,8 @@ export class QuestionFormModalComponent
 
     this.questionService.deleteFiles(deletePayload).subscribe({
       next: () => {
-        this.data.fGroup.patchValue({ fileDto: null });
+        this.data.fGroup.get('fileDto')?.setValue(null);
+        this.data.fGroup.get('hasAttachments')?.setValue(false);
         this.isDeletingAttachment = false;
         this.cdr.detectChanges();
         // Restore scroll position and prevent auto-focus

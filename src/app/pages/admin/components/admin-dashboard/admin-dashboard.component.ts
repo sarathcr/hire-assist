@@ -253,7 +253,7 @@ export class AdminDashboardComponent implements OnInit {
     const infoColor = '#6366f1';
     const dangerColor = '#ef4444';
     const activeColor = successColor;
-    const inactiveColor = '#f1f5f9'; // Very light gray for clean look
+    const inactiveColor = dangerColor;
 
     // Active/Inactive Doughnut
     this.assessmentStatusChartData.set({
@@ -265,7 +265,7 @@ export class AdminDashboardComponent implements OnInit {
             this.assessmentData().inactive || 0,
           ],
           backgroundColor: [activeColor, inactiveColor],
-          hoverBackgroundColor: [activeColor, '#e2e8f0'],
+          hoverBackgroundColor: [activeColor, inactiveColor],
           borderWidth: 0,
         },
       ],

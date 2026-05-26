@@ -29,3 +29,25 @@
     font-size: var(--font-size-base);
   }
 }
+
+// Ensure select panel is always on top and handles long unbroken strings
+::ng-deep .p-select-panel {
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+  max-width: 90vw !important;
+
+  .p-select-list {
+    .p-select-option {
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+
+      span {
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+      }
+    }
+  }
+}

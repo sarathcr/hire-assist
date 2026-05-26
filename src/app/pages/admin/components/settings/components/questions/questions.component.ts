@@ -393,7 +393,16 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       item.previousValue !== undefined &&
       item.currentValue !== undefined
     ) {
-      const formatVal = (v: any) => v === '' || v === null || v === undefined ? 'null' : v;
+      const formatVal = (v: any) => {
+        if (v === '' || v === null || v === undefined) return 'null';
+        if (typeof v === 'string' && !isNaN(Number(v)) && v.trim() !== '') {
+          return Number(v).toString();
+        }
+        if (typeof v === 'number') {
+          return v.toString();
+        }
+        return v;
+      };
       return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
     }
     return item.details || '';

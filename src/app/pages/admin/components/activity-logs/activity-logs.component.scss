@@ -1,5 +1,4 @@
 .logs-container {
-    padding: 2rem;
     background-color: #f8fafc;
     min-height: calc(100vh - 64px);
 
@@ -44,6 +43,45 @@
         overflow: hidden;
     }
 
+    .activity-logs-skeleton {
+        &__row {
+            pointer-events: none;
+        }
+
+        &__icon {
+            display: block;
+            margin: 0 auto;
+        }
+
+        &__message {
+            display: flex;
+            flex-direction: column;
+            gap: 0.625rem;
+            max-width: 720px;
+        }
+
+        &__footer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 68px;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid #f1f5f9;
+            background: #ffffff;
+        }
+
+        &__pages {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        &__active-page {
+            background: #dbeafe;
+        }
+    }
+
     .activity-icon {
         width: 32px;
         height: 32px;
@@ -85,5 +123,24 @@
                 border-color: #f1f5f9;
             }
         }
+    }
+
+    ::ng-deep {
+        .activity-logs-skeleton {
+            .p-datatable-tbody > tr > td {
+                height: 64px;
+                vertical-align: middle;
+            }
+
+            .p-skeleton {
+                background: #eef2f7;
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 640px) {
+    .logs-container {
+        padding: 1rem;
     }
 }
