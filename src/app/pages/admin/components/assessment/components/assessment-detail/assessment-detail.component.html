@@ -321,12 +321,12 @@
     @if (step && step.length > 0) {
       <div class="assessment-detail__rounds-footer">
         <div class="assessment-detail__rounds-footer-content">
-          <div class="assessment-detail__rounds-footer-info">
-            <i class="pi pi-info-circle"></i>
-            <span>Complete the current round to proceed to the next stage</span>
+          <div class="assessment-detail__rounds-footer-info" [ngClass]="{ 'warning-text': hasUncompletedPreviousRound() }">
+            <i [ngClass]="hasUncompletedPreviousRound() ? 'pi pi-exclamation-triangle' : 'pi pi-info-circle'"></i>
+            <span>{{ hasUncompletedPreviousRound() ? 'Please complete the previous round(s) first before completing this round.' : 'Complete the current round to proceed to the next stage' }}</span>
           </div>
           <app-button
-            [disabled]="roundStatus || isCompletingRound"
+            [disabled]="roundStatus || hasUncompletedPreviousRound() || isCompletingRound"
             [buttonSize]="'medium'"
             [buttonLabel]="'Complete Round'"
             [icon]="'pi pi-check-circle'"
@@ -341,48 +341,230 @@
 
   <!-- Recruitment Flow Indicator - Outside table section to save fixed space -->
   <div class="assessment-detail__flow-indicator">
+    <div class="flow-header">
+      <div class="flow-header__title-section">
+        <h3><i class="pi pi-compass"></i> Recruitment Stage Action Guide</h3>
+        <p>Follow these quick instructions to guide candidates through this round successfully</p>
+      </div>
+      <div class="flow-header__badge" [ngClass]="isAptitudeRound() ? 'flow-header__badge--aptitude' : 'flow-header__badge--panel'">
+        <i [class]="isAptitudeRound() ? 'pi pi-desktop' : 'pi pi-comments'"></i>
+        <span>{{ isAptitudeRound() ? 'Aptitude/Test Round Flow' : 'Interview Round Flow' }}</span>
+      </div>
+    </div>
+
     <div class="flow-steps">
-      <div class="flow-step">
-        <div class="flow-step__icon flow-step__icon--assign">
-          @if (isAptitudeRound()) {
-            <i class="pi pi-desktop"></i>
-          } @else {
-            <i class="pi pi-user-plus"></i>
-          }
+      @if (selectedGuideTab === 'aptitude') {
+        <!-- PHASE 1: ASSIGN BATCH -->
+        <div class="flow-step flow-step--assign">
+          <div class="flow-step__top">
+            <div class="flow-step__icon-wrapper">
+              <i class="pi pi-folder-open"></i>
+            </div>
+            <span class="flow-step__number">Phase 1</span>
+          </div>
+          <div class="flow-step__content">
+            <h4 class="flow-step__title">Assign Batch</h4>
+            <ul class="flow-step__instructions">
+              <li>Select candidate(s) via checkboxes.</li>
+              <li>Click <strong>Actions</strong> menu ➔ choose <strong>Assign to Batch</strong> to link test duration and dates.</li>
+            </ul>
+          </div>
         </div>
-        <div class="flow-step__content">
-          <span class="flow-step__label">Phase 1</span>
-          <span class="flow-step__title">
-            {{ isAptitudeRound() ? 'Online Assessment' : 'Assign Panel' }}
-          </span>
+
+        <!-- PHASE 2: SCHEDULE -->
+        <div class="flow-step flow-step--schedule">
+          <div class="flow-step__top">
+            <div class="flow-step__icon-wrapper">
+              <i class="pi pi-calendar-plus"></i>
+            </div>
+            <span class="flow-step__number">Phase 2</span>
+          </div>
+          <div class="flow-step__content">
+            <h4 class="flow-step__title">Schedule Test</h4>
+            <ul class="flow-step__instructions">
+              <li>Click the <strong>Schedule</strong> row button in candidate's row.</li>
+              <li>Select their exact start Date & Time to send email invitations.</li>
+            </ul>
+          </div>
         </div>
-      </div>
-      <div class="flow-step__connector"></div>
-      <div class="flow-step">
-        <div class="flow-step__icon flow-step__icon--interview">
-          @if (isAptitudeRound()) {
-            <i class="pi pi-search-plus"></i>
-          } @else {
-            <i class="pi pi-comments"></i>
-          }
+
+        <!-- PHASE 3: MONITOR -->
+        <div class="flow-step flow-step--conduct">
+          <div class="flow-step__top">
+            <div class="flow-step__icon-wrapper">
+              <i class="pi pi-eye"></i>
+            </div>
+            <span class="flow-step__number">Phase 3</span>
+          </div>
+          <div class="flow-step__content">
+            <h4 class="flow-step__title">Monitor Status</h4>
+            <ul class="flow-step__instructions">
+              <li>Candidates receive invites and start their test.</li>
+              <li>Monitor live progress state: <strong>Assigned</strong> ➔ <strong>In Progress</strong> ➔ <strong>Completed</strong>.</li>
+            </ul>
+          </div>
         </div>
-        <div class="flow-step__content">
-          <span class="flow-step__label">Phase 2</span>
-          <span class="flow-step__title">
-            {{ isAptitudeRound() ? 'Test Monitoring' : 'Interview' }}
-          </span>
+
+        <!-- PHASE 4: SELECT / REJECT -->
+        <div class="flow-step flow-step--decision">
+          <div class="flow-step__top">
+            <div class="flow-step__icon-wrapper">
+              <i class="pi pi-sliders-h"></i>
+            </div>
+            <span class="flow-step__number">Phase 4</span>
+          </div>
+          <div class="flow-step__content">
+            <h4 class="flow-step__title">Select / Reject</h4>
+            <ul class="flow-step__instructions">
+              <li>Review test score reports in the candidate table.</li>
+              <li>Use **Actions** dropdown to **Select** or **Reject** candidates.</li>
+              <li>Use the **Unlock** action (available only if candidate test is terminated) to reset the test for technical retries.</li>
+            </ul>
+          </div>
         </div>
-      </div>
-      <div class="flow-step__connector"></div>
-      <div class="flow-step">
-        <div class="flow-step__icon flow-step__icon--select">
-          <i class="pi pi-check-square"></i>
+
+        <!-- PHASE 5: SCHEDULE TO NEXT ROUND -->
+        @if (!isLastRound()) {
+          <div class="flow-step flow-step--schedule-next">
+            <div class="flow-step__top">
+              <div class="flow-step__icon-wrapper">
+                <i class="pi pi-step-forward"></i>
+              </div>
+              <span class="flow-step__number">Phase 5</span>
+            </div>
+            <div class="flow-step__content">
+              <h4 class="flow-step__title">Schedule to Next Round</h4>
+              <ul class="flow-step__instructions">
+                <li>Select candidates who are <strong>Selected</strong> in the candidates table.</li>
+                <li>Click on the bulk <strong>Actions</strong> button and choose <strong>Move to Next Round</strong> to schedule them to the next round.</li>
+              </ul>
+            </div>
+          </div>
+        }
+
+        <!-- PHASE 6: COMPLETE ROUND -->
+        <div class="flow-step flow-step--next-stage">
+          <div class="flow-step__top">
+            <div class="flow-step__icon-wrapper">
+              <i class="pi pi-arrow-circle-right"></i>
+            </div>
+            <span class="flow-step__number">{{ !isLastRound() ? 'Phase 6' : 'Phase 5' }}</span>
+          </div>
+          <div class="flow-step__content">
+            <h4 class="flow-step__title">Complete Round</h4>
+            <ul class="flow-step__instructions">
+              <li>Click <strong>Complete Round</strong> in the footer to finalize the current round.</li>
+              <li>All selected candidates must be scheduled to the next round (if a next round exists).</li>
+              <li>All other candidates must be rejected.</li>
+            </ul>
+          </div>
         </div>
-        <div class="flow-step__content">
-          <span class="flow-step__label">Phase 3</span>
-          <span class="flow-step__title">Selection</span>
+      } @else {
+        <!-- PHASE 1: ASSIGN PANEL -->
+        <div class="flow-step flow-step--assign">
+          <div class="flow-step__top">
+            <div class="flow-step__icon-wrapper">
+              <i class="pi pi-users"></i>
+            </div>
+            <span class="flow-step__number">Phase 1</span>
+          </div>
+          <div class="flow-step__content">
+            <h4 class="flow-step__title">Assign Panel</h4>
+            <ul class="flow-step__instructions">
+              <li>Select candidate using table checkbox.</li>
+              <li>Click <strong>Actions</strong> menu ➔ choose <strong>Assign to Panel</strong> to match with interviewers.</li>
+            </ul>
+          </div>
         </div>
-      </div>
+
+        <!-- PHASE 2: SCHEDULE -->
+        <div class="flow-step flow-step--schedule">
+          <div class="flow-step__top">
+            <div class="flow-step__icon-wrapper">
+              <i class="pi pi-calendar-plus"></i>
+            </div>
+            <span class="flow-step__number">Phase 2</span>
+          </div>
+          <div class="flow-step__content">
+            <h4 class="flow-step__title">Schedule Interview</h4>
+            <ul class="flow-step__instructions">
+              <li>Click the <strong>Schedule</strong> row button in the candidate's row.</li>
+              <li>Choose interview date & time to notify panels and candidate.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- PHASE 3: CONDUCT -->
+        <div class="flow-step flow-step--conduct">
+          <div class="flow-step__top">
+            <div class="flow-step__icon-wrapper">
+              <i class="pi pi-comments"></i>
+            </div>
+            <span class="flow-step__number">Phase 3</span>
+          </div>
+          <div class="flow-step__content">
+            <h4 class="flow-step__title">Conduct & Evaluate</h4>
+            <ul class="flow-step__instructions">
+              <li>Assigned panels conduct interview session.</li>
+              <li>Access histories, evaluation inputs, and feedback panel forms.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- PHASE 4: SELECT / REJECT -->
+        <div class="flow-step flow-step--decision">
+          <div class="flow-step__top">
+            <div class="flow-step__icon-wrapper">
+              <i class="pi pi-thumbs-up"></i>
+            </div>
+            <span class="flow-step__number">Phase 4</span>
+          </div>
+          <div class="flow-step__content">
+            <h4 class="flow-step__title">Select / Reject</h4>
+            <ul class="flow-step__instructions">
+              <li>Review live evaluation reports in candidate table.</li>
+              <li>Mark candidate as <strong>Selected</strong> or <strong>Rejected</strong> from the Actions dropdown.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- PHASE 5: SCHEDULE TO NEXT ROUND -->
+        @if (!isLastRound()) {
+          <div class="flow-step flow-step--schedule-next">
+            <div class="flow-step__top">
+              <div class="flow-step__icon-wrapper">
+                <i class="pi pi-step-forward"></i>
+              </div>
+              <span class="flow-step__number">Phase 5</span>
+            </div>
+            <div class="flow-step__content">
+              <h4 class="flow-step__title">Schedule to Next Round</h4>
+              <ul class="flow-step__instructions">
+                <li>Select candidates who are <strong>Selected</strong> in the candidates table.</li>
+                <li>Click on the bulk <strong>Actions</strong> button and choose <strong>Move to Next Round</strong> to schedule them to the next round.</li>
+              </ul>
+            </div>
+          </div>
+        }
+
+        <!-- PHASE 6: COMPLETE ROUND -->
+        <div class="flow-step flow-step--next-stage">
+          <div class="flow-step__top">
+            <div class="flow-step__icon-wrapper">
+              <i class="pi pi-arrow-circle-right"></i>
+            </div>
+            <span class="flow-step__number">{{ !isLastRound() ? 'Phase 6' : 'Phase 5' }}</span>
+          </div>
+          <div class="flow-step__content">
+            <h4 class="flow-step__title">Complete Round</h4>
+            <ul class="flow-step__instructions">
+              <li>Click <strong>Complete Round</strong> in the footer to finalize the current round.</li>
+              <li>All selected candidates must be scheduled to the next round (if a next round exists).</li>
+              <li>All other candidates must be rejected.</li>
+            </ul>
+          </div>
+        </div>
+      }
     </div>
   </div>
 

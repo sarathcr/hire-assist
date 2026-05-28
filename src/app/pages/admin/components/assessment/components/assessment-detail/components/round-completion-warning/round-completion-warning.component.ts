@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CandidateData } from '../../../../../../models/stepper.model';
+import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 
 @Component({
   selector: 'app-round-completion-warning',
   standalone: true,
-  imports: [CommonModule, ButtonModule],
+  imports: [CommonModule, ButtonModule, ButtonComponent],
   templateUrl: './round-completion-warning.component.html',
   styleUrl: './round-completion-warning.component.scss'
 })

@@ -450,7 +450,7 @@
                 }
                 @if (
                   headerColumn.actions?.includes(PaginatedDataActions.Unlock) &&
-                  product.status === "Terminated"
+                  product.status?.toLowerCase() === 'terminated'
                 ) {
                   <p-button
                     icon="pi pi-lock-open"

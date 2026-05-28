@@ -206,6 +206,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public availableBatches: any = null;
   public availableQuestionSets: any = null;
   public actionItems: MenuItem[] = [];
+  public selectedGuideTab: 'aptitude' | 'interview' = 'interview';
 
   constructor(
     private readonly activatedRoute: ActivatedRoute,
@@ -261,6 +262,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     const selectedRound = this.step[index];
     this.updateTableColumns(selectedRound?.roundTypeId);
+
+    // Automatically update selectedGuideTab based on the round type
+    const roundName = selectedRound?.round?.toLowerCase() || '';
+    const roundTypeId = selectedRound?.roundTypeId;
+    const isAptitude = roundTypeId === 1 || roundName.includes('aptitude') || roundName.includes('test');
+    this.selectedGuideTab = isAptitude ? 'aptitude' : 'interview';
 
     this.filterMap = {
       assessmentId: this.assessmentId,
@@ -411,6 +418,21 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     return currentRound?.roundTypeId === 1 ||
            currentRound?.round?.toLowerCase().includes('aptitude') || 
            currentRound?.round?.toLowerCase().includes('test');
+  }
+
+  public isLastRound(): boolean {
+    if (!this.step || this.step.length === 0) return false;
+    return this.activeMenuItemIndex === this.step.length - 1;
+  }
+
+  public hasUncompletedPreviousRound(): boolean {
+    if (!this.step || this.activeMenuItemIndex <= 0) return false;
+    for (let i = 0; i < this.activeMenuItemIndex; i++) {
+      if (this.step[i]?.status !== 'Completed') {
+        return true;
+      }
+    }
+    return false;
   }
 
   public onButtonClick(data: { event: any; fName: string }): void {
@@ -696,7 +718,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   public CompleteAssessmentRound(): void {
-    if (!this.currentStep) return;
+    if (!this.currentStep || this.hasUncompletedPreviousRound()) return;
 
     this.isCompletingRound = true;
     this.assessmentService.getAssessmentRoundByAssessmnetId(this.assessmentId)
@@ -716,9 +738,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
             if (pendingCandidates.length > 0) {
               this.ref = this.dialog.open(RoundCompletionWarningComponent, {
-                header: 'Confirm Round Completion',
+                showHeader: false,
+                styleClass: 'standard-dialog-wrapper',
                 width: '450px',
                 modal: true,
+                breakpoints: {
+                  '640px': '90vw',
+                },
                 data: {
                   roundName: currentRound.round,
                   isLastRound: !nextRound,
@@ -1194,6 +1220,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         // Update columns based on the first round's type
         this.updateTableColumns(this.step[initialIndex].roundTypeId);
 
+        // Set initial selectedGuideTab based on the first round's type
+        const initialRound = this.step[initialIndex];
+        const roundName = initialRound?.round?.toLowerCase() || '';
+        const roundTypeId = initialRound?.roundTypeId;
+        const isAptitude = roundTypeId === 1 || roundName.includes('aptitude') || roundName.includes('test');
+        this.selectedGuideTab = isAptitude ? 'aptitude' : 'interview';
+
         this.filterMap = {
           assessmentId: this.assessmentId,
           assessmentRoundId: this.currentStep,
@@ -1258,8 +1291,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private getVisibleButtonIndices(item: any): number[] {
     const indices = [0, 2]; // View and History are always visible
 
-    // Unlock (1) is only visible if status is Terminated AND candidate is scheduled (has a batch)
-    if (item.status?.toLowerCase() === 'terminated' && item.batchId) {
+    // Unlock (1) is only visible if status is Terminated
+    if (item.status?.toLowerCase() === 'terminated') {
       indices.push(1);
     }
 
