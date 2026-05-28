@@ -17,7 +17,7 @@ import { DeviceWarningService } from '../../shared/services/device-width.service
 
 @Component({
   selector: 'app-candidate',
-  imports: [CardComponent, CardSkeletonComponent],
+  imports: [CardComponent, CardSkeletonComponent, DatePipe],
   templateUrl: './candidate.component.html',
   styleUrl: './candidate.component.scss',
 })

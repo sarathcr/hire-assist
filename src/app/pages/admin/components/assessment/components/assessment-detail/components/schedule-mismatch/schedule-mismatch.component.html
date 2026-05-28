@@ -1,0 +1,92 @@
+<div class="schedule-mismatch-modal" tabindex="0" autofocus>
+  <div class="schedule-mismatch-modal__header">
+    <div class="schedule-mismatch-modal__icon-wrapper">
+      <i class="pi pi-exclamation-triangle"></i>
+    </div>
+    <div class="schedule-mismatch-modal__title-section">
+      <h3>Schedule Mismatch Detected</h3>
+      <p>Schedule date is outside the assigned batch date range</p>
+    </div>
+  </div>
+
+  <div class="schedule-mismatch-modal__content">
+    <div class="schedule-mismatch-modal__summary">
+      <p>
+        The following
+        <strong
+          >{{ mismatchedCandidates.length }} candidate{{
+            mismatchedCandidates.length > 1 ? "s" : ""
+          }}</strong
+        >
+        could not be scheduled. Please choose a new schedule date and time.
+      </p>
+    </div>
+
+    <!-- Mismatched Candidates List -->
+    <div class="schedule-mismatch-modal__list-container">
+      <div class="schedule-mismatch-modal__list-header">
+        <span>Mismatched Candidates</span>
+      </div>
+      <div class="schedule-mismatch-modal__list">
+        @for (candidate of mismatchedCandidates; track candidate.candidateId) {
+          <div class="candidate-item">
+            <div class="candidate-item__avatar">
+              {{ getInitials(candidate.candidateName) }}
+            </div>
+            <div class="candidate-item__info">
+              <span class="candidate-item__name">{{
+                candidate.candidateName
+              }}</span>
+              <span class="candidate-item__error-msg">{{
+                candidate.message
+              }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Date Selection Form -->
+    <form [formGroup]="fGroup" class="schedule-mismatch-modal__form">
+      <div class="schedule-mismatch-modal__date-section">
+        <div class="schedule-mismatch-modal__date-header">
+          <i class="pi pi-clock"></i>
+          <span class="schedule-mismatch-modal__date-label"
+            >New Schedule Date & Time</span
+          >
+        </div>
+        <div class="schedule-mismatch-modal__date-picker">
+          <app-input-text-calender
+            [formGroup]="fGroup"
+            [config]="configMap['scheduleDate']"
+            [showTime]="true"
+            [minDate]="minDate"
+          ></app-input-text-calender>
+        </div>
+        @if (dateError) {
+          <div class="schedule-mismatch-modal__error-text">
+            {{ dateError }}
+          </div>
+        }
+      </div>
+    </form>
+  </div>
+
+  <div class="schedule-mismatch-modal__footer">
+    <app-button
+      buttonLabel="Cancel"
+      [buttonVariant]="'outlined'"
+      [buttonSize]="'medium'"
+      [disabled]="isLoading"
+      (btnClick)="onClose()"
+    ></app-button>
+    <app-button
+      buttonLabel="Reschedule"
+      [buttonSize]="'medium'"
+      [icon]="'pi pi-calendar'"
+      [isLoading]="isLoading"
+      [disabled]="isLoading || fGroup.invalid"
+      (btnClick)="onSubmit()"
+    ></app-button>
+  </div>
+</div>

@@ -34,21 +34,27 @@
 
     .p-datatable-table-container {
       overflow-y: scroll !important;
-      overflow-x: hidden; // We use table-layout fixed, no horizontal scroll needed
+      overflow-x: auto !important;
     }
 
     .p-datatable-table {
-      // min-width removed to allow flex sizing
+      min-width: 50rem !important;
+    }
+
+    .p-datatable-thead > tr > th,
+    .p-datatable-tbody > tr > td {
+      flex-shrink: 0 !important;
     }
 
     // Body overrides for specific table behavior
     .p-datatable-tbody > tr {
       & > td {
-        white-space: normal !important;
-        word-break: break-word !important;
+        white-space: nowrap !important;
+        word-break: normal !important;
+        text-overflow: ellipsis;
 
         span {
-          display: flex;
+          display: inline-flex;
           align-items: center;
         }
       }

@@ -14,4 +14,8 @@ export class RecruitmentChoiceModalComponent {
   public onChoice(choice: 'schedule' | 'detail'): void {
     this.ref.close(choice);
   }
+
+  public onClose(): void {
+    this.ref.close();
+  }
 }

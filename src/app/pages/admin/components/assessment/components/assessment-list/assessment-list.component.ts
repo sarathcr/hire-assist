@@ -164,6 +164,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       width: '450px',
       modal: true,
       closable: true,
+      dismissableMask: true,
       showHeader: false, // We have a custom header in the template
       styleClass: 'choice-dialog'
     });

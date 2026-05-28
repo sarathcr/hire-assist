@@ -308,6 +308,12 @@
       max-height: 90vh !important;
       display: flex;
       flex-direction: column;
+
+      @media screen and (max-width: 640px) {
+        margin: 1.5rem !important;
+        width: calc(100% - 3rem) !important;
+        max-height: calc(100vh - 3rem) !important;
+      }
     }
   }
 

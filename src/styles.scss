@@ -147,6 +147,34 @@ html {
   .p-dialog-content { padding: 0 !important; border-radius: 20px !important; overflow: hidden; }
 }
 
+.standard-dialog-wrapper {
+  .p-dialog {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    max-height: 85vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .p-dialog-content {
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .standard-dialog-wrapper {
+    .p-dialog {
+      margin: 1.5rem !important; // Forces margin outside the modal on mobile
+      width: calc(100% - 3rem) !important; // Take 100% width minus margins
+      max-height: calc(100vh - 3rem) !important;
+    }
+  }
+}
+
 // ============================================
 // Global Form Component Overrides
 // ============================================

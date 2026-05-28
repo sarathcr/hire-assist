@@ -38,6 +38,8 @@ import { ScheduleInterviewComponent } from './components/schedule-interview/sche
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
 import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
 import { SelectPanelDailogComponent } from './components/select-panel-dailog/select-panel-dailog.component';
+import { ScheduleMismatchComponent } from './components/schedule-mismatch/schedule-mismatch.component';
+
 
 
 interface CandidateData {
@@ -557,6 +559,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       width: '500px',
       modal: true,
       styleClass: 'standard-dialog-wrapper',
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
       data: {
         candidateIds: this.pendingScheduleCandidateIds,
         assessmentId: this.assessmentId,
@@ -585,7 +591,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       .createEntity(payload, 'schedule')
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
-        next: () => {
+        next: (res: any) => {
+          if (this.isAptitudeRound() && res && res.isSuccess === false && res.mismatchedCandidates?.length > 0) {
+            this.handleScheduleMismatch(res);
+            return;
+          }
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
@@ -596,6 +606,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           this.ref?.close();
         },
         error: (err) => {
+          const errorBody = err.error;
+          if (this.isAptitudeRound() && errorBody && errorBody.isSuccess === false && errorBody.mismatchedCandidates?.length > 0) {
+            this.handleScheduleMismatch(errorBody);
+            return;
+          }
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -604,6 +619,28 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           this.ref?.close();
         },
       });
+  }
+
+  private handleScheduleMismatch(errorBody: any): void {
+    this.ref?.close(); // Close any currently open scheduling dialog first
+    
+    this.ref = this.dialog.open(ScheduleMismatchComponent, {
+      showHeader: false,
+      width: '520px',
+      modal: true,
+      focusOnShow: false,
+      styleClass: 'standard-dialog-wrapper',
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      data: {
+        mismatchedCandidates: errorBody.mismatchedCandidates,
+        onSubmit: (newDate: Date) => {
+          this.confirmSchedule(newDate);
+        }
+      }
+    });
   }
 
   public rejectSchedule(): void {

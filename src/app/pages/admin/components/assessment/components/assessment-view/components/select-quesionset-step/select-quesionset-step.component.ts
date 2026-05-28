@@ -789,6 +789,11 @@ export class SelectQuesionsetStepComponent
 
   private getAllPaginatedQuestion(payload: PaginatedPayload) {
     this.isLoading = true;
+    if (!payload.filterMap) {
+      payload.filterMap = {};
+    }
+    payload.filterMap['status'] = 'active';
+
     const next = (res: PaginatedData<QuestionsModel>) => {
       if (res) {
         const transformedData = res.data.map((item: QuestionsModel) => ({
@@ -1035,6 +1040,11 @@ export class SelectQuesionsetStepComponent
     }
 
     accordionData.isLoadingQuestions = true;
+
+    if (!payload.filterMap) {
+      payload.filterMap = {};
+    }
+    payload.filterMap['status'] = 'active';
 
     const next = (res: PaginatedData<QuestionsModel>) => {
       if (res) {

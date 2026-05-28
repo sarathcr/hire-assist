@@ -72,19 +72,56 @@
               [buttonLabelFromBackend]="assessment.buttonLabel"
               [assessmentRound]="assessment.round"
             >
-              <p>
-                <b> Open position : </b
-                ><span>{{ assessment.assessmentName }}</span>
-              </p>
-              <p><b>Mode : </b><span>Online</span></p>
-              <p>
-                <b> No. of Questions : </b>
-                <span>{{ assessment.totalQuestions }}</span>
-              </p>
-              <p>
-                <b> Scheduled Date : </b
-                ><span>{{ getScheduledDate(assessment) }}</span>
-              </p>
+              <div class="assessment-details">
+                <div class="recruitment-header">
+                  <span class="recruitment-label">Recruitment Name</span>
+                  <h3 class="recruitment-title" [title]="assessment.assessmentName">
+                    {{ assessment.assessmentName }}
+                  </h3>
+                </div>
+
+                <div class="details-grid">
+                  <div class="grid-item">
+                    <i class="pi pi-desktop grid-icon"></i>
+                    <div class="grid-info">
+                      <span class="grid-label">Mode</span>
+                      <span class="grid-value">Online</span>
+                    </div>
+                  </div>
+
+                  <div class="grid-item">
+                    <i class="pi pi-question-circle grid-icon"></i>
+                    <div class="grid-info">
+                      <span class="grid-label">Questions</span>
+                      <span class="grid-value">{{ assessment.totalQuestions }}</span>
+                    </div>
+                  </div>
+
+                  <div class="grid-item">
+                    <i class="pi pi-users grid-icon"></i>
+                    <div class="grid-info">
+                      <span class="grid-label">Batch</span>
+                      <span class="grid-value">{{ assessment.batch || 'N/A' }}</span>
+                    </div>
+                  </div>
+
+                  <div class="grid-item">
+                    <i class="pi pi-file-edit grid-icon"></i>
+                    <div class="grid-info">
+                      <span class="grid-label">Question Set</span>
+                      <span class="grid-value">{{ assessment.questionSet || 'N/A' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="date-footer">
+                  <i class="pi pi-calendar date-icon"></i>
+                  <div class="date-info">
+                    <span class="date-label">Date</span>
+                    <span class="date-value">{{ assessment.date | date: 'dd/MM/yyyy hh:mm a' }}</span>
+                  </div>
+                </div>
+              </div>
             </app-card>
           } @empty {
             <div class="empty-state empty-state--active">
@@ -135,19 +172,56 @@
               [buttonLabelFromBackend]="assessment.buttonLabel"
               [assessmentRound]="assessment.round"
             >
-              <p>
-                <b> Open position : </b
-                ><span>{{ assessment.assessmentName }}</span>
-              </p>
-              <p><b>Mode : </b><span>Online</span></p>
-              <p>
-                <b> No. of Questions : </b>
-                <span>{{ assessment.totalQuestions }}</span>
-              </p>
-              <p>
-                <b> Scheduled Date : </b
-                ><span>{{ getScheduledDate(assessment) }}</span>
-              </p>
+              <div class="assessment-details">
+                <div class="recruitment-header">
+                  <span class="recruitment-label">Recruitment Name</span>
+                  <h3 class="recruitment-title" [title]="assessment.assessmentName">
+                    {{ assessment.assessmentName }}
+                  </h3>
+                </div>
+
+                <div class="details-grid">
+                  <div class="grid-item">
+                    <i class="pi pi-desktop grid-icon"></i>
+                    <div class="grid-info">
+                      <span class="grid-label">Mode</span>
+                      <span class="grid-value">Online</span>
+                    </div>
+                  </div>
+
+                  <div class="grid-item">
+                    <i class="pi pi-question-circle grid-icon"></i>
+                    <div class="grid-info">
+                      <span class="grid-label">Questions</span>
+                      <span class="grid-value">{{ assessment.totalQuestions }}</span>
+                    </div>
+                  </div>
+
+                  <div class="grid-item">
+                    <i class="pi pi-users grid-icon"></i>
+                    <div class="grid-info">
+                      <span class="grid-label">Batch</span>
+                      <span class="grid-value">{{ assessment.batch || 'N/A' }}</span>
+                    </div>
+                  </div>
+
+                  <div class="grid-item">
+                    <i class="pi pi-file-edit grid-icon"></i>
+                    <div class="grid-info">
+                      <span class="grid-label">Question Set</span>
+                      <span class="grid-value">{{ assessment.questionSet || 'N/A' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="date-footer">
+                  <i class="pi pi-calendar date-icon"></i>
+                  <div class="date-info">
+                    <span class="date-label">Date</span>
+                    <span class="date-value">{{ assessment.date | date: 'dd/MM/yyyy hh:mm a' }}</span>
+                  </div>
+                </div>
+              </div>
             </app-card>
           } @empty {
             <div class="empty-state empty-state--previous">

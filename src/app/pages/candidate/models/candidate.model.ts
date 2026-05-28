@@ -14,5 +14,8 @@ export interface CandidateAssessment {
   round: string;
   batch: string;
   totalQuestions: number;
+  questionSet?: string;
+  questionSetId?: number;
   buttonLabel?: string; // Button label from backend
 }
+

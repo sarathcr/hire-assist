@@ -8,7 +8,7 @@
   <p-table
     #dt
     [value]="displayData() || []"
-    [tableStyle]="{ 'min-width': '50rem', 'table-layout': 'fixed', 'width': '100%' }"
+    [tableStyle]="{ 'min-width': '50rem', 'table-layout': 'auto', 'width': '100%' }"
     [columns]="columnsData()?.columns"
     [rows]="tableData()?.pageSize"
     [totalRecords]="tableData()?.totalRecords || 0"
@@ -332,7 +332,7 @@
         "
       >
         @if (hasCheckbox) {
-          <td>
+          <td style="width: 4rem; min-width: 4rem; max-width: 4rem;">
             <p-tableCheckbox
               [value]="product"
               (click)="$event.stopPropagation()"
@@ -346,7 +346,7 @@
           </td>
         }
         @if (columnsData()?.hasExpanded) {
-          <td>
+          <td style="width: 4rem; min-width: 4rem; max-width: 4rem;">
             <p-button
               type="button"
               pRipple
@@ -368,7 +368,7 @@
           track headerColumn.field
         ) {
           @if (headerColumn.field === "actions") {
-            <td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               <div class="flex flex-wrap gap-1">
                 @if (
                   headerColumn.actions?.includes(PaginatedDataActions.View)
@@ -509,7 +509,7 @@
               </div>
             </td>
           } @else if (headerColumn.hasChip) {
-            <td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               <div class="flex flex-wrap gap-1">
                 @for (role of product[headerColumn.field]; track $index) {
                   @if (role && (role.toString().toLowerCase().includes('unassigned') || role.toString().toLowerCase().includes('not scheduled') || role.toString().toLowerCase().includes('not reported'))) {
@@ -521,14 +521,14 @@
               </div>
             </td>
           } @else if (headerColumn.field === "status" || headerColumn.field === "nextRoundStatus") {
-            <td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               <p-tag
                 [value]="product[headerColumn.field]"
                 [severity]="getSeverity(product[headerColumn.field])"
               />
             </td>
           } @else if (headerColumn.field === "isScheduled") {
-            <td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               @if (product[headerColumn.field] !== "") {
                 <p-tag
                   [value]="product[headerColumn.field]"
@@ -537,14 +537,14 @@
               }
             </td>
           } @else if (headerColumn.field === "score") {
-            <td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               <p-tag
                 [value]="product[headerColumn.field]"
                 severity="info"
               />
             </td>
           } @else if (headerColumn.field === "button") {
-            <td class="table__buttonColumn">
+            <td class="table__buttonColumn" [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               @if (headerColumn?.buttonIcons?.length === 0) {
                 <p-button
                   [outlined]="true"
@@ -611,16 +611,16 @@
               }
             </td>
           } @else if (headerColumn.field === "active") {
-            <td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               <p-tag
                 [value]="product[headerColumn.field]"
                 [severity]="getSeverity(product[headerColumn.field])"
               />
             </td>
           } @else if (headerColumn.fieldType === "stringToDate") {
-            <td>{{ product[headerColumn.field] | date: "dd/MM/yyyy" }}</td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">{{ product[headerColumn.field] | date: "dd/MM/yyyy" }}</td>
           } @else if (headerColumn.fieldType === "stringToDateTime") {
-            <td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               <ng-container
                 *ngIf="
                   product[headerColumn.field] && product[headerColumn.field] !== '0001-01-01T00:00:00';
@@ -638,7 +638,7 @@
               </ng-template>
             </td>
           } @else if (headerColumn.fieldType === "masked") {
-            <td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               <div class="flex align-items-center gap-2">
                 <span>{{
                   unmaskedRows[product.id + headerColumn.field]
@@ -663,7 +663,7 @@
               </div>
             </td>
           } @else {
-            <td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               @if (product[headerColumn.field] && (product[headerColumn.field].toString().toLowerCase().includes('unassigned') || product[headerColumn.field].toString().toLowerCase().includes('not scheduled') || product[headerColumn.field].toString().toLowerCase().includes('not reported'))) {
                 <p-tag [value]="product[headerColumn.field]" severity="warn" />
               } @else {
