@@ -398,25 +398,16 @@ export class BatchesComponent implements OnInit, OnDestroy {
     };
 
     const error = (error: HttpErrorResponse) => {
-      if (error?.status === 422 && error?.error?.businessError === 3106) {
-        this.isLoading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail: `This name ${error?.error?.errorValue} is already exists.`,
-        });
-      } else {
-        this.isLoading = false;
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Error',
-          detail:
-            error.error.type ||
-            error.error.message ||
-            error.error.errorValue ||
-            `${action ? 'Duplication' : 'Creation'} is failed`,
-        });
-      }
+      this.isLoading = false;
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail:
+          error?.error?.type ||
+          error?.error?.message ||
+          error?.error?.errorValue ||
+          `${action ? 'Duplication' : 'Creation'} is failed`,
+      });
     };
 
     this.batchService.createEntity(payload).subscribe({ next, error });
