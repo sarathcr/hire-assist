@@ -793,9 +793,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  public currentHistoryPanelName: string | null = null;
+
   public viewHistory(candidate: any): void {
     this.historyPagination.candidateId = candidate.id;
     this.currentHistoryInterviewId = candidate.interviewId;
+    this.currentHistoryPanelName = candidate.panelMemberName || candidate.panelName || null;
     this.historyPagination.pageNumber = 1;
     this.events = [];
     this.visible = true;
@@ -823,14 +826,27 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => this.historyLoading = false))
       .subscribe({
         next: (res: any) => {
-          const newEvents = res.data.map((item: any) => ({
+          let sortedData = [...res.data];
+          // Fix logical order: "Status Updated" to Selected should logically happen AFTER "Score Added", so it should appear above it in desc order.
+          sortedData.sort((a, b) => {
+            const timeA = new Date(a.changedAt + (a.changedAt.endsWith('Z') ? '' : 'Z')).getTime();
+            const timeB = new Date(b.changedAt + (b.changedAt.endsWith('Z') ? '' : 'Z')).getTime();
+            // If they are less than 15 minutes apart, force Status Updated to be "newer" than Score Added
+            if (Math.abs(timeA - timeB) < 15 * 60 * 1000) {
+              if (a.action === 'Status Updated' && b.action === 'Score Added') return -1;
+              if (b.action === 'Status Updated' && a.action === 'Score Added') return 1;
+            }
+            return timeB - timeA; // default descending
+          });
+
+          const newEvents = sortedData.map((item: any) => ({
             status: this.formatAction(item.action),
-            user: item.changedByName,
-            date: new Date(item.changedAt),
+            user: (item.action === 'Score Added' && this.currentHistoryPanelName) ? this.currentHistoryPanelName : item.changedByName,
+            date: new Date(item.changedAt ? item.changedAt + (item.changedAt.endsWith('Z') ? '' : 'Z') : new Date()),
             icon: this.getHistoryIcon(item.action),
             description: this.getHistoryDescription(item)
           }));
-          this.events = [...this.events, ...newEvents];
+          this.events = this.historyPagination.pageNumber === 1 ? newEvents : [...this.events, ...newEvents];
           this.historyPagination.totalRecords = res.totalRecords;
         },
       });
@@ -852,7 +868,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   private getHistoryDescription(item: any): string {
+    if (item.details) return item.details;
     if (item.remarks) return item.remarks;
+    if (item.field) {
+      const formatVal = (v: any) => v === '' || v === null || v === undefined ? 'null' : v;
+      return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
+    }
     return `Action performed by ${item.changedByName}`;
   }
 
@@ -1269,7 +1290,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               id: item.candidateId || item.id,
               name: item.candidateName || item.fullName || item.name || 'Unknown',
               email: item.email,
-              score: item.score || 'N/A',
+              score: ((item.score === 0 || item.score === '0') && !['completed', 'on review', 'selected', 'rejected'].includes(item.status?.toLowerCase() || '')) ? 'N/A' : (item.score === 0 || item.score === '0' ? item.score : (item.score || 'N/A')),
               status: item.status || 'Pending',
               nextRoundStatus: (item.isScheduled === true || (typeof item.isScheduled === 'string' && item.isScheduled.toLowerCase() !== 'false' && item.isScheduled.toLowerCase() !== 'not scheduled' && item.isScheduled.trim() !== '')) ? 'Scheduled' : 'Not scheduled',
               interviewDate: item.scheduledDate || 'Not Scheduled',

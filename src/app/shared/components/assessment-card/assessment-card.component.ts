@@ -28,8 +28,8 @@ export class AssessmentCardComponent implements OnInit {
   public data = input<Assessment>();
   public edit = output<Assessment>();
   public delete = output<number>();
-  public showToggleButton = input<boolean>(true);
   public schedule = output<Assessment>();
+  public showToggleButton = input<boolean>(true);
   public actionItems: MenuItem[] = [];
   public lastUpdatedInfo = '';
   public showContent = input<boolean>(true);
@@ -65,6 +65,11 @@ export class AssessmentCardComponent implements OnInit {
   private setActionItems(): void {
     this.actionItems = [
       {
+        label: 'Schedule',
+        icon: 'pi pi-calendar',
+        command: (e) => this.handleActionClick(e, 'schedule'),
+      },
+      {
         label: 'Edit',
         icon: 'pi pi-pencil',
         command: (e) => this.handleActionClick(e, 'edit'),
@@ -74,17 +79,12 @@ export class AssessmentCardComponent implements OnInit {
         icon: 'pi pi-trash',
         command: (e) => this.handleActionClick(e, 'delete'),
       },
-      {
-        label: 'Schedule', // New Schedule button
-        icon: 'pi pi-calendar',
-        command: (e) => this.handleActionClick(e, 'schedule'),
-      },
     ];
   }
 
   private handleActionClick(
     event: MenuItemCommandEvent,
-    type: 'edit' | 'delete' | 'schedule',
+    type: 'schedule' | 'edit' | 'delete',
   ): void {
     event.originalEvent?.stopPropagation();
     const assessment = this.data();
@@ -92,6 +92,9 @@ export class AssessmentCardComponent implements OnInit {
     if (!assessment) return;
 
     switch (type) {
+      case 'schedule':
+        this.schedule.emit(assessment);
+        break;
       case 'edit':
         this.edit.emit(assessment);
         break;
@@ -99,9 +102,6 @@ export class AssessmentCardComponent implements OnInit {
         if (assessment.id) {
           this.delete.emit(assessment.id);
         }
-        break;
-      case 'schedule':
-        this.schedule.emit(assessment);
         break;
     }
   }

@@ -119,7 +119,7 @@ describe('ScheduleInterviewComponent', () => {
       component.fGroup.addControl('scheduleDate', new FormControl());
     }
 
-    component['setupDateValidation']();
+    (component as any)['setupDateValidation']();
     component.fGroup.get('scheduleDate')?.setValue(new Date());
     tick();
 

@@ -22,8 +22,10 @@ import { TabPanel, TabPanels, Tab, TabList, Tabs } from 'primeng/tabs';
 import { CardModule } from 'primeng/card';
 import { BadgeModule } from 'primeng/badge';
 import { finalize } from 'rxjs/operators';
+import { forkJoin, Observable } from 'rxjs';
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { AssessmentService } from '../../../../services/assessment.service';
+import { CandidateService } from '../../../../services/candidate.service';
 import { CoordinatorPanelBridgeService } from '../../../../../coordinator/services/coordinator-panel-bridge.service';
 import { PanelService } from '../../../../services/panel.service';
 import { Assessment } from '../../../../models/assessment.model';
@@ -157,6 +159,7 @@ export class InterviewCandidateListComponent implements OnInit {
     private readonly assessmentService: AssessmentService,
     private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
     private readonly panelService: PanelService,
+    private readonly candidateService: CandidateService,
   ) {}
 
   // Lifecycle Hooks
@@ -263,8 +266,11 @@ export class InterviewCandidateListComponent implements OnInit {
     ]);
   }
 
-  public viewHistory(id: any) {
-    this.currentHistoryInterviewId = String(id);
+  public currentHistoryPanelName: string | null = null;
+
+  public viewHistory(candidate: any) {
+    this.currentHistoryInterviewId = String(candidate.id || candidate);
+    this.currentHistoryPanelName = candidate.panelMemberName || candidate.panelName || null;
     this.historyPagination.pageNumber = 1;
     this.events = [];
     this.visible = true;
@@ -278,27 +284,39 @@ export class InterviewCandidateListComponent implements OnInit {
 
   private fetchInterviewHistory() {
     this.historyLoading = true;
+    
     const payload = new PaginatedPayload();
     payload.pagination.pageNumber = this.historyPagination.pageNumber;
     payload.pagination.pageSize = this.historyPagination.pageSize;
     payload.filterMap = {
       interviewId: this.currentHistoryInterviewId || ''
     };
-
     payload.multiSortedColumns = [{ active: 'ChangedAt', direction: 'desc' }];
 
     this.interviewService.getInterviewHistory(payload)
       .pipe(finalize(() => this.historyLoading = false))
       .subscribe({
         next: (res: any) => {
-          const newEvents = res.data.map((item: any) => ({
+          let sortedData = [...res.data];
+          // Fix logical order: "Status Updated" to Selected should logically happen AFTER "Score Added", so it should appear above it in desc order.
+          sortedData.sort((a, b) => {
+            const timeA = new Date(a.changedAt + (a.changedAt.endsWith('Z') ? '' : 'Z')).getTime();
+            const timeB = new Date(b.changedAt + (b.changedAt.endsWith('Z') ? '' : 'Z')).getTime();
+            if (Math.abs(timeA - timeB) < 15 * 60 * 1000) {
+              if (a.action === 'Status Updated' && b.action === 'Score Added') return -1;
+              if (b.action === 'Status Updated' && a.action === 'Score Added') return 1;
+            }
+            return timeB - timeA; // default descending
+          });
+
+          const newEvents = sortedData.map((item: any) => ({
             status: this.formatAction(item.action),
-            user: item.changedByName,
-            date: new Date(item.changedAt + 'Z'),
+            user: (item.action === 'Score Added' && this.currentHistoryPanelName) ? this.currentHistoryPanelName : item.changedByName,
+            date: new Date(item.changedAt ? item.changedAt + (item.changedAt.endsWith('Z') ? '' : 'Z') : new Date()),
             icon: this.getHistoryIcon(item.action),
             description: this.getHistoryDescription(item)
           }));
-          this.events = [...this.events, ...newEvents];
+          this.events = this.historyPagination.pageNumber === 1 ? newEvents : [...this.events, ...newEvents];
           this.historyPagination.totalRecords = res.totalRecords;
         },
         error: (err: any) => {

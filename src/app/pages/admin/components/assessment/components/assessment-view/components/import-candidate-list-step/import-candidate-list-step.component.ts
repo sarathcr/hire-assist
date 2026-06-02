@@ -386,15 +386,14 @@ export class ImportCandidateListStepComponent implements OnInit {
   }
 
   private getHistoryDescription(item: any): string {
-    const detailActions = ['Created', 'Deleted', 'Imported', 'Assigned', 'Scheduled', 'Reassigned'];
-    if (detailActions.includes(item.action)) {
-      return item.details || '';
+    if (item.details) {
+      return item.details;
     }
     if (item.field) {
       const formatVal = (v: any) => v === '' || v === null || v === undefined ? 'null' : v;
       return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
     }
-    return item.details || 'Candidate was modified';
+    return 'Candidate was modified';
   }
 
   private getHistoryIcon(action: string): string {

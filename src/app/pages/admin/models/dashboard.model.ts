@@ -12,11 +12,26 @@ export interface Questions {
   total: number;
 }
 
+export interface RecentActivity {
+  message: string;
+  time: string;
+  type: 'primary' | 'success' | 'danger' | 'info' | 'warning';
+  icon: string;
+  candidateName?: string | null;
+  updaterName?: string | null;
+  assessmentName?: string | null;
+  action?: string | null;
+  field?: string | null;
+  previousValue?: any;
+  currentValue?: any;
+  details?: string | null;
+}
+
 export interface DashboardSummary {
   assessment: Assessment;
   users: Users;
   questions: Questions;
-  recentActivities?: { message: string; time: string; type: 'primary' | 'success' | 'danger' | 'info'; icon: string }[];
+  recentActivities?: RecentActivity[];
   upcomingInterviews?: { 
     candidate: string; 
     role: string; 

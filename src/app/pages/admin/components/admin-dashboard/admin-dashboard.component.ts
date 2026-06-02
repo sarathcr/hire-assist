@@ -18,6 +18,7 @@ import {
   Assessment,
   DashboardData,
   Questions,
+  RecentActivity,
   Users,
 } from '../../models/dashboard.model';
 import { Assessment as AssessmentModel } from '../../models/assessment.model';
@@ -45,7 +46,29 @@ export class AdminDashboardComponent implements OnInit {
   // Pro Elements Signals (Mock Data)
 
 
-  public recentActivities = signal<{ message: string; time: string; type: 'primary' | 'success' | 'danger' | 'info'; icon: string }[]>([]);
+  public recentActivities = signal<RecentActivity[]>([]);
+  public expandedActivityIndex = signal<number | null>(null);
+
+  public toggleActivityDetails(index: number): void {
+    if (this.expandedActivityIndex() === index) {
+      this.expandedActivityIndex.set(null);
+    } else {
+      this.expandedActivityIndex.set(index);
+    }
+  }
+
+  public dismissActivity(event: Event, index: number): void {
+    event.stopPropagation();
+    const current = this.recentActivities();
+    const updated = current.filter((_, i) => i !== index);
+    this.recentActivities.set(updated);
+    
+    if (this.expandedActivityIndex() === index) {
+      this.expandedActivityIndex.set(null);
+    } else if (this.expandedActivityIndex() !== null && this.expandedActivityIndex()! > index) {
+      this.expandedActivityIndex.set(this.expandedActivityIndex()! - 1);
+    }
+  }
 
   // NEW WIDGET SIGNALS 
   public upcomingInterviews = signal<{ candidate: string; role: string; time: string; interviewer: string; avatar: string; assessmentId: number; candidateId: string; interviewId: number; }[]>([]);
@@ -117,7 +140,11 @@ export class AdminDashboardComponent implements OnInit {
           }
           
           if (res.data.upcomingInterviews) {
-            this.upcomingInterviews.set(res.data.upcomingInterviews);
+            const localInterviews = res.data.upcomingInterviews.map(interview => ({
+              ...interview,
+              time: this.convertUtcToLocal(interview.time)
+            }));
+            this.upcomingInterviews.set(localInterviews);
           }
 
           this.updateCharts();
@@ -128,6 +155,38 @@ export class AdminDashboardComponent implements OnInit {
           this.isLoadingDashboard.set(false);
         },
       });
+  }
+
+  /**
+   * Converts a backend UTC time string (e.g. "11:53 AM") into the user's local time string.
+   */
+  private convertUtcToLocal(utcTimeStr: string): string {
+    if (!utcTimeStr) return utcTimeStr;
+    
+    const match = utcTimeStr.match(/(\d+):(\d+)\s+(AM|PM)/i);
+    if (!match) return utcTimeStr;
+
+    let [ , hoursStr, minutesStr, modifier ] = match;
+    let hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+
+    if (modifier.toUpperCase() === 'PM' && hours < 12) hours += 12;
+    if (modifier.toUpperCase() === 'AM' && hours === 12) hours = 0;
+
+    const date = new Date();
+    date.setUTCHours(hours, minutes, 0, 0);
+
+    let localHours = date.getHours();
+    const localMinutes = date.getMinutes();
+    const localModifier = localHours >= 12 ? 'PM' : 'AM';
+
+    if (localHours > 12) localHours -= 12;
+    if (localHours === 0) localHours = 12;
+
+    const formattedMinutes = localMinutes.toString().padStart(2, '0');
+    const formattedHours = localHours.toString().padStart(2, '0');
+
+    return `${formattedHours}:${formattedMinutes} ${localModifier}`;
   }
 
   // Fetch Real Assessments using AUTHORIZED endpoint
@@ -256,16 +315,17 @@ export class AdminDashboardComponent implements OnInit {
     const inactiveColor = dangerColor;
 
     // Active/Inactive Doughnut
+    const activeCount = this.assessmentData().active || 0;
+    const inactiveCount = this.assessmentData().inactive || 0;
+    const hasData = (activeCount + inactiveCount) > 0;
+
     this.assessmentStatusChartData.set({
-      labels: ['Active', 'Inactive'],
+      labels: hasData ? ['Active', 'Inactive'] : ['No Data'],
       datasets: [
         {
-          data: [
-            this.assessmentData().active || 0,
-            this.assessmentData().inactive || 0,
-          ],
-          backgroundColor: [activeColor, inactiveColor],
-          hoverBackgroundColor: [activeColor, inactiveColor],
+          data: hasData ? [activeCount, inactiveCount] : [1],
+          backgroundColor: hasData ? [activeColor, inactiveColor] : ['#e2e8f0'],
+          hoverBackgroundColor: hasData ? [activeColor, inactiveColor] : ['#e2e8f0'],
           borderWidth: 0,
         },
       ],

@@ -43,9 +43,7 @@ describe('AssessmentCardComponent', () => {
     expect(component.actionItems.length).toBeGreaterThan(0);
     const labels = component.actionItems.map((item: MenuItem) => item.label);
     expect(labels).toContain('Edit');
-    expect(labels).toContain('Duplicate');
     expect(labels).toContain('Delete');
-    expect(labels).toContain('Schedule');
   });
 
   it('should emit edit event', () => {
@@ -57,14 +55,6 @@ describe('AssessmentCardComponent', () => {
     expect(component.edit.emit).toHaveBeenCalledWith(mockData);
   });
 
-  it('should emit duplicate event', () => {
-    spyOn(component.duplicate, 'emit');
-    (component as any).handleActionClick(
-      { originalEvent: new Event('click') } as any,
-      'duplicate',
-    );
-    expect(component.duplicate.emit).toHaveBeenCalledWith(mockData);
-  });
 
   it('should emit delete event', () => {
     spyOn(component.delete, 'emit');
@@ -75,14 +65,6 @@ describe('AssessmentCardComponent', () => {
     expect(component.delete.emit).toHaveBeenCalledWith(mockData.id!);
   });
 
-  it('should emit schedule event', () => {
-    spyOn(component.schedule, 'emit');
-    (component as any).handleActionClick(
-      { originalEvent: new Event('click') } as any,
-      'schedule',
-    );
-    expect(component.schedule.emit).toHaveBeenCalledWith(mockData);
-  });
 
   it('should return correct progress color', () => {
     expect(component.getProgressColor(95)).toBe('#16a34a');

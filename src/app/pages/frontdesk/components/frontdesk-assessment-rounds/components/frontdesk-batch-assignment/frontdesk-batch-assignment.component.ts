@@ -622,6 +622,9 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     // A candidate is "Reported" if they have a non-zero reporting time OR their status is explicitly present/reported
     const isNotReported = !hasReportedTime && statusLower !== 'reported' && statusLower !== 'present';
 
+    const hasNoOtherBatches = !this.batchList || this.batchList.length <= 1;
+    let disabledButtonIndices: number[] = [];
+
     // Button indices: 0: Mark as Present, 1: Mark as Absent, 2: Assign to Batch, 3: Upload ID Proof
     if (statusLower === 'completed') {
       // Cannot change status anymore for completed assessments
@@ -638,22 +641,24 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       // - Mark as Absent (1): Disabled (already absent)
       // - Assign to Batch (2): Enabled
       // - Upload ID Proof (3): Disabled (requires presence)
-      return {
-        ...candidate,
-        visibleButtonIndices: [0, 1, 2, 3],
-        disabledButtonIndices: [1, 3],
-      };
+      disabledButtonIndices = [1, 3];
     } else {
       // PRESENT / REPORTED STATE:
       // - Mark as Present (0): Disabled (already present)
       // - Mark as Absent (1): Enabled (allows undo)
       // - Assign to Batch (2): Enabled
       // - Upload ID Proof (3): Enabled
-      return {
-        ...candidate,
-        visibleButtonIndices: [0, 1, 2, 3],
-        disabledButtonIndices: [0],
-      };
+      disabledButtonIndices = [0];
     }
+
+    if (hasNoOtherBatches) {
+      disabledButtonIndices.push(2);
+    }
+
+    return {
+      ...candidate,
+      visibleButtonIndices: [0, 1, 2, 3],
+      disabledButtonIndices,
+    };
   }
 }

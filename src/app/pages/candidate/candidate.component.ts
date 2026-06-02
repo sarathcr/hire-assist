@@ -82,13 +82,17 @@ export class CandidateComponent extends BaseComponent implements OnInit {
 
           if (isFinished) return false;
 
-          const comparisonDate = a.endTime
-            ? new Date(a.endTime)
-            : a.date
-              ? new Date(a.date)
-              : null;
+          let comparisonDate: Date | null = null;
+          if (a.endTime) {
+            comparisonDate = new Date(a.endTime);
+            if (isNaN(comparisonDate.getTime()) && a.date) {
+              comparisonDate = this.combineDateAndTime(new Date(a.date), a.endTime);
+            }
+          } else if (a.date) {
+            comparisonDate = new Date(a.date);
+          }
 
-          if (!comparisonDate) return false;
+          if (!comparisonDate || isNaN(comparisonDate.getTime())) return false;
 
           return comparisonDate >= today;
         });
@@ -101,13 +105,17 @@ export class CandidateComponent extends BaseComponent implements OnInit {
 
           if (isFinished) return true;
 
-          const comparisonDate = a.endTime
-            ? new Date(a.endTime)
-            : a.date
-              ? new Date(a.date)
-              : null;
+          let comparisonDate: Date | null = null;
+          if (a.endTime) {
+            comparisonDate = new Date(a.endTime);
+            if (isNaN(comparisonDate.getTime()) && a.date) {
+              comparisonDate = this.combineDateAndTime(new Date(a.date), a.endTime);
+            }
+          } else if (a.date) {
+            comparisonDate = new Date(a.date);
+          }
 
-          if (!comparisonDate) return true;
+          if (!comparisonDate || isNaN(comparisonDate.getTime())) return true;
 
           return comparisonDate < today;
         });

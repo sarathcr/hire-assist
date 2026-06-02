@@ -192,7 +192,7 @@
                         </div>
                         <div class="ifb__detail-grid">
                           @if (
-                            isAptitudeRound(round.roundName) &&
+                            isAptitudeRound(round) &&
                             hasValue(detail.questionSet)
                           ) {
                             <div class="ifb__detail-item">
@@ -206,7 +206,7 @@
                             </div>
                           }
                           @if (
-                            isAptitudeRound(round.roundName) &&
+                            isAptitudeRound(round) &&
                             hasValue(detail.batch)
                           ) {
                             <div class="ifb__detail-item">
@@ -239,7 +239,7 @@
                             </div>
                           }
                           @if (
-                            (isAptitudeRound(round.roundName) ||
+                            (isAptitudeRound(round) ||
                               hasValue(detail.totalQuestions)) &&
                             detail.totalQuestions !== undefined
                           ) {
@@ -253,7 +253,7 @@
                             </div>
                           }
                           @if (
-                            (isAptitudeRound(round.roundName) ||
+                            (isAptitudeRound(round) ||
                               hasValue(detail.attendedQuestions)) &&
                             detail.attendedQuestions !== undefined
                           ) {
@@ -268,7 +268,7 @@
                             </div>
                           }
                           @if (
-                            (isAptitudeRound(round.roundName) ||
+                            (isAptitudeRound(round) ||
                               getCorrectAnswers(detail) > 0) &&
                             detail.correctAnswers !== undefined
                           ) {
@@ -283,7 +283,7 @@
                             </div>
                           }
                           @if (
-                            (isAptitudeRound(round.roundName) ||
+                            (isAptitudeRound(round) ||
                               hasValue(detail.skipped)) &&
                             detail.skipped !== undefined
                           ) {
@@ -329,7 +329,7 @@
                         </div>
 
                         <!-- Aptitude Report Section [V2.1] -->
-                        @if (isAptitudeRound(round.roundName)) {
+                        @if (isAptitudeRound(round)) {
                           <div class="ifb__aptitude-report">
                             <div class="ifb__report-toggle">
                               <p-button
@@ -484,7 +484,7 @@
 
                         <!-- Feedback List (non-aptitude rounds) -->
                         @if (
-                          !isAptitudeRound(round.roundName) &&
+                          !isAptitudeRound(round) &&
                           detail.feedbackListDto &&
                           detail.feedbackListDto.length > 0
                         ) {

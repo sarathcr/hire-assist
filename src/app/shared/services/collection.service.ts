@@ -172,7 +172,9 @@ export class CollectionService implements OnDestroy {
   public deleteItemFromCollection(key: string, id: number | string) {
     const currentCollection: OptionsMap =
       this.storeService.getCollection() || {};
-    const updatedItems = currentCollection[key].filter(
+      
+    const existingItems = currentCollection[key] || [];
+    const updatedItems = existingItems.filter(
       (item) => item.value !== id.toString(),
     );
 

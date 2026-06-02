@@ -158,24 +158,111 @@
       <div class="activity-feed-card">
         <div class="panel-header">
           <h2 class="panel-title">Recent Activity</h2>
-          <a (click)="navigateTo('/admin/activity-logs')" class="panel-action" style="cursor: pointer;">View All</a>
+          @if (recentActivities().length > 0) {
+            <a (click)="navigateTo('/admin/activity-logs')" class="panel-action" style="cursor: pointer;">View All</a>
+          }
         </div>
-        <div class="activity-list">
+        <div class="activity-list-container">
+          <div class="activity-list">
+        @if (isLoadingDashboard()) {
+          <div class="list-skeleton">
+            @for (item of [1,2,3,4]; track $index) {
+              <div class="activity-item" style="display: flex; gap: 16px; margin-bottom: 16px; border: none; padding-bottom: 0;">
+                <div class="skeleton-avatar" style="flex-shrink: 0;"></div>
+                <div style="flex: 1; padding-top: 4px;">
+                  <div class="skeleton-text"></div>
+                  <div class="skeleton-text-short"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
           @for (activity of recentActivities(); track $index) {
             <div class="activity-item">
+
               <div class="activity-avatar" [ngClass]="'avatar-' + activity.type">
                 <i [class]="activity.icon"></i>
               </div>
+
               <div class="activity-content">
-                <p class="activity-message" [innerHTML]="activity.message"></p>
-                <span class="activity-time">{{ activity.time }}</span>
+                @if (activity.candidateName || activity.field || activity.action) {
+
+                  <!-- Tags row: field + action -->
+                  <div class="activity-header-row">
+                    <div class="activity-tags">
+                      @if (activity.field) {
+                        <span class="activity-tag field-tag tag-{{activity.type}}">
+                          <i class="pi pi-tag"></i> {{ activity.field }}
+                        </span>
+                      }
+                      @if (activity.action) {
+                        <span class="activity-tag action-badge badge-{{activity.type}}">
+                          {{ activity.action }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Candidate + Recruitment -->
+                  <div class="activity-meta-details">
+                    @if (activity.candidateName) {
+                      <span class="meta-pill candidate-pill">
+                        <span class="pill-label">
+                          <i class="pi pi-user"></i>
+                          <span class="label">User:</span>
+                        </span>
+                        <strong class="val">{{ activity.candidateName }}</strong>
+                      </span>
+                    }
+                    @if (activity.assessmentName) {
+                      <span class="meta-pill assessment-pill">
+                        <span class="pill-label">
+                          <i class="pi pi-briefcase"></i>
+                          <span class="label">Recruitment:</span>
+                        </span>
+                        <strong class="val">{{ activity.assessmentName }}</strong>
+                      </span>
+                    }
+                  </div>
+
+                  <!-- Scheduled details -->
+                  @if (activity.details) {
+                    <div class="activity-details-card type-{{activity.type}}">
+                      <div class="card-line"></div>
+                      <p class="details-text">{{ activity.details }}</p>
+                    </div>
+                  } @else if (!activity.candidateName && !activity.assessmentName && activity.message) {
+                    <div class="activity-details-card type-{{activity.type}}">
+                      <div class="card-line"></div>
+                      <p class="details-text" [innerHTML]="activity.message"></p>
+                    </div>
+                  }
+
+                  <!-- Time + updater -->
+                  <div class="activity-footer-row">
+                    <span class="activity-time"><i class="pi pi-clock"></i> {{ activity.time }}</span>
+                    @if (activity.updaterName) {
+                      <span class="activity-updater"><i class="pi pi-user-edit"></i> by {{ activity.updaterName }}</span>
+                    }
+                  </div>
+
+                } @else {
+                  <!-- Fallback: plain message -->
+                  <p class="activity-message" [innerHTML]="activity.message"></p>
+                  <span class="activity-time">{{ activity.time }}</span>
+                }
               </div>
+
             </div>
           } @empty {
-            <div class="no-data-msg">
-              <p>No recent activity logs.</p>
+            <div class="empty-state">
+              <div class="empty-icon-wrapper"><i class="pi pi-history"></i></div>
+              <h3>No Recent Activity</h3>
+              <p>Your team's activity logs will appear here.</p>
             </div>
           }
+        }
+          </div>
         </div>
       </div>
     </div>
@@ -187,11 +274,30 @@
     <div class="widget-card">
       <div class="panel-header">
         <h2 class="panel-title">Upcoming Interviews</h2>
-        <a (click)="navigateTo('/admin/interviews')" class="panel-action" style="cursor: pointer;">View All Schedules</a>
+        @if (upcomingInterviews().length > 0) {
+          <a (click)="navigateTo('/admin/interviews')" class="panel-action" style="cursor: pointer;">View All Schedules</a>
+        }
       </div>
       <div class="panel-content">
         <div class="interviews-list">
-          @for (interview of upcomingInterviews(); track $index) {
+          @if (isLoadingDashboard()) {
+            <div class="list-skeleton">
+              @for (item of [1,2,3]; track $index) {
+                <div class="interview-item" style="display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 12px; background: #f8fafc;">
+                  <div class="skeleton-circle-avatar" style="flex-shrink: 0;"></div>
+                  <div style="flex: 1;">
+                    <div class="skeleton-text"></div>
+                    <div class="skeleton-text-short"></div>
+                  </div>
+                  <div style="width: 80px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                    <div class="skeleton-text" style="margin-bottom: 0;"></div>
+                    <div class="skeleton-text-short"></div>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            @for (interview of upcomingInterviews(); track $index) {
             <div class="interview-item">
               <div class="candidate-avatar">{{ interview.avatar }}</div>
               <div class="interview-details">
@@ -205,10 +311,13 @@
               <a (click)="navigateTo(['/admin/recruitments', interview.assessmentId])" class="join-btn" style="cursor: pointer;">Details</a>
             </div>
           } @empty {
-            <div class="no-data-msg">
-              <p>No upcoming interviews today.</p>
+            <div class="empty-state">
+              <div class="empty-icon-wrapper"><i class="pi pi-calendar-times"></i></div>
+              <h3>No Upcoming Interviews</h3>
+              <p>You have no interviews scheduled for today.</p>
             </div>
           }
+        }
         </div>
       </div>
     </div>
@@ -217,10 +326,27 @@
     <div class="widget-card">
       <div class="panel-header">
         <h2 class="panel-title">Active Recruitments</h2>
-        <a [routerLink]="['/admin/recruitments']" class="panel-action">View All</a>
+        @if (recentAssessments().length > 0) {
+          <a [routerLink]="['/admin/recruitments']" class="panel-action">View All</a>
+        }
       </div>
       <div class="panel-content">
-        @if (recentAssessments().length > 0) {
+        @if (isLoadingDashboard()) {
+          <div class="health-metrics list-skeleton">
+            @for (item of [1,2,3]; track $index) {
+              <div class="metric-item">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <div class="skeleton-text-short" style="width: 40%; margin-bottom: 0;"></div>
+                  <div class="skeleton-text-short" style="width: 20%; margin-bottom: 0;"></div>
+                </div>
+                <div class="skeleton-text" style="height: 8px; margin-bottom: 8px;"></div>
+                <div style="display: flex; justify-content: flex-end;">
+                  <div class="skeleton-text-short" style="width: 30%; margin-bottom: 0;"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else if (recentAssessments().length > 0) {
           <div class="health-metrics"> <!-- Reusing metric class for list style -->
             @for (assessment of recentAssessments(); track assessment.id) {
               <div class="metric-item">
@@ -237,8 +363,10 @@
             }
           </div>
         } @else {
-          <div class="no-data-msg">
-            <p>No active recruitments found.</p>
+          <div class="empty-state">
+            <div class="empty-icon-wrapper"><i class="pi pi-briefcase"></i></div>
+            <h3>No Active Recruitments</h3>
+            <p>Start a new recruitment process to see it here.</p>
           </div>
         }
       </div>

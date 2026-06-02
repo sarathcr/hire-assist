@@ -467,9 +467,15 @@ export class InterviewerFeedbackComponent
    * Checks if a round is an aptitude round
    * Returns true if the round name contains "aptitude" (case-insensitive)
    */
-  public isAptitudeRound(roundName: string): boolean {
+  public isAptitudeRound(round: any): boolean {
+    if (!round) return false;
+    const roundName = typeof round === 'string' ? round : round.roundName;
+    const roundTypeId = typeof round === 'string' ? null : round.roundTypeId;
+    const roundId = typeof round === 'string' ? null : round.roundId;
+
+    if (roundTypeId === 1 || roundId === 1) return true;
     if (!roundName) return false;
-    const nameLower = roundName.toLowerCase();
+    const nameLower = roundName.trim().toLowerCase();
     return nameLower.includes('aptitude') || nameLower.includes('online');
   }
 
@@ -1208,7 +1214,7 @@ export class InterviewerFeedbackComponent
   }
 
   public onPreviousRoundAccordionOpen(round: PreviousInterview): void {
-    if (this.isAptitudeRound(round.roundName)) return;
+    if (this.isAptitudeRound(round)) return;
 
     round.assessmentDetails?.forEach((detail: AssessmentDetails) => {
       detail.feedbackListDto?.forEach((feedback: Feedback) => {
@@ -1382,7 +1388,7 @@ export class InterviewerFeedbackComponent
   public fetchAptitudeReport(round: PreviousInterview): void {
     if (!round) {
       console.warn('fetchAptitudeReport: round is undefined. Attempting to locate the aptitude round from previousInterviews.');
-      const foundRound = this.responseData?.previousInterviews?.find(r => this.isAptitudeRound(r.roundName));
+      const foundRound = this.responseData?.previousInterviews?.find(r => this.isAptitudeRound(r));
       if (foundRound) {
         round = foundRound;
       } else {

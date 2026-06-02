@@ -99,9 +99,9 @@ export class ScheduleInterviewComponent
       this.setComponentInstance(this);
     }
 
-    this.fGroup.get('scheduleDate')?.valueChanges.subscribe(() => {
-      this.validateScheduleDate(this.fGroup, 'scheduleDate');
-    });
+    // Initialize date validation subscription (will be added to BaseComponent's subscriptionList)
+    this.setupDateValidation();
+
   }
 
   public onClose() {
@@ -178,7 +178,7 @@ export class ScheduleInterviewComponent
 
         if (this.validationMinDate && dateTime < this.validationMinDate) {
           dateControl.setErrors({
-            errorMessage: `Schedule Date & Time cannot be in the past.`,
+            errorMessage: 'Schedule Date must be today or later.',
           });
         } else if (this.maxDate && dateTime > this.maxDate) {
           dateControl.setErrors({
@@ -186,6 +186,15 @@ export class ScheduleInterviewComponent
           });
         }
       }
+    }
+  }
+
+  private setupDateValidation(): void {
+    const sub = this.fGroup.get('scheduleDate')?.valueChanges.subscribe(() => {
+      this.validateScheduleDate(this.fGroup, 'scheduleDate');
+    });
+    if (sub) {
+      this.subscriptionList.push(sub);
     }
   }
 }

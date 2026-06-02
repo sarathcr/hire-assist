@@ -13,7 +13,7 @@
   </div>
 
   <div class="logs-card">
-    @if (isLoading()) {
+    @if (isInitialLoading()) {
       <p-table
         [value]="activityLogSkeletonRows"
         [rows]="5"
@@ -52,12 +52,17 @@
           <p-skeleton width="40px" height="40px" borderRadius="8px" />
         </div>
       </div>
-    } @else {
+    }
+    
+    <div [hidden]="isInitialLoading()">
       <p-table
         [value]="activities()"
         [loading]="isLoading()"
         [rows]="10"
         [paginator]="true"
+        [lazy]="true"
+        (onLazyLoad)="loadData($event)"
+        [totalRecords]="totalRecords()"
         styleClass="p-datatable-sm p-datatable-gridlines"
       >
         <ng-template pTemplate="header">
@@ -88,6 +93,6 @@
           </tr>
         </ng-template>
       </p-table>
-    }
+    </div>
   </div>
 </div>

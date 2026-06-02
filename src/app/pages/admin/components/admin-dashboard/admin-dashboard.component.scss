@@ -19,6 +19,7 @@ $colors: (
   'success': (base: #10b981, light: #ecfdf5, dark: #047857, gradient-start: #10b981, gradient-end: #059669),
   'info':    (base: #6366f1, light: #eef2ff, dark: #4338ca, gradient-start: #6366f1, gradient-end: #4f46e5),
   'danger':  (base: #ef4444, light: #fef2f2, dark: #b91c1c, gradient-start: #ef4444, gradient-end: #dc2626),
+  'warning': (base: #f59e0b, light: #fffbeb, dark: #b45309, gradient-start: #f59e0b, gradient-end: #d97706),
   'surface': (base: #ffffff, alt: #f8fafc, border: #e2e8f0),
   'text':    (main: #1e293b, muted: #64748b, light: #94a3b8)
 );
@@ -41,21 +42,37 @@ $spacing: (
 
 @mixin card-base {
   background: map.get(map.get($colors, 'surface'), 'base');
-  border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  border: 1px solid map.get(map.get($colors, 'surface'), 'border');
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
   overflow: hidden;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.08), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
   }
 }
 
-// -----------------------------------------------------------------------------
-// LAYOUT & STRUCTURE
-// -----------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------
+  // LAYOUT & STRUCTURE
+  // -----------------------------------------------------------------------------
+  
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: map.get($spacing, 'xl') 0;
+    
+    .empty-icon-wrapper {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: map.get(map.get($colors, 'surface'), 'alt');
+      color: map.get(map.get($colors, 'text'), 'light');
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 12px;
+    }
+    
+    h3 { font-size: 1rem; font-weight: 600; color: map.get(map.get($colors, 'text'), 'main'); margin: 0 0 4px 0; }
+    p { font-size: 0.875rem; color: map.get(map.get($colors, 'text'), 'muted'); margin: 0; }
+  }
 
 .dashboard-container {
   width: 100%;
@@ -64,7 +81,10 @@ $spacing: (
   display: flex;
   flex-direction: column;
   gap: clamp(1.5rem, 3vw, 2.5rem);
+  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.04) 0%, rgba(248, 250, 252, 0) 50%),
+              radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.04) 0%, rgba(248, 250, 252, 0) 50%);
   background-color: #f8fafc;
+  background-attachment: fixed;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: map.get(map.get($colors, 'text'), 'main');
 
@@ -217,15 +237,14 @@ $spacing: (
     display: grid;
     grid-template-columns: 2.5fr 1fr;
     gap: clamp(1rem, 2vw, 1.5rem);
-    @include media('xl') { grid-template-columns: 2fr 1fr; }
-    @include media('lg') { grid-template-columns: 1fr; }
+    @include media('xl') { grid-template-columns: 1fr; } // Stack earlier to prevent squishing
   }
 
   .dashboard-charts-section {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.5fr 1fr;
     gap: clamp(1rem, 2vw, 1.5rem);
-    @include media('md') { grid-template-columns: 1fr; }
+    @include media('lg') { grid-template-columns: 1fr; } // Stack charts at tablet width
 
     .chart-panel { height: 100%; display: flex; }
 
@@ -248,7 +267,7 @@ $spacing: (
 
       .panel-content {
         padding: map.get($spacing, 'lg'); 
-        flex: 1; display: flex; flex-direction: column; justify-content: center; // FIX: Updated to center content
+        flex: 1; display: flex; flex-direction: column; justify-content: center; // Keep content nicely centered within the card's natural height
         gap: map.get($spacing, 'md');
       }
     }
@@ -267,9 +286,9 @@ $spacing: (
         }
         
         &.chart-wrapper-doughnut { 
-            width: min(100%, 240px);
+            width: min(100%, 260px);
             height: 220px;
-            max-width: 240px;
+            max-width: 260px;
             margin: 0 auto;
             padding-bottom: 0;
             
@@ -313,40 +332,275 @@ $spacing: (
     .panel-header {
       padding: map.get($spacing, 'lg') map.get($spacing, 'lg') map.get($spacing, 'md');
       border-bottom: 1px solid map.get(map.get($colors, 'surface'), 'border');
-      display: flex; justify-content: space-between; align-items: center; 
-      
+      display: flex; justify-content: space-between; align-items: center;
+
       .panel-title {
         font-size: 1.125rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;
         &::before { content: ''; width: 6px; height: 24px; border-radius: 3px; background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%); }
       }
-      .panel-action { font-size: 0.875rem; color: map.get(map.get($colors, 'primary'), 'base'); text-decoration: none; font-weight: 600; &:hover { text-decoration: underline; } }
+      .panel-action {
+        font-size: 0.875rem; color: map.get(map.get($colors, 'primary'), 'base');
+        text-decoration: none; font-weight: 600;
+        &:hover { text-decoration: underline; }
+      }
+    }
+
+    .activity-list-container {
+      flex: 1;
+      position: relative;
+      min-height: 350px; // A reliable fallback height for stacked layouts
     }
 
     .activity-list {
-      flex: 1; overflow-y: auto; padding: map.get($spacing, 'lg'); display: flex; flex-direction: column; gap: map.get($spacing, 'lg');
-      max-height: 600px; @include media('lg') { max-height: 400px; }
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      overflow-y: auto; padding: map.get($spacing, 'lg');
+      display: flex; flex-direction: column; gap: map.get($spacing, 'lg');
+      
+      // Removed fixed max-height to let it dynamically match chart height!
+
 
       .activity-item {
         display: flex; gap: map.get($spacing, 'md'); position: relative;
+        border-radius: 12px;
+        transition: background 0.2s;
+
+        &.activity-item-rich { cursor: pointer; }
+        &.activity-item-rich:hover { background: map.get(map.get($colors, 'surface'), 'alt'); }
+
         &:not(:last-child)::after {
-          content: ''; position: absolute; top: 40px; left: 20px; width: 2px; bottom: -24px;
-          background: map.get(map.get($colors, 'surface'), 'border'); opacity: 0.6;
+          content: ''; position: absolute; top: 44px; left: 19px; width: 2px; bottom: -24px;
+          background: map.get(map.get($colors, 'surface'), 'border'); opacity: 0.6; z-index: 0;
         }
+
+        // ---- Avatar ----
         .activity-avatar {
-          width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-          font-size: 1rem; color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 1;
-          &.avatar-primary { background: linear-gradient(135deg, map.get(map.get($colors, 'primary'), 'gradient-start'), map.get(map.get($colors, 'primary'), 'gradient-end')); }
-          &.avatar-success { background: linear-gradient(135deg, map.get(map.get($colors, 'success'), 'gradient-start'), map.get(map.get($colors, 'success'), 'gradient-end')); }
-          &.avatar-info { background: linear-gradient(135deg, map.get(map.get($colors, 'info'), 'gradient-start'), map.get(map.get($colors, 'info'), 'gradient-end')); }
-          &.avatar-danger { background: linear-gradient(135deg, map.get(map.get($colors, 'danger'), 'gradient-start'), map.get(map.get($colors, 'danger'), 'gradient-end')); }
+          width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1rem; color: white;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 1;
+          margin-top: 2px;
+
+          &.avatar-primary  { background: linear-gradient(135deg, map.get(map.get($colors, 'primary'), 'gradient-start'), map.get(map.get($colors, 'primary'), 'gradient-end')); }
+          &.avatar-success  { background: linear-gradient(135deg, map.get(map.get($colors, 'success'), 'gradient-start'), map.get(map.get($colors, 'success'), 'gradient-end')); }
+          &.avatar-info     { background: linear-gradient(135deg, map.get(map.get($colors, 'info'), 'gradient-start'), map.get(map.get($colors, 'info'), 'gradient-end')); }
+          &.avatar-danger   { background: linear-gradient(135deg, map.get(map.get($colors, 'danger'), 'gradient-start'), map.get(map.get($colors, 'danger'), 'gradient-end')); }
+          &.avatar-warning  { background: linear-gradient(135deg, map.get(map.get($colors, 'warning'), 'gradient-start'), map.get(map.get($colors, 'warning'), 'gradient-end')); }
         }
+
+        // ---- Content ----
         .activity-content {
-          flex: 1; padding-top: 2px;
-          .activity-message { font-size: 0.875rem; color: map.get(map.get($colors, 'text'), 'main'); line-height: 1.4; margin-bottom: 4px; strong { font-weight: 600; } }
-          .activity-time { font-size: 0.75rem; color: map.get(map.get($colors, 'text'), 'light'); font-weight: 500; }
+          flex: 1; min-width: 0; padding-top: 2px;
+
+          // Legacy / simple layout
+          .activity-message {
+            font-size: 0.875rem; color: map.get(map.get($colors, 'text'), 'main');
+            line-height: 1.4; margin: 0 0 4px 0;
+            strong { font-weight: 600; }
+          }
+          .activity-time {
+            font-size: 0.75rem; color: map.get(map.get($colors, 'text'), 'light'); font-weight: 500;
+          }
+
+          // ---- Rich layout rows ----
+          .activity-header-row {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: map.get($spacing, 'sm'); margin-bottom: 6px;
+
+            .activity-tags {
+              display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+
+              .activity-tag {
+                display: inline-flex; align-items: center; gap: 4px;
+                font-size: 0.72rem; font-weight: 600; padding: 3px 8px;
+                border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em;
+                white-space: nowrap;
+
+                i { font-size: 0.75rem; }
+
+                &.field-tag {
+                  &.tag-primary  { background: map.get(map.get($colors, 'primary'), 'light'); color: map.get(map.get($colors, 'primary'), 'dark'); }
+                  &.tag-success  { background: map.get(map.get($colors, 'success'), 'light'); color: map.get(map.get($colors, 'success'), 'dark'); }
+                  &.tag-info     { background: map.get(map.get($colors, 'info'), 'light'); color: map.get(map.get($colors, 'info'), 'dark'); }
+                  &.tag-danger   { background: map.get(map.get($colors, 'danger'), 'light'); color: map.get(map.get($colors, 'danger'), 'dark'); }
+                  &.tag-warning  { background: map.get(map.get($colors, 'warning'), 'light'); color: map.get(map.get($colors, 'warning'), 'dark'); }
+                }
+
+                &.action-badge {
+                  &.badge-primary { background: map.get(map.get($colors, 'primary'), 'base'); color: white; }
+                  &.badge-success { background: map.get(map.get($colors, 'success'), 'base'); color: white; }
+                  &.badge-info    { background: map.get(map.get($colors, 'info'), 'base'); color: white; }
+                  &.badge-danger  { background: map.get(map.get($colors, 'danger'), 'base'); color: white; }
+                  &.badge-warning { background: map.get(map.get($colors, 'warning'), 'base'); color: white; }
+                }
+              }
+            }
+
+            .activity-chevron-indicator {
+              color: map.get(map.get($colors, 'text'), 'light');
+              font-size: 0.7rem; flex-shrink: 0;
+              transition: transform 0.2s;
+            }
+          }
+
+          .activity-meta-details {
+            display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px;
+
+            .meta-pill {
+              display: flex; align-items: flex-start; gap: 6px; flex-wrap: wrap;
+              font-size: 0.8rem; line-height: 1.3;
+
+              .pill-label {
+                display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;
+                i { font-size: 0.85rem; color: map.get(map.get($colors, 'text'), 'light'); flex-shrink: 0; }
+                .label { color: map.get(map.get($colors, 'text'), 'muted'); font-weight: 500; }
+              }
+
+              .val { 
+                font-weight: 700; color: map.get(map.get($colors, 'text'), 'main'); 
+                word-break: break-word; flex: 1 1 auto;
+              }
+
+              &.candidate-pill .val { color: map.get(map.get($colors, 'primary'), 'dark'); }
+              &.assessment-pill .val { color: map.get(map.get($colors, 'info'), 'dark'); }
+            }
+          }
+
+          .activity-details-card {
+            display: flex; align-items: flex-start; gap: 8px;
+            background: map.get(map.get($colors, 'surface'), 'alt');
+            border-radius: 8px; padding: 8px 10px; margin-bottom: 6px;
+
+            .card-line {
+              width: 3px; border-radius: 2px; align-self: stretch; flex-shrink: 0;
+            }
+            .details-text {
+              font-size: 0.8rem; color: map.get(map.get($colors, 'text'), 'muted'); margin: 0; line-height: 1.5;
+            }
+
+            &.type-primary .card-line { background: map.get(map.get($colors, 'primary'), 'base'); }
+            &.type-success .card-line { background: map.get(map.get($colors, 'success'), 'base'); }
+            &.type-info    .card-line { background: map.get(map.get($colors, 'info'), 'base'); }
+            &.type-danger  .card-line { background: map.get(map.get($colors, 'danger'), 'base'); }
+            &.type-warning .card-line { background: map.get(map.get($colors, 'warning'), 'base'); }
+          }
+
+          .activity-footer-row {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+
+            .activity-time {
+              display: inline-flex; align-items: center; gap: 4px;
+              font-size: 0.75rem; color: map.get(map.get($colors, 'text'), 'light'); font-weight: 500;
+              i { font-size: 0.8rem; }
+            }
+            .activity-updater {
+              display: inline-flex; align-items: center; gap: 4px;
+              font-size: 0.75rem; color: map.get(map.get($colors, 'text'), 'muted'); font-weight: 500;
+              i { font-size: 0.8rem; }
+            }
+          }
+
+          // ---- Expanded inline panel ----
+          .activity-expanded-details {
+            margin-top: map.get($spacing, 'sm');
+            animation: slideDown 0.2s ease-out;
+
+            .divider {
+              height: 1px; background: map.get(map.get($colors, 'surface'), 'border');
+              margin: map.get($spacing, 'sm') 0;
+            }
+
+            .full-message-box {
+              background: map.get(map.get($colors, 'surface'), 'alt');
+              border-radius: 8px; padding: 10px 12px; margin-bottom: map.get($spacing, 'sm');
+
+              .box-title {
+                font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+                letter-spacing: 0.07em; color: map.get(map.get($colors, 'text'), 'light');
+                margin-bottom: 6px;
+              }
+              .message-text {
+                font-size: 0.8rem; color: map.get(map.get($colors, 'text'), 'main');
+                line-height: 1.5; margin: 0;
+                strong { font-weight: 700; }
+              }
+            }
+
+            .diff-panel {
+              display: flex; gap: map.get($spacing, 'md'); margin-bottom: map.get($spacing, 'sm');
+
+              .diff-col {
+                flex: 1;
+                .diff-title {
+                  font-size: 0.72rem; font-weight: 600;
+                  color: map.get(map.get($colors, 'text'), 'muted');
+                  display: flex; align-items: center; gap: 4px; margin-bottom: 4px;
+                  i { font-size: 0.85rem; }
+                }
+                .diff-box {
+                  padding: map.get($spacing, 'sm');
+                  background: map.get(map.get($colors, 'surface'), 'alt');
+                  border-left: 3px solid map.get(map.get($colors, 'danger'), 'base');
+                  border-radius: 4px;
+                  font-size: 0.78rem; color: map.get(map.get($colors, 'text'), 'main');
+                }
+                &.current .diff-box { border-left-color: map.get(map.get($colors, 'success'), 'base'); }
+              }
+            }
+
+            .expanded-actions {
+              display: flex; gap: map.get($spacing, 'sm'); flex-wrap: wrap;
+
+              .action-btn {
+                display: inline-flex; align-items: center; gap: 5px;
+                font-size: 0.78rem; font-weight: 600;
+                padding: 5px 12px; border-radius: 6px;
+                border: none; cursor: pointer;
+                transition: background 0.18s, color 0.18s;
+                i { font-size: 0.8rem; }
+              }
+              .view-recruitment {
+                background: map.get(map.get($colors, 'info'), 'light');
+                color: map.get(map.get($colors, 'info'), 'dark');
+                &:hover { background: map.get(map.get($colors, 'info'), 'base'); color: white; }
+              }
+              .dismiss-action {
+                background: map.get(map.get($colors, 'danger'), 'light');
+                color: map.get(map.get($colors, 'danger'), 'dark');
+                &:hover { background: map.get(map.get($colors, 'danger'), 'base'); color: white; }
+              }
+            }
+          }
+
+          // Legacy fallback
+          .legacy-layout {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+
+            .legacy-main {
+              flex: 1;
+              .activity-message {
+                font-size: 0.875rem; color: map.get(map.get($colors, 'text'), 'main');
+                line-height: 1.4; margin: 0 0 4px 0;
+                strong { font-weight: 600; }
+              }
+              .activity-time {
+                font-size: 0.75rem; color: map.get(map.get($colors, 'text'), 'light'); font-weight: 500;
+              }
+            }
+            .legacy-dismiss-btn {
+              background: none; border: none; cursor: pointer; padding: 4px;
+              color: map.get(map.get($colors, 'text'), 'light'); border-radius: 6px;
+              transition: background 0.15s, color 0.15s; flex-shrink: 0;
+              &:hover { background: map.get(map.get($colors, 'danger'), 'light'); color: map.get(map.get($colors, 'danger'), 'base'); }
+            }
+          }
         }
       }
     }
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   // ---------------------------------------------------------------------------
@@ -356,6 +610,7 @@ $spacing: (
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: clamp(1rem, 2vw, 1.5rem);
+    align-items: start; // Prevents the widgets from stretching to match each other's height
 
     @include media('lg') { grid-template-columns: 1fr; }
   }
@@ -384,6 +639,14 @@ $spacing: (
   // Interviews Widget
   .interviews-list {
     display: flex; flex-direction: column; gap: map.get($spacing, 'md');
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+    &::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
     
     .interview-item {
       display: flex; align-items: center; gap: map.get($spacing, 'md');
@@ -463,6 +726,14 @@ $spacing: (
   // System Health Widget
   .health-metrics {
     display: flex; flex-direction: column; gap: 24px;
+    max-height: 320px;
+    overflow-y: auto;
+    padding-right: 4px;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+    &::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
     
     .metric-item {
       .metric-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.875rem; font-weight: 600; color: map.get(map.get($colors, 'text'), 'main'); }
@@ -479,9 +750,9 @@ $spacing: (
   // ---------------------------------------------------------------------------
   @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
-  .stat-card-skeleton, .chart-skeleton {
+  .stat-card-skeleton, .chart-skeleton, .list-skeleton {
     pointer-events: none;
-    .skeleton-icon, .skeleton-badge, .skeleton-label, .skeleton-number, .skeleton-detail, .skeleton-bar, .skeleton-circle, .chart-skeleton-label {
+    .skeleton-icon, .skeleton-badge, .skeleton-label, .skeleton-number, .skeleton-detail, .skeleton-bar, .skeleton-circle, .chart-skeleton-label, .skeleton-avatar, .skeleton-circle-avatar, .skeleton-text, .skeleton-text-short {
       background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
       background-size: 200% 100%; animation: shimmer 1.5s infinite linear; border-radius: 6px;
     }
@@ -490,6 +761,10 @@ $spacing: (
     .skeleton-label { width: 80px; height: 14px; margin-bottom: 8px; }
     .skeleton-number { width: 60px; height: 32px; }
     .skeleton-detail { width: 100px; height: 16px; border-radius: 4px; }
+    .skeleton-avatar { width: 40px; height: 40px; border-radius: 12px; }
+    .skeleton-circle-avatar { width: 42px; height: 42px; border-radius: 50%; }
+    .skeleton-text { width: 100%; height: 14px; margin-bottom: 6px; }
+    .skeleton-text-short { width: 60%; height: 12px; }
   }
 
   .chart-skeleton-bar {
