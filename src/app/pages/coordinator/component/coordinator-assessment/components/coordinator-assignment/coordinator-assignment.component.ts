@@ -858,7 +858,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
     return (
       status === 'scheduled' ||
       status === 'pending' ||
-      status === 'in progress'
+      status === 'in progress' ||
+      status === 'active'
     );
   }
 
