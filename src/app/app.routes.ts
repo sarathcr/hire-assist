@@ -121,7 +121,7 @@ export const routes: Routes = [
       {
         path: 'interviews',
         component: InterviewsComponent,
-        data: { breadcrumb: 'Interviews', breadcrumbDisabled: true },
+        data: { breadcrumb: 'Interviews' },
         children: [
           {
             path: '',
@@ -154,15 +154,21 @@ export const routes: Routes = [
         // Route for admin users accessing coordinator features
         // Full path: /admin/coordinator
         path: 'coordinator',
-        data: { breadcrumb: 'Coordinator', breadcrumbDisabled: true },
+        data: { breadcrumb: 'Coordinator' },
         children: [
           { path: '', component: CoordinatorDashboardComponent, data: { breadcrumb: 'Dashboard' } },
-          { path: ':id', component: CoordinatorAssessmentComponent, data: { breadcrumb: 'Assessment Details' } },
           {
-            path: ':recruitmentId/:assessmentRoundId',
-            component: CoordinatorAssignmentComponent,
-            data: { breadcrumb: 'Assignment' }
-          },
+            path: ':recruitmentId',
+            data: { breadcrumb: 'Assigned Rounds' },
+            children: [
+              { path: '', component: CoordinatorAssessmentComponent },
+              {
+                path: ':assessmentRoundId',
+                component: CoordinatorAssignmentComponent,
+                data: { breadcrumb: 'Panel Assignment' }
+              }
+            ]
+          }
         ],
       },
       {

@@ -11,10 +11,11 @@ import { AssessmentForm } from '../../../../../admin/models/assessment-form.mode
 import { Assessment } from '../../../../../admin/models/assessment.model';
 import { SkeletonComponent } from '../../../../../../shared/components/assessment-card/assessment-card-skeleton';
 import { StoreService } from '../../../../../../shared/services/store.service';
+import { EmptyStateComponent } from '../../../../../../shared/components/empty-state/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-interviewer-asssessment-list',
-  imports: [AssessmentCardComponent, SkeletonComponent, PaginationComponent, AsyncPipe],
+  imports: [AssessmentCardComponent, SkeletonComponent, PaginationComponent, AsyncPipe, EmptyStateComponent],
 
   templateUrl: './interviewer-asssessment-list.component.html',
   styleUrl: './interviewer-asssessment-list.component.scss',

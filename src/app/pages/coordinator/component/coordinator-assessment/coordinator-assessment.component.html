@@ -1,19 +1,36 @@
 <div class="coordinator-assessment-rounds">
-  <div>
+  <div class="coordinator-assessment-rounds__header">
     <h1 class="coordinator-assessment-rounds__title">Assigned Rounds</h1>
   </div>
   <div class="coordinator-assessment-rounds__wrapper">
     <div class="coordinator-assessment-rounds__list">
       @if (!isLoading && assessmentRoundDataSource.length) {
         @for (assessment of assessmentRoundDataSource; track assessment) {
-          <app-assessment-card
-            class="coordinator-assessment-rounds__card"
-            [data]="assessment"
-            [showToggleButton]="false"
-            [showContent]="false"
-            (click)="onClickAssessment(assessment.assessmentRoundId)"
-            (keydown)="onClickAssessment(assessment.assessmentRoundId)"
-          ></app-assessment-card>
+          <div class="round-card" (click)="onClickAssessment(assessment.assessmentRoundId)">
+            <div class="round-card__header">
+              <h3 class="round-card__name">{{ assessment.name }}</h3>
+              @if (assessment.isActive) {
+                <span class="round-card__badge round-card__badge--active">Active</span>
+              }
+            </div>
+
+            <div class="round-card__meta">
+              <div class="round-card__meta-item">
+                <i class="pi pi-calendar"></i>
+                <span>
+                  {{ assessment.startDateTime | date: 'MMM dd, yyyy' }} - 
+                  {{ assessment.endDateTime | date: 'MMM dd, yyyy' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="round-card__footer">
+              <span class="round-card__action">
+                Assign Panels
+                <i class="pi pi-arrow-right"></i>
+              </span>
+            </div>
+          </div>
         } @empty {
           <p>No results found</p>
         }

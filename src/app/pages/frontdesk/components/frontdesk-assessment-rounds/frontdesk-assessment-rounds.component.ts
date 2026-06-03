@@ -1,16 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
+import { CommonModule } from '@angular/common';
 import { BaseComponent } from 'primeng/basecomponent';
 import { SkeletonComponent } from '../../../../shared/components/assessment-card/assessment-card-skeleton';
-import { AssessmentCardComponent } from '../../../../shared/components/assessment-card/assessment-card.component';
 import { CustomErrorResponse } from '../../../../shared/models/custom-error.models';
-import { Assessment } from '../../../admin/models/assessment.model';
+import { FrontDeskAssessmentRound } from '../../../admin/models/assessment.model';
 import { AssessmentService } from '../../../admin/services/assessment.service';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-frontdesk-assessment-rounds',
-  imports: [AssessmentCardComponent, SkeletonComponent],
+  imports: [SkeletonComponent, CommonModule, EmptyStateComponent],
   templateUrl: './frontdesk-assessment-rounds.component.html',
   styleUrl: './frontdesk-assessment-rounds.component.scss',
 })
@@ -18,7 +19,7 @@ export class FrontdeskAssessmentRoundsComponent
   extends BaseComponent
   implements OnInit
 {
-  public assessmentDataSource: Assessment[] = [];
+  public assessmentDataSource: FrontDeskAssessmentRound[] = [];
   public assessmentId!: number;
   public isLoading = true;
 
@@ -54,7 +55,7 @@ export class FrontdeskAssessmentRoundsComponent
   private getAllAssessmentRounds(): void {
     this.isLoading = true;
     this.assessmentDataSource = [];
-    const next = (res: Assessment[]) => {
+    const next = (res: FrontDeskAssessmentRound[]) => {
       this.assessmentDataSource = res || [];
       this.isLoading = false;
     };
@@ -72,5 +73,18 @@ export class FrontdeskAssessmentRoundsComponent
     this.assessmentService
       .getAssessmentRoundsForFrontDesk(this.assessmentId)
       .subscribe({ next, error });
+  }
+
+  public getBadgeClass(statusId: number, status: string): string {
+    const s = (status || '').trim().toLowerCase();
+    if (s === 'active' || statusId === 1) return 'round-card__badge--active';
+    if (s === 'pending' || statusId === 2) return 'round-card__badge--pending';
+    if (s === 'completed' || statusId === 3) return 'round-card__badge--completed';
+    return ''; 
+  }
+
+  public getFormattedDates(dateString: string): string[] {
+    if (!dateString) return [];
+    return dateString.split(' - ').map(d => d.trim());
   }
 }

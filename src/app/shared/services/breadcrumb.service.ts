@@ -85,7 +85,14 @@ export class BreadcrumbService {
   }
 
   private hasPage(route: ActivatedRouteSnapshot): boolean {
-    return !!route.routeConfig?.component || !!route.routeConfig?.loadComponent;
+    if (route.routeConfig?.component || route.routeConfig?.loadComponent) {
+      return true;
+    }
+    const defaultChild = route.routeConfig?.children?.find((c) => c.path === '');
+    if (defaultChild && (defaultChild.component || defaultChild.loadComponent)) {
+      return true;
+    }
+    return false;
   }
 
   private disableBreadcrumb(breadcrumb: MenuItem): void {

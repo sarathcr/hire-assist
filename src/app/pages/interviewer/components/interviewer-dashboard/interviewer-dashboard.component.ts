@@ -9,10 +9,12 @@ import { ASSESSMENT_URL } from '../../../../shared/constants/api';
 import { KeyValueMap } from '../../../../shared/models/common.models';
 import { AssessmentForm } from '../../../admin/models/assessment-form.model';
 import { Assessment } from '../../../admin/models/assessment.model';
+import { SearchBarComponent } from '../../../../shared/components/search-bar/search-bar/search-bar.component';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state/empty-state.component';
 
 @Component({
   selector: 'app-interviewer-dashboard',
-  imports: [SkeletonComponent, PaginationComponent, AsyncPipe, DatePipe],
+  imports: [SkeletonComponent, PaginationComponent, AsyncPipe, DatePipe, SearchBarComponent, EmptyStateComponent],
   templateUrl: './interviewer-dashboard.component.html',
   styleUrl: './interviewer-dashboard.component.scss',
   providers: [GenericDataSource],
@@ -54,6 +56,25 @@ export class InterviewerDashboardComponent
 
   // Public Methods
   public expandedRounds = new Set<number>();
+
+  public onSearch(searchTerm: string): void {
+    const newFilterMap = { ...this.filterMap };
+
+    if (searchTerm && searchTerm.trim().length > 0) {
+      newFilterMap['searchKey'] = searchTerm.trim();
+    } else {
+      delete newFilterMap['searchKey'];
+    }
+
+    this.filterMap = newFilterMap;
+
+    const payload = this.dataSource.getPayloadData();
+    if (payload?.pagination) {
+      payload.pagination.pageNumber = 1;
+    }
+    payload.filterMap = this.filterMap;
+    this.dataSource.loadPaginatedData(payload);
+  }
 
   public onClickAssessment(id: number): void {
     const basePath = this.router.url.includes('/admin/')

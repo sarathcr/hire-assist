@@ -1,9 +1,16 @@
 <div class="coordinator-assessment">
-  <div>
+  <div class="coordinator-assessment__header">
     <h1 class="coordinator-assessment__title">Recruitments</h1>
+    <div class="coordinator-assessment__actions">
+      <app-search-bar
+        [placeholder]="'Search Recruitments...'"
+        (search)="onSearch($event)"
+      >
+      </app-search-bar>
+    </div>
   </div>
   <div class="coordinator-assessment__wrapper">
-    @if (isLoading) {
+    @if (isLoading || !hasLoaded) {
       <div class="coordinator-assessment__list">
         @for (skeleton of skeletonCards; track $index) {
           <app-assessment-card-skeleton
@@ -12,18 +19,68 @@
         }
       </div>
     } @else {
-      <div class="coordinator-assessment__list">
-        @for (assessment of assessmentDataSource; track assessment) {
-          <app-assessment-card
-            class="coordinator-assessment__card"
-            [data]="assessment"
-            [showToggleButton]="false"
-            (click)="onClickAssessment(assessment.id ?? 0)"
-          ></app-assessment-card>
-        } @empty {
-          <p>No data available</p>
-        }
-      </div>
+      @if (assessmentDataSource && assessmentDataSource.length > 0) {
+        <div class="coordinator-assessment__list">
+          @for (assessment of assessmentDataSource; track assessment) {
+            <div
+              class="recruitment-card"
+              (click)="onClickAssessment(assessment.id ?? 0)"
+            >
+              <div class="recruitment-card__header">
+                <div>
+                  <h3 class="recruitment-card__name">{{ assessment.name }}</h3>
+                  <p class="recruitment-card__id">ID: #{{ assessment.id }}</p>
+                </div>
+                @if (assessment.isActive) {
+                  <span class="recruitment-card__badge recruitment-card__badge--active">Active</span>
+                }
+              </div>
+
+              <div class="recruitment-card__meta">
+                <div class="recruitment-card__meta-item">
+                  <i class="pi pi-calendar"></i>
+                  <span>{{ assessment.startDateTime | date: 'MMM dd' }} - {{ assessment.endDateTime | date: 'MMM dd' }}</span>
+                </div>
+                <div class="recruitment-card__meta-item">
+                  <i class="pi pi-users"></i>
+                  <span>{{ getCandidateCount(assessment) }} Candidate{{ getCandidateCount(assessment) !== 1 ? 's' : '' }}</span>
+                </div>
+              </div>
+
+              <div class="recruitment-card__rounds">
+                @let roundsToShow = (assessment.id && expandedRounds.has(assessment.id)) ? assessment.rounds : (assessment.rounds?.slice(0, 3) || []);
+                @for (round of roundsToShow; track round.roundId) {
+                  <span
+                    class="recruitment-card__round-chip"
+                    [class]="getRoundStatusClass(assessment, round)"
+                  >
+                    {{ round.roundName }}
+                  </span>
+                }
+                @if (assessment.rounds && assessment.rounds.length > 3) {
+                  <span 
+                    class="recruitment-card__round-toggle"
+                    [class.recruitment-card__round-toggle--expanded]="assessment.id && expandedRounds.has(assessment.id)"
+                    (click)="toggleRounds($event, assessment.id!)"
+                  >
+                    {{ (assessment.id && expandedRounds.has(assessment.id)) ? 'Hide details' : 'Show details' }}
+                    <i class="pi pi-chevron-down"></i>
+                  </span>
+                }
+              </div>
+
+              <div class="recruitment-card__footer">
+                <span class="recruitment-card__action">
+                  View Details
+                  <i class="pi pi-arrow-right"></i>
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <app-empty-state message="No recruitments found"></app-empty-state>
+      }
     }
   </div>
   <app-pagination

@@ -1,28 +1,53 @@
 <div class="frontdesk-assessment-rounds">
-  <div>
+  <div class="frontdesk-assessment-rounds__header">
     <h1 class="frontdesk-assessment-rounds__title">Recruitment Rounds</h1>
   </div>
   <div class="frontdesk-assessment-rounds__wrapper">
-    <div class="frontdesk-assessment-rounds__list">
-      @if (isLoading) {
+    @if (isLoading) {
+      <div class="frontdesk-assessment-rounds__list">
         @for (skeleton of [1, 2, 3]; track skeleton) {
           <app-assessment-card-skeleton
             class="frontdesk-assessment-rounds__card"
           ></app-assessment-card-skeleton>
         }
+      </div>
+    } @else {
+      @if (assessmentDataSource && assessmentDataSource.length > 0) {
+        <div class="frontdesk-assessment-rounds__list">
+          @for (assessment of assessmentDataSource; track assessment) {
+            <div class="round-card" (click)="onClickAssessment(assessment.id)" (keydown)="onClickAssessment(assessment.id)">
+              <div class="round-card__header">
+                <h3 class="round-card__name">{{ assessment.name }}</h3>
+                @if (assessment.status) {
+                  <span class="round-card__badge" [ngClass]="getBadgeClass(assessment.statusId, assessment.status)">
+                    {{ assessment.status }}
+                  </span>
+                }
+              </div>
+
+              <div class="round-card__meta">
+                <div class="round-card__meta-item">
+                  <i class="pi pi-calendar"></i>
+                  <div class="round-card__date-range">
+                    @for (date of getFormattedDates(assessment.scheduledDate); track $index) {
+                      <span class="round-card__date-part">{{ date }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div class="round-card__footer">
+                <span class="round-card__action">
+                  View Details
+                  <i class="pi pi-arrow-right"></i>
+                </span>
+              </div>
+            </div>
+          }
+        </div>
       } @else {
-        @for (assessment of assessmentDataSource; track assessment) {
-          <app-assessment-card
-            class="frontdesk-assessment-rounds__card"
-            [data]="assessment"
-            [showToggleButton]="false"
-            (click)="onClickAssessment(assessment.id ?? 0)"
-            (keydown)="onClickAssessment(assessment.id ?? 0)"
-          ></app-assessment-card>
-        } @empty {
-          <h1 class="frontdesk-assessment-rounds__content">No Active Rounds</h1>
-        }
+        <app-empty-state message="No Active Rounds"></app-empty-state>
       }
-    </div>
+    }
   </div>
 </div>

@@ -1,16 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SkeletonComponent } from '../../../../shared/components/assessment-card/assessment-card-skeleton';
-import { AssessmentCardComponent } from '../../../../shared/components/assessment-card/assessment-card.component';
 import { BaseComponent } from '../../../../shared/components/base/base.component';
 import { ErrorResponse } from '../../../../shared/models/custom-error.models';
 import { ConfigMap } from '../../../../shared/utilities/form.utility';
 import { CoordinatorAssessmentRounds } from '../../../admin/models/assessment.model';
 import { AssessmentService } from '../../../admin/services/assessment.service';
 
+import { DatePipe } from '@angular/common';
+
 @Component({
   selector: 'app-coordinator-assessment',
-  imports: [AssessmentCardComponent, SkeletonComponent],
+  imports: [SkeletonComponent, DatePipe],
   templateUrl: './coordinator-assessment.component.html',
   styleUrl: './coordinator-assessment.component.scss',
 })
@@ -34,7 +35,9 @@ export class CoordinatorAssessmentComponent
 
   // LifeCycle Hooks
   ngOnInit(): void {
-    const routeId = this.activatedRoute.snapshot.paramMap.get('recruitmentId') || this.activatedRoute.snapshot.paramMap.get('id');
+    const routeId =
+      this.activatedRoute.snapshot.paramMap.get('recruitmentId') ||
+      this.activatedRoute.snapshot.paramMap.get('id');
 
     if (routeId) {
       this.assessmentId = Number(routeId);
@@ -45,9 +48,15 @@ export class CoordinatorAssessmentComponent
   // Public Methods
   public onClickAssessment(assessmentRoundId: number): void {
     if (assessmentRoundId > 0) {
-      this.router.navigate([
-        `coordinator/recruitments/${this.assessmentId}/${assessmentRoundId}`,
-      ]);
+      if (this.router.url.includes('/admin/coordinator')) {
+        this.router.navigate([
+          `admin/coordinator/${this.assessmentId}/${assessmentRoundId}`,
+        ]);
+      } else {
+        this.router.navigate([
+          `coordinator/recruitments/${this.assessmentId}/${assessmentRoundId}`,
+        ]);
+      }
     }
   }
 

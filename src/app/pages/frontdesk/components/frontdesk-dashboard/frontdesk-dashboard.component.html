@@ -1,32 +1,93 @@
 <div class="frontdesk-assessments">
-  <div>
+  <div class="frontdesk-assessments__header">
     <h1 class="frontdesk-assessments__title">Recruitments</h1>
-  </div>
-  <div class="frontdesk-assessments__wrapper">
-    <div class="frontdesk-assessments__list">
-      @if (isLoading) {
-        <app-assessment-card-skeleton
-          class="frontdesk-assessments__card"
-        ></app-assessment-card-skeleton>
-        <app-assessment-card-skeleton
-          class="frontdesk-assessments__card"
-        ></app-assessment-card-skeleton>
-        <app-assessment-card-skeleton
-          class="frontdesk-assessments__card"
-        ></app-assessment-card-skeleton>
-      } @else {
-        @for (assessment of assessmentDataSource; track assessment) {
-          <app-assessment-card
-            class="frontdesk-assessments__card"
-            [data]="assessment"
-            [showToggleButton]="false"
-            (click)="onClickAssessment(assessment.id ?? 0)"
-            (keydown)="onClickAssessment(assessment.id ?? 0)"
-          ></app-assessment-card>
-        } @empty {
-          <h1 class="frontdesk-assessments__content">No Active Recruitments</h1>
-        }
-      }
+    <div class="frontdesk-assessments__actions">
+      <app-search-bar
+        [placeholder]="'Search Recruitments...'"
+        (search)="onSearch($event)"
+      >
+      </app-search-bar>
     </div>
   </div>
+  <div class="frontdesk-assessments__wrapper">
+    @if (isLoading) {
+      <div class="frontdesk-assessments__list">
+        <app-assessment-card-skeleton
+          class="frontdesk-assessments__card"
+        ></app-assessment-card-skeleton>
+        <app-assessment-card-skeleton
+          class="frontdesk-assessments__card"
+        ></app-assessment-card-skeleton>
+        <app-assessment-card-skeleton
+          class="frontdesk-assessments__card"
+        ></app-assessment-card-skeleton>
+      </div>
+    } @else {
+      @if (assessmentDataSource && assessmentDataSource.length > 0) {
+        <div class="frontdesk-assessments__list">
+          @for (assessment of assessmentDataSource; track assessment) {
+            <div
+              class="recruitment-card"
+              (click)="onClickAssessment(assessment.id ?? 0)"
+              (keydown)="onClickAssessment(assessment.id ?? 0)"
+            >
+              <div class="recruitment-card__header">
+                <div>
+                  <h3 class="recruitment-card__name">{{ assessment.name }}</h3>
+                  <p class="recruitment-card__id">ID: #{{ assessment.id }}</p>
+                </div>
+                @if (assessment.isActive) {
+                  <span class="recruitment-card__badge recruitment-card__badge--active">Active</span>
+                }
+              </div>
+
+              <div class="recruitment-card__meta">
+                <div class="recruitment-card__meta-item">
+                  <i class="pi pi-calendar"></i>
+                  <span>{{ assessment.startDateTime | date: 'MMM dd' }} - {{ assessment.endDateTime | date: 'MMM dd' }}</span>
+                </div>
+              </div>
+
+              <div class="recruitment-card__rounds">
+                @let roundsToShow = (assessment.id && expandedRounds.has(assessment.id)) ? assessment.rounds : (assessment.rounds?.slice(0, 3) || []);
+                @for (round of roundsToShow; track round.roundId) {
+                  <span
+                    class="recruitment-card__round-chip"
+                    [class]="getRoundStatusClass(assessment, round)"
+                  >
+                    {{ round.roundName }}
+                  </span>
+                }
+                @if (assessment.rounds && assessment.rounds.length > 3) {
+                  <span 
+                    class="recruitment-card__round-toggle"
+                    [class.recruitment-card__round-toggle--expanded]="assessment.id && expandedRounds.has(assessment.id)"
+                    (click)="toggleRounds($event, assessment.id!)"
+                  >
+                    {{ (assessment.id && expandedRounds.has(assessment.id)) ? 'Hide details' : 'Show details' }}
+                    <i class="pi pi-chevron-down"></i>
+                  </span>
+                }
+              </div>
+
+              <div class="recruitment-card__footer">
+                <span class="recruitment-card__action">
+                  View Details
+                  <i class="pi pi-arrow-right"></i>
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <app-empty-state message="No Active Recruitments"></app-empty-state>
+      }
+    }
+  </div>
+  <app-pagination
+    [dataSource]="dataSource"
+    [totalRecords]="totalRecords"
+    [filterMap]="filterMap"
+  >
+  </app-pagination>
 </div>

@@ -192,3 +192,16 @@ export interface IdProofUploadRequest {
   Description: string;
   File: File;
 }
+
+export interface FrontDeskAssessmentRound {
+  id: number;
+  name: string;
+  statusId: number;
+  status: string;
+  scheduledDate: string;
+  roundTypeId: number;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string;
+}

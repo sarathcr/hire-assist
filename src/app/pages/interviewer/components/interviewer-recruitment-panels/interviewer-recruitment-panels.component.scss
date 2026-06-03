@@ -11,7 +11,7 @@
 }
 
 .panel-detail {
-  padding: 1rem;
+  padding: 0 ;
   animation: fadeSlideUp 0.6s ease-out forwards;
 
   &__header-wrapper {
@@ -204,7 +204,7 @@
         transform: translateY(-2px);
       }
 
-      &[ng-reflect-active='true'] {
+      &[ng-reflect-active="true"] {
         border-color: #1d4ed8 !important;
         box-shadow: 0 10px 25px rgba(29, 78, 216, 0.08);
       }
@@ -223,7 +223,7 @@
           box-shadow: none !important;
         }
 
-        &[aria-expanded='true'] {
+        &[aria-expanded="true"] {
           border-bottom: 1px solid #f1f5f9 !important;
         }
       }

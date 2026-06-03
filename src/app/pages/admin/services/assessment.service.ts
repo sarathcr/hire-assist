@@ -11,6 +11,7 @@ import {
   CoordinatorAssessmentRounds,
   CoordinatorDto,
   FileDto,
+  FrontDeskAssessmentRound,
   IdProofRequest,
   IdProofUploadRequest,
 } from '../models/assessment.model';
@@ -110,12 +111,12 @@ export class AssessmentService extends ApiService<any> {
     );
   }
 
-  public getAssessmentsForFrontDesk() {
-    return this.httpClient.get<Assessment[]>(`${this.getResourceUrl()}/All`);
+  public getAssessmentsForFrontDesk(payload: any) {
+    return this.httpClient.post<any>(`${this.getResourceUrl()}/All`, payload);
   }
 
   public getAssessmentRoundsForFrontDesk(id: number) {
-    return this.httpClient.get<Assessment[]>(
+    return this.httpClient.get<FrontDeskAssessmentRound[]>(
       `${this.getResourceUrl()}/${id}/Rounds`,
     );
   }
