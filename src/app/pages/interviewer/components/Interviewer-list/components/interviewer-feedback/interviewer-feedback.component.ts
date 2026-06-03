@@ -213,12 +213,22 @@ export class InterviewerFeedbackComponent
 
   public GetfeedbackCriteria() {
     const next = (res: Feedbackcriteria[]) => {
+      // Capture existing local state to preserve unsaved changes
+      const localState = new Map<number, { content: string, score: number | null, isScoreInValid: boolean }>();
+      if (this.feedbackcriteria && this.feedbackcriteria.length > 0) {
+        this.feedbackcriteria.forEach(fc => {
+          if (this.hasChanges(fc)) {
+            localState.set(fc.value, { content: fc.content ?? '', score: fc.score, isScoreInValid: fc.isScoreInValid || false });
+          }
+        });
+      }
+
       this.feedbackdetails = res;
       this.isFeedbackCriteriaLoaded = true;
       this.updateLoadingState();
       // Reset arrays
       this.uploadedFile = [];
-      this.previewImageUrls.clear();
+      // Clear pending since they were uploaded or discarded
       this.pendingFiles = [];
       this.pendingFilePreviews = [];
 
@@ -232,11 +242,16 @@ export class InterviewerFeedbackComponent
           });
         }
 
+        const existing = localState.get(item.id);
+        const content = existing ? existing.content : (item.comments ?? '');
+        const score = existing ? existing.score : (item.score ?? null);
+        const isScoreInValid = existing ? existing.isScoreInValid : false;
+
         return {
           title: item.criteria,
           value: item.id,
-          content: item.comments ?? '',
-          score: item.score ?? null,
+          content: content,
+          score: score,
           maxScore: item.maxScore ?? 10,
           isSaved:
             item.comments ||
@@ -244,7 +259,7 @@ export class InterviewerFeedbackComponent
             (item.fileDto && item.fileDto.length > 0)
               ? true
               : false,
-          isScoreInValid: false,
+          isScoreInValid: isScoreInValid,
           id: item.feedbackId,
           fileDto: item.fileDto,
           originalContent: item.comments ?? '',
