@@ -263,12 +263,6 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     this.ref?.onClose.subscribe((res: boolean) => {
       if (res) {
         this.deleteAssessment(assessmentId);
-      } else {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'Deletion Cancelled',
-        });
       }
     });
   }
@@ -361,6 +355,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
 
   private subscribeToPaginatedData(): void {
     let hasReceivedData = false;
+    let hasStartedLoading = false;
 
     const sub = this.dataSource.connect().subscribe((data) => {
       this.assessmentDataSource = data;
@@ -374,8 +369,13 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     const loadingSub = this.dataSource.loading$.subscribe((isLoading) => {
       // Update isLoading based on dataSource loading state
       this.isLoading = isLoading;
+
+      if (isLoading) {
+        hasStartedLoading = true;
+      }
+      
       // Set isInitialLoad to false when loading completes AND we have received data
-      if (!isLoading && this.isInitialLoad && hasReceivedData) {
+      if (!isLoading && this.isInitialLoad && hasStartedLoading && hasReceivedData) {
         this.isInitialLoad = false;
       }
     });

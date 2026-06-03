@@ -1,5 +1,5 @@
 import { DecimalPipe, NgClass } from '@angular/common';
-import { Component, input, OnInit, output } from '@angular/core';
+import { Component, input, OnInit, output, ViewChild } from '@angular/core';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { PopoverModule } from 'primeng/popover';
@@ -25,6 +25,8 @@ import { Assessment } from '../../../pages/admin/models/assessment.model';
   styleUrl: './assessment-card.component.scss',
 })
 export class AssessmentCardComponent implements OnInit {
+  @ViewChild(SpeedDial) speedDial!: SpeedDial;
+
   public data = input<Assessment>();
   public edit = output<Assessment>();
   public delete = output<number>();
@@ -65,18 +67,15 @@ export class AssessmentCardComponent implements OnInit {
   private setActionItems(): void {
     this.actionItems = [
       {
-        label: 'Schedule',
-        icon: 'pi pi-calendar',
-        command: (e) => this.handleActionClick(e, 'schedule'),
-      },
-      {
         label: 'Edit',
         icon: 'pi pi-pencil',
+        tooltipOptions: { tooltipLabel: 'Edit', tooltipPosition: 'top' },
         command: (e) => this.handleActionClick(e, 'edit'),
       },
       {
         label: 'Delete',
         icon: 'pi pi-trash',
+        tooltipOptions: { tooltipLabel: 'Delete', tooltipPosition: 'top' },
         command: (e) => this.handleActionClick(e, 'delete'),
       },
     ];
