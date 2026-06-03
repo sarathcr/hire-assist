@@ -38,7 +38,15 @@ export class InputTextareaComponent
   // Public Methods
   public onInputChange(event: Event) {
     const inputElement = event.target as HTMLInputElement;
-    const inputValue: string = inputElement.value;
+    let inputValue: string = inputElement.value;
+    
+    // Prevent consecutive spaces and leading spaces (while preserving newlines)
+    inputValue = inputValue.replace(/ {2,}/g, ' ');
+    if (inputValue.startsWith(' ')) {
+      inputValue = inputValue.trimStart();
+    }
+    inputElement.value = inputValue;
+
     this.formControl.setValue(inputValue);
     if (!this.formControl.touched) {
       this.formControl.markAsTouched({ onlySelf: true });

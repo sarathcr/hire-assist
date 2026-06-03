@@ -44,7 +44,7 @@
       ></app-button>
       <app-button
         [buttonLabel]="'Submit'"
-        [disabled]="data.fGroup.invalid"
+        [disabled]="data.fGroup.invalid || (isEdit && !hasChanges)"
         (btnClick)="onSubmit()"
       ></app-button>
     </div>

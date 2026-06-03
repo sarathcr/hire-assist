@@ -37,6 +37,7 @@ export class CreateUpdateAssessmentModalComponent
   public data!: AssessmentFormGroup;
   public metadata!: Metadata[];
   public isEdit = false;
+  private initialFormValues: any;
 
   constructor(
     private ref: DynamicDialogRef,
@@ -58,10 +59,41 @@ export class CreateUpdateAssessmentModalComponent
 
   // Public Methods
 
+  public get hasChanges(): boolean {
+    if (!this.isEdit) return true;
+    if (!this.initialFormValues) return false;
+
+    const current = this.data.fGroup.value;
+
+    const normalize = (val: any) => typeof val === 'string' ? val.trim().replace(/\s+/g, ' ') : val;
+
+    const currentName = normalize(current.name);
+    const initialName = normalize(this.initialFormValues.name);
+
+    const currentDesc = normalize(current.description);
+    const initialDesc = normalize(this.initialFormValues.description);
+
+    const currentStart = current.startDateTime ? formatDate(current.startDateTime.toString()) : '';
+    const currentEnd = current.endDateTime ? formatDate(current.endDateTime.toString()) : '';
+
+    return (
+      currentName !== initialName ||
+      currentDesc !== initialDesc ||
+      current.isActive !== this.initialFormValues.isActive ||
+      currentStart !== this.initialFormValues.startDateTime ||
+      currentEnd !== this.initialFormValues.endDateTime
+    );
+  }
+
   public onSubmit() {
     this.data.fGroup.markAllAsTouched();
     this.data.fGroup.updateValueAndValidity();
     if (this.data.fGroup.invalid) {
+      return;
+    }
+
+    if (this.isEdit && !this.hasChanges) {
+      this.ref?.close();
       return;
     }
 
@@ -80,6 +112,13 @@ export class CreateUpdateAssessmentModalComponent
     this.data = this.config.data;
     const id = this.data.formData?.id;
     if (id !== undefined) {
+      this.initialFormValues = {
+        name: this.data.formData.name,
+        description: this.data.formData.description,
+        isActive: this.data.formData.isActive,
+        startDateTime: formatDate(this.data.formData.startDateTime?.toString() || ''),
+        endDateTime: formatDate(this.data.formData.endDateTime?.toString() || '')
+      };
       this.validateCreateOrUpdateAssessment(id);
     }
   }

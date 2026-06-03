@@ -68,6 +68,12 @@ export class InputTextComponent extends BaseFormComponent implements OnInit {
         input.value = this.formatAadhaar(val);
       }
     } else {
+      // Prevent consecutive spaces and leading spaces
+      val = val.replace(/ {2,}/g, ' ');
+      if (val.startsWith(' ')) {
+        val = val.trimStart();
+      }
+      input.value = val;
       this.formControl.setValue(val);
     }
 
