@@ -4,15 +4,15 @@
 // ════════════════════════════════════════════════════════
 
 // ── Design Tokens — aligned to project Aura/Material Blue theme ───
-$blue-50: #E3F2FD; // Material Blue 50
-$blue-100: #BBDEFB; // Material Blue 100
-$blue-500: #2196F3; // Material Blue 500 (project primary)
-$blue-600: #1E88E5; // Material Blue 600
+$blue-50: #e3f2fd; // Material Blue 50
+$blue-100: #bbdefb; // Material Blue 100
+$blue-500: #2196f3; // Material Blue 500 (project primary)
+$blue-600: #1e88e5; // Material Blue 600
 // Re-using $indigo-* names so no selector changes needed — values now = project blue
-$indigo-100: #BBDEFB; // Material Blue 100
-$indigo-400: #42A5F5; // Material Blue 400
-$indigo-500: #2196F3; // Material Blue 500 — project primary (was purple #6366f1)
-$indigo-600: #1E88E5; // Material Blue 600
+$indigo-100: #bbdefb; // Material Blue 100
+$indigo-400: #42a5f5; // Material Blue 400
+$indigo-500: #2196f3; // Material Blue 500 — project primary (was purple #6366f1)
+$indigo-600: #1e88e5; // Material Blue 600
 $green-400: #34d399;
 $green-500: #10b981;
 $green-100: #d1fae5;
@@ -54,8 +54,6 @@ $white: #ffffff;
   }
 }
 
-
-
 @keyframes successPop {
   0% {
     transform: scale(0.7);
@@ -73,7 +71,6 @@ $white: #ffffff;
 }
 
 @keyframes progressGlow {
-
   0%,
   100% {
     box-shadow: 0 0 8px rgba($indigo-500, 0.4);
@@ -101,7 +98,7 @@ $white: #ffffff;
   overflow: visible !important;
   max-width: 100%;
   box-sizing: border-box;
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
   animation: fadeSlideUp 0.4s ease both;
 
   // ── TIMER — fixed floating card, draggable
@@ -123,7 +120,9 @@ $white: #ffffff;
     backdrop-filter: blur(12px);
     border: 1.5px solid rgba($indigo-500, 0.12);
     padding: 6px 8px;
-    transition: box-shadow 0.3s ease, translate 0.3s ease;
+    transition:
+      box-shadow 0.3s ease,
+      translate 0.3s ease;
     animation: fadeSlideCentered 0.5s ease both;
     animation-delay: 0.2s;
 
@@ -151,7 +150,7 @@ $white: #ffffff;
     }
 
     &::before {
-      content: '⏱ Session Timer';
+      content: "⏱ Session Timer";
       display: block;
       font-size: 10px;
       font-weight: 700;
@@ -184,7 +183,7 @@ $white: #ffffff;
     justify-content: space-between;
     gap: 24px;
     animation: fadeSlideUp 0.4s ease both;
-    
+
     @media (max-width: 768px) {
       flex-direction: column;
       align-items: stretch;
@@ -585,7 +584,7 @@ $white: #ffffff;
         z-index: 10;
         position: relative;
 
-        &[aria-expanded='true'] {
+        &[aria-expanded="true"] {
           background: $slate-50;
           border-radius: 12px 12px 0 0;
           border-bottom-color: transparent !important;
@@ -609,7 +608,7 @@ $white: #ffffff;
           // Chevron — all PrimeNG class variants + svg fallback
           .p-accordion-toggle-icon,
           .p-icon-wrapper,
-          >svg {
+          > svg {
             flex-shrink: 0;
             margin-left: 10px;
             color: $slate-400;
@@ -637,18 +636,21 @@ $white: #ffffff;
       }
 
       // ── THE ULTIMATE OVERFLOW FIX ──
-      // This delays overflow: visible until after the accordion expansion (0.4s) 
-      // is complete, preventing bleed during sliding. It reverts to hidden 
+      // This delays overflow: visible until after the accordion expansion (0.4s)
+      // is complete, preventing bleed during sliding. It reverts to hidden
       // immediately on collapse.
       @keyframes delayedVisible {
-        from { overflow: hidden; }
-        to { overflow: visible; }
+        from {
+          overflow: hidden;
+        }
+        to {
+          overflow: visible;
+        }
       }
 
       .p-accordionheader[aria-expanded="true"] + .p-accordion-content {
         animation: delayedVisible 0.1s 0.4s forwards;
       }
-
 
       .p-card {
         .p-card-content {
@@ -807,7 +809,6 @@ $white: #ffffff;
       font-size: 12px;
     }
   }
-
 
   // ════════════════════════════════════════════════════
   //  PREVIOUS ROUNDS — Detail Cards
@@ -1009,22 +1010,26 @@ $white: #ffffff;
     border-top: 1px solid $slate-100;
 
     ::ng-deep {
-      em, i {
+      em,
+      i {
         font-style: italic !important;
         // Ensure children (like <u>) also stay italic
-        &, & * {
+        &,
+        & * {
           font-style: italic !important;
         }
       }
       u {
         text-decoration: underline !important;
       }
-      
+
       // Explicitly handle combinations
-      strong, b {
+      strong,
+      b {
         font-weight: bold !important;
         color: $slate-800 !important;
-        &, & * {
+        &,
+        & * {
           font-weight: bold !important;
           font-family: inherit !important;
         }
@@ -1036,7 +1041,8 @@ $white: #ffffff;
           margin-bottom: 0;
         }
       }
-      ul, ol {
+      ul,
+      ol {
         margin: 6px 0;
         padding-left: 18px;
       }
@@ -1076,38 +1082,48 @@ $white: #ffffff;
     font-size: 13.5px;
     line-height: 1.6;
     color: $slate-600;
-
+    word-wrap: break-word;
+    word-break: auto-phrase;
     ::ng-deep {
-      em, i {
+      em,
+      i {
         font-style: italic !important;
         // Ensure children (like <u>) also stay italic
-        &, & * {
+        &,
+        & * {
           font-style: italic !important;
         }
       }
       u {
         text-decoration: underline !important;
       }
-      
+
       // Explicitly handle combinations
-      strong, b {
+      strong,
+      b {
         color: $slate-800 !important;
         font-weight: bold !important;
-        &, & * {
+        &,
+        & * {
           font-weight: bold !important;
           font-family: inherit !important;
         }
       }
-      
+
       p {
         margin: 0 0 8px 0;
-        &:last-child { margin-bottom: 0; }
+        &:last-child {
+          margin-bottom: 0;
+        }
       }
-      ul, ol {
+      ul,
+      ol {
         margin: 8px 0;
         padding-left: 20px;
       }
-      li { margin: 4px 0; }
+      li {
+        margin: 4px 0;
+      }
     }
   }
 
@@ -1276,17 +1292,23 @@ $white: #ffffff;
 
     // Soft radial glow at the top
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse at 50% -10%, rgba($indigo-500, 0.08) 0%, transparent 65%);
+      background: radial-gradient(
+        ellipse at 50% -10%,
+        rgba($indigo-500, 0.08) 0%,
+        transparent 65%
+      );
       pointer-events: none;
     }
 
     &:hover {
       border-color: $indigo-500;
       background: linear-gradient(160deg, #e3f2fd 0%, #d7eefb 100%);
-      box-shadow: 0 0 0 5px rgba($indigo-500, 0.08), 0 8px 28px rgba($indigo-500, 0.1);
+      box-shadow:
+        0 0 0 5px rgba($indigo-500, 0.08),
+        0 8px 28px rgba($indigo-500, 0.1);
       transform: translateY(-2px);
 
       .ifb__drop-zone-icon i {
@@ -1299,7 +1321,9 @@ $white: #ffffff;
     &--over {
       border-color: $indigo-500 !important;
       background: linear-gradient(160deg, #dbeeff 0%, #c9e8fa 100%) !important;
-      box-shadow: 0 0 0 6px rgba($indigo-500, 0.14), 0 10px 36px rgba($indigo-500, 0.18) !important;
+      box-shadow:
+        0 0 0 6px rgba($indigo-500, 0.14),
+        0 10px 36px rgba($indigo-500, 0.18) !important;
       transform: scale(1.01) !important;
 
       .ifb__drop-zone-icon {
@@ -1388,7 +1412,6 @@ $white: #ffffff;
   }
 
   @keyframes uploadFloat {
-
     0%,
     100% {
       transform: translateY(0);
@@ -1398,7 +1421,6 @@ $white: #ffffff;
       transform: translateY(-5px);
     }
   }
-
 
   &__attachment-grid {
     display: grid;
@@ -1643,7 +1665,7 @@ $white: #ffffff;
         // Provide enough width for the dropdown so text doesn't overlap the SVG arrow
         .ql-picker.ql-header {
           width: 140px !important;
-          
+
           .ql-picker-label {
             padding-right: 24px !important;
           }
@@ -1673,8 +1695,8 @@ $white: #ffffff;
 
         .ql-tooltip {
           // Extremely high z-index to stay on top of sidebars and other overlays
-          z-index: 999999 !important; 
-          
+          z-index: 999999 !important;
+
           // Force it to stay within the editor bounds on the left to avoid sidebar overlap
           left: 20px !important;
           transform: none !important;
@@ -1703,79 +1725,113 @@ $white: #ffffff;
           padding: 16px;
 
           // Restore text formatting styles suppressed by CSS resets (e.g. Tailwind)
-          strong, b, em, i, u, s, span {
+          strong,
+          b,
+          em,
+          i,
+          u,
+          s,
+          span {
             display: inline; // Prevent any layout reset from blocking parent text-decorations
           }
-          strong, b { 
-            font-weight: 700 !important; 
-            font-style: inherit; 
+          strong,
+          b {
+            font-weight: 700 !important;
+            font-style: inherit;
           }
-          em, i { 
-            font-style: italic !important; 
-            font-weight: inherit; 
+          em,
+          i {
+            font-style: italic !important;
+            font-weight: inherit;
           }
-          u { 
-            text-decoration: underline !important; 
-            font-style: inherit; 
-            font-weight: inherit; 
+          u {
+            text-decoration: underline !important;
+            font-style: inherit;
+            font-weight: inherit;
           }
-          s { 
-            text-decoration: line-through !important; 
-            font-style: inherit; 
-            font-weight: inherit; 
+          s {
+            text-decoration: line-through !important;
+            font-style: inherit;
+            font-weight: inherit;
           }
 
           // Restore Code Blocks (Tailwind strips grey backgrounds and padding)
-          pre, .ql-code-block-container {
+          pre,
+          .ql-code-block-container {
             background-color: $slate-100 !important;
             color: $slate-800 !important;
             padding: 0.75rem !important;
             border-radius: 0.375rem !important;
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+            font-family:
+              ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+              "Liberation Mono", "Courier New", monospace !important;
             white-space: pre-wrap !important;
             margin-bottom: 0.5rem !important;
-            
+
             .ql-code-block {
               font-family: inherit !important;
             }
           }
-          
+
           // Tailwind completely breaks Quill's complex pseudo-element bullet rendering.
-          // Instead, we will forcefully kill Quill's fake ::before bullets 
+          // Instead, we will forcefully kill Quill's fake ::before bullets
           // and use pure native browser bullets tied to Quill's data attributes.
-          ul, ol {
+          ul,
+          ol {
             padding-left: 1.5rem !important;
             margin-bottom: 0.5rem !important;
           }
-          
+
           li {
             display: list-item !important; // Bring back native list rendering
             padding-left: 0.25rem !important; // Override Quill's 1.5em default gap
             margin-bottom: 0.25rem !important;
-            
+
             &::before {
               display: none !important; // Kill Quill's fake bullets
               content: none !important;
             }
           }
-          
-          ul, ul li, li[data-list="bullet"] {
+
+          ul,
+          ul li,
+          li[data-list="bullet"] {
             list-style-type: disc !important;
           }
-          
-          ol, ol li, li[data-list="ordered"], li[data-list="1"] {
+
+          ol,
+          ol li,
+          li[data-list="ordered"],
+          li[data-list="1"] {
             list-style-type: decimal !important;
           }
-          
+
           ol > li[data-list="bullet"] {
             list-style-type: disc !important; // Safety override for Quill nesting bullets inside <ol>
           }
 
-          h1, h2, h3, h4, h5, h6 { font-weight: 700 !important; margin-bottom: 0.5rem; color: $slate-900; }
-          h1 { font-size: 2em; }
-          h2 { font-size: 1.5em; }
-          h3 { font-size: 1.17em; }
-          p { margin-bottom: 0.5rem; }
+          h1,
+          h2,
+          h3,
+          h4,
+          h5,
+          h6 {
+            font-weight: 700 !important;
+            margin-bottom: 0.5rem;
+            color: $slate-900;
+          }
+          h1 {
+            font-size: 2em;
+          }
+          h2 {
+            font-size: 1.5em;
+          }
+          h3 {
+            font-size: 1.17em;
+          }
+          p {
+            margin-bottom: 0.5rem;
+          }
 
           &.ql-blank::before {
             color: $slate-300;
@@ -2028,7 +2084,7 @@ $white: #ffffff;
     &--skipped {
       background: #fef2f2 !important;
       border: 1px solid #fecaca !important;
-      
+
       .ifb__answer-label {
         color: #991b1b;
       }
@@ -2125,7 +2181,7 @@ $white: #ffffff;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  color: #2196F3; // Project primary blue
+  color: #2196f3; // Project primary blue
 
   i {
     font-size: 24px;
@@ -2146,7 +2202,7 @@ $white: #ffffff;
   i {
     color: $white;
     font-size: 24px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   }
 
   &--interactive {
@@ -2263,7 +2319,7 @@ $white: #ffffff;
 
   i {
     font-size: 48px;
-    color: #2196F3;
+    color: #2196f3;
   }
 
   span {

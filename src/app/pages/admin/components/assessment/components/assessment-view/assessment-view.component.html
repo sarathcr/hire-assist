@@ -13,7 +13,18 @@
           </p>
         }
       </div>
-
+      @if (stepsStatus.schedule === 'Completed' || assessment.statusId === 1) {
+        <div class="assessment-schedule__hero-actions">
+          <p-button 
+            icon="pi pi-arrow-right" 
+            iconPos="right"
+            label="Recruitment Detail" 
+            [outlined]="true"
+            [style]="{'color': 'white', 'border-color': 'rgba(255,255,255,0.6)', 'background': 'rgba(255,255,255,0.2)', 'backdrop-filter': 'blur(4px)'}"
+            (onClick)="goToRecruitmentDetail()">
+          </p-button>
+        </div>
+      }
     </div>
   </div>
 

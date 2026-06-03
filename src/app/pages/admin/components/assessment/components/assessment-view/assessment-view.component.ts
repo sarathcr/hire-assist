@@ -552,4 +552,12 @@ export class AssessmentViewComponent
     ).length;
     return Math.round((completedSteps / totalSteps) * 100);
   }
+
+  public goToRecruitmentDetail(): void {
+    if (this.assessmentId) {
+      this.router.navigate([`/admin/recruitments/${this.assessmentId}`]);
+    } else {
+      this.router.navigate(['/admin/recruitments']);
+    }
+  }
 }

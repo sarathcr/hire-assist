@@ -5,22 +5,22 @@
       <div class="candidate__header-text">
         <h2 class="candidate__title">
           <i class="pi pi-users"></i>
-          Import & Schedule Candidates
+          Import & Add Candidates to Recruitment Cycle
         </h2>
         <p class="candidate__description">
-          Import candidates from CSV, manage your candidate list, and schedule
-          assessments
+          Import candidates from CSV, manage your candidate list, and add them
+          to the recruitment cycle
         </p>
       </div>
       <div class="candidate__header-actions">
-          <app-button
-            class="candidate__schedule-btn"
-            tooltipPosition="top"
-            [buttonLabel]="'Schedule Recruitment'"
-            [icon]="'pi pi-calendar-times'"
-            [disabled]="disableScheduleButton || isReadOnly()"
-            (btnClick)="scheduleAssessment()"
-          ></app-button>
+        <app-button
+          class="candidate__schedule-btn"
+          tooltipPosition="top"
+          [buttonLabel]="'Add Candidates to Recruitment Cycle'"
+          [icon]="'pi pi-calendar-times'"
+          [disabled]="disableScheduleButton || isReadOnly()"
+          (btnClick)="scheduleAssessment()"
+        ></app-button>
       </div>
     </div>
   </div>
@@ -55,7 +55,9 @@
         [buttonLabel]="'Delete Selected'"
         [buttonSeverity]="'danger'"
         [icon]="'pi pi-trash'"
-        [disabled]="!selectedUsers || selectedUsers.length === 0 || isReadOnly()"
+        [disabled]="
+          !selectedUsers || selectedUsers.length === 0 || isReadOnly()
+        "
         (btnClick)="deleteSelectedCandidates()"
       ></app-button>
     </div>
