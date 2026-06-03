@@ -121,7 +121,7 @@ export class PaginationComponent
 
   public onSearch(searchFilterMap: KeyValueMap<string>) {
     if ((searchFilterMap as unknown as Event)?.type === 'change') return;
-    this.filterState = { ...this.filterState, ...searchFilterMap };
+    this.filterState = { ...searchFilterMap };
     this.first = 0;
     this.search.next();
   }
