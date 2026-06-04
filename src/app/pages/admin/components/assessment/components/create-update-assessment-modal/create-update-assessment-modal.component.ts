@@ -63,7 +63,7 @@ export class CreateUpdateAssessmentModalComponent
     if (!this.isEdit) return true;
     if (!this.initialFormValues) return false;
 
-    const current = this.data.fGroup.value;
+    const current = this.data.fGroup.getRawValue();
 
     const normalize = (val: any) => typeof val === 'string' ? val.trim().replace(/\s+/g, ' ') : val;
 
@@ -98,9 +98,9 @@ export class CreateUpdateAssessmentModalComponent
     }
 
     if (this.isEdit && this.ref) {
-      this.ref?.close({ ...this.data.fGroup.value, id: this.data.formData.id });
+      this.ref?.close({ ...this.data.fGroup.getRawValue(), id: this.data.formData.id });
     } else {
-      this.ref?.close(this.data.fGroup.value);
+      this.ref?.close(this.data.fGroup.getRawValue());
     }
   }
   public onClose() {
@@ -129,23 +129,27 @@ export class CreateUpdateAssessmentModalComponent
   }
 
   private setFormData(): void {
-    const formData = this.data.formData;
-    formData.id = this.data.formData.id;
-    formData.startDateTime = formatDate(
-      this.data.formData.startDateTime.toString(),
-    );
-    formData.endDateTime = formatDate(
-      this.data.formData.endDateTime.toString(),
-    );
     const startFormatted = formatDate(
-      this.data.formData.startDateTime.toString(),
+      this.data.formData.startDateTime?.toString() || ''
     );
-    const endFormatted = formatDate(this.data.formData.endDateTime.toString());
+    const endFormatted = formatDate(
+      this.data.formData.endDateTime?.toString() || ''
+    );
+    
     this.data.fGroup.patchValue({
-      ...formData,
+      ...this.data.formData,
       startDateTime: this.parseDDMMYYYY(startFormatted) as any,
       endDateTime: this.parseDDMMYYYY(endFormatted) as any,
     });
+    
+    // If the recruitment has started rounds, disable editing everything except the end date
+    const isInProgress = (this.data.formData.activeRoundsPercentage ?? 0) > 0;
+    if (isInProgress) {
+      this.data.fGroup.get('name')?.disable();
+      this.data.fGroup.get('description')?.disable();
+      this.data.fGroup.get('startDateTime')?.disable();
+      // Keep endDateTime enabled so they can extend or shorten the recruitment
+    }
   }
   private parseDDMMYYYY(dateStr: string): Date | null {
     if (!dateStr) return null;

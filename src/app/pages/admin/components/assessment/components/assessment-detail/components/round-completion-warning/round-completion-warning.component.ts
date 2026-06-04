@@ -14,13 +14,15 @@ import { ButtonComponent } from '../../../../../../../../shared/components/butto
 })
 export class RoundCompletionWarningComponent {
   candidates: CandidateData[] = [];
+  warningType: 'pending' | 'unscheduled' = 'pending';
 
   constructor(
     public config: DynamicDialogConfig,
     public ref: DynamicDialogRef
   ) {
-    if (this.config.data && this.config.data.candidates) {
-      this.candidates = this.config.data.candidates;
+    if (this.config.data) {
+      this.candidates = this.config.data.candidates || [];
+      this.warningType = this.config.data.warningType || 'pending';
     }
   }
 

@@ -1,4 +1,4 @@
-import { DecimalPipe, NgClass } from '@angular/common';
+import { DecimalPipe, NgClass, DatePipe } from '@angular/common';
 import { Component, input, OnInit, output, ViewChild } from '@angular/core';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -20,6 +20,7 @@ import { Assessment } from '../../../pages/admin/models/assessment.model';
     TooltipModule,
     DecimalPipe,
     TagModule,
+    DatePipe,
   ],
   templateUrl: './assessment-card.component.html',
   styleUrl: './assessment-card.component.scss',
@@ -65,20 +66,35 @@ export class AssessmentCardComponent implements OnInit {
   }
 
   private setActionItems(): void {
-    this.actionItems = [
-      {
+    const assessment = this.data();
+    
+    const activeRoundsPercentage = Number(assessment?.activeRoundsPercentage ?? 0);
+    // A recruitment is fully completed/archived if it is no longer active or progress is 100
+    const isCompleted = assessment?.isActive === false || activeRoundsPercentage === 100;
+    // A recruitment is in progress if it has started rounds but is not fully completed
+    const isInProgress = activeRoundsPercentage > 0 && !isCompleted;
+
+    this.actionItems = [];
+    
+    if (!isCompleted) {
+      // We can always edit an active recruitment (to change end date etc.)
+      this.actionItems.push({
         label: 'Edit',
         icon: 'pi pi-pencil',
         tooltipOptions: { tooltipLabel: 'Edit', tooltipPosition: 'top' },
         command: (e) => this.handleActionClick(e, 'edit'),
-      },
-      {
-        label: 'Delete',
-        icon: 'pi pi-trash',
-        tooltipOptions: { tooltipLabel: 'Delete', tooltipPosition: 'top' },
-        command: (e) => this.handleActionClick(e, 'delete'),
-      },
-    ];
+      });
+      
+      // We can only delete it if it hasn't started yet
+      if (!isInProgress) {
+        this.actionItems.push({
+          label: 'Delete',
+          icon: 'pi pi-trash',
+          tooltipOptions: { tooltipLabel: 'Delete', tooltipPosition: 'top' },
+          command: (e) => this.handleActionClick(e, 'delete'),
+        });
+      }
+    }
   }
 
   private handleActionClick(
@@ -159,6 +175,17 @@ export class AssessmentCardComponent implements OnInit {
     const percentage = value ?? 0;
     if (percentage > 90) return '#16a34a';
     if (percentage >= 75) return '#f97316';
-    return '';
+    return 'var(--primary-color)';
+  }
+
+  public getUserInitials(userId: string): string {
+    if (!userId) return '?';
+    const namePart = userId.split('@')[0];
+    const parts = namePart.split(/[\.\-_]/);
+    if (parts.length > 1) {
+      return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
+    }
+    return namePart.substring(0, 2).toUpperCase();
   }
 }
+

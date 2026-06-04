@@ -1,41 +1,54 @@
 @if (data()) {
   <div class="assessment-card">
     <div class="assessment-card__header">
-      <span class="assessment-card__over-title">{{ lastUpdatedInfo }}</span>
+      <div class="assessment-card__header-left">
+        <span class="assessment-card__over-title">{{ lastUpdatedInfo }}</span>
+        @if (!showContent()) {
+          <p-tag
+            [value]="data()?.isActive ? 'Active' : 'Completed'"
+            [severity]="data()?.isActive ? 'success' : 'info'"
+            rounded
+            class="text-sm ml-2 assessment-card__status-tag"
+          ></p-tag>
+        }
+      </div>
+      @if (showToggleButton() && actionItems.length > 0) {
+        <p-speeddial
+          [model]="actionItems"
+          direction="left"
+          mask
+          [hideOnClickOutside]="false"
+          class="assessment-card__actions"
+        >
+          <ng-template #button let-toggleCallback="toggleCallback">
+            <p-button
+              (click)="onActionButtonClick($event, toggleCallback)"
+              hideOnClickOutside="false"
+              icon="pi pi-ellipsis-v"
+              styleClass="p-button-rounded p-button-text p-button-plain assessment-card__kebab"
+            ></p-button>
+          </ng-template>
+        </p-speeddial>
+      }
     </div>
-    @if (showToggleButton()) {
-      <p-speeddial
-        [model]="actionItems"
-        direction="left"
-        mask
-        [hideOnClickOutside]="false"
-        class="assessment-card__actions"
-      >
-        <ng-template #button let-toggleCallback="toggleCallback">
-          <p-button
-            (click)="onActionButtonClick($event, toggleCallback)"
-            hideOnClickOutside="false"
-            icon="pi pi-ellipsis-v"
-          ></p-button>
-        </ng-template>
-      </p-speeddial>
-    }
 
     <div class="assessment-card__body">
-      <h1 class="assessment-card__title">{{ data()?.name }}</h1>
-      @if (!showContent()) {
-        <div class="assessment-card__status">
-          <p-tag
-            [value]="data()?.isActive ? 'Pending' : 'Completed'"
-            [severity]="data()?.isActive ? 'danger' : 'success'"
-            rounded
-            class="text-sm ml-2"
-          ></p-tag>
-        </div>
+      <h2 class="assessment-card__title">{{ data()?.name }}</h2>
+      @if (data()?.description) {
+        <p class="assessment-card__description">{{ data()?.description }}</p>
       }
+      
       @if (showContent()) {
+        <div class="assessment-card__timeline">
+          <i class="pi pi-calendar"></i>
+          <span>{{ data()?.startDateTime | date: 'MMM d, y' }} - {{ data()?.endDateTime | date: 'MMM d, y' }}</span>
+        </div>
+
         <div class="assessment-card__progress">
-          <div class="assessment-card__progress__title">PROGRESS</div>
+          <div class="assessment-card__progress-header">
+            <span class="assessment-card__progress-title">PROGRESS</span>
+            <span class="assessment-card__progress-value">{{ data()?.activeRoundsPercentage | number: '1.0-0' }}%</span>
+          </div>
           <p-progressbar
             [value]="data()?.activeRoundsPercentage | number: '1.0-2'"
             [color]="getProgressColor(data()?.activeRoundsPercentage)"
@@ -43,6 +56,7 @@
         </div>
       }
     </div>
+    
     @if (showContent()) {
       <div class="assessment-card__footer">
         <div
@@ -54,8 +68,10 @@
           role="button"
           aria-label="Toggle rounds"
         >
-          <span class="pi pi-sitemap"></span>
-          <span>{{ data()?.rounds?.length ?? 0 }}</span>
+          <div class="assessment-card__badge assessment-card__badge--rounds">
+            <i class="pi pi-sitemap"></i>
+            <span>{{ data()?.rounds?.length ?? 0 }} Rounds</span>
+          </div>
           <p-popover #opr>
             @if (data()?.rounds?.length) {
               <ul class="assessment-card__footer_rounds__list">
@@ -66,9 +82,9 @@
                       tooltipStyleClass="assessment-card__footer_rounds__status"
                       pTooltip="{{ rounds.roundStatus }}"
                       tooltipPosition="top"
-                      [ngClass]=" rounds.roundStatus ? `assessment-card__footer_rounds__status_${rounds.roundStatus.toLowerCase()}`:''"
-                    ></span
-                    ><span>{{ rounds.roundName }}</span>
+                      [ngClass]=" rounds.roundStatus ? 'assessment-card__footer_rounds__status_' + rounds.roundStatus.toLowerCase() : ''"
+                    ></span>
+                    <span>{{ rounds.roundName }}</span>
                   </li>
                 }
               </ul>
@@ -89,15 +105,34 @@
           role="button"
           aria-label="Toggle users"
         >
-          <span class="pi pi-users"></span>
-          <span>{{ data()?.users?.length ?? 0 }}</span>
+          <div class="assessment-card__avatar-group">
+            @if (data()?.users?.length) {
+              @for (user of (data()?.users?.slice(0, 3)); track user; let i = $index) {
+                <div class="assessment-card__avatar" [style.z-index]="3 - i" [pTooltip]="user.userId" tooltipPosition="top">
+                  {{ getUserInitials(user.userId) }}
+                </div>
+              }
+              @if ((data()?.users?.length ?? 0) > 3) {
+                <div class="assessment-card__avatar assessment-card__avatar--more" [style.z-index]="0">
+                  +{{ (data()?.users?.length ?? 0) - 3 }}
+                </div>
+              }
+            } @else {
+              <div class="assessment-card__badge assessment-card__badge--empty">
+                <i class="pi pi-users"></i>
+              </div>
+            }
+          </div>
+          
           <p-popover [styleClass]="'assessment-card__popover'" #op>
             @if (data()?.users?.length) {
               <ul class="assessment-card__footer_users__list">
                 @for (user of data()?.users; track user) {
                   <li class="assessment-card__footer_users__item">
-                    <span class="assessment-card__footer_users__avatar"></span
-                    ><span>{{ user.userId }}</span>
+                    <div class="assessment-card__footer_users__avatar-small">
+                      {{ getUserInitials(user.userId) }}
+                    </div>
+                    <span>{{ user.userId }}</span>
                   </li>
                 }
               </ul>

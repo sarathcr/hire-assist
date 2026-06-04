@@ -196,7 +196,8 @@
           color: #374151;
         }
         
-        &.status-not.scheduled {
+        &.status-not\.scheduled,
+        &.status-not-scheduled {
            background-color: #fee2e2;
            color: #991b1b;
         }

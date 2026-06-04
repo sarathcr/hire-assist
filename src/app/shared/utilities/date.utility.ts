@@ -81,7 +81,8 @@ export function validateStartAndEndDates(
 
   if (startValue) {
     const startDateTime = new Date(startValue);
-    if (!isValidStartDate(startDateTime)) {
+    // Only validate start date if the user can edit it (control is enabled)
+    if (startDateControl.enabled && !isValidStartDate(startDateTime)) {
       startDateControl.setErrors({
         errorMessage: 'Start date must be today or later.',
       });

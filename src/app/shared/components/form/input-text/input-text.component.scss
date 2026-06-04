@@ -4,15 +4,6 @@
 
   .p-inputtext {
     width: 100% !important;
-
-    &[readonly],
-    &:disabled {
-      background-color: #f8fafc !important;
-      cursor: not-allowed;
-      border-color: #e2e8f0 !important;
-      color: #64748b !important;
-      opacity: 0.8;
-    }
   }
 
   .p-floatlabel {

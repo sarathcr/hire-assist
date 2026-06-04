@@ -1,29 +1,57 @@
 .assessment-list {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   height: 100%;
+  position: relative;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+    margin-bottom: 20px;
+  }
 
   &__title {
-    text-align: left;
+    margin: 0;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: var(--color-grey);
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    white-space: nowrap;
   }
+
+  &__divider {
+    flex-grow: 1;
+    height: 1px;
+    background-color: #cbd5e1; /* Subtle line color */
+  }
+
   &__actions {
     display: flex;
     gap: 15px;
     align-items: center;
   }
+
   &__card {
     display: block;
-    max-height: 200px;
+    height: 100%;
   }
+  
   &__wrapper {
-    height: calc(100vh - 275px);
+    flex: 1;
     overflow-y: auto;
+    min-height: 0;
     margin-right: -20px;
-    padding-right: 25px;
-    // margin-bottom: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+  }
+  
+  &__footer {
+    flex-shrink: 0;
+    height: 70px; /* Reserves space for the absolute paginator */
+    width: 100%;
   }
   &__list {
     display: grid;
@@ -43,6 +71,7 @@
     justify-content: space-between;
     align-items: center;
     padding-bottom: 10px;
+    flex-shrink: 0;
   }
   @media screen and (max-width: 768px) {
     &__header {

@@ -748,7 +748,25 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                 data: {
                   roundName: currentRound.round,
                   isLastRound: !nextRound,
-                  candidates: pendingCandidates
+                  candidates: pendingCandidates,
+                  warningType: 'pending'
+                }
+              });
+            } else if (nextRound && (this.tableData?.data?.filter((c: any) => c.status?.toLowerCase() === 'selected' && !c.isScheduled) || []).length > 0) {
+              const unscheduledCandidates = this.tableData?.data?.filter((c: any) => c.status?.toLowerCase() === 'selected' && !c.isScheduled) || [];
+              this.ref = this.dialog.open(RoundCompletionWarningComponent, {
+                showHeader: false,
+                styleClass: 'standard-dialog-wrapper',
+                width: '450px',
+                modal: true,
+                breakpoints: {
+                  '640px': '90vw',
+                },
+                data: {
+                  roundName: currentRound.round,
+                  isLastRound: false,
+                  candidates: unscheduledCandidates,
+                  warningType: 'unscheduled'
                 }
               });
             } else {

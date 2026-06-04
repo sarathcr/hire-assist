@@ -11,17 +11,24 @@
 
   <div class="warning-modal__content">
     <div class="warning-modal__summary">
-      <p>
-        There are <strong>{{ candidates.length }} candidate{{ candidates.length > 1 ? 's' : '' }}</strong> 
-        with pending actions. All candidates must be marked as 
-        <span class="status-badge status-selected">Selected</span> or 
-        <span class="status-badge status-rejected">Rejected</span>.
-      </p>
+      @if (warningType === 'pending') {
+        <p>
+          There are <strong>{{ candidates.length }} candidate{{ candidates.length > 1 ? 's' : '' }}</strong> 
+          with pending actions. All candidates must be marked as 
+          <span class="status-badge status-selected">Selected</span> or 
+          <span class="status-badge status-rejected">Rejected</span>.
+        </p>
+      } @else if (warningType === 'unscheduled') {
+        <p>
+          There are <strong>{{ candidates.length }} selected candidate{{ candidates.length > 1 ? 's' : '' }}</strong> 
+          who have not been scheduled for the next round. All selected candidates must be scheduled to the next round before completing.
+        </p>
+      }
     </div>
 
     <div class="warning-modal__list-container">
       <div class="warning-modal__list-header">
-        <span>Pending Candidates</span>
+        <span>{{ warningType === 'pending' ? 'Pending Candidates' : 'Unscheduled Candidates' }}</span>
       </div>
       <div class="warning-modal__list">
         @for (candidate of candidates; track candidate.id) {
@@ -34,9 +41,15 @@
               <span class="candidate-item__email">{{ candidate.email }}</span>
             </div>
             <div class="candidate-item__status">
-              <span class="status-pill" [ngClass]="'status-' + (candidate.status.toLowerCase() || 'pending')">
-                {{ candidate.status || 'Pending' }}
-              </span>
+              @if (warningType === 'pending') {
+                <span class="status-pill" [ngClass]="'status-' + (candidate.status.toLowerCase() || 'pending')">
+                  {{ candidate.status || 'Pending' }}
+                </span>
+              } @else {
+                <span class="status-pill status-not-scheduled">
+                  Not Scheduled
+                </span>
+              }
             </div>
           </div>
         }
