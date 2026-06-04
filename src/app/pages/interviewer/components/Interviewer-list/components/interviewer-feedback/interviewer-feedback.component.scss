@@ -106,7 +106,7 @@ $white: #ffffff;
     position: fixed;
     top: 50%;
     right: 24px;
-    z-index: 200;
+    z-index: 9999;
     translate: 0 -50%;
     cursor: grab; // hints that it's draggable
     user-select: none;

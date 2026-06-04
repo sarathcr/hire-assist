@@ -5,8 +5,8 @@
         <span class="assessment-card__over-title">{{ lastUpdatedInfo }}</span>
         @if (!showContent()) {
           <p-tag
-            [value]="data()?.isActive ? 'Active' : 'Completed'"
-            [severity]="data()?.isActive ? 'success' : 'info'"
+            [value]="data()?.status"
+            [severity]="data()?.status === 'Active' ? 'success' : 'info'"
             rounded
             class="text-sm ml-2 assessment-card__status-tag"
           ></p-tag>

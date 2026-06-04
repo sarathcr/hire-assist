@@ -25,6 +25,7 @@ export interface Assessment {
   name: string;
   description?: string;
   statusId: number;
+  status?: string;
   panel?: number;
   startDateTime: string;
   endDateTime: string;

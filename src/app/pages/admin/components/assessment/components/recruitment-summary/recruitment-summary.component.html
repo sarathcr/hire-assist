@@ -105,13 +105,7 @@
             <span class="metric-label">Rejected</span>
           </div>
         </div>
-        <div class="metric-card metric-pipeline">
-          <div class="metric-icon"><i class="pi pi-sync"></i></div>
-          <div class="metric-info">
-            <span class="metric-value">{{ summaryData.inProgress | number }}</span>
-            <span class="metric-label">In Pipeline</span>
-          </div>
-        </div>
+
       </div>
     </section>
 
@@ -175,7 +169,7 @@
                     {{ round.status }}
                   </span>
                 </div>
-                <div class="step-interviewer" *ngIf="round.interviewer">
+                <div class="step-interviewer" *ngIf="round.interviewer && !((round.roundTypeId === 1 || round.isAptitude) && round.interviewer.toLowerCase() === 'not assigned')">
                   <i class="pi pi-user"></i> {{ round.interviewer }}
                 </div>
               </div>
@@ -267,7 +261,7 @@
                             <span class="round-status-tag" [ngClass]="'status-' + (round.status?.toLowerCase().replace(' ', '-') || 'pending')">
                               {{ round.status }}
                             </span>
-                            <div class="round-interviewer" *ngIf="round.interviewer">
+                            <div class="round-interviewer" *ngIf="round.interviewer && !((round.roundTypeId === 1 || round.isAptitude) && round.interviewer.toLowerCase() === 'not assigned')">
                               <i class="pi pi-user"></i> {{ round.interviewer }}
                             </div>
                           </div>

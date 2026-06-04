@@ -133,6 +133,18 @@
       color: #16a34a;
       border: 1px solid #bbf7d0;
     }
+
+    &--completed {
+      background: #eff6ff;
+      color: #1d4ed8;
+      border: 1px solid #dbeafe;
+    }
+
+    &--pending, &--draft, &--inactive {
+      background: #f8fafc;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
   }
 
   &__description {

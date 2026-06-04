@@ -35,8 +35,14 @@
                   <h3 class="recruitment-card__name">{{ assessment.name }}</h3>
                   <p class="recruitment-card__id">ID: #{{ assessment.id }}</p>
                 </div>
-                @if (assessment.isActive) {
-                  <span class="recruitment-card__badge recruitment-card__badge--active">Active</span>
+                @if (assessment.status) {
+                  <span
+                    class="recruitment-card__badge"
+                    [class.recruitment-card__badge--active]="assessment.status === 'Active'"
+                    [class.recruitment-card__badge--completed]="assessment.status === 'Completed'"
+                  >
+                    {{ assessment.status }}
+                  </span>
                 }
               </div>
 

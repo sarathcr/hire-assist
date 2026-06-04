@@ -572,9 +572,36 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   private onScheduleCandidate(candidate: any): void {
-    this.pendingScheduleCandidateIds = candidate.id.includes(',')
-      ? candidate.id.split(',')
-      : [candidate.id];
+    const candidateIdStr = String(candidate.id || '');
+    const candidateIds = candidateIdStr.includes(',')
+      ? candidateIdStr.split(',')
+      : [candidateIdStr];
+
+    const candidatesToCheck = this.tableData?.data?.filter((c: any) => candidateIds.includes(String(c.id))) || [];
+
+    if (this.isAptitudeRound()) {
+      const missingBatch = candidatesToCheck.some((c: any) => !c.batch || c.batch === '-' || String(c.batch).trim() === '' || String(c.batch).toLowerCase().includes('unassigned'));
+      if (missingBatch) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Warning',
+          detail: 'Please assign a batch to the selected candidate(s) before scheduling.',
+        });
+        return;
+      }
+    } else {
+      const missingPanel = candidatesToCheck.some((c: any) => !c.panel || c.panel === '-' || String(c.panel).trim() === '' || String(c.panel).toLowerCase().includes('unassigned'));
+      if (missingPanel) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Warning',
+          detail: 'Please assign a panel to the selected candidate(s) before scheduling.',
+        });
+        return;
+      }
+    }
+
+    this.pendingScheduleCandidateIds = candidateIds;
 
     this.ref = this.dialog.open(ScheduleInterviewComponent, {
       header: 'Schedule Interview',
@@ -925,6 +952,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return status === 'on review' || status === 'onreview' || status === 'under review' || status.includes('review');
     });
 
+    const anyMissingBatch = isAptitude && selectedCandidates.some((c: any) => !c.batch || c.batch === '-' || String(c.batch).trim() === '' || String(c.batch).toLowerCase().includes('unassigned'));
+    const anyMissingPanel = isPanel && selectedCandidates.some((c: any) => !c.panel || c.panel === '-' || String(c.panel).trim() === '' || String(c.panel).toLowerCase().includes('unassigned'));
+
     const items: MenuItem[] = [];
 
     if (isAptitude) {
@@ -948,7 +978,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     items.push({
       label: 'Schedule',
       icon: 'pi pi-calendar-plus',
-      disabled: !hasSelection || anyCompleted || anyScheduled || anySelected || anyRejected || anyOnReview,
+      disabled: !hasSelection || anyCompleted || anyScheduled || anySelected || anyRejected || anyOnReview || anyMissingBatch || anyMissingPanel,
       command: () => this.onScheduleCandidate({ id: this.selectedCandidateIds.join(',') }),
     });
 
