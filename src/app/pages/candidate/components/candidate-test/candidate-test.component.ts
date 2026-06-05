@@ -401,7 +401,7 @@ export class CandidateTestComponent
         footer: DialogFooterComponent,
       },
     });
-    this.ref.onClose.subscribe((result) => {
+    this.ref?.onClose?.subscribe((result) => {
       if (result) {
         this.isSubmitting = true;
         this.exitFullScreenMode();
@@ -784,7 +784,7 @@ export class CandidateTestComponent
         },
       });
 
-      this.ref.onClose.subscribe(() => {
+      this.ref?.onClose?.subscribe(() => {
         this.ref = undefined;
       });
     }

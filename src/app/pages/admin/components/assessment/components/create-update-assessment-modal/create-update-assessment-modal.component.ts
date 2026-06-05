@@ -142,9 +142,16 @@ export class CreateUpdateAssessmentModalComponent
       endDateTime: this.parseDDMMYYYY(endFormatted) as any,
     });
     
-    // If the recruitment has started rounds, disable editing everything except the end date
-    const isInProgress = (this.data.formData.activeRoundsPercentage ?? 0) > 0;
-    if (isInProgress) {
+    const activeRoundsPercentage = this.data.formData.activeRoundsPercentage ?? 0;
+    const isProgress100 = activeRoundsPercentage === 100;
+    const isInProgress = activeRoundsPercentage > 0;
+
+    if (isProgress100) {
+      this.data.fGroup.get('name')?.disable();
+      this.data.fGroup.get('description')?.disable();
+      this.data.fGroup.get('startDateTime')?.disable();
+      this.data.fGroup.get('endDateTime')?.disable();
+    } else if (isInProgress) {
       this.data.fGroup.get('name')?.disable();
       this.data.fGroup.get('description')?.disable();
       this.data.fGroup.get('startDateTime')?.disable();

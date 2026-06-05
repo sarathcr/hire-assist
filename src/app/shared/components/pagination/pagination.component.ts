@@ -61,10 +61,13 @@ export class PaginationComponent
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes && changes['filterMap'] && !changes['filterMap'].firstChange) {
-      // Only trigger search on filterMap changes after initial load
-      const searchFilterMap = changes['filterMap']?.currentValue;
-      this.onSearch(searchFilterMap);
+    if (changes && changes['filterMap']) {
+      if (changes['filterMap'].firstChange) {
+        this.filterState = { ...changes['filterMap'].currentValue };
+      } else {
+        const searchFilterMap = changes['filterMap'].currentValue;
+        this.onSearch(searchFilterMap);
+      }
     }
 
     if (changes && changes['forceUpdate']) {

@@ -17,7 +17,13 @@ const mockDialogRef = {
 };
 
 const mockDialogConfig = {
-  data: ['candidate-1', 'candidate-2'],
+  data: {
+    candidates: [
+      { id: 'candidate-1', name: 'Candidate One' },
+      { id: 'candidate-2', name: 'Candidate Two' }
+    ],
+    onSubmit: jasmine.createSpy('onSubmit')
+  },
 };
 
 describe('ScheduleInterviewComponent', () => {
@@ -47,17 +53,20 @@ describe('ScheduleInterviewComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize selectedCandidateIds from config', () => {
-    expect(component.selectedCandidateIds).toEqual([
-      'candidate-1',
-      'candidate-2',
+  it('should initialize selectedCandidates from config', () => {
+    expect(component.selectedCandidates).toEqual([
+      { id: 'candidate-1', name: 'Candidate One' },
+      { id: 'candidate-2', name: 'Candidate Two' }
     ]);
   });
 
-  it('should close dialog with form data if form is valid', () => {
+  it('should call onSubmitCallback with form data if form is valid', () => {
     component.fGroup.get('scheduleDate')?.setValue(new Date()); // today
     component.onSchedule();
-    expect(mockDialogRef.close).toHaveBeenCalledWith(component.fGroup.value);
+    expect(mockDialogConfig.data.onSubmit).toHaveBeenCalledWith({
+      ...component.fGroup.value,
+      candidateIds: ['candidate-1', 'candidate-2']
+    });
   });
 
   it('should NOT close dialog if form is invalid', () => {
@@ -103,13 +112,18 @@ describe('ScheduleInterviewComponent', () => {
   it('should handle null config.data gracefully', () => {
     component.config.data = null as any;
     component.ngOnInit();
-    expect(component.selectedCandidateIds).toEqual([]);
+    expect(component.selectedCandidates).toEqual([]);
   });
 
   it('should remove a candidate from the list', () => {
-    component.selectedCandidateIds = ['candidate-1', 'candidate-2'];
+    component.selectedCandidates = [
+      { id: 'candidate-1', name: 'Candidate One' },
+      { id: 'candidate-2', name: 'Candidate Two' }
+    ];
     component.removeCandidate(0);
-    expect(component.selectedCandidateIds).toEqual(['candidate-2']);
+    expect(component.selectedCandidates).toEqual([
+      { id: 'candidate-2', name: 'Candidate Two' }
+    ]);
   });
 
   it('should add date validation subscription to subscriptionList', fakeAsync(() => {

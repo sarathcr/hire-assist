@@ -69,8 +69,12 @@ export class AssessmentCardComponent implements OnInit {
     const assessment = this.data();
     
     const activeRoundsPercentage = Number(assessment?.activeRoundsPercentage ?? 0);
-    // A recruitment is fully completed/archived if it is no longer active or progress is 100
-    const isCompleted = assessment?.isActive === false || activeRoundsPercentage === 100;
+    
+    const isInactiveNotStarted = assessment?.status === 'Inactive' && activeRoundsPercentage === 0;
+    
+    // A recruitment is fully completed/archived (no kebab menu) if it's inactive, has started, but hasn't reached 100%
+    const isCompleted = assessment?.isActive === false && !isInactiveNotStarted && activeRoundsPercentage !== 100;
+    
     // A recruitment is in progress if it has started rounds but is not fully completed
     const isInProgress = activeRoundsPercentage > 0 && !isCompleted;
 
@@ -176,6 +180,19 @@ export class AssessmentCardComponent implements OnInit {
     if (percentage > 90) return '#16a34a';
     if (percentage >= 75) return '#f97316';
     return 'var(--primary-color)';
+  }
+
+  public getStatusSeverity(status?: string | null): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return 'success';
+      case 'inactive':
+        return 'secondary';
+      case 'completed':
+        return 'info';
+      default:
+        return 'secondary';
+    }
   }
 
   public getUserInitials(userId: string): string {

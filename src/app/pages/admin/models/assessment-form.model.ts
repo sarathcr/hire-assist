@@ -18,7 +18,7 @@ export class AssessmentForm extends FormEntity {
         Validators.required,
         Validators.pattern('^[A-Za-z].*'),
         Validators.minLength(3),
-        Validators.maxLength(25),
+        Validators.maxLength(50),
         AssessmentForm.noExtraSpacesValidator,
       ],
       description: [Validators.maxLength(150)],

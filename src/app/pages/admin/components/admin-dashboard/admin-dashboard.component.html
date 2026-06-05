@@ -55,6 +55,7 @@
           <div class="stat-card-footer">
             <span class="stat-detail"><i class="pi pi-check-circle"></i> Active: {{ assessmentData().active }}</span>
             <span class="stat-detail"><i class="pi pi-pause-circle"></i> Inactive: {{ assessmentData().inactive }}</span>
+            <span class="stat-detail"><i class="pi pi-verified"></i> Completed: {{ assessmentData().completed || 0 }}</span>
           </div>
         </div>
       </div>
@@ -97,8 +98,6 @@
 
   <!-- Row 3: Main Content Grid (Charts + Activity) -->
   <div class="dashboard-main-content">
-    <!-- Charts Section -->
-    <div class="dashboard-charts-section">
       <!-- Overview Chart -->
       <div class="chart-panel">
         <div class="chart-card">
@@ -135,13 +134,14 @@
               <div class="chart-wrapper chart-wrapper-doughnut">
                 <p-chart type="doughnut" [data]="assessmentStatusChartData()" [options]="assessmentStatusChartOptions()"></p-chart>
                 <div class="doughnut-center-text">
-                  <span class="center-percentage">{{ activePercentage() }}%</span>
-                  <span class="center-label">Active</span>
+                  <span class="center-percentage">{{ completedPercentage() }}%</span>
+                  <span class="center-label">Completed</span>
                 </div>
               </div>
               <div class="chart-legend">
                 <div class="legend-item"><span class="legend-dot legend-dot-success"></span><span>Active</span></div>
                 <div class="legend-item"><span class="legend-dot legend-dot-danger"></span><span>Inactive</span></div>
+                <div class="legend-item"><span class="legend-dot legend-dot-primary"></span><span>Completed</span></div>
               </div>
             } @else {
               <div class="chart-skeleton chart-skeleton-doughnut">
@@ -151,8 +151,6 @@
           </div>
         </div>
       </div>
-    </div>
-
     <!-- Recent Activity Feed -->
     <div class="activity-feed-section">
       <div class="activity-feed-card">
@@ -327,7 +325,7 @@
       <div class="panel-header">
         <h2 class="panel-title">Active Recruitments</h2>
         @if (recentAssessments().length > 0) {
-          <a [routerLink]="['/admin/recruitments']" class="panel-action">View All</a>
+          <a [routerLink]="['/admin/recruitments']" [state]="{ status: 'Active' }" class="panel-action">View All</a>
         }
       </div>
       <div class="panel-content">

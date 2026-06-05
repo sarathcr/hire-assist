@@ -63,7 +63,7 @@ export class CreateRoundModalComponent implements OnInit {
         Validators.required,
         Validators.pattern('^[A-Za-z].*'),
         Validators.minLength(3),
-        Validators.maxLength(25),
+        Validators.maxLength(50),
         this.noExtraSpacesValidator,
       ]);
       nameControl.updateValueAndValidity();

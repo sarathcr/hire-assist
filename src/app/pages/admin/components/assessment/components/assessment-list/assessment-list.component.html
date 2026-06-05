@@ -3,6 +3,14 @@
     <h1 class="assessment-list__title">Recruitments</h1>
     <div class="assessment-list__divider"></div>
     <div class="assessment-list__actions">
+      <p-menu #filterMenu [model]="filterMenuItems" [popup]="true" appendTo="body"></p-menu>
+      <p-button
+        [icon]="(selectedStatus || filterMap['searchKey']) ? 'pi pi-filter-fill' : 'pi pi-filter'"
+        [outlined]="!(selectedStatus || filterMap['searchKey'])"
+        (onClick)="openMenu($event, filterMenu)"
+        size="small"
+      ></p-button>
+
       <app-search-bar
         [placeholder]="'Search Recruitments...'"
         (search)="onSearch($event)"

@@ -40,6 +40,7 @@
                     class="recruitment-card__badge"
                     [class.recruitment-card__badge--active]="assessment.status === 'Active'"
                     [class.recruitment-card__badge--completed]="assessment.status === 'Completed'"
+                    [class.recruitment-card__badge--inactive]="assessment.status === 'Inactive'"
                   >
                     {{ assessment.status }}
                   </span>

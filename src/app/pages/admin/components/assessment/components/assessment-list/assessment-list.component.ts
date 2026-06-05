@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AsyncPipe, NgClass } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import { Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { FormGroup, FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem, MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
+import { ButtonModule } from 'primeng/button';
 import { Observable } from 'rxjs';
 import { AssessmentCardComponent } from '../../../../../../shared/components/assessment-card/assessment-card.component';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
@@ -44,6 +46,9 @@ import { SearchBarComponent } from '../../../../../../shared/components/search-b
     AsyncPipe,
     EmptyStateComponent,
     SearchBarComponent,
+    MenuModule,
+    ButtonModule,
+    FormsModule,
   ],
   providers: [GenericDataSource],
   templateUrl: './assessment-list.component.html',
@@ -53,14 +58,20 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   public fGroup!: FormGroup;
   public configMap!: ConfigMap;
   public assessmentFormData = new AssessmentForm();
-  public filterMap!: KeyValueMap<string>;
+  public filterMap: KeyValueMap<string> = {};
   public assessmentDataSource: Assessment[] = [];
   public totalRecords = 0;
   private ref: DynamicDialogRef | undefined;
+  private route = inject(ActivatedRoute);
   public isInitialLoad = true;
   public isLoading = false;
   public isLoading$!: Observable<boolean>;
   public paginationFirst = 0;
+  
+  @ViewChild(SearchBarComponent) searchBar!: SearchBarComponent;
+  
+  public filterMenuItems: MenuItem[] = [];
+  public selectedStatus: string | null = null;
 
   constructor(
     public dataSource: GenericDataSource<AssessmentForm>,
@@ -68,7 +79,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     public messageService: MessageService,
     private readonly assessmentService: AssessmentService,
     private readonly stepsStatusService: StepsStatusService,
-    public router: Router,
+    public router: Router
   ) {
     super();
     this.fGroup = buildFormGroup(this.assessmentFormData);
@@ -77,6 +88,13 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
 
   // LifeCycle Hooks
   ngOnInit(): void {
+    const stateStatus = history.state?.status;
+    const statusParam = stateStatus || this.route.snapshot.queryParamMap.get('status');
+    if (statusParam) {
+      this.selectedStatus = statusParam;
+      this.filterMap['status'] = statusParam;
+    }
+
     this.dataSource.init(`${ASSESSMENT_URL}/assessmentsummary`);
     this.setConfigMaps();
     this.subscribeToPaginatedData();
@@ -85,6 +103,25 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     });
 
     this.subscriptionList.push(sub);
+
+    this.updateFilterMenuItems();
+  }
+
+  private updateFilterMenuItems(): void {
+    const getStyleClass = (status: string | null) => this.selectedStatus === status ? 'active-filter-item' : '';
+
+    this.filterMenuItems = [
+      { label: 'All', icon: 'pi pi-list', styleClass: getStyleClass(null), command: () => this.onStatusFilter(null) },
+      { label: 'Active', icon: 'pi pi-play', styleClass: getStyleClass('Active'), command: () => this.onStatusFilter('Active') },
+      { label: 'Inactive', icon: 'pi pi-pause', styleClass: getStyleClass('Inactive'), command: () => this.onStatusFilter('Inactive') },
+      { label: 'Completed', icon: 'pi pi-check-circle', styleClass: getStyleClass('Completed'), command: () => this.onStatusFilter('Completed') },
+      { separator: true },
+      { label: 'Clear Filters', icon: 'pi pi-filter-slash', command: () => this.onClearFilters() }
+    ];
+  }
+
+  public openMenu(event: Event, menu: any): void {
+    menu.toggle(event);
   }
 
   // Public Methods
@@ -116,6 +153,42 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     this.filterMap = newFilterMap;
     this.paginationFirst = 0;
 
+    const payload = this.dataSource.getPayloadData();
+    payload.pagination.pageNumber = 1;
+    payload.filterMap = this.filterMap;
+    this.dataSource.loadPaginatedData(payload);
+  }
+
+  public onStatusFilter(status: string | null): void {
+    this.selectedStatus = status;
+    const newFilterMap = { ...(this.filterMap || {}) };
+
+    if (status) {
+      newFilterMap['status'] = status;
+    } else {
+      delete newFilterMap['status'];
+    }
+
+    this.filterMap = newFilterMap;
+    this.paginationFirst = 0;
+    this.updateFilterMenuItems();
+
+    const payload = this.dataSource.getPayloadData();
+    payload.pagination.pageNumber = 1;
+    payload.filterMap = this.filterMap;
+    this.dataSource.loadPaginatedData(payload);
+  }
+
+  public onClearFilters(): void {
+    this.selectedStatus = null;
+    this.filterMap = {};
+    this.paginationFirst = 0;
+    this.updateFilterMenuItems();
+    
+    if (this.searchBar) {
+      this.searchBar.clear();
+    }
+    
     const payload = this.dataSource.getPayloadData();
     payload.pagination.pageNumber = 1;
     payload.filterMap = this.filterMap;

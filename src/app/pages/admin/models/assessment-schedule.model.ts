@@ -171,7 +171,7 @@ export class QuestionSetFormModal extends FormEntity {
         Validators.required,
         Validators.pattern('^[A-Za-z].*'),
         QuestionSetFormModal.minLengthTrimmedValidator(3),
-        Validators.maxLength(25),
+        Validators.maxLength(50),
         QuestionSetFormModal.noExtraSpacesValidator,
       ],
       description: [

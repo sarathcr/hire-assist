@@ -10,9 +10,9 @@ export class PanelForm extends FormEntity {
     validatorsMap: {
       name: [
         Validators.required,
-        Validators.maxLength(25),
-        Validators.minLength(3),
         Validators.pattern('^[A-Za-z].*'),
+        Validators.minLength(3),
+        Validators.maxLength(50),
         PanelForm.noExtraSpacesValidator,
       ],
       description: [Validators.maxLength(150)],

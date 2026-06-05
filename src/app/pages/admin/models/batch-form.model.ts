@@ -10,9 +10,9 @@ export class BatchForm extends FormEntity {
     validatorsMap: {
       title: [
         Validators.required,
-        Validators.pattern('^[A-Za-z].*'),
+        Validators.pattern('^[a-zA-Z].*'),
         Validators.minLength(3),
-        Validators.maxLength(25),
+        Validators.maxLength(50),
         BatchForm.noExtraSpacesValidator,
       ],
       description: [Validators.maxLength(150)],

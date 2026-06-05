@@ -10,9 +10,9 @@ export class DepartmentForm extends FormEntity {
     validatorsMap: {
       name: [
         Validators.required,
-        Validators.maxLength(25),
-        Validators.minLength(2),
         Validators.pattern('^[A-Za-z].*'),
+        Validators.minLength(3),
+        Validators.maxLength(50),
         DepartmentForm.noExtraSpacesValidator,
       ],
       description: [Validators.maxLength(500)],

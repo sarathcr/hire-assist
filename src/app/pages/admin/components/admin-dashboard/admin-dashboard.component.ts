@@ -36,7 +36,7 @@ import { UserState } from '../../../../shared/models/user.models';
 })
 export class AdminDashboardComponent implements OnInit {
   // Signals for state management
-  public assessmentData = signal<Assessment>({ total: 0, active: 0, inactive: 0 });
+  public assessmentData = signal<Assessment>({ total: 0, active: 0, inactive: 0, completed: 0 });
   public usersData = signal<Users>({ total: 0 });
   public questionsData = signal<Questions>({ total: 0 });
   public todayDate = signal<string>('');
@@ -83,10 +83,10 @@ export class AdminDashboardComponent implements OnInit {
   public overviewChartOptions = signal<any>(null);
 
   // Computed Properties
-  public activePercentage = computed(() => {
+  public completedPercentage = computed(() => {
     const total = this.assessmentData().total;
-    const active = this.assessmentData().active;
-    return total > 0 ? Math.round((active / total) * 100) : 0;
+    const completed = this.assessmentData().completed || 0;
+    return total > 0 ? Math.round((completed / total) * 100) : 0;
   });
 
   // Services
@@ -100,7 +100,6 @@ export class AdminDashboardComponent implements OnInit {
     this.setTodayDate();
     this.initChartOptions();
     this.getUserData();
-    this.getRecentAssessments();
   }
 
   private setTodayDate(): void {
@@ -119,15 +118,15 @@ export class AdminDashboardComponent implements OnInit {
     const userData = this.storeService.getUserData();
     this.currentUser.set(userData);
     if (userData?.id) {
-      this.getDashboardDetails(userData.id);
+      this.getDashboardDetails();
     }
   }
 
-  private getDashboardDetails(id: string): void {
+  private getDashboardDetails(): void {
     this.isLoadingDashboard.set(true);
     
     this.dashboardService
-      .getEntityById(id)
+      .getDashboardDetails()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res: DashboardData) => {
@@ -145,6 +144,20 @@ export class AdminDashboardComponent implements OnInit {
               time: this.convertUtcToLocal(interview.time)
             }));
             this.upcomingInterviews.set(localInterviews);
+          }
+          
+          if (res.data.activeRecruitments) {
+            this.recentAssessments.set(res.data.activeRecruitments as any);
+          }
+
+          if (res.data.userDetails) {
+            this.storeService.setProfileImageUrl(res.data.userDetails.profileImage);
+            if (this.currentUser()) {
+              this.currentUser.set({
+                ...this.currentUser()!,
+                name: res.data.userDetails.name
+              });
+            }
           }
 
           this.updateCharts();
@@ -189,33 +202,7 @@ export class AdminDashboardComponent implements OnInit {
     return `${formattedHours}:${formattedMinutes} ${localModifier}`;
   }
 
-  // Fetch Real Assessments using AUTHORIZED endpoint
-  private getRecentAssessments(): void {
-    this.assessmentService.getDashboardAssessments()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response: any) => {
-          // If response contains paginated data structure
-          let assessments: AssessmentModel[] = [];
-          
-          if (response && response.data && Array.isArray(response.data)) {
-            assessments = response.data;
-          } else if (Array.isArray(response)) {
-            // Fallback if it returns array directly
-            assessments = response;
-          }
 
-          // Just take active ones, assuming API returned them correctly
-          // We can also sort/filter if the API didn't do it fully, but the payload asked for it (sort of).
-          // Assuming backend handles pagination and returns latest based on default sort.
-          // Still good to slice to 5 just in case.
-          
-          const recent = assessments.slice(0, 5);
-          this.recentAssessments.set(recent);
-        },
-        error: (err) => console.error('Error fetching assessments', err)
-      });
-  }
 
   private initChartOptions(): void {
     if (typeof getComputedStyle === 'undefined') return;
@@ -313,19 +300,21 @@ export class AdminDashboardComponent implements OnInit {
     const dangerColor = '#ef4444';
     const activeColor = successColor;
     const inactiveColor = dangerColor;
+    const completedColor = primaryColor; // Use primary color for completed
 
     // Active/Inactive Doughnut
     const activeCount = this.assessmentData().active || 0;
     const inactiveCount = this.assessmentData().inactive || 0;
-    const hasData = (activeCount + inactiveCount) > 0;
+    const completedCount = this.assessmentData().completed || 0;
+    const hasData = (activeCount + inactiveCount + completedCount) > 0;
 
     this.assessmentStatusChartData.set({
-      labels: hasData ? ['Active', 'Inactive'] : ['No Data'],
+      labels: hasData ? ['Active', 'Inactive', 'Completed'] : ['No Data'],
       datasets: [
         {
-          data: hasData ? [activeCount, inactiveCount] : [1],
-          backgroundColor: hasData ? [activeColor, inactiveColor] : ['#e2e8f0'],
-          hoverBackgroundColor: hasData ? [activeColor, inactiveColor] : ['#e2e8f0'],
+          data: hasData ? [activeCount, inactiveCount, completedCount] : [1],
+          backgroundColor: hasData ? [activeColor, inactiveColor, completedColor] : ['#e2e8f0'],
+          hoverBackgroundColor: hasData ? [activeColor, inactiveColor, completedColor] : ['#e2e8f0'],
           borderWidth: 0,
         },
       ],

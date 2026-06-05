@@ -3,15 +3,14 @@
     <div class="assessment-card__header">
       <div class="assessment-card__header-left">
         <span class="assessment-card__over-title">{{ lastUpdatedInfo }}</span>
-        @if (!showContent()) {
-          <p-tag
-            [value]="data()?.status"
-            [severity]="data()?.status === 'Active' ? 'success' : 'info'"
-            rounded
-            class="text-sm ml-2 assessment-card__status-tag"
-          ></p-tag>
-        }
+        <p-tag
+          [value]="data()?.status"
+          [severity]="getStatusSeverity(data()?.status)"
+          rounded
+          class="assessment-card__status-tag"
+        ></p-tag>
       </div>
+
       @if (showToggleButton() && actionItems.length > 0) {
         <p-speeddial
           [model]="actionItems"

@@ -31,7 +31,9 @@
                   <h3 class="recruitment-card__name">{{ assessment.name }}</h3>
                   <p class="recruitment-card__id">ID: #{{ assessment.id }}</p>
                 </div>
-                @if (assessment.isActive) {
+                @if (assessment.status) {
+                  <span class="recruitment-card__badge" [class]="'recruitment-card__badge--' + assessment.status.toLowerCase()">{{ assessment.status }}</span>
+                } @else if (assessment.isActive) {
                   <span class="recruitment-card__badge recruitment-card__badge--active">Active</span>
                 }
               </div>

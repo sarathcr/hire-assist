@@ -32,7 +32,21 @@
     display: flex;
     gap: 15px;
     align-items: center;
+
+    ::ng-deep {
+      .p-button {
+        height: 38px;
+      }
+      .p-button.p-button-icon-only {
+        width: 38px;
+      }
+      .p-iconfield, .p-inputtext {
+        height: 38px;
+      }
+    }
   }
+
+
 
   &__card {
     display: block;
@@ -88,6 +102,24 @@
     }
     &__wrapper {
       height: calc(100vh - 300px);
+    }
+  }
+}
+
+::ng-deep {
+  .p-menu .p-menu-item.active-filter-item {
+    .p-menu-item-content, .p-menu-item-link {
+      background: var(--background-secondary) !important;
+      border-radius: 10px !important;
+      
+      .p-menu-item-icon {
+        color: var(--primary-color) !important;
+      }
+
+      .p-menu-item-label {
+        font-weight: 500 !important;
+        color: var(--primary-color) !important;
+      }
     }
   }
 }

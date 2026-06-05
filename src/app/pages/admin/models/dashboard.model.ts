@@ -2,6 +2,7 @@ export interface Assessment {
   total: number;
   active: number;
   inactive: number;
+  completed: number;
 }
 
 export interface Users {
@@ -42,6 +43,16 @@ export interface DashboardSummary {
     candidateId: string;
     interviewId: number;
   }[];
+  activeRecruitments?: {
+    id: number;
+    name: string;
+    startDateTime?: string;
+    activeRoundsPercentage?: number;
+  }[];
+  userDetails?: {
+    name: string;
+    profileImage: string;
+  };
 }
 
 export interface DashboardData {

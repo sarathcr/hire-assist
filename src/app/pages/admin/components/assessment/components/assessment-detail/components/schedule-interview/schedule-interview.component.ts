@@ -35,14 +35,14 @@ export class ScheduleInterviewComponent
   public interviewModel = new ScheduleInterview();
   public configMap!: ConfigMap;
   public data!: string;
-  public selectedCandidateIds: string[] = [];
+  public selectedCandidates: { id: string; name: string }[] = [];
   public isLoading = false;
   public isLoadingPanelData = false;
   public isPanelValidationError = false;
   public minDate!: Date;
   public maxDate!: Date;
   public validationMinDate!: Date;
-  public onSubmitCallback?: (formValue: { scheduleDate: Date }) => void;
+  public onSubmitCallback?: (formValue: any) => void;
   public setComponentInstance?: (instance: ScheduleInterviewComponent) => void;
 
   constructor(
@@ -56,8 +56,12 @@ export class ScheduleInterviewComponent
   ngOnInit(): void {
     this.data = this.config.data?.candidateIds || this.config.data;
     this.setConfigMap();
-    this.selectedCandidateIds =
-      this.config.data?.candidateIds || this.config.data || [];
+    if (this.config.data?.candidates) {
+      this.selectedCandidates = [...this.config.data.candidates];
+    } else {
+      const ids = this.config.data?.candidateIds || this.config.data || [];
+      this.selectedCandidates = ids.map((id: string) => ({ id, name: id }));
+    }
     this.onSubmitCallback = this.config.data?.onSubmit;
     this.setComponentInstance = this.config.data?.setComponentInstance;
     this.isLoadingPanelData = this.config.data?.isLoadingPanelData || false;
@@ -122,7 +126,10 @@ export class ScheduleInterviewComponent
       this.onSubmitCallback
     ) {
       this.isLoading = true;
-      this.onSubmitCallback(this.fGroup.value);
+      this.onSubmitCallback({
+        ...this.fGroup.value,
+        candidateIds: this.selectedCandidates.map(c => c.id)
+      });
     }
   }
 
@@ -161,7 +168,7 @@ export class ScheduleInterviewComponent
   }
 
   public removeCandidate(index: number): void {
-    this.selectedCandidateIds.splice(index, 1);
+    this.selectedCandidates.splice(index, 1);
   }
 
   private validateScheduleDate(form: FormGroup, dateField: string): void {

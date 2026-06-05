@@ -18,6 +18,7 @@ import { StepperModule } from 'primeng/stepper';
 import { TooltipModule } from 'primeng/tooltip';
 import { of, forkJoin } from 'rxjs';
 import { PaginatedData, PaginatedPayload, FilterMap } from '../../../../../../shared/models/pagination.models';
+import { toLocalISOString } from '../../../../../../shared/utilities/date.utility';
 import { recruitment } from '../../../../../../shared/models/stepper.models';
 import {
   FieldType,
@@ -544,8 +545,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       assessmentId: this.assessmentId,
       batchId: dialogResult.batchId,
       questionSetIds: [dialogResult.questionSetId],
-      startDateTime: dialogResult.startDate,
-      endDateTime: dialogResult.endDate
+      startDateTime: dialogResult.startDate ? toLocalISOString(new Date(dialogResult.startDate)) : null,
+      endDateTime: dialogResult.endDate ? toLocalISOString(new Date(dialogResult.endDate)) : null
     };
 
     this.candidateService.createEntity(payload as any, 'add-batch')
@@ -614,10 +615,17 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       },
       data: {
         candidateIds: this.pendingScheduleCandidateIds,
+        candidates: candidatesToCheck.map((c: any) => ({
+          id: String(c.id),
+          name: c.name || String(c.id)
+        })),
         assessmentId: this.assessmentId,
         startDateTime: this.data?.startDateTime,
         endDateTime: this.data?.endDateTime,
-        onSubmit: (formValue: { scheduleDate: Date }) => {
+        onSubmit: (formValue: { scheduleDate: Date, candidateIds?: string[] }) => {
+          if (formValue.candidateIds) {
+            this.pendingScheduleCandidateIds = formValue.candidateIds;
+          }
           this.confirmSchedule(formValue.scheduleDate);
         },
         setComponentInstance: (instance: ScheduleInterviewComponent) => {
@@ -633,7 +641,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       assessmentId: String(this.assessmentId),
       candidateIds: this.pendingScheduleCandidateIds,
       assessmentRoundId: this.currentStep,
-      scheduledDate: scheduledDate ? scheduledDate.toISOString() : null
+      scheduledDate: scheduledDate ? toLocalISOString(new Date(scheduledDate)) : null
     };
 
     this.assessmentService

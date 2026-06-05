@@ -41,17 +41,17 @@
                 >Selected Candidates</span
               >
               <span class="schedule-interview-dialog__candidates-count"
-                >({{ selectedCandidateIds.length }})</span
+                >({{ selectedCandidates.length }})</span
               >
             </div>
           </div>
           <div class="schedule-interview-dialog__candidates-list">
-            @if (selectedCandidateIds.length > 0) {
+            @if (selectedCandidates.length > 0) {
               <div class="schedule-interview-dialog__chips-container">
-                @for (id of selectedCandidateIds; track id; let i = $index) {
+                @for (candidate of selectedCandidates; track candidate.id; let i = $index) {
                   <div class="schedule-interview-dialog__chip-wrapper">
                     <p-chip
-                      [label]="id"
+                      [label]="candidate.name"
                       [removable]="true"
                       (onRemove)="removeCandidate(i)"
                       styleClass="schedule-interview-dialog__chip"

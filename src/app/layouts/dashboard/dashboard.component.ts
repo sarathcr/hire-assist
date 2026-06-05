@@ -53,46 +53,9 @@ export class DashboardComponent implements OnInit {
   }
 
   private loadProfileImageIfNeeded(): void {
-    const isOnProfilePage = this.router.url.includes('/profile');
-
-    if (!this.storeService.getProfileImageUrl() && !this.storeService.isProfileDetailsLoading) {
-      this.storeService.setIsLoadingProfileImage(true);
-
-      if (!isOnProfilePage) {
-        this.storeService.setIsProfileDetailsLoading(true);
-
-        this.profileServices.GetProfileDetails().subscribe({
-          next: (profileDetails) => {
-            if (profileDetails.profilePhoto?.id && profileDetails.profilePhoto?.attachmentType) {
-              this.profileServices
-                .GetPhoto(
-                  profileDetails.profilePhoto.id,
-                  profileDetails.profilePhoto.attachmentType,
-                )
-                .subscribe({
-                  next: (blob: Blob) => {
-                    const url = URL.createObjectURL(blob);
-                    this.storeService.setProfileImageUrl(url);
-                    this.storeService.setIsLoadingProfileImage(false);
-                    this.storeService.setIsProfileDetailsLoading(false);
-                  },
-                  error: () => {
-                    this.storeService.setIsLoadingProfileImage(false);
-                    this.storeService.setIsProfileDetailsLoading(false);
-                  },
-                });
-            } else {
-              this.storeService.setIsLoadingProfileImage(false);
-              this.storeService.setIsProfileDetailsLoading(false);
-            }
-          },
-          error: () => {
-            this.storeService.setIsLoadingProfileImage(false);
-            this.storeService.setIsProfileDetailsLoading(false);
-          },
-        });
-      }
-    }
+    // Note: Profile image and details are now fetched from the main /api/dashboard endpoint 
+    // inside the AdminDashboardComponent (or similar dashboard components) 
+    // to avoid an extra API call.
   }
 
   private getAdminLinks(userRole: string[]): MenuItem[] {
