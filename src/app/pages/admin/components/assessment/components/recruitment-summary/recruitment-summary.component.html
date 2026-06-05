@@ -244,10 +244,10 @@
 
               <p-accordion-content>
                 <div class="round-breakdown">
-                  @for (round of candidate.roundsData; track round.roundId; let last = $last) {
+                  @for (round of candidate.roundsData; track round.roundId; let last = $last; let idx = $index) {
                     <div class="round-item" [class.is-last]="last">
                       <div class="round-timeline">
-                        <div class="round-marker">{{ round.roundId }}</div>
+                        <div class="round-marker">{{ idx + 1 }}</div>
                         <div class="round-connector" *ngIf="!last"></div>
                       </div>
 
