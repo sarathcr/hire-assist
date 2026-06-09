@@ -974,7 +974,7 @@ export class CandidateTestComponent
         detail: error,
       });
     };
-    this.candidatetestservice.getQuestionSet().subscribe({ next, error });
+    this.candidatetestservice.getQuestionSet(this.assessmentId).subscribe({ next, error });
   }
 
   private createCandidateAnswer(payload: Payload): Observable<void> {

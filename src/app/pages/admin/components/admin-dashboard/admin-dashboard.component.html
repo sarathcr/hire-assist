@@ -46,16 +46,16 @@
         <div class="stat-card-content-modern">
           <div class="stat-card-header">
             <div class="stat-icon-wrapper"><i class="pi pi-briefcase"></i></div>
-            @if (assessmentData()?.active) { <span class="stat-badge">{{ assessmentData()?.active }} Active</span> }
+            @if (assessmentData()?.active) { <span class="stat-badge" (click)="$event.stopPropagation(); navigateTo('/admin/recruitments', { status: 'Active' })">{{ assessmentData()?.active }} Active</span> }
           </div>
           <div class="stat-card-body">
             <h3 class="stat-card-label">Total Recruitments</h3>
             <p class="stat-card-number">{{ assessmentData()?.total || 0 }}</p>
           </div>
           <div class="stat-card-footer">
-            <span class="stat-detail"><i class="pi pi-check-circle"></i> Active: {{ assessmentData()?.active || 0 }}</span>
-            <span class="stat-detail"><i class="pi pi-pause-circle"></i> Inactive: {{ assessmentData()?.inactive || 0 }}</span>
-            <span class="stat-detail"><i class="pi pi-verified"></i> Completed: {{ assessmentData()?.completed || 0 }}</span>
+            <span class="stat-detail" (click)="$event.stopPropagation(); navigateTo('/admin/recruitments', { status: 'Active' })"><i class="pi pi-check-circle"></i> Active: {{ assessmentData()?.active || 0 }}</span>
+            <span class="stat-detail" (click)="$event.stopPropagation(); navigateTo('/admin/recruitments', { status: 'Inactive' })"><i class="pi pi-pause-circle"></i> Inactive: {{ assessmentData()?.inactive || 0 }}</span>
+            <span class="stat-detail" (click)="$event.stopPropagation(); navigateTo('/admin/recruitments', { status: 'Completed' })"><i class="pi pi-verified"></i> Completed: {{ assessmentData()?.completed || 0 }}</span>
           </div>
         </div>
       </div>
@@ -353,8 +353,8 @@
                   <span class="metric-value-text" style="color: #10b981; font-weight:600;">Active</span>
                 </div>
                 <div class="progress-bar-bg">
-                  <!-- Use activeRoundsPercentage if available, else 0/Mock -->
-                  <div class="progress-bar-fill" [style.width.%]="assessment.activeRoundsPercentage || 25" style="background-color: #3b82f6;"></div>
+                  <!-- Use progressPercentage if available, else 0 -->
+                  <div class="progress-bar-fill" [style.width]="(assessment.progressPercentage || 0) + '%'" style="background-color: #3b82f6;"></div>
                 </div>
                 <span class="metric-value">{{ assessment.startDateTime | date:'mediumDate' }}</span>
               </div>

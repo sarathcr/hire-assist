@@ -40,10 +40,10 @@ export class CandidateTestService extends ApiService<any> {
     // return apiUrl;
   }
 
-  public getQuestionSet() {
+  public getQuestionSet(assessmentId: number) {
     return this.httpClient.get<CandidateTestQuestionSet>(
       // `${this.getResourceUrl()}/api/assessment/candidate-questions`
-      `${this.getResourceUrl()}/candidate-questions`,
+      `${this.getResourceUrl()}/candidate-questions?assessmentId=${assessmentId}`,
     );
   }
   public addcandidateAnswer(payload: Payload) {

@@ -354,12 +354,13 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  public navigateTo(path: string | any[]): void {
+  public navigateTo(path: string | any[], state?: any): void {
     console.log('Navigating to:', path);
+    const extras = state ? { state } : {};
     if (Array.isArray(path)) {
-      this.router.navigate(path);
+      this.router.navigate(path, extras);
     } else {
-      this.router.navigate([path]);
+      this.router.navigate([path], extras);
     }
   }
 }

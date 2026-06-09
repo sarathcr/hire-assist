@@ -48,6 +48,7 @@ export interface DashboardSummary {
     name: string;
     startDateTime?: string;
     activeRoundsPercentage?: number;
+    progressPercentage?: number;
   }[];
   userDetails?: {
     name: string;
