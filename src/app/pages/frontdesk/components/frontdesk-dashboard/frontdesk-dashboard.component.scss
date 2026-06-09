@@ -1,6 +1,10 @@
 .frontdesk-assessments {
   margin-top: var(--spacing-20);
-  height: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
   &__header {
     display: flex;
     justify-content: space-between;
@@ -44,8 +48,15 @@
     max-height: 200px;
   }
   &__wrapper {
-    height: auto;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
     width: 100%;
+    padding-bottom: 80px;
+
+    @media screen and (max-width: 768px) {
+      padding-bottom: 150px;
+    }
   }
   &__list {
     display: grid;

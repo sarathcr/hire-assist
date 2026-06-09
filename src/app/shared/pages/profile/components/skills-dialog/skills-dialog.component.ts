@@ -65,7 +65,7 @@ export class SkillsDialogComponent
       newSkill: new FormControl<string>('', [
         Validators.minLength(1),
         Validators.maxLength(20),
-        this.notOnlyNumbersValidator,
+        this.validSkillNameValidator.bind(this),
         this.noTrailingSpacesValidator,
       ]),
     });
@@ -88,11 +88,27 @@ export class SkillsDialogComponent
     };
   }
 
-  private notOnlyNumbersValidator(control: AbstractControl): ValidationErrors | null {
+  private validSkillNameValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
-    const isOnlyNumbers = /^\d+$/.test(value);
-    return isOnlyNumbers ? { notOnlyNumbers: true } : null;
+
+    // Reject if it's only numbers
+    if (/^\d+$/.test(value)) {
+      return { notOnlyNumbers: true };
+    }
+
+    // Reject if it doesn't contain any letter (supports international characters)
+    if (!/\p{L}/u.test(value)) {
+      return { noLetters: true };
+    }
+
+    // Reject if it contains explicitly invalid special characters
+    const invalidChars = /[$%^*=@!~{}|\\<>;:?"_]/;
+    if (invalidChars.test(value)) {
+      return { invalidCharacters: true };
+    }
+
+    return null;
   }
 
   private noTrailingSpacesValidator(control: AbstractControl): ValidationErrors | null {

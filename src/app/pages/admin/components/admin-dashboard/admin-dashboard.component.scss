@@ -206,8 +206,8 @@ $spacing: (
       .stat-card-body { margin-top: auto; }
       .stat-card-label { font-size: 0.75rem; font-weight: 700; color: map.get(map.get($colors, 'text'), 'muted'); margin: 0 0 6px 0; text-transform: uppercase; letter-spacing: 0.1em; }
       .stat-card-number { font-size: 2.5rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; margin: 0; color: map.get(map.get($colors, 'text'), 'main'); font-variant-numeric: tabular-nums; }
-      .stat-card-footer { margin-top: map.get($spacing, 'md'); padding-top: map.get($spacing, 'sm'); border-top: 1px solid rgba(0,0,0,0.04); display: flex; gap: map.get($spacing, 'md'); }
-      .stat-detail { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; color: map.get(map.get($colors, 'text'), 'muted'); i { font-size: 0.875rem; } }
+      .stat-card-footer { margin-top: map.get($spacing, 'md'); padding-top: map.get($spacing, 'sm'); border-top: 1px solid rgba(0,0,0,0.04); display: flex; flex-wrap: wrap; gap: map.get($spacing, 'md'); }
+      .stat-detail { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; color: map.get(map.get($colors, 'text'), 'muted'); white-space: nowrap; i { font-size: 0.875rem; } }
       .stat-card-background {
         position: absolute; bottom: -20px; right: -20px; opacity: 0.03; transform: rotate(-10deg); pointer-events: none; z-index: 1;
         .stat-card-pattern {
