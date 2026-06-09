@@ -15,7 +15,7 @@ export class BasicInformation extends FormEntity {
         Validators.email,
         Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/),
       ],
-      phone: [Validators.required, Validators.pattern(/^\+?[0-9]{7,15}$/)],
+      phone: [Validators.required, Validators.pattern(/^\+?(?!(\d)\1+$)[0-9]{7,15}$/)],
       dob: [Validators.required],
     },
     configMap: {

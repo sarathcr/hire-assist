@@ -69,6 +69,12 @@
         }
       </div>
 
+      @if (experienceForm.errors?.['duplicateDate']) {
+        <span class="experience-dialog__error" style="position: static; display: block; margin-top: -15px;">
+          An experience with this exact timeframe already exists.
+        </span>
+      }
+
       <div class="experience-dialog__field-checkbox">
         <p-checkbox formControlName="isCurrent" [binary]="true" inputId="isCurrent"></p-checkbox>
         <label for="isCurrent" class="ml-2">I am currently working in this role</label>

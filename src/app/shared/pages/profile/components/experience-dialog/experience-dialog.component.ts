@@ -165,19 +165,54 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
   }
 
   private duplicateExperienceValidator(control: AbstractControl): ValidationErrors | null {
-    const role = control.get('role')?.value?.trim().toLowerCase();
     const company = control.get('company')?.value?.trim().toLowerCase();
     const id = control.get('id')?.value;
-
-    if (!company) return null;
+    
+    const startDate = control.get('startDate')?.value;
+    const endDate = control.get('endDate')?.value;
+    const isCurrent = control.get('isCurrent')?.value;
 
     const existing = this.config.data?.existingExperiences || [];
-    const isDuplicate = existing.some((exp: any) => 
-      exp.id !== id && 
-      exp.company?.trim().toLowerCase() === company
-    );
+    const errors: any = {};
 
-    return isDuplicate ? { duplicateExperience: true } : null;
+    if (company) {
+      const isDuplicateCompany = existing.some((exp: any) => 
+        (id === 0 || exp.id !== id) && 
+        exp.company?.trim().toLowerCase() === company
+      );
+      if (isDuplicateCompany) {
+        errors.duplicateExperience = true;
+      }
+    }
+
+    if (startDate) {
+      const startM = new Date(startDate).getMonth();
+      const startY = new Date(startDate).getFullYear();
+
+      const isDuplicateDate = existing.some((exp: any) => {
+        if (id !== 0 && exp.id === id) return false;
+        
+        const eStart = new Date(exp.startDate);
+        const isStartMatch = eStart.getMonth() === startM && eStart.getFullYear() === startY;
+        
+        if (!isStartMatch) return false;
+
+        if (isCurrent && exp.isCurrent) return true;
+        if (!isCurrent && !exp.isCurrent && endDate && exp.endDate) {
+          const eEnd = new Date(exp.endDate);
+          const endM = new Date(endDate).getMonth();
+          const endY = new Date(endDate).getFullYear();
+          return (eEnd.getMonth() === endM && eEnd.getFullYear() === endY);
+        }
+        return false;
+      });
+
+      if (isDuplicateDate) {
+        errors.duplicateDate = true;
+      }
+    }
+
+    return Object.keys(errors).length > 0 ? errors : null;
   }
 
   private validateDates(): void {
@@ -200,9 +235,27 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
     }
   }
 
+  private toLocalISOString(date: Date): string {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T00:00:00.000Z`;
+  }
+
   onSubmit(): void {
     if (this.experienceForm.valid) {
-      this.ref.close(this.experienceForm.value);
+      const formValue = { ...this.experienceForm.value };
+      
+      if (formValue.startDate) {
+        formValue.startDate = this.toLocalISOString(formValue.startDate);
+      }
+      
+      if (formValue.endDate) {
+        formValue.endDate = this.toLocalISOString(formValue.endDate);
+      }
+      
+      this.ref.close(formValue);
     }
   }
 
