@@ -41,7 +41,7 @@ export class ButtonComponent {
 
   // Public Events
   public onButtonClick(buttonId?: number): void {
-    if (!this.disabled) {
+    if (!this.disabled && !this.isLoading()) {
       this.btnClick.emit(buttonId ?? null);
     }
   }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
@@ -34,11 +34,13 @@ interface Slide {
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss',
 })
-export class ResetPasswordComponent implements OnInit {
+export class ResetPasswordComponent implements OnInit, OnDestroy {
   public resetFormGroup: FormGroup;
   public isLoading = false;
   public isEmailSent = false;
   public configMap!: ConfigMap;
+  public cooldownTimeRemaining = 0;
+  private cooldownInterval: any;
   public slides: Slide[] = [
     {
       title: 'Streamline Your Hiring Process',
@@ -89,9 +91,42 @@ export class ResetPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.configMap = new ResetPasswordData().metadata.configMap || {};
+    this.checkCooldown();
+  }
+
+  ngOnDestroy(): void {
+    if (this.cooldownInterval) {
+      clearInterval(this.cooldownInterval);
+    }
+  }
+
+  private checkCooldown(): void {
+    const cooldownStr = localStorage.getItem('resetPasswordCooldown');
+    if (cooldownStr) {
+      const cooldownUntil = parseInt(cooldownStr, 10);
+      const now = new Date().getTime();
+      if (cooldownUntil > now) {
+        this.cooldownTimeRemaining = Math.ceil((cooldownUntil - now) / 1000);
+        this.startCooldownTimer();
+      } else {
+        localStorage.removeItem('resetPasswordCooldown');
+      }
+    }
+  }
+
+  private startCooldownTimer(): void {
+    this.cooldownInterval = setInterval(() => {
+      this.cooldownTimeRemaining--;
+      if (this.cooldownTimeRemaining <= 0) {
+        clearInterval(this.cooldownInterval);
+        this.cooldownTimeRemaining = 0;
+        localStorage.removeItem('resetPasswordCooldown');
+      }
+    }, 1000);
   }
 
   public onSubmit(): void {
+    if (this.cooldownTimeRemaining > 0) return;
     this.resetFormGroup.markAllAsTouched();
 
     if (this.resetFormGroup.invalid) return;
@@ -110,6 +145,11 @@ export class ResetPasswordComponent implements OnInit {
   private handleResetPasswordSuccess(res: any): void {
     this.isEmailSent = true;
     this.isLoading = false;
+    
+    const cooldownUntil = new Date().getTime() + 60000;
+    localStorage.setItem('resetPasswordCooldown', cooldownUntil.toString());
+    this.checkCooldown();
+
     this.messageService.add({
       severity: 'success',
       summary: 'Success',
