@@ -284,7 +284,7 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
     }
 
     const assessmentRoundOptions: Option[] = this.assessmentRounds
-      .filter((round: RoundModel) => !round.round.toLowerCase().includes('aptitude'))
+      .filter((round: RoundModel) => round.roundTypeId === 2)
       .map((round: RoundModel) => ({
         label: round.round,
         value: round.id ? String(round.id) : '',

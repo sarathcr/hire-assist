@@ -225,11 +225,10 @@
                                   [options]="feedbackCriteriaOptions"
                                   optionLabel="label"
                                   optionValue="value"
-                                  placeholder="Import Existing"
+                                  placeholder="Choose Feedback Criteria"
+                                  filterPlaceHolder="Search criteria..."
                                   (onChange)="onExistingCriteriaSelected($event, idx)"
                                   (onFocus)="fetchCriteriaOptions()"
-                                  [loading]="isFetchingCriteria"
-                                  loadingIcon="pi pi-spin pi-spinner"
                                   [display]="ms.value && ms.value.length > 3 ? 'comma' : 'chip'"
                                   [filter]="true"
                                   appendTo="body"
@@ -238,6 +237,16 @@
                                   styleClass="assessment-round__criteria-multiselect"
                                   [disabled]="isReadOnly()"
                                 >
+                                  <ng-template pTemplate="empty">
+                                    <div style="padding: 1rem; text-align: center; color: var(--color-text-secondary, #6c757d);">
+                                      @if (isFetchingCriteria) {
+                                        <i class="pi pi-spin pi-spinner" style="font-size: 1.2rem; margin-right: 0.5rem; vertical-align: middle;"></i>
+                                        <span style="vertical-align: middle;">Loading criteria...</span>
+                                      } @else {
+                                        <span>No available criteria found</span>
+                                      }
+                                    </div>
+                                  </ng-template>
                                 </p-multiSelect>
                                 <app-button
                                   [icon]="'pi pi-plus'"

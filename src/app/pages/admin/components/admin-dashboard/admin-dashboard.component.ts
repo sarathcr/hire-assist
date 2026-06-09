@@ -234,7 +234,8 @@ export class AdminDashboardComponent implements OnInit {
         },
       },
       cutout: '75%', // Thinner elegant ring
-      borderWidth: 0,
+      borderWidth: 2,
+      borderColor: '#ffffff',
       layout: {
         padding: 20
       }
@@ -315,7 +316,8 @@ export class AdminDashboardComponent implements OnInit {
           data: hasData ? [activeCount, inactiveCount, completedCount] : [1],
           backgroundColor: hasData ? [activeColor, inactiveColor, completedColor] : ['#e2e8f0'],
           hoverBackgroundColor: hasData ? [activeColor, inactiveColor, completedColor] : ['#e2e8f0'],
-          borderWidth: 0,
+          borderWidth: 2,
+          borderColor: '#ffffff',
         },
       ],
     });
