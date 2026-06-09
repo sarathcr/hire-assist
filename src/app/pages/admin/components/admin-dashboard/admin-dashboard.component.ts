@@ -36,9 +36,9 @@ import { UserState } from '../../../../shared/models/user.models';
 })
 export class AdminDashboardComponent implements OnInit {
   // Signals for state management
-  public assessmentData = signal<Assessment>({ total: 0, active: 0, inactive: 0, completed: 0 });
-  public usersData = signal<Users>({ total: 0 });
-  public questionsData = signal<Questions>({ total: 0 });
+  public assessmentData = signal<Assessment | null>(null);
+  public usersData = signal<Users | null>(null);
+  public questionsData = signal<Questions | null>(null);
   public todayDate = signal<string>('');
   public isLoadingDashboard = signal<boolean>(true);
   public currentUser = signal<UserState | null>(null);
@@ -84,8 +84,8 @@ export class AdminDashboardComponent implements OnInit {
 
   // Computed Properties
   public completedPercentage = computed(() => {
-    const total = this.assessmentData().total;
-    const completed = this.assessmentData().completed || 0;
+    const total = this.assessmentData()?.total || 0;
+    const completed = this.assessmentData()?.completed || 0;
     return total > 0 ? Math.round((completed / total) * 100) : 0;
   });
 
@@ -115,9 +115,13 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   private getUserData(): void {
-    const userData = this.storeService.getUserData();
-    this.currentUser.set(userData);
-    if (userData?.id) {
+    this.storeService.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
+      const userData = state.userState;
+      this.currentUser.set(userData);
+    });
+
+    const initialUserData = this.storeService.getUserData();
+    if (initialUserData?.id) {
       this.getDashboardDetails();
     }
   }
@@ -152,6 +156,12 @@ export class AdminDashboardComponent implements OnInit {
 
           if (res.data.userDetails) {
             this.storeService.setProfileImageUrl(res.data.userDetails.profileImage);
+            
+            const currentUserData = this.storeService.getUserData();
+            if (currentUserData) {
+              this.storeService.setUser(currentUserData.id, res.data.userDetails.name, currentUserData.role);
+            }
+
             if (this.currentUser()) {
               this.currentUser.set({
                 ...this.currentUser()!,
@@ -304,9 +314,9 @@ export class AdminDashboardComponent implements OnInit {
     const completedColor = primaryColor; // Use primary color for completed
 
     // Active/Inactive Doughnut
-    const activeCount = this.assessmentData().active || 0;
-    const inactiveCount = this.assessmentData().inactive || 0;
-    const completedCount = this.assessmentData().completed || 0;
+    const activeCount = this.assessmentData()?.active || 0;
+    const inactiveCount = this.assessmentData()?.inactive || 0;
+    const completedCount = this.assessmentData()?.completed || 0;
     const hasData = (activeCount + inactiveCount + completedCount) > 0;
 
     this.assessmentStatusChartData.set({
@@ -329,9 +339,9 @@ export class AdminDashboardComponent implements OnInit {
         {
           label: 'Total Count',
           data: [
-            this.assessmentData().total || 0,
-            this.usersData().total || 0,
-            this.questionsData().total || 0,
+            this.assessmentData()?.total || 0,
+            this.usersData()?.total || 0,
+            this.questionsData()?.total || 0,
           ],
           backgroundColor: [primaryColor, successColor, infoColor],
           hoverBackgroundColor: [primaryColor, successColor, infoColor],

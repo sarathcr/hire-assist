@@ -2,11 +2,11 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import * as Forge from 'node-forge';
-import { Observable, Subject, tap } from 'rxjs';
+import { Observable, Subject, tap, of, catchError, map } from 'rxjs';
 import { initialTokenData, TokenData } from '../models/token-data.models';
 import { getTokenPayloadData, TokenField } from '../utilities/token.utility';
 import { StoreService } from './store.service';
-import { LOGIN_URL } from '../constants/api';
+import { LOGIN_URL, REFRESH_TOKEN_URL } from '../constants/api';
 
 @Injectable({
   providedIn: 'root',
@@ -59,6 +59,25 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
   public logout(): void {
     this.router.navigate(['/auth/login']);
     this.storeService.reset();
+  }
+
+  public silentRefresh(): Observable<void> {
+    const { accessToken, refreshToken } = this.storeService.getTokenData();
+    if (!accessToken || !refreshToken) return of(undefined);
+    
+    const options = { headers: { Authorization: `Bearer ${accessToken}` } };
+    return this.http.post<{ accessToken: string }>(REFRESH_TOKEN_URL, { refreshToken }, options).pipe(
+      tap((response) => {
+        if (response && response.accessToken) {
+          // Re-evaluate user info from the new token to get updated roles
+          this.getUserInfo(response.accessToken, refreshToken, 'Token error', 422);
+        }
+      }),
+      map(() => void 0),
+      catchError(() => {
+        return of(undefined);
+      })
+    );
   }
 
   //   Private

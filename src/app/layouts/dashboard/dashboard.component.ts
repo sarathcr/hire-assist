@@ -1,4 +1,5 @@
-import { Component, OnInit, computed, inject } from '@angular/core';
+import { Component, OnInit, computed, inject, DestroyRef, ChangeDetectorRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { HeaderComponent } from '../../shared/components/header/header.component';
@@ -25,30 +26,38 @@ export class DashboardComponent implements OnInit {
     private readonly collectionService: CollectionService,
     private readonly profileServices: ProfileServicesService,
     private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
+
+  private destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
     if (this.collectionService.shouldRefreshCollections()) {
       this.collectionService.getCollection(true);
     }
-    const userRole = this.storeService?.getUserRole();
-    if (userRole) {
-      if (userRole.includes('admin') || userRole.includes('superadmin')) {
-        this.links = this.getAdminLinks(userRole);
-      } else if (userRole.includes('candidate')) {
-        this.links = this.getCandidateLinks();
-      } else if (userRole.includes('interviewer')) {
-        this.links = this.getInterviewerLinks(userRole);
-      } else if (userRole.includes('coordinator')) {
-        this.links = this.getCoordinatorLinks(userRole);
-      } else if (userRole.includes('frontdesk')) {
-        this.links = this.getFrontdeskLinks(userRole);
+    
+    this.storeService.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(state => {
+      const userRole = this.storeService.getUserRole();
+      if (userRole) {
+        if (userRole.includes('admin') || userRole.includes('superadmin')) {
+          this.links = this.getAdminLinks(userRole);
+        } else if (userRole.includes('candidate')) {
+          this.links = this.getCandidateLinks();
+        } else if (userRole.includes('interviewer')) {
+          this.links = this.getInterviewerLinks(userRole);
+        } else if (userRole.includes('coordinator')) {
+          this.links = this.getCoordinatorLinks(userRole);
+        } else if (userRole.includes('frontdesk')) {
+          this.links = this.getFrontdeskLinks(userRole);
+        } else {
+          this.links = this.getDefaultLinks();
+        }
       } else {
         this.links = this.getDefaultLinks();
       }
-    } else {
-      this.links = this.getDefaultLinks();
-    }
+      this.cdr.detectChanges();
+    });
+
     this.loadProfileImageIfNeeded();
   }
 

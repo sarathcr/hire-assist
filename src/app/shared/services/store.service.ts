@@ -112,10 +112,10 @@ export class StoreService {
   }
 
   private updateStore() {
-    this.stateSource.next(this.state);
     if (this.isBrowserEnvironment()) {
       this.saveStateToLocalStorage(this.state);
     }
+    this.stateSource.next(this.state);
   }
 
   private saveStateToLocalStorage(appState: AppState): void {

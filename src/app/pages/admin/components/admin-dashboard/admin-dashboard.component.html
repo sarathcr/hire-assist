@@ -46,16 +46,16 @@
         <div class="stat-card-content-modern">
           <div class="stat-card-header">
             <div class="stat-icon-wrapper"><i class="pi pi-briefcase"></i></div>
-            @if (assessmentData().active) { <span class="stat-badge">{{ assessmentData().active }} Active</span> }
+            @if (assessmentData()?.active) { <span class="stat-badge">{{ assessmentData()?.active }} Active</span> }
           </div>
           <div class="stat-card-body">
             <h3 class="stat-card-label">Total Recruitments</h3>
-            <p class="stat-card-number">{{ assessmentData().total }}</p>
+            <p class="stat-card-number">{{ assessmentData()?.total || 0 }}</p>
           </div>
           <div class="stat-card-footer">
-            <span class="stat-detail"><i class="pi pi-check-circle"></i> Active: {{ assessmentData().active }}</span>
-            <span class="stat-detail"><i class="pi pi-pause-circle"></i> Inactive: {{ assessmentData().inactive }}</span>
-            <span class="stat-detail"><i class="pi pi-verified"></i> Completed: {{ assessmentData().completed || 0 }}</span>
+            <span class="stat-detail"><i class="pi pi-check-circle"></i> Active: {{ assessmentData()?.active || 0 }}</span>
+            <span class="stat-detail"><i class="pi pi-pause-circle"></i> Inactive: {{ assessmentData()?.inactive || 0 }}</span>
+            <span class="stat-detail"><i class="pi pi-verified"></i> Completed: {{ assessmentData()?.completed || 0 }}</span>
           </div>
         </div>
       </div>
@@ -68,7 +68,7 @@
           </div>
           <div class="stat-card-body">
             <h3 class="stat-card-label">Total Users</h3>
-            <p class="stat-card-number">{{ usersData().total }}</p>
+            <p class="stat-card-number">{{ usersData()?.total || 0 }}</p>
           </div>
           <div class="stat-card-footer">
             <span class="stat-detail"><i class="pi pi-info-circle"></i> System users</span>
@@ -84,7 +84,7 @@
           </div>
           <div class="stat-card-body">
             <h3 class="stat-card-label">Questions</h3>
-            <p class="stat-card-number">{{ questionsData().total }}</p>
+            <p class="stat-card-number">{{ questionsData()?.total || 0 }}</p>
           </div>
           <div class="stat-card-footer">
             <span class="stat-detail"><i class="pi pi-clock"></i> Available questions</span>

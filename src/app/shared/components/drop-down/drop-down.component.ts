@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, OnInit, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, signal, viewChild, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -21,17 +22,22 @@ export class DropDownComponent implements OnInit {
   
   dropdownEl = viewChild<ElementRef>('dropdown');
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private router: Router,
     private authService: AuthService,
     private storeService: StoreService,
   ) {}
+
   ngOnInit() {
-    const userData = this.storeService.getUserData();
-    this.userName.set(userData?.name || 'User');
-    
-    const roles = this.storeService.getUserRole();
-    this.userRole.set(roles && roles.length > 0 ? roles.join(', ') : 'Guest');
+    this.storeService.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
+      const userData = state.userState;
+      this.userName.set(userData?.name || 'User');
+
+      const roles = this.storeService.getUserRole();
+      this.userRole.set(roles && roles.length > 0 ? roles.join(', ') : 'Guest');
+    });
   }
 
   @HostListener('document:click', ['$event'])

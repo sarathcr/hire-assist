@@ -430,6 +430,11 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       if (res.designation != undefined)
         this.profileDataSource.designation = res.designation;
 
+      const currentUserData = this.storeService.getUserData();
+      if (currentUserData && res.name) {
+        this.storeService.setUser(currentUserData.id, res.name, currentUserData.role);
+      }
+
       if (this.profileBlob != undefined && this.profileType != undefined) {
         this.getProfilePhoto(this.profileBlob, this.profileType);
       } else {

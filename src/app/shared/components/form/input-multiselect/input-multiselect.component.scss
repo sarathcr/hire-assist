@@ -1,7 +1,7 @@
 .input-multiselect {
   margin-bottom: 25px;
   position: relative;
-  
+
   ::ng-deep {
     .p-multiselect {
       width: 100%;
@@ -64,7 +64,7 @@
       flex-shrink: 0 !important;
       border: 1px solid rgba(33, 150, 243, 0.2) !important;
       max-width: 250px !important;
-      
+
       .p-chip-label {
         font-size: 10px !important;
         font-weight: 500 !important;
@@ -75,7 +75,7 @@
         min-width: 0 !important;
         flex: 1 1 auto !important;
       }
-      
+
       .p-chip-remove-icon {
         font-size: 9px !important;
         margin-left: 4px !important;
@@ -84,7 +84,7 @@
       }
     }
   }
-  
+
   .p-floatlabel-on:not(input.p-filled) label {
     font-weight: 300;
     font-size: var(--font-size-base);
