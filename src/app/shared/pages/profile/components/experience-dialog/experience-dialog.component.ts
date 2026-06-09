@@ -60,8 +60,8 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
   ) {
     this.experienceForm = this.fb.group({
       id: [0],
-      role: ['', [Validators.required, Validators.maxLength(100), this.notOnlyNumbersValidator, this.noTrailingSpacesValidator]],
-      company: ['', [Validators.required, Validators.maxLength(100), this.notOnlyNumbersValidator, this.noTrailingSpacesValidator]],
+      role: ['', [Validators.required, Validators.maxLength(100), this.validNameValidator.bind(this), this.noTrailingSpacesValidator]],
+      company: ['', [Validators.required, Validators.maxLength(100), this.validNameValidator.bind(this), this.noTrailingSpacesValidator]],
       startDate: [null, [Validators.required, this.dateValidator]],
       endDate: [null, [Validators.required, this.dateValidator]],
       isCurrent: [false],
@@ -127,10 +127,27 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
     return this.experienceForm.invalid || this.isPristine;
   }
 
-  private notOnlyNumbersValidator(control: AbstractControl): ValidationErrors | null {
-    if (!control.value) return null;
-    const isNumeric = /^\d+$/.test(control.value.toString().trim());
-    return isNumeric ? { notOnlyNumbers: true } : null;
+  private validNameValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+
+    // Reject if it's only numbers
+    if (/^\d+$/.test(value.toString().trim())) {
+      return { notOnlyNumbers: true };
+    }
+
+    // Must contain at least one letter (supports international characters)
+    if (!/\p{L}/u.test(value.toString())) {
+      return { invalidCharacters: true };
+    }
+
+    // Reject clearly invalid special characters (Allowing valid ones like: - . & , / ( ) + ' # !)
+    const invalidCharsRegex = /[$%^*=~{}<>?"\\]/;
+    if (invalidCharsRegex.test(value.toString())) {
+      return { invalidCharacters: true };
+    }
+
+    return null;
   }
 
   private noTrailingSpacesValidator(control: AbstractControl): ValidationErrors | null {
