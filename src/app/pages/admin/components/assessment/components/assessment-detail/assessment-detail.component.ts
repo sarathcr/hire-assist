@@ -931,6 +931,39 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   public openMenu(event: Event, menu: Menu): void {
+    const selectedCandidates = this.tableData?.data?.filter((c: any) => this.selectedCandidateIds.includes(c.id)) || [];
+    const movedCandidates = selectedCandidates.filter((c: any) => c.status?.toLowerCase() === 'selected' && c.isScheduled);
+
+    if (movedCandidates.length > 0) {
+      const candidateNamesArray = movedCandidates.map((c: any) => c.name || c.candidateName || c.fullName || 'Unknown Candidate');
+      
+      const modalData = {
+        title: 'Action Not Allowed',
+        message: 'The following candidate(s) have already been shortlisted for the next round. Modifications to their status in the current round are no longer permitted.',
+        candidateNames: candidateNamesArray,
+        isChoice: false,
+        acceptButtonText: 'Ok',
+      };
+
+      this.ref = this.dialog.open(DialogComponent, {
+        data: modalData,
+        showHeader: false,
+        styleClass: 'standard-dialog-wrapper',
+        maximizable: false,
+        width: '450px',
+        modal: true,
+        focusOnShow: false,
+        breakpoints: {
+          '960px': '75vw',
+          '640px': '90vw',
+        },
+        templates: {
+          footer: DialogFooterComponent,
+        },
+      });
+      return;
+    }
+
     this.updateActionItems();
     menu.toggle(event);
   }
@@ -1009,7 +1042,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       items.push({
         label: 'Move to Next Round',
         icon: 'pi pi-forward',
-        disabled: !hasSelection || !allSelected,
+        disabled: !hasSelection || !allSelected || anyScheduled,
         command: () => this.onMoveToNextRound(),
       });
     }
