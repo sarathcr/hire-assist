@@ -92,6 +92,18 @@ export class ResetPasswordChangeComponent implements OnInit {
   ngOnInit(): void {
     this.configMap = new ResetPasswordChangeData().metadata.configMap || {};
     this.resetPasswordFormGroup.addValidators(this.passwordMatchValidator());
+
+    this.token = this.route.snapshot.queryParams['token'] || '';
+    this.id = this.route.snapshot.queryParams['id'] || '';
+
+    if (!this.token || !this.id) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Invalid reset password link. Token or ID is missing.',
+      });
+      this.router.navigate(['/auth/login']);
+    }
   }
 
   private passwordMatchValidator(): ValidatorFn {
@@ -139,13 +151,9 @@ export class ResetPasswordChangeComponent implements OnInit {
 
     this.isLoading = true;
 
-    this.route.queryParams.subscribe((params) => {
-      this.token = params['token'] || '';
-      this.id = params['id'] || '';
-    });
-
     if (this.token === '' || this.id === '') {
       this.handleInvalidTokenOrIdError();
+      return;
     }
 
     const payload = { token: this.token, id: this.id, ...formValue };
