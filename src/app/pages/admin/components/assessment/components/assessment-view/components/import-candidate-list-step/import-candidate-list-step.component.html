@@ -13,14 +13,19 @@
         </p>
       </div>
       <div class="candidate__header-actions">
-        <app-button
-          class="candidate__schedule-btn"
+        <span
+          [pTooltip]="tooltipMessage"
           tooltipPosition="top"
-          [buttonLabel]="'Add Candidates to Recruitment Cycle'"
-          [icon]="'pi pi-calendar-times'"
-          [disabled]="disableScheduleButton || isReadOnly()"
-          (btnClick)="scheduleAssessment()"
-        ></app-button>
+          [tooltipDisabled]="!tooltipMessage"
+        >
+          <app-button
+            class="candidate__schedule-btn"
+            [buttonLabel]="'Add Candidates to Recruitment Cycle'"
+            [icon]="'pi pi-calendar-times'"
+            [disabled]="disableScheduleButton || isReadOnly()"
+            (btnClick)="scheduleAssessment()"
+          ></app-button>
+        </span>
       </div>
     </div>
   </div>
@@ -50,16 +55,20 @@
       ></app-button>
     </div>
     <div class="candidate__toolbar-group">
-      <app-button
-        class="candidate__action-btn candidate__action-btn--danger"
-        [buttonLabel]="'Delete Selected'"
-        [buttonSeverity]="'danger'"
-        [icon]="'pi pi-trash'"
-        [disabled]="
-          !selectedUsers || selectedUsers.length === 0 || isReadOnly()
-        "
-        (btnClick)="deleteSelectedCandidates()"
-      ></app-button>
+      <span
+        [pTooltip]="tooltipMessage"
+        tooltipPosition="top"
+        [tooltipDisabled]="!tooltipMessage"
+      >
+        <app-button
+          class="candidate__action-btn candidate__action-btn--danger"
+          [buttonLabel]="'Delete Selected'"
+          [buttonSeverity]="'danger'"
+          [icon]="'pi pi-trash'"
+          [disabled]="disableDeleteSelectedButton || isReadOnly()"
+          (btnClick)="deleteSelectedCandidates()"
+        ></app-button>
+      </span>
     </div>
   </div>
 

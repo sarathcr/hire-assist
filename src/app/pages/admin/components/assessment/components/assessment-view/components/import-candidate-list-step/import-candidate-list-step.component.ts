@@ -134,6 +134,8 @@ export class ImportCandidateListStepComponent implements OnInit {
   public importStatus = false;
   public newStatus = false;
   public isLoading = false;
+  public disableDeleteSelectedButton = true;
+  public tooltipMessage = '';
   public alreadySelectedCandidates: string[] = [];
   public visible: boolean = false;
   public historyEvents: any[] = [];
@@ -971,6 +973,8 @@ export class ImportCandidateListStepComponent implements OnInit {
   private updateScheduleButtonState(): void {
     if (!this.selectedUsers?.length || !this.data?.data) {
       this.disableScheduleButton = true;
+      this.disableDeleteSelectedButton = true;
+      this.tooltipMessage = '';
       return;
     }
 
@@ -989,5 +993,7 @@ export class ImportCandidateListStepComponent implements OnInit {
     });
 
     this.disableScheduleButton = hasScheduledCandidate;
+    this.disableDeleteSelectedButton = hasScheduledCandidate;
+    this.tooltipMessage = hasScheduledCandidate ? 'Action disabled for candidates already in the recruitment cycle.' : '';
   }
 }
