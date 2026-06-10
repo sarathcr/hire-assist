@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { CarouselModule } from 'primeng/carousel';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
@@ -24,12 +25,14 @@ interface Slide {
 @Component({
   selector: 'app-reset-password',
   standalone: true,
+  providers: [ConfirmationService],
   imports: [
     CommonModule,
     ReactiveFormsModule,
     InputTextComponent,
     ButtonComponent,
     CarouselModule,
+    ConfirmDialogModule,
   ],
   templateUrl: './reset-password.component.html',
   styleUrl: './reset-password.component.scss',
@@ -84,6 +87,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   constructor(
     private readonly router: Router,
     private readonly messageService: MessageService,
+    private readonly confirmationService: ConfirmationService,
     private readonly authService: AuthService,
   ) {
     this.resetFormGroup = buildFormGroup(new ResetPasswordData());
@@ -131,10 +135,23 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
     if (this.resetFormGroup.invalid) return;
 
-    this.isLoading = true;
-    this.authService.ResetPassword(this.resetFormGroup.value).subscribe({
-      next: (res: any) => this.handleResetPasswordSuccess(res),
-      error: (e: HttpErrorResponse) => this.handleResetPasswordError(e),
+    const email = this.resetFormGroup.get('email')?.value;
+
+    this.confirmationService.confirm({
+      message: `We will send a password reset link to <strong>${email}</strong>. Please ensure you have access to this inbox.`,
+      header: 'Confirm Email Address',
+      icon: 'pi pi-envelope text-4xl text-primary-500 mb-3',
+      acceptLabel: 'Send Link',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-primary p-button-rounded px-4',
+      rejectButtonStyleClass: 'p-button-outlined p-button-rounded px-4',
+      accept: () => {
+        this.isLoading = true;
+        this.authService.ResetPassword(this.resetFormGroup.value).subscribe({
+          next: (res: any) => this.handleResetPasswordSuccess(res),
+          error: (e: HttpErrorResponse) => this.handleResetPasswordError(e),
+        });
+      }
     });
   }
 
