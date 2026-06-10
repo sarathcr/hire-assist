@@ -134,17 +134,17 @@ export class CoordinatorAssignmentComponent implements OnInit {
   public panelData!: PaginatedData<PanelSummary>;
   public sidebarConfig!: MenuItem[];
   public selectedView: 0 | 1 = 0;
-  
+
   // Stepper Properties
   public activeStep = 0;
   public completedSteps: number[] = [];
   public visitedSteps: number[] = [0];
-  
+
   public stepConfig = [
     {
       index: 0,
       label: 'Select Candidate',
-      description: 'Choose a candidate to schedule an interview for',
+      description: 'Choose a candidate to schedule an interview',
       icon: 'pi pi-user',
     },
     {
@@ -160,7 +160,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       icon: 'pi pi-calendar-plus',
     },
   ];
-  
+
   public selectedCandidatesIds: InterviewSummary[] = [];
   public selectedPanelIds: PanelSummary[] = [];
   public candidateColumn: TableColumnsData = candidateTable;
@@ -240,7 +240,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
     this.loadPanelData(payload);
   }
 
-  public selectedCandidate: string[] = [];  // For persistence
+  public selectedCandidate: string[] = []; // For persistence
 
   public getSelectedcandidateId(selectedIds: { id: string }[]) {
     this.isSchedulingSuccessful = false;
@@ -319,10 +319,19 @@ export class CoordinatorAssignmentComponent implements OnInit {
     if (selectedIds.length > 0) {
       const selectedId = selectedIds[0].id;
       // Preliminary check for panel validity
-      const panel = this.panelData.data?.find((p) => String(p.id) === String(selectedId));
+      const panel = this.panelData.data?.find(
+        (p) => String(p.id) === String(selectedId),
+      );
 
       if (panel?.status?.toLowerCase() === 'assigned') {
-        const pName = panel?.name || (panel as any)?.panelName || (panel as any)?.panel || (panel as any)?.title || (selectedIds[0] as any)?.name || (selectedIds[0] as any)?.panelName || 'the panel';
+        const pName =
+          panel?.name ||
+          (panel as any)?.panelName ||
+          (panel as any)?.panel ||
+          (panel as any)?.title ||
+          (selectedIds[0] as any)?.name ||
+          (selectedIds[0] as any)?.panelName ||
+          'the panel';
         this.messageService.add({
           severity: 'warn',
           summary: 'Information',
@@ -335,7 +344,14 @@ export class CoordinatorAssignmentComponent implements OnInit {
       }
 
       if (!this.isPanelValid(panel)) {
-        const pName = panel?.name || (panel as any)?.panelName || (panel as any)?.panel || (panel as any)?.title || (selectedIds[0] as any)?.name || (selectedIds[0] as any)?.panelName || 'the panel';
+        const pName =
+          panel?.name ||
+          (panel as any)?.panelName ||
+          (panel as any)?.panel ||
+          (panel as any)?.title ||
+          (selectedIds[0] as any)?.name ||
+          (selectedIds[0] as any)?.panelName ||
+          'the panel';
         this.messageService.add({
           severity: 'warn',
           summary: 'Information',
@@ -623,7 +639,10 @@ export class CoordinatorAssignmentComponent implements OnInit {
 
     const error = (error: CustomErrorResponse) => {
       // business error code 3102 might imply we need to add instead of update
-      if ((error as any)?.status === 422 && error.error?.businessError === 3102) {
+      if (
+        (error as any)?.status === 422 &&
+        error.error?.businessError === 3102
+      ) {
         this.addInterviewPanels(payload);
       } else {
         this.messageService.add({
@@ -724,7 +743,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       },
     });
   }
-// Stepper Methods
+  // Stepper Methods
 
   public setActiveStep(step: number): void {
     if (this.canActivateStep(step)) {
@@ -806,14 +825,14 @@ export class CoordinatorAssignmentComponent implements OnInit {
   }
 
   public isStepEnabled(stepIndex: number): boolean {
-      return this.canActivateStep(stepIndex);
+    return this.canActivateStep(stepIndex);
   }
 
   private openReassignDialog(currentStep: number): void {
     const candidate = this.selectedCandidatesIds[0];
     const ref = this.dialog.open(ReassignPanelComponent, {
       data: {
-        candidateName: candidate.name ?? ''
+        candidateName: candidate.name ?? '',
       },
       header: 'Reassign Panel',
       width: '450px',
@@ -823,7 +842,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       styleClass: 'reassign-dialog-wrapper',
       breakpoints: {
         '640px': '95vw',
-      }
+      },
     });
 
     ref.onClose.subscribe((confirmed: boolean) => {
