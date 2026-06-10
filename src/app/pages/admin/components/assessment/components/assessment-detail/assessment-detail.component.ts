@@ -983,10 +983,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const allCompleted = selectedCandidates.length > 0 && selectedCandidates.every((c: any) => c.status?.toLowerCase() === 'completed');
     const allSelected = selectedCandidates.length > 0 && selectedCandidates.every((c: any) => c.status?.toLowerCase() === 'selected');
     const allRejected = selectedCandidates.length > 0 && selectedCandidates.every((c: any) => c.status?.toLowerCase() === 'rejected');
+    const allQuit = selectedCandidates.length > 0 && selectedCandidates.every((c: any) => c.status?.toLowerCase() === 'quit');
 
     const anyCompleted = selectedCandidates.some((c: any) => c.status?.toLowerCase() === 'completed');
     const anySelected = selectedCandidates.some((c: any) => c.status?.toLowerCase() === 'selected');
     const anyRejected = selectedCandidates.some((c: any) => c.status?.toLowerCase() === 'rejected');
+    const anyQuit = selectedCandidates.some((c: any) => c.status?.toLowerCase() === 'quit');
     const anyScheduled = selectedCandidates.some((c: any) => c.isScheduled);
     const anyOnReview = selectedCandidates.some((c: any) => {
       const status = c.status?.toLowerCase() || '';
@@ -1002,7 +1004,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       items.push({
         label: 'Assign to Batch',
         icon: 'pi pi-users',
-        disabled: !hasSelection || anyCompleted || anyScheduled || anySelected || anyRejected || anyOnReview,
+        disabled: !hasSelection || anyCompleted || anyScheduled || anySelected || anyRejected || anyOnReview || anyQuit,
         command: () => this.onAssignToBatch({ id: '' }), // Passing empty id as it's bulk/header action
       });
     }
@@ -1011,7 +1013,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       items.push({
         label: 'Assign to Panel',
         icon: 'pi pi-user-plus',
-        disabled: !hasSelection || anyCompleted || anySelected || anyRejected || anyOnReview || this.selectedCandidateIds.length > 1,
+        disabled: !hasSelection || anyCompleted || anySelected || anyRejected || anyOnReview || anyQuit || this.selectedCandidateIds.length > 1,
         command: () => this.onAssignToPanel(),
       });
     }
@@ -1019,7 +1021,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     items.push({
       label: 'Schedule',
       icon: 'pi pi-calendar-plus',
-      disabled: !hasSelection || anyCompleted || anyScheduled || anySelected || anyRejected || anyOnReview || anyMissingBatch || anyMissingPanel,
+      disabled: !hasSelection || anyCompleted || anyScheduled || anySelected || anyRejected || anyOnReview || anyQuit || anyMissingBatch || anyMissingPanel,
       command: () => this.onScheduleCandidate({ id: this.selectedCandidateIds.join(',') }),
     });
 
@@ -1033,7 +1035,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     items.push({
       label: 'Reject Candidate',
       icon: 'pi pi-times-circle',
-      disabled: !hasSelection || (!allCompleted && !allSelected),
+      disabled: !hasSelection || (!allCompleted && !allSelected && !allQuit),
       command: () => this.onRejectCandidates(),
     });
 
