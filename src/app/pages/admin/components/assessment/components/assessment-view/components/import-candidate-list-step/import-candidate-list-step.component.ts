@@ -974,6 +974,20 @@ export class ImportCandidateListStepComponent implements OnInit {
       return;
     }
 
-    this.disableScheduleButton = false;
+    const hasScheduledCandidate = this.selectedUsers.some(userId => {
+      const candidate = this.data.data.find(c => c.id === userId);
+      if (!candidate) return false;
+      
+      const status = (candidate as any).status?.toLowerCase();
+      return status === 'scheduled' || 
+             status === 'assigned' || 
+             status === 'selected' || 
+             status === 'completed' || 
+             status === 'rejected' || 
+             status === 'active' || 
+             (candidate.batchId && candidate.batchId > 0);
+    });
+
+    this.disableScheduleButton = hasScheduledCandidate;
   }
 }
