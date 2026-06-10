@@ -743,6 +743,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
         const candidate = this.selectedCandidatesIds[0];
         const isAlreadyScheduled =
           candidate.status?.toLowerCase() === 'scheduled' ||
+          candidate.status?.toLowerCase() === 'assigned' ||
           candidate.status?.toLowerCase() === 'selected' ||
           (candidate as any).isScheduled === 'Scheduled' ||
           (candidate as any).isScheduled === true;
@@ -853,13 +854,11 @@ export class CoordinatorAssignmentComponent implements OnInit {
    */
   private isCandidateSelectable(candidate: any): boolean {
     const status = candidate?.status?.trim().toLowerCase() || '';
-    // Mapped statuses: Scheduled and Pending (sometimes mapped to In Progress)
     // Selected, Rejected, and Completed should be disabled
-    return (
-      status === 'scheduled' ||
-      status === 'pending' ||
-      status === 'in progress' ||
-      status === 'active'
+    return !(
+      status === 'completed' ||
+      status === 'selected' ||
+      status === 'rejected'
     );
   }
 

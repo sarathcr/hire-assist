@@ -133,8 +133,8 @@ export class AssessmentViewComponent
     return this.assessmentRounds.some((r) => r.roundTypeId === 1);
   }
 
-  public get onlyHasOneOnlineAptitudeRound(): boolean {
-    return this.assessmentRounds.length === 1 && this.assessmentRounds[0].roundTypeId === 1;
+  public get onlyHasAptitudeRounds(): boolean {
+    return this.assessmentRounds.length > 0 && this.assessmentRounds.every((r) => r.roundTypeId === 1);
   }
 
   public get filteredStepConfig() {
@@ -149,7 +149,7 @@ export class AssessmentViewComponent
         return this.hasOnlineAptitudeRound;
       }
       if (step.index === 2) {
-        return this.hasOnlineAptitudeRound && !this.onlyHasOneOnlineAptitudeRound;
+        return !this.onlyHasAptitudeRounds;
       }
       return true;
     });
@@ -167,7 +167,7 @@ export class AssessmentViewComponent
         return this.hasOnlineAptitudeRound;
       }
       if (index === 2) {
-        return this.hasOnlineAptitudeRound && !this.onlyHasOneOnlineAptitudeRound;
+        return !this.onlyHasAptitudeRounds;
       }
       return true;
     });
@@ -369,10 +369,8 @@ export class AssessmentViewComponent
         this.stepsLoaded = true;
         this.updateCompletedStepsFromStatus();
 
-        // 2. Load rounds ONLY if we don't have them yet
-        const roundsObs: Observable<RoundModel[]> = this.assessmentRounds.length > 0 
-          ? of(this.assessmentRounds) 
-          : this.assessmentScheduleService.GetAssessmentRound(this.assessmentId!);
+        // 2. Load rounds ALWAYS so stepper config stays up-to-date with round changes
+        const roundsObs: Observable<RoundModel[]> = this.assessmentScheduleService.GetAssessmentRound(this.assessmentId!);
 
         return roundsObs.pipe(
           switchMap((rounds: RoundModel[]) => {
