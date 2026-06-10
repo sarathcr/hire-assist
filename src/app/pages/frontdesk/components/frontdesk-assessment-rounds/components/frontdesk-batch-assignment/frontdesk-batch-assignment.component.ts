@@ -626,8 +626,8 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     let disabledButtonIndices: number[] = [];
 
     // Button indices: 0: Mark as Present, 1: Mark as Absent, 2: Assign to Batch, 3: Upload ID Proof
-    if (statusLower === 'completed') {
-      // Cannot change status anymore for completed assessments
+    if (statusLower === 'completed' || statusLower === 'selected' || statusLower === 'rejected' || statusLower === 'quit') {
+      // Cannot change status anymore for completed/selected/rejected assessments
       return {
         ...candidate,
         visibleButtonIndices: [3],
