@@ -99,20 +99,14 @@ export abstract class BaseFormComponent {
     if (errors['passwordMismatch']) {
       return 'Passwords do not match.';
     }
-    if (errors['requireUppercase']) {
-      return 'Must contain at least one uppercase letter.';
-    }
-    if (errors['requireLowercase']) {
-      return 'Must contain at least one lowercase letter.';
-    }
-    if (errors['requireNumber']) {
-      return 'Must contain at least one number.';
-    }
-    if (errors['requireSpecialChar']) {
-      return 'Must contain at least one special character.';
-    }
-    if (errors['requireLength']) {
-      return 'Must be at least 8 characters long.';
+    if (
+      errors['requireUppercase'] ||
+      errors['requireLowercase'] ||
+      errors['requireNumber'] ||
+      errors['requireSpecialChar'] ||
+      errors['requireLength']
+    ) {
+      return 'Must be at least 8 chars with 1 uppercase, 1 lowercase, 1 number, and 1 special character.';
     }
     return 'This field has an invalid value.';
   }

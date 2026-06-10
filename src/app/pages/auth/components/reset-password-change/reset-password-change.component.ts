@@ -96,23 +96,31 @@ export class ResetPasswordChangeComponent implements OnInit {
 
   private passwordMatchValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
-      const newPassword = control.get('newPassword')?.value;
+      const newPasswordControl = control.get('newPassword');
       const confirmPasswordControl = control.get('confirmPassword');
+      
+      const newPassword = newPasswordControl?.value;
       const confirmPassword = confirmPasswordControl?.value;
 
       if (!newPassword || !confirmPassword) {
+        // If confirmPassword is empty but newPassword is not, we might want to let 'required' handle it,
+        // or we could show mismatch. Let's let 'required' handle it.
         return null;
       }
 
       if (newPassword !== confirmPassword) {
-        confirmPasswordControl.setErrors({
-          ...confirmPasswordControl.errors,
-          passwordMismatch: true,
-        });
+        if (!confirmPasswordControl?.hasError('passwordMismatch')) {
+          confirmPasswordControl?.setErrors({
+            ...(confirmPasswordControl.errors || {}),
+            passwordMismatch: true,
+          });
+          confirmPasswordControl?.markAsDirty();
+          confirmPasswordControl?.markAsTouched();
+        }
         return { passwordMismatch: true };
       } else {
-        const errors = confirmPasswordControl.errors;
-        if (errors) {
+        if (confirmPasswordControl?.hasError('passwordMismatch')) {
+          const errors = { ...confirmPasswordControl.errors };
           delete errors['passwordMismatch'];
           confirmPasswordControl.setErrors(
             Object.keys(errors).length ? errors : null,

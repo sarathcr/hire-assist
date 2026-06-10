@@ -454,11 +454,11 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
           }));
           this.data = { ...res, data: formattedData };
         },
-        error: () => {
+        error: (err: any) => {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to load User list',
+            detail: err?.error?.type || 'Failed to load User list',
           });
         },
       });

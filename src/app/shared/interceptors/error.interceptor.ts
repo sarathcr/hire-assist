@@ -6,13 +6,14 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Observable, catchError, switchMap, throwError } from 'rxjs';
+import { Observable, catchError, switchMap, throwError, EMPTY } from 'rxjs';
 
 import { StoreService } from '../services/store.service';
 import { REFRESH_TOKEN_URL } from '../constants/api';
 import { AuthService } from '../services/auth.service';
 import { CustomErrorResponse } from '../models/custom-error.models';
 import { CollectionService } from '../services/collection.service';
+import { MessageService } from 'primeng/api';
 interface RefreshTokenResponse {
   accessToken: string;
 }
@@ -35,6 +36,8 @@ export const errorInterceptor = (
   const authService = inject(AuthService);
   const storeService = inject(StoreService);
   const httpClient = inject(HttpClient);
+  const messageService = inject(MessageService);
+  const collectionService = inject(CollectionService);
 
   return next(req).pipe(
     catchError((error: unknown) => {
@@ -44,10 +47,12 @@ export const errorInterceptor = (
         return handleError(
           req,
           next,
-          error,
+          error as unknown as CustomErrorResponse,
           authService,
           storeService,
           httpClient,
+          messageService,
+          collectionService,
         );
       } else {
         return throwError(() => error);
@@ -63,20 +68,27 @@ const handleError = (
   authService: AuthService,
   storeService: StoreService,
   httpClient: HttpClient,
+  messageService: MessageService,
+  collectionService: CollectionService,
 ): Observable<HttpEvent<unknown>> => {
-  if (error.error.status === 401) {
-  storeService.setIsLoading(false);
-  authService.logout();
-  return throwError(() => error);
-}
-if (error.error.status === 403) {
-      storeService.setIsLoading(false);
+  const status = (error as any).status || error.error?.status;
+  if (status === 401 && error.error?.businessError !== 5000) {
+    storeService.setIsLoading(false);
+    if (!req.url.includes('/login')) {
+      messageService.add({ severity: 'error', summary: 'Session Expired', detail: error.error?.type || 'Your session has expired. Please log in again.' });
       authService.logout();
-      return throwError(() => error);  
-}
+      return EMPTY;
+    }
+    return throwError(() => error);
+  }
+  if (status === 403) {
+    storeService.setIsLoading(false);
+    messageService.add({ severity: 'error', summary: 'Access Denied', detail: error.error?.type || 'You do not have permission to perform this action.' });
+    authService.logout();
+    return EMPTY;  
+  }
   switch (error.error.businessError) {
     case 5000: {
-      const collectionService = inject(CollectionService);
       const { accessToken, refreshToken } = storeService.getTokenData();
       const options = { headers: { Authorization: `Bearer ${accessToken}` } };
       return httpClient
@@ -97,13 +109,22 @@ if (error.error.status === 403) {
 
               return next(newReq);
             }
-            return throwError(() => error);
+            authService.logout();
+            messageService.add({ severity: 'error', summary: 'Session Expired', detail: error.error?.type || 'Your session has expired. Please log in again.' });
+            return EMPTY;
           }),
+          catchError((err) => {
+            authService.logout();
+            messageService.add({ severity: 'error', summary: 'Session Expired', detail: error.error?.type || 'Your session has expired. Please log in again.' });
+            return EMPTY;
+          })
         );
     }
-    case 5003: {
+    case 5003:
+    case 5009: {
+      messageService.add({ severity: 'error', summary: 'Session Expired', detail: error.error?.type || 'Your session has expired. Please log in again.' });
       authService.logout();
-      return throwError(() => error);
+      return EMPTY;
     }
     default: {
       storeService.setIsLoading(false);
