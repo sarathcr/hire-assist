@@ -201,9 +201,9 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     }
   }
 
-  public onClickAssessment(id: number): void {
-    if (id > 0) {
-      this.handleRecruitmentNavigation(id);
+  public onClickAssessment(assessment: Assessment): void {
+    if (assessment && assessment.id && assessment.id > 0) {
+      this.handleRecruitmentNavigation(assessment.id, assessment);
     }
   }
 

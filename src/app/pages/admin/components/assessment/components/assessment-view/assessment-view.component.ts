@@ -344,6 +344,17 @@ export class AssessmentViewComponent
       const idParam = params.get('id');
       this.assessmentId = idParam ? Number(idParam) : 0;
       if (this.assessmentId) {
+        // Validate assessment loaded from state/localStorage
+        if (!this.assessment || Number(this.assessment.id) !== this.assessmentId) {
+          this.assessmentService.getEntityById(this.assessmentId).subscribe({
+            next: (assessment: Assessment) => {
+              this.assessment = assessment;
+              localStorage.setItem('assessment', JSON.stringify(this.assessment));
+              this.normalizeDates(this.assessment);
+            }
+          });
+        }
+
         // Only load if status wasn't already provided via state
         if (!this.stepsLoaded) {
           this.loadStepsStatus();
