@@ -69,7 +69,7 @@ const tableColumns: TableColumnsData = {
 };
 
 // Type for table data with string id (required by TableComponent)
-type TableDataItem = InterviewByPanel & { id: string };
+type TableDataItem = Omit<InterviewByPanel, 'id'> & { id: string };
 
 @Component({
   selector: 'app-interviewer-candidate-list',

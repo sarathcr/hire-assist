@@ -608,9 +608,6 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       });
   }
 
-  /**
-   * Common data mapping logic for candidate records
-   */
   private mapCandidateData(candidate: Candidate): Candidate {
     const statusLower = candidate.status?.toLowerCase() || '';
 
@@ -631,7 +628,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       return {
         ...candidate,
         visibleButtonIndices: [3],
-        disabledButtonIndices: [0, 1, 2],
+        disabledButtonIndices: this.isAptitudeRound ? [0, 1, 2] : [0, 1],
       };
     }
 
@@ -651,13 +648,13 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       disabledButtonIndices = [0];
     }
 
-    if (hasNoOtherBatches) {
+    if (this.isAptitudeRound && hasNoOtherBatches) {
       disabledButtonIndices.push(2);
     }
 
     return {
       ...candidate,
-      visibleButtonIndices: [0, 1, 2, 3],
+      visibleButtonIndices: this.isAptitudeRound ? [0, 1, 2, 3] : [0, 1, 3],
       disabledButtonIndices,
     };
   }

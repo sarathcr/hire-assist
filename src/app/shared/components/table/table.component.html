@@ -443,9 +443,11 @@
                       [outlined]="true"
                       severity="success"
                       [disabled]="
-                        product.isDisabledStartInterview || product.isDisabled
+                        product.isDisabledStartInterview || product.isDisabled || product.isPresent === false
                       "
                       (onClick)="onStartInterview(product)"
+                      [pTooltip]="product.isPresent === false ? 'The candidate is not reported yet' : ''"
+                      tooltipPosition="bottom"
                     />
                   }
                 }
@@ -664,7 +666,7 @@
                 {{ product[headerColumn.field] | date: "dd/MM/yyyy, hh:mm a" }}
               </ng-container>
               <ng-template #nilTpl>
-                @if (headerColumn.field === 'reportingTime') {
+                @if (headerColumn.field === 'reportingTime' || headerColumn.field === 'reportedAt') {
                   <p-tag value="Not reported" severity="warn" />
                 } @else {
                   <p-tag value="Not scheduled" severity="warn" />

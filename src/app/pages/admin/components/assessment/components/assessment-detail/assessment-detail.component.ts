@@ -545,8 +545,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       assessmentId: this.assessmentId,
       batchId: dialogResult.batchId,
       questionSetIds: [dialogResult.questionSetId],
-      startDateTime: dialogResult.startDate ? toLocalISOString(new Date(dialogResult.startDate)) : null,
-      endDateTime: dialogResult.endDate ? toLocalISOString(new Date(dialogResult.endDate)) : null
+      startDateTime: dialogResult.startDate ? new Date(dialogResult.startDate).toISOString() : null,
+      endDateTime: dialogResult.endDate ? new Date(dialogResult.endDate).toISOString() : null
     };
 
     this.candidateService.createEntity(payload as any, 'add-batch')
@@ -641,7 +641,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       assessmentId: String(this.assessmentId),
       candidateIds: this.pendingScheduleCandidateIds,
       assessmentRoundId: this.currentStep,
-      scheduledDate: scheduledDate ? toLocalISOString(new Date(scheduledDate)) : null
+      scheduledDate: scheduledDate ? new Date(scheduledDate).toISOString() : null
     };
 
     this.assessmentService

@@ -59,6 +59,15 @@ const panelTableColumns: TableColumnsData = {
       hasMultiStatus: true,
     },
     {
+      field: 'reportedAt',
+      displayName: 'Reported Time',
+      sortedColumn: true,
+      hasChip: false,
+      fieldType: FieldType.StringToDateTime,
+      hasTextFilter: true,
+      filterAlias: 'textFilter',
+    },
+    {
       field: 'actions',
       displayName: 'Actions',
       fieldType: FieldType.Action,
@@ -71,7 +80,7 @@ const panelTableColumns: TableColumnsData = {
 };
 
 // Type for table data with string id (required by TableComponent)
-type TableDataItem = InterviewByPanel & { id: string };
+type TableDataItem = Omit<InterviewByPanel, 'id'> & { id: string };
 
 /** Groups all response rows by panelId so each panel only appears once. */
 function groupByPanel(
@@ -200,6 +209,7 @@ export class InterviewerRecruitmentPanelsComponent implements OnInit {
           data: res.data.map((item) => ({
             ...item,
             id: item.id?.toString() ?? '',
+            reportedAt: item.reportedAt === 'Not Reported' ? undefined : item.reportedAt,
           })) as TableDataItem[],
         };
         this.loadingPanels[panelId] = false;
@@ -276,6 +286,7 @@ export class InterviewerRecruitmentPanelsComponent implements OnInit {
             data: res.data.map((item) => ({
               ...item,
               id: item.id?.toString() ?? '',
+              reportedAt: item.reportedAt === 'Not Reported' ? undefined : item.reportedAt,
             })) as TableDataItem[],
           };
           this.loadingPanels[panelId] = false;

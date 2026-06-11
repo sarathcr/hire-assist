@@ -252,6 +252,7 @@ export interface InterviewByPanel {
   assessemntRoundId?: number;
   roundName?: string;
   interviewDate: string;
+  reportedAt?: string;
 }
 
 export interface CordinatorData {
