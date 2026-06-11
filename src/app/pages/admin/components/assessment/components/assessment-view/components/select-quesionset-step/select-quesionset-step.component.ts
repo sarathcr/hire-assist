@@ -668,6 +668,13 @@ export class SelectQuesionsetStepComponent
         return (a.assessmentRoundId || 0) - (b.assessmentRoundId || 0);
       });
 
+      const activeIds = new Set(res.data.map((qs) => qs.id.toString()));
+      for (const id of this.questionSetAccordionData.keys()) {
+        if (!activeIds.has(id)) {
+          this.questionSetAccordionData.delete(id);
+        }
+      }
+
       res.data.forEach((qs) => {
         if (qs.id === 0) return;
 
