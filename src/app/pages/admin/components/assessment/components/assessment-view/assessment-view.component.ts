@@ -329,8 +329,7 @@ export class AssessmentViewComponent
     const prevStatus = this.stepsStatus[this.stepKeys[prevStep.index]];
     const canActivate =
       this.completedSteps.includes(prevStep.index) ||
-      prevStatus === 'Completed' ||
-      prevStatus === 'Active';
+      prevStatus === 'Completed';
 
     return canActivate;
   }
