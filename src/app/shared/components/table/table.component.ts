@@ -61,11 +61,15 @@ export const uniqueStatuses = [
   { label: 'Terminated', value: 'Terminated' },
   { label: 'Quit', value: 'Quit' },
   { label: 'On Review', value: 'On Review' },
+  { label: 'Enrolled', value: 'Enrolled' },
+  { label: 'Not Enrolled', value: 'Not Enrolled' },
 ];
 
 export const uniqueStatusesForIsSchedule = [
   { label: 'Scheduled', value: 'Scheduled' },
   { label: 'Not Scheduled', value: 'Not Scheduled' },
+  { label: 'Enrolled', value: 'Enrolled' },
+  { label: 'Not Enrolled', value: 'Not Enrolled' },
 ];
 export const uniqueStatusesForEnrolled = [
   { label: 'Enrolled', value: 'Enrolled' },
