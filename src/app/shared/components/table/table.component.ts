@@ -67,6 +67,10 @@ export const uniqueStatusesForIsSchedule = [
   { label: 'Scheduled', value: 'Scheduled' },
   { label: 'Not Scheduled', value: 'Not Scheduled' },
 ];
+export const uniqueStatusesForEnrolled = [
+  { label: 'Enrolled', value: 'Enrolled' },
+  { label: 'Not Enrolled', value: 'Not Enrolled' },
+];
 export const uniquesActives = [
   { label: 'Active', value: 'Active' },
   { label: 'Inactive', value: 'Inactive' },
@@ -164,6 +168,7 @@ export class TableComponent<
   public activeStatusOptions: SelectItem[] = uniquesActives;
   public statusOptions: SelectItem[] = uniqueStatuses;
   public statusOptionsForSchedule: SelectItem[] = uniqueStatusesForIsSchedule;
+  public statusOptionsForEnrolled: SelectItem[] = uniqueStatusesForEnrolled;
   public hasSearch = input<boolean>(false);
   public searchDebounceTime = input<number>(400);
   public paginationDebounceTime = input<number>(50);
@@ -840,11 +845,13 @@ export class TableComponent<
     | 'contrast'
     | undefined {
     const lowerStatus = status?.toLowerCase() || '';
-    if (lowerStatus.includes('unassigned') || lowerStatus.includes('not scheduled') || lowerStatus.includes('not reported')) {
+    if (lowerStatus.includes('unassigned') || lowerStatus.includes('not scheduled') || lowerStatus.includes('not reported') || lowerStatus.includes('not enrolled')) {
       return 'warn';
     }
 
     switch (lowerStatus) {
+      case 'enrolled':
+        return 'success';
       case 'inactive':
         return 'danger';
       case 'completed':

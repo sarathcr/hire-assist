@@ -209,6 +209,40 @@
                   </ng-template>
                 </p-columnFilter>
               }
+              @if (headerColumn.filterAlias === "selectFilterEnrolled") {
+                <p-columnFilter
+                  field="{{ headerColumn.field }}"
+                  display="menu"
+                  hideOnClear="true"
+                  [matchMode]="
+                    headerColumn.hasMultiStatus ? undefined : 'equals'
+                  "
+                  [matchModeOptions]="getMatchModes(headerColumn)"
+                  ><ng-template pTemplate="filtericon">
+                    @if (activeFilters.has(headerColumn.field)) {
+                      <i class="pi pi-filter-fill"></i>
+                    } @else {
+                      <i class="pi pi-filter"></i>
+                    }
+                  </ng-template>
+                  <ng-template #filter let-value let-filter="filterCallback">
+                    <p-select
+                      [ngModel]="value"
+                      (ngModelChange)="filter($event)"
+                      [options]="statusOptionsForEnrolled"
+                      placeholder="Select One"
+                      styleClass="w-full"
+                    >
+                      <ng-template let-option #item>
+                        <p-tag
+                          [value]="option.value"
+                          [severity]="getSeverity(option.value)"
+                        ></p-tag>
+                      </ng-template>
+                    </p-select>
+                  </ng-template>
+                </p-columnFilter>
+              }
               @if (headerColumn.filterAlias === "scoreFilter") {
                 <p-columnFilter
                   type="numeric"

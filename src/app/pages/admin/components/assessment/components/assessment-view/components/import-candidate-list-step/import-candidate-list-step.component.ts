@@ -85,7 +85,7 @@ const tableColumns: TableColumnsData = {
       sortedColumn: true,
       hasChip: false,
       hasTextFilter: true,
-      filterAlias: 'selectFilterSchedule',
+      filterAlias: 'selectFilterEnrolled',
     },
     {
       field: 'button',
