@@ -246,6 +246,7 @@ export class SelectQuesionsetStepComponent
         title: questionSet.title,
         description: questionSet.description || '',
         assessmentId: Number(this.assessmentId()),
+        assessmentRoundId: questionSet.assessmentRoundId || 0,
       },
     };
 
