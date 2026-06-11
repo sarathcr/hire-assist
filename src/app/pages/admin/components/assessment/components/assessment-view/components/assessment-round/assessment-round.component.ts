@@ -1090,7 +1090,7 @@ export class AssessmentRoundComponent
             this.feedbackCriteriaOptions = [...this.feedbackCriteriaOptions, ...allCriteriaOptions];
           }
 
-          this.submittedData = response.map((item) => {
+          this.submittedData = [...response].sort((a, b) => a.sequence - b.sequence).map((item) => {
             const date = new Date();
 
             if (item.timerHour) {

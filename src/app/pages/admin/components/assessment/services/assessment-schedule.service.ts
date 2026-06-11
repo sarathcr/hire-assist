@@ -12,6 +12,7 @@ import {
   FeedbackCriteriaConfig,
 } from '../../../models/assessment-schedule.model';
 import { AssessmentRound } from '../../../models/assessment.model';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -45,6 +46,8 @@ export class AssessmentScheduleService extends ApiService<any> {
   public GetAssessmentRound(assessmentId: number) {
     return this.httpClient.get<AssessmentRound[]>(
       `${this.getResourceUrl()}/AssessmentRound/assessmentId?assessmentId=${assessmentId}`,
+    ).pipe(
+      map(rounds => rounds.sort((a, b) => (a.sequence || 0) - (b.sequence || 0)))
     );
   }
   public updateAssessmentRound(

@@ -30,6 +30,7 @@ import {
   MarkAsPresentRequest,
 } from '../models/question.model';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -50,6 +51,8 @@ export class AssessmentService extends ApiService<any> {
     return this.httpClient.get<AssessmentRound[]>(
       //`${this.getResourceUrl()}/api/assessment/candidate-questions`
       `${this.getResourceUrl()}/AssessmentRound/assessmentId?assessmentId=${id}`,
+    ).pipe(
+      map(rounds => rounds.sort((a, b) => (a.sequence || 0) - (b.sequence || 0)))
     );
   }
 
@@ -118,6 +121,8 @@ export class AssessmentService extends ApiService<any> {
   public getAssessmentRoundsForFrontDesk(id: number) {
     return this.httpClient.get<FrontDeskAssessmentRound[]>(
       `${this.getResourceUrl()}/${id}/Rounds`,
+    ).pipe(
+      map(rounds => rounds.sort((a, b) => (a.sequence || 0) - (b.sequence || 0)))
     );
   }
 

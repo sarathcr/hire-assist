@@ -202,6 +202,7 @@ export interface FrontDeskAssessmentRound {
   status: string;
   scheduledDate: string;
   roundTypeId: number;
+  sequence?: number;
   createdBy: string;
   createdAt: string;
   updatedBy: string | null;

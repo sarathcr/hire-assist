@@ -795,11 +795,8 @@ export class ImportCandidateListStepComponent implements OnInit {
                 summary: 'Success',
                 detail: 'Scheduled the Recruitment Successfully',
               });
-              const scheduledCandidateIds = [...this.selectedUsers] as string[];
-              this.skipAutoSelection = true;
-              this.alreadySelectedCandidates = scheduledCandidateIds.filter(
-                (id): id is string => id !== undefined,
-              );
+              this.alreadySelectedCandidates = [];
+              this.selectedUsers = [];
               this.getAllCandidates(new PaginatedPayload(), true);
               this.checkStepStatusAndMoveNext();
             },
@@ -873,11 +870,28 @@ export class ImportCandidateListStepComponent implements OnInit {
         disabledButtonIndices.push(3);
       }
 
+      const status = (candidate as any).status?.toLowerCase();
+      const isEnrolledOrActive = status === 'scheduled' || 
+                                 status === 'assigned' || 
+                                 status === 'selected' || 
+                                 status === 'completed' || 
+                                 status === 'rejected' || 
+                                 status === 'enrolled' || 
+                                 status === 'active' || 
+                                 (candidate.batchId && candidate.batchId > 0);
+
+      if (isEnrolledOrActive) {
+        if (!disabledButtonIndices.includes(1)) {
+          disabledButtonIndices.push(1); // Delete button
+        }
+      }
+
       return {
         ...candidate,
         currentLocation: candidate.currentLocation || 'N/A',
         visibleButtonIndices,
         disabledButtonIndices,
+        isDisabled: isEnrolledOrActive ? true : undefined
       };
     });
   }
@@ -954,6 +968,7 @@ export class ImportCandidateListStepComponent implements OnInit {
   private updateAlreadySelectedCandidates(): void {
     this.alreadySelectedCandidates = [];
     this.selectedUsers = [];
+    this.updateScheduleButtonState();
   }
 
   private checkStepStatusAndMoveNext(): void {
@@ -988,6 +1003,7 @@ export class ImportCandidateListStepComponent implements OnInit {
              status === 'selected' || 
              status === 'completed' || 
              status === 'rejected' || 
+             status === 'enrolled' || 
              status === 'active' || 
              (candidate.batchId && candidate.batchId > 0);
     });
