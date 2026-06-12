@@ -374,7 +374,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       {
         field: 'interviewDate',
         displayName: 'Interview Date',
-        fieldType: FieldType.String,
+        fieldType: FieldType.StringToDateTime,
         sortedColumn: true,
         hasTextFilter: true,
         filterAlias: 'textFilter',

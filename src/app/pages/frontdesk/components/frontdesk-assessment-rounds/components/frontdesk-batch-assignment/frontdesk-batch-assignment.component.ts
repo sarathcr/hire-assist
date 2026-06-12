@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AccordionModule, AccordionTabOpenEvent } from 'primeng/accordion';
@@ -331,11 +331,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
 
     this.ref.onClose.subscribe((result: AssignToAnotherBatchDialogData) => {
       if (!result) {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Info',
-          detail: 'batch not selected',
-        });
+        return;
       }
 
       const targetBatchId = (result as AssignToAnotherBatchDialogData).batch;
@@ -453,10 +449,52 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       });
   }
 
+  private parseCustomDate(dateValue: string): string {
+    if (dateValue.includes('/')) {
+      const parts = dateValue.split(',');
+      if (parts.length === 2) {
+        const datePart = parts[0].trim();
+        const timePart = parts[1].trim();
+        const dateParts = datePart.split('/');
+        if (dateParts.length === 3) {
+          const day = dateParts[0].padStart(2, '0');
+          const month = dateParts[1].padStart(2, '0');
+          const year = dateParts[2];
+          const timeParts = timePart.split(' ');
+          if (timeParts.length === 2) {
+            const hm = timeParts[0].split(':');
+            let hours = parseInt(hm[0], 10);
+            const minutes = hm[1].padStart(2, '0');
+            const ampm = timeParts[1].toUpperCase();
+            if (ampm === 'PM' && hours < 12) hours += 12;
+            if (ampm === 'AM' && hours === 12) hours = 0;
+            const hoursStr = hours.toString().padStart(2, '0');
+            return `${year}-${month}-${day}T${hoursStr}:${minutes}:00Z`;
+          }
+        }
+      }
+    }
+    return dateValue + (dateValue.endsWith('Z') ? '' : 'Z');
+  }
+
   private getAllBatches(): void {
     this.isLoading = true;
     const next = (res: Batch[]) => {
-      this.batchList = res;
+      this.batchList = res.map(batch => {
+        if (batch.scheduledTime && batch.scheduledTime.includes(' - ')) {
+          const parts = batch.scheduledTime.split(' - ');
+          if (parts.length === 2) {
+            const startStr = this.parseCustomDate(parts[0].trim());
+            const endStr = this.parseCustomDate(parts[1].trim());
+            const datePipe = new DatePipe('en-US');
+            const format = 'dd/MM/yyyy, hh:mm a';
+            const formattedStart = datePipe.transform(startStr, format) || parts[0].trim();
+            const formattedEnd = datePipe.transform(endStr, format) || parts[1].trim();
+            batch.scheduledTime = `${formattedStart} - ${formattedEnd}`;
+          }
+        }
+        return batch;
+      });
       this.isLoading = false;
     };
 

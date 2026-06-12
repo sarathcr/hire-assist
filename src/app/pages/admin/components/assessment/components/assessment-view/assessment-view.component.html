@@ -13,15 +13,21 @@
           </p>
         }
       </div>
-      @if (stepsStatus.schedule === 'Completed' || assessment.statusId === 1) {
+      @if (stepsStatus.schedule === "Completed" || assessment.statusId === 1) {
         <div class="assessment-schedule__hero-actions">
-          <p-button 
-            icon="pi pi-arrow-right" 
+          <p-button
+            icon="pi pi-arrow-right"
             iconPos="right"
-            label="Recruitment Detail" 
+            label="Recruitment Detail"
             [outlined]="true"
-            [style]="{'color': 'white', 'border-color': 'rgba(255,255,255,0.6)', 'background': 'rgba(255,255,255,0.2)', 'backdrop-filter': 'blur(4px)'}"
-            (onClick)="goToRecruitmentDetail()">
+            [style]="{
+              color: 'white',
+              'border-color': 'rgba(255,255,255,0.6)',
+              background: 'rgba(255,255,255,0.2)',
+              'backdrop-filter': 'blur(4px)',
+            }"
+            (onClick)="goToRecruitmentDetail()"
+          >
           </p-button>
         </div>
       }
@@ -53,14 +59,16 @@
           </span>
         </div>
       </div>
-      <div class="assessment-schedule__info-card assessment-schedule__info-card--full">
+      <div
+        class="assessment-schedule__info-card assessment-schedule__info-card--full"
+      >
         <div class="assessment-schedule__info-icon">
           <i class="pi pi-file-edit"></i>
         </div>
         <div class="assessment-schedule__info-content">
           <span class="assessment-schedule__info-label">Description</span>
           <span class="assessment-schedule__info-value">
-            {{ assessment.description || 'No description provided' }}
+            {{ assessment.description || "No description provided" }}
           </span>
         </div>
       </div>
@@ -74,10 +82,14 @@
         <div
           class="assessment-schedule__stepper-item"
           [ngClass]="{
-            'active': activeStep === step.index,
-            'completed': stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed',
-            'disabled': !stepsLoaded || !isStepEnabled(step.index),
-            'pending': stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Pending' && activeStep !== step.index
+            active: activeStep === step.index,
+            completed:
+              stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed',
+            disabled: !stepsLoaded || !isStepEnabled(step.index),
+            pending:
+              stepsLoaded &&
+              stepsStatus[stepKeys[step.index]] === 'Pending' &&
+              activeStep !== step.index,
           }"
         >
           <button
@@ -88,14 +100,18 @@
             [attr.aria-label]="step.label"
           >
             <div class="assessment-schedule__stepper-indicator">
-              @if (stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed') {
+              @if (
+                stepsLoaded && stepsStatus[stepKeys[step.index]] === "Completed"
+              ) {
                 <i class="pi pi-check"></i>
               } @else {
                 <i [class]="step.icon"></i>
               }
             </div>
             <div class="assessment-schedule__stepper-content">
-              <span class="assessment-schedule__stepper-label">{{ step.label }}</span>
+              <span class="assessment-schedule__stepper-label">{{
+                step.label
+              }}</span>
             </div>
             @if (activeStep === step.index) {
               <div class="assessment-schedule__stepper-arrow">
@@ -104,9 +120,14 @@
             }
           </button>
           @if (i < filteredStepConfig.length - 1) {
-            <div class="assessment-schedule__stepper-connector"
-                 [ngClass]="{'completed': stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed'}">
-            </div>
+            <div
+              class="assessment-schedule__stepper-connector"
+              [ngClass]="{
+                completed:
+                  stepsLoaded &&
+                  stepsStatus[stepKeys[step.index]] === 'Completed',
+              }"
+            ></div>
           }
         </div>
       }
@@ -118,8 +139,8 @@
     <div class="assessment-schedule__progress-bar">
       <div
         class="assessment-schedule__progress-fill"
-        [style.width.%]="getProgressPercentage()">
-      </div>
+        [style.width.%]="getProgressPercentage()"
+      ></div>
     </div>
     <span class="assessment-schedule__progress-text">
       {{ getProgressPercentage() }}% Complete
@@ -161,7 +182,10 @@
           [isReadOnly]="isSchedulingConfigReadOnly"
         ></app-coordinator-step>
       } @else if (this.activeStep === 3) {
-        <app-front-desk [assessmentId]="assessmentId" [isReadOnly]="isSchedulingConfigReadOnly"></app-front-desk>
+        <app-front-desk
+          [assessmentId]="assessmentId"
+          [isReadOnly]="isSchedulingConfigReadOnly"
+        ></app-front-desk>
       } @else if (this.activeStep === 4) {
         <app-import-candidate-list-step
           [assessmentId]="assessmentId"

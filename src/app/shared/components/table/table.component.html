@@ -654,7 +654,7 @@
               />
             </td>
           } @else if (headerColumn.fieldType === "stringToDate") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">{{ product[headerColumn.field] | date: "dd/MM/yyyy" }}</td>
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">{{ getUtcDateString(product[headerColumn.field]) | date: "dd/MM/yyyy" }}</td>
           } @else if (headerColumn.fieldType === "stringToDateTime") {
             <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
               <ng-container
@@ -663,7 +663,7 @@
                   else nilTpl
                 "
               >
-                {{ product[headerColumn.field] | date: "dd/MM/yyyy, hh:mm a" }}
+                {{ getUtcDateString(product[headerColumn.field]) | date: "dd/MM/yyyy, hh:mm a" }}
               </ng-container>
               <ng-template #nilTpl>
                 @if (headerColumn.field === 'reportingTime' || headerColumn.field === 'reportedAt') {
