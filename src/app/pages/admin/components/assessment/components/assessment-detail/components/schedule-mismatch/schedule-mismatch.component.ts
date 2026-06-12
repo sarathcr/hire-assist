@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
@@ -35,8 +35,21 @@ export class ScheduleMismatchComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.mismatchedCandidates = this.config.data?.mismatchedCandidates || [];
+    const rawCandidates = this.config.data?.mismatchedCandidates || [];
+    const datePipe = new DatePipe('en-US');
     
+    this.mismatchedCandidates = rawCandidates.map((candidate: any) => {
+      if (!candidate.message && candidate.scheduledDate && candidate.batchStartDate && candidate.batchEndDate) {
+        const toUTCStr = (d: string) => d ? (d.endsWith('Z') ? d : `${d}Z`) : d;
+        
+        const schedStr = datePipe.transform(toUTCStr(candidate.scheduledDate), 'dd MMM yyyy hh:mm a');
+        const startStr = datePipe.transform(toUTCStr(candidate.batchStartDate), 'dd MMM yyyy hh:mm a');
+        const endStr = datePipe.transform(toUTCStr(candidate.batchEndDate), 'dd MMM yyyy hh:mm a');
+        candidate.message = `Schedule date (${schedStr}) must be between the assigned batch start date (${startStr}) and end date (${endStr}).`;
+      }
+      return candidate;
+    });
+
     // Set validation min date to today's date
     const now = new Date();
     this.minDate = new Date(now);
