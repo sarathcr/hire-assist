@@ -714,6 +714,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     if (payload.pagination) {
       this.filterMap['pagination'] = payload.pagination as any;
     }
+    
+    if (payload.multiSortedColumns) {
+      this.filterMap['multiSortedColumns'] = payload.multiSortedColumns as any;
+    }
 
     this.getPaginatedCandidateData(this.filterMap);
   }
@@ -1364,6 +1368,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     if (filterMapCopy['pagination']) {
        paginatedPayload.pagination = filterMapCopy['pagination'] as any;
        delete filterMapCopy['pagination'];
+    }
+
+    if (filterMapCopy['multiSortedColumns']) {
+       paginatedPayload.multiSortedColumns = filterMapCopy['multiSortedColumns'] as any;
+       delete filterMapCopy['multiSortedColumns'];
     }
 
     paginatedPayload.filterMap = filterMapCopy;
