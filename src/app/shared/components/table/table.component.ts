@@ -1256,7 +1256,7 @@ export class TableComponent<
     
     // Check if it's already an ISO-like date
     if (dateValue.includes('T')) {
-      return dateValue + (dateValue.endsWith('Z') ? '' : 'Z');
+      return dateValue;
     }
 
     // Handle custom format "DD/MM/YYYY, hh:mm AM/PM"
@@ -1284,13 +1284,13 @@ export class TableComponent<
             if (ampm === 'AM' && hours === 12) hours = 0;
             
             const hoursStr = hours.toString().padStart(2, '0');
-            // Construct ISO string in UTC
-            return `${year}-${month}-${day}T${hoursStr}:${minutes}:00Z`;
+            // Construct ISO string
+            return `${year}-${month}-${day}T${hoursStr}:${minutes}:00`;
           }
         }
       }
     }
 
-    return dateValue + (dateValue.endsWith('Z') ? '' : 'Z');
+    return dateValue;
   }
 }

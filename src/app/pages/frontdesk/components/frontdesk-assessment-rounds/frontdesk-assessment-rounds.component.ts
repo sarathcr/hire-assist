@@ -83,8 +83,14 @@ export class FrontdeskAssessmentRoundsComponent
     return ''; 
   }
 
-  public getFormattedDates(dateString: string): string[] {
-    if (!dateString) return [];
-    return dateString.split(' - ').map(d => d.trim());
+  public getParsedDates(dateString: string): { start: string; end: string } | null {
+    if (!dateString) return null;
+    const parts = dateString.split(' - ').map(d => {
+      return d.replace(/,?\s*12:00\s*AM/i, '').replace(/,\s*$/, '').trim();
+    });
+    return {
+      start: parts[0] || '',
+      end: parts[1] || ''
+    };
   }
 }

@@ -26,14 +26,29 @@
               </div>
 
               <div class="round-card__meta">
-                <div class="round-card__meta-item">
-                  <i class="pi pi-calendar"></i>
-                  <div class="round-card__date-range">
-                    @for (date of getFormattedDates(assessment.scheduledDate); track $index) {
-                      <span class="round-card__date-part">{{ date }}</span>
+                @if (getParsedDates(assessment.scheduledDate); as dates) {
+                  <div class="round-card__date-wrapper">
+                    <div class="round-card__date-box">
+                      <span class="date-label">START DATE</span>
+                      <span class="date-value">
+                        <i class="pi pi-calendar"></i>
+                        {{ dates.start || 'TBD' }}
+                      </span>
+                    </div>
+                    @if (dates.end) {
+                      <div class="round-card__date-divider">
+                        <i class="pi pi-arrow-right"></i>
+                      </div>
+                      <div class="round-card__date-box">
+                        <span class="date-label">END DATE</span>
+                        <span class="date-value">
+                          <i class="pi pi-calendar"></i>
+                          {{ dates.end }}
+                        </span>
+                      </div>
                     }
                   </div>
-                </div>
+                }
               </div>
 
               <div class="round-card__footer">

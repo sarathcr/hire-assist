@@ -43,7 +43,7 @@
     align-items: center;
 
     i {
-      color: var(--primary-color, #1D4ED8);
+      color: var(--primary-color, #1d4ed8);
       font-size: var(--font-size-18);
       background: rgba(29, 78, 216, 0.1);
       padding: 8px;
@@ -106,7 +106,6 @@
   }
 
   ::ng-deep {
-
     /* ════════════════════════════════════════════════════
        ACCORDION REDESIGN - CLEAN MODERN CARDS
     ════════════════════════════════════════════════════ */
@@ -158,10 +157,14 @@
         }
 
         // Expanded state styling for the entire panel
-        &[ng-reflect-active='true'],
-        &:has(.p-accordion-header-link[aria-expanded='true']) {
-          box-shadow: 0 12px 32px rgba(var(--primary-color-rgb, 29, 78, 216), 0.08);
-          border-color: rgba(var(--primary-color-rgb, 29, 78, 216), 0.2) !important;
+        &[ng-reflect-active="true"],
+        &:has(.p-accordion-header-link[aria-expanded="true"]) {
+          box-shadow: 0 12px 32px
+            rgba(var(--primary-color-rgb, 29, 78, 216), 0.08);
+          border-color: rgba(
+            var(--primary-color-rgb, 29, 78, 216),
+            0.2
+          ) !important;
         }
       }
 
@@ -185,7 +188,7 @@
             background: #f8fafc !important;
           }
 
-          &[aria-expanded='true'] {
+          &[aria-expanded="true"] {
             background: #fdfdfd !important;
             border-bottom: 1px solid rgba(0, 0, 0, 0.04) !important;
           }
@@ -266,6 +269,9 @@
       .p-chip-icon {
         font-size: 11px;
         margin-right: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     }
   }
