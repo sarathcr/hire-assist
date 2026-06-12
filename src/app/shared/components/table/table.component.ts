@@ -1284,7 +1284,7 @@ export class TableComponent<
             if (ampm === 'AM' && hours === 12) hours = 0;
             
             const hoursStr = hours.toString().padStart(2, '0');
-            // Construct ISO string
+            // Construct ISO string as local time
             return `${year}-${month}-${day}T${hoursStr}:${minutes}:00`;
           }
         }

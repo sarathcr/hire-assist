@@ -238,6 +238,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private loadAssignmentData(): void {
     const batchesPayload = new PaginatedPayload();
     batchesPayload.pagination.pageSize = -1;
+    batchesPayload.filterMap = { status: 'Active' };
     this.batchService.paginationEntity('Batchsummary', batchesPayload).subscribe(res => {
       this.availableBatches = res;
     });
@@ -492,6 +493,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private onAssignToBatch(candidate: any): void {
     const batchesPayload = new PaginatedPayload();
     batchesPayload.pagination.pageSize = -1;
+    batchesPayload.filterMap = { status: 'Active' };
     const batches$ = this.batchService.paginationEntity('Batchsummary', batchesPayload);
 
     const questionSetsPayload = new PaginatedPayload();
