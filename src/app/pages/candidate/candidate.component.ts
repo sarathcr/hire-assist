@@ -76,46 +76,62 @@ export class CandidateComponent extends BaseComponent implements OnInit {
 
         this.activeAssessments = res.filter((a) => {
           const isFinished =
-            a.statusId === StatusEnum.Completed ||
-            a.statusId === StatusEnum.Quit ||
-            a.statusId === StatusEnum.Selected;
+            a.statusId == StatusEnum.Completed ||
+            a.statusId == StatusEnum.Quit ||
+            a.statusId == StatusEnum.Selected;
 
           if (isFinished) return false;
 
           let comparisonDate: Date | null = null;
           if (a.endTime) {
-            comparisonDate = new Date(a.endTime);
+            comparisonDate = this.parseDateSafely(a.endTime);
             if (isNaN(comparisonDate.getTime()) && a.date) {
-              comparisonDate = this.combineDateAndTime(new Date(a.date), a.endTime);
+              comparisonDate = this.combineDateAndTime(this.parseDateSafely(a.date), a.endTime);
             }
           } else if (a.date) {
-            comparisonDate = new Date(a.date);
+            comparisonDate = this.parseDateSafely(a.date);
           }
 
           if (!comparisonDate || isNaN(comparisonDate.getTime())) return false;
+
+          if (a.date) {
+            const assessmentDate = this.parseDateSafely(a.date);
+            if (!isNaN(assessmentDate.getTime()) && assessmentDate > comparisonDate) {
+              comparisonDate = new Date(assessmentDate);
+              comparisonDate.setHours(23, 59, 59, 999);
+            }
+          }
 
           return comparisonDate >= today;
         });
 
         this.previousAssessments = res.filter((a) => {
           const isFinished =
-            a.statusId === StatusEnum.Completed ||
-            a.statusId === StatusEnum.Quit ||
-            a.statusId === StatusEnum.Selected;
+            a.statusId == StatusEnum.Completed ||
+            a.statusId == StatusEnum.Quit ||
+            a.statusId == StatusEnum.Selected;
 
           if (isFinished) return true;
 
           let comparisonDate: Date | null = null;
           if (a.endTime) {
-            comparisonDate = new Date(a.endTime);
+            comparisonDate = this.parseDateSafely(a.endTime);
             if (isNaN(comparisonDate.getTime()) && a.date) {
-              comparisonDate = this.combineDateAndTime(new Date(a.date), a.endTime);
+              comparisonDate = this.combineDateAndTime(this.parseDateSafely(a.date), a.endTime);
             }
           } else if (a.date) {
-            comparisonDate = new Date(a.date);
+            comparisonDate = this.parseDateSafely(a.date);
           }
 
           if (!comparisonDate || isNaN(comparisonDate.getTime())) return true;
+
+          if (a.date) {
+            const assessmentDate = this.parseDateSafely(a.date);
+            if (!isNaN(assessmentDate.getTime()) && assessmentDate > comparisonDate) {
+              comparisonDate = new Date(assessmentDate);
+              comparisonDate.setHours(23, 59, 59, 999);
+            }
+          }
 
           return comparisonDate < today;
         });
@@ -184,12 +200,12 @@ export class CandidateComponent extends BaseComponent implements OnInit {
   }
 
   public getScheduledDate(assessment: CandidateAssessment): string {
-    const assessmentDate = new Date(assessment.date ?? '');
+    const assessmentDate = this.parseDateSafely(assessment.date ?? '');
     const startTimeStr = assessment.startTime ?? '';
     const endTimeStr = assessment.endTime ?? '';
 
-    let startDateTime = new Date(startTimeStr);
-    let endDateTime = new Date(endTimeStr);
+    let startDateTime = this.parseDateSafely(startTimeStr);
+    let endDateTime = this.parseDateSafely(endTimeStr);
 
     if (isNaN(startDateTime.getTime())) {
       startDateTime = this.combineDateAndTime(assessmentDate, startTimeStr);
@@ -228,5 +244,14 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     }
 
     return combined;
+  }
+
+  private parseDateSafely(dateStr: string): Date {
+    if (!dateStr) return new Date('');
+    let d = new Date(dateStr);
+    if (isNaN(d.getTime())) {
+      d = new Date(dateStr.replace(/-/g, '/').replace('T', ' ').split('.')[0]);
+    }
+    return d;
   }
 }

@@ -66,23 +66,31 @@ export class CardComponent implements OnInit, OnDestroy {
       this.statusId() == this.status.Completed ||
       this.isPreviousAssessment()
     ) {
-      this.buttonLabel = this.getStatusLabel(this.statusId() ?? 0);
+      if (
+        this.isPreviousAssessment() &&
+        (this.statusId() == this.status.Scheduled ||
+          this.statusId() == this.status.Active)
+      ) {
+        this.buttonLabel = 'Missed';
+      } else {
+        this.buttonLabel = this.getStatusLabel(this.statusId() ?? 0);
+      }
       return;
     }
 
     // Only check for time window if the status is scheduled
     if (
-      this.statusId() === this.status.Scheduled ||
-      this.statusId() === this.status.Active
+      this.statusId() == this.status.Scheduled ||
+      this.statusId() == this.status.Active
     ) {
       const today = new Date();
       const startTimeStr = this.startTime() ?? '';
       const endTimeStr = this.endTime() ?? '';
-      const assessmentDate = new Date(this.interviewDate() ?? '');
+      const assessmentDate = this.parseDateSafely(this.interviewDate() ?? '');
 
       // Try to parse as full datetime first, if that fails, combine with date
-      let startDateTime = new Date(startTimeStr);
-      let endDateTime = new Date(endTimeStr);
+      let startDateTime = this.parseDateSafely(startTimeStr);
+      let endDateTime = this.parseDateSafely(endTimeStr);
 
       // If parsing failed (invalid date), combine date with time string
       if (isNaN(startDateTime.getTime())) {
@@ -91,6 +99,14 @@ export class CardComponent implements OnInit, OnDestroy {
 
       if (isNaN(endDateTime.getTime())) {
         endDateTime = this.combineDateAndTime(assessmentDate, endTimeStr);
+      }
+
+      // If the assessment was scheduled outside the batch end time, 
+      // override the time window so the candidate can still take it.
+      if (!isNaN(assessmentDate.getTime()) && assessmentDate > endDateTime) {
+        startDateTime = new Date(assessmentDate);
+        endDateTime = new Date(assessmentDate);
+        endDateTime.setHours(23, 59, 59, 999);
       }
 
       // Time window check
@@ -110,6 +126,9 @@ export class CardComponent implements OnInit, OnDestroy {
   }
 
   private getStatusLabel(statusId: number): string {
+    if (statusId === this.status.NotAttended) {
+      return 'Not Attended';
+    }
     return StatusEnum[statusId] || 'Unknown';
   }
 
@@ -136,5 +155,14 @@ export class CardComponent implements OnInit, OnDestroy {
     }
 
     return combined;
+  }
+
+  private parseDateSafely(dateStr: string): Date {
+    if (!dateStr) return new Date('');
+    let d = new Date(dateStr);
+    if (isNaN(d.getTime())) {
+      d = new Date(dateStr.replace(/-/g, '/').replace('T', ' ').split('.')[0]);
+    }
+    return d;
   }
 }
