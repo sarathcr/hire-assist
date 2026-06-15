@@ -1220,8 +1220,10 @@ $white: #ffffff;
     }
   }
 
-  &__score-error {
+  &__score-error,
+  &__score-warning {
     margin-top: 8px;
+    display: block;
   }
 
   &__action-row {

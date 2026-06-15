@@ -940,30 +940,22 @@ export class InterviewerFeedbackComponent
   }
   public validateScore(feedback: AccordionData) {
     feedback.isScoreInValid = false;
-    
-    if (!feedback.hasDecimalWarning) {
-      feedback.scoreErrorMessage = undefined;
-    }
+    feedback.hasDecimalWarning = false;
+    feedback.scoreErrorMessage = undefined;
 
     if (feedback.score != null) {
       if (feedback.score < 0) {
         feedback.isScoreInValid = true;
         feedback.scoreErrorMessage = 'Score cannot be negative.';
-        feedback.hasDecimalWarning = false;
       } else if (feedback.maxScore != null && feedback.score > feedback.maxScore) {
         feedback.isScoreInValid = true;
         feedback.scoreErrorMessage = `Maximum allowed score is ${feedback.maxScore}`;
-        feedback.hasDecimalWarning = false;
       } else {
         const scoreStr = feedback.score.toString();
         if (scoreStr.includes('.')) {
-          const parts = scoreStr.split('.');
-          if (parts[1] && parts[1].length > 2) {
-            feedback.hasDecimalWarning = true;
-            feedback.scoreErrorMessage = 'Score can have maximum 2 decimal places.';
-            // Forcefully truncate to 2 decimal places and update the model
-            feedback.score = parseFloat(`${parts[0]}.${parts[1].substring(0, 2)}`);
-          }
+          // If a decimal value was pasted, forcefully remove the decimal part
+          feedback.score = Math.floor(feedback.score);
+          feedback.hasDecimalWarning = true;
         }
       }
     }
@@ -975,32 +967,12 @@ export class InterviewerFeedbackComponent
       return;
     }
 
-    if (!feedback) return;
-
-    const input = event.target as HTMLInputElement;
-    const value = input.value;
-
-    feedback.hasDecimalWarning = false;
-
-    // Check if the user is typing a number
-    if (!isNaN(Number(event.key)) && event.key !== ' ') {
-      if (value && value.includes('.')) {
-        const parts = value.split('.');
-        // If there are already 2 decimals, prevent typing more numbers
-        if (parts[1] && parts[1].length >= 2) {
-          // Allow if they have text selected (replacing)
-          try {
-            if (input.selectionStart !== null && input.selectionStart !== input.selectionEnd) {
-              return;
-            }
-          } catch (e) {
-            // Browser might not support selectionStart on type="number"
-          }
-          event.preventDefault();
-          feedback.hasDecimalWarning = true;
-          feedback.scoreErrorMessage = 'Score can have maximum 2 decimal places.';
-        }
+    if (event.key === '.') {
+      event.preventDefault();
+      if (feedback) {
+        feedback.hasDecimalWarning = true;
       }
+      return;
     }
   }
 
