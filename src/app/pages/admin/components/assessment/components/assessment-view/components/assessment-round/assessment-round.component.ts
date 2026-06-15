@@ -744,6 +744,12 @@ export class AssessmentRoundComponent
       return 'This field is required.';
     }
 
+    if (errors['pattern']) {
+      if (controlName === 'maxTerminationCount') {
+        return 'Number of tries must be a whole number.';
+      }
+    }
+
     if (errors['min']) {
       return `Value must be at least ${errors['min'].min}.`;
     }
@@ -793,7 +799,7 @@ export class AssessmentRoundComponent
         ]),
         maxTerminationCount: new FormControl(
           data.maxTerminationCount,
-          isAptitude ? [Validators.required, Validators.min(1), Validators.max(10)] : [],
+          isAptitude ? [Validators.required, Validators.min(1), Validators.max(10), Validators.pattern('^[0-9]+$')] : [],
         ),
         feedbackCriteria: new FormArray(
           (data.feedbackCriteria || []).map((c) =>
@@ -816,7 +822,7 @@ export class AssessmentRoundComponent
         const criteriaArray = group.get('feedbackCriteria') as FormArray;
 
         if (isNowAptitude) {
-          countCtrl?.setValidators([Validators.required, Validators.min(1), Validators.max(10)]);
+          countCtrl?.setValidators([Validators.required, Validators.min(1), Validators.max(10), Validators.pattern('^[0-9]+$')]);
           criteriaArray.setValidators([]);
         } else {
           countCtrl?.setValidators([]);
