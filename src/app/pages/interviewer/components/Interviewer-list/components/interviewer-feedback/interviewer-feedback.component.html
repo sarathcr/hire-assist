@@ -812,11 +812,12 @@
                           [(ngModel)]="feedback.score"
                           class="ifb__score-input"
                           (ngModelChange)="validateScore(feedback)"
-                          (keydown)="preventInvalidInput($event)"
+                          (keydown)="preventInvalidInput($event, feedback)"
                           [pTooltip]="'Max score is ' + feedback.maxScore"
                           [tooltipPosition]="'bottom'"
                           [max]="feedback.maxScore"
                           [min]="0"
+                          step="0.01"
                           [disabled]="isSubmitted"
                           placeholder="0"
                         />
@@ -827,7 +828,16 @@
                             size="small"
                             class="ifb__score-error"
                           >
-                            Maximum allowed score is {{ feedback.maxScore }}
+                            {{ feedback.scoreErrorMessage || ('Maximum allowed score is ' + feedback.maxScore) }}
+                          </p-message>
+                        } @else if (feedback.hasDecimalWarning) {
+                          <p-message
+                            severity="warn"
+                            variant="simple"
+                            size="small"
+                            class="ifb__score-warning"
+                          >
+                            Score can have maximum 2 decimal places.
                           </p-message>
                         }
                       </div>

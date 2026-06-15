@@ -81,6 +81,8 @@ export interface AccordionData {
   maxScore: number | null;
   isSaved?: boolean | false;
   isScoreInValid: boolean | false;
+  scoreErrorMessage?: string;
+  hasDecimalWarning?: boolean;
   fileDto?: FileDto[];
   originalContent?: string | null;
   originalScore?: number | null;
