@@ -59,6 +59,12 @@
 
   <div class="warning-modal__footer">
     <app-button 
+      buttonLabel="Force Complete" 
+      buttonSeverity="danger"
+      buttonVariant="outlined"
+      (btnClick)="forceComplete()"
+    ></app-button>
+    <app-button 
       buttonLabel="Review Candidates" 
       (btnClick)="close()"
     ></app-button>

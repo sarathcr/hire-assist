@@ -6,9 +6,14 @@
   gap: 1.5rem;
   padding: 1.5rem;
 
+  @media (max-width: 640px) {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
   &__header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 1rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid #e5e7eb;
@@ -23,6 +28,7 @@
       border-radius: 12px;
       color: #f97316;
       font-size: 1.5rem;
+      flex-shrink: 0;
     }
 
     .warning-modal__title-section {
@@ -45,6 +51,23 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+
+    // Custom scrollbar
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 3px;
+    }
   }
 
   &__summary {
@@ -97,22 +120,7 @@
   }
 
   &__list {
-    max-height: 300px;
-    overflow-y: auto;
-    
-    // Custom scrollbar
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    &::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-    
-    &::-webkit-scrollbar-thumb {
-      background: #d1d5db;
-      border-radius: 3px;
-    }
+    // List scroll removed to let parent content scroll
   }
 
   .candidate-item {
@@ -208,6 +216,24 @@
   &__footer {
     display: flex;
     justify-content: flex-end;
-    padding-top: 0.5rem;
+    padding-top: 1.5rem;
+    gap: 1rem;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 0.5rem;
+
+    @media (max-width: 640px) {
+      flex-direction: column-reverse;
+      gap: 0.75rem;
+
+      app-button {
+        width: 100%;
+        display: block;
+        
+        ::ng-deep .p-button {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    }
   }
 }

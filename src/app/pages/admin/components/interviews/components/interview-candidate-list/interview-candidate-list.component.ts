@@ -331,6 +331,7 @@ export class InterviewCandidateListComponent implements OnInit {
 
   private formatAction(action: string): string {
     if (!action) return '';
+    if (action.toLowerCase() === 'rescheduled') return 'Scheduled';
     return action
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, (str) => str.toUpperCase())
@@ -367,6 +368,7 @@ export class InterviewCandidateListComponent implements OnInit {
       case 'created':
         return 'pi pi-plus';
       case 'scheduled':
+      case 'rescheduled':
         return 'pi pi-calendar-clock';
       case 'panelassigned':
         return 'pi pi-users';

@@ -30,6 +30,10 @@ export class RoundCompletionWarningComponent {
     this.ref.close();
   }
 
+  forceComplete() {
+    this.ref.close('force_complete');
+  }
+
   getInitials(name: string): string {
     if (!name) return '';
     const parts = name.split(' ');

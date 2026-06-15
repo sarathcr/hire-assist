@@ -1,0 +1,96 @@
+<div class="warning-modal">
+  <div class="warning-modal__header">
+    <div class="warning-modal__icon-wrapper">
+      <i class="pi pi-exclamation-triangle"></i>
+    </div>
+    <div class="warning-modal__title-section">
+      <h3>Force Complete Round</h3>
+      <p>Confirm action for pending candidates</p>
+    </div>
+  </div>
+
+  <div class="warning-modal__content">
+    <div class="warning-modal__summary">
+      <p>
+        There are <strong>{{ candidates.length }} candidate{{ candidates.length > 1 ? 's' : '' }}</strong> 
+        who have not completed this round. 
+      </p>
+      <p>
+        By proceeding, candidates with a status of <strong>Scheduled</strong> will automatically be marked as 
+        <strong>Absent (Not Attended)</strong>, and all other candidates (including <strong>Active</strong> candidates) will be marked as <strong>Rejected</strong>.
+      </p>
+    </div>
+
+    <div class="warning-modal__list-container">
+      <div class="warning-modal__list-header">
+        <span>Incomplete Candidates</span>
+      </div>
+      <div class="warning-modal__list">
+        @for (candidate of candidates; track candidate.id) {
+          <div class="candidate-item">
+            <div class="candidate-item__avatar">
+              {{ getInitials(candidate.name) }}
+            </div>
+            <div class="candidate-item__info">
+              <span class="candidate-item__name">{{ candidate.name }}</span>
+              <span class="candidate-item__email">{{ candidate.email }}</span>
+            </div>
+            <div class="candidate-item__status">
+              <div class="status-transition">
+                <span class="status-pill" [ngClass]="'status-' + (candidate.status?.toLowerCase() || 'pending')">
+                  {{ candidate.status || 'Pending' }}
+                </span>
+                <i class="pi pi-arrow-right arrow-icon"></i>
+                @if (candidate.options && candidate.options.length > 0) {
+                  <p-dropdown 
+                    [options]="candidate.options" 
+                    [(ngModel)]="candidate.nextStatusLabel" 
+                    optionLabel="label" 
+                    optionValue="value"
+                    appendTo="body"
+                    [style]="{'width':'130px', 'min-width':'130px'}"
+                    [panelStyleClass]="'status-dropdown-panel'"
+                  >
+                    <ng-template pTemplate="selectedItem">
+                      <div class="status-dropdown-item" *ngIf="candidate.nextStatusLabel">
+                        <span class="status-pill" [ngClass]="'status-' + candidate.nextStatusLabel.toLowerCase()">
+                          {{ candidate.nextStatusLabel }}
+                        </span>
+                      </div>
+                    </ng-template>
+                    <ng-template pTemplate="item" let-option>
+                      <div class="status-dropdown-item">
+                        <span class="status-pill" [ngClass]="option.class">
+                          {{ option.label }}
+                        </span>
+                      </div>
+                    </ng-template>
+                  </p-dropdown>
+                } @else {
+                  <span class="status-pill" [ngClass]="candidate.nextStatusClass">
+                    {{ candidate.nextStatusLabel }}
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="warning-modal__footer">
+    <app-button 
+      buttonLabel="Cancel" 
+      buttonVariant="outlined"
+      (btnClick)="cancel()"
+      [disabled]="isSaving"
+    ></app-button>
+    <app-button 
+      buttonLabel="Force Complete" 
+      buttonSeverity="danger"
+      [isLoading]="isSaving"
+      (btnClick)="proceed()"
+    ></app-button>
+  </div>
+</div>

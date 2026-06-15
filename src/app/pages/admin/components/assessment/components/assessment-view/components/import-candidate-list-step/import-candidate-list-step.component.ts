@@ -372,7 +372,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       .subscribe({
         next: (res: any) => {
           const newEvents = res.data.map((item: any) => ({
-            status: item.action,
+            status: item.action?.toLowerCase() === 'rescheduled' ? 'Scheduled' : item.action,
             user: item.changedByName,
             date: new Date(item.changedAt + 'Z'),
             icon: this.getHistoryIcon(item.action),
@@ -411,6 +411,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       case 'reassigned':
         return 'pi pi-link';
       case 'scheduled':
+      case 'rescheduled':
         return 'pi pi-calendar-clock';
       default:
         return 'pi pi-info-circle';
