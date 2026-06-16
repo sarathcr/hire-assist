@@ -5,6 +5,10 @@
     display: flex;
     gap: 1rem;
     justify-items: flex-start;
-   
+    ::ng-deep {
+      .p-button-icon, .p-button-label {
+        font-size: 14px !important;
+      }
+    }
   }
 }

@@ -15,7 +15,7 @@
     (buttonClick)="onButtonClick($event)"
   >
     <div class="roles-access__button">
-      <app-button [buttonLabel]="'New'" (btnClick)="AddNewUser()"></app-button>
+      <app-button [buttonLabel]="'New'" [icon]="'pi pi-plus'" (btnClick)="AddNewUser()"></app-button>
       <app-button
         [buttonLabel]="'Delete All'"
         [buttonSeverity]="'danger'"
