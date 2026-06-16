@@ -322,7 +322,7 @@ export class InterviewerPanelAssignmentComponent implements OnInit, OnDestroy {
         const newEvents = res.data.map((item: any) => ({
           status: item.action,
           user: item.changedByName,
-          date: new Date(item.changedAt + 'Z'),
+          date: new Date(item.changedAt),
           icon: this.getHistoryIcon(item.action),
           description: this.getHistoryDescription(item)
         }));
