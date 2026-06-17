@@ -29,6 +29,22 @@ const errorList = new Map([
   [500, 'errors.internalServer'],
 ]);
 
+let isSessionExpiredToastShown = false;
+
+const showSessionExpiredToast = (messageService: MessageService, detail?: string) => {
+  if (!isSessionExpiredToastShown) {
+    isSessionExpiredToastShown = true;
+    messageService.add({
+      severity: 'error',
+      summary: 'Session Expired',
+      detail: detail || 'Your session has expired. Please log in again.',
+    });
+    setTimeout(() => {
+      isSessionExpiredToastShown = false;
+    }, 5000);
+  }
+};
+
 export const errorInterceptor = (
   req: HttpRequest<unknown>,
   next: HttpHandlerFn,
@@ -75,7 +91,7 @@ const handleError = (
   if (status === 401 && error.error?.businessError !== 5000) {
     storeService.setIsLoading(false);
     if (!req.url.includes('/login')) {
-      messageService.add({ severity: 'error', summary: 'Session Expired', detail: error.error?.type || 'Your session has expired. Please log in again.' });
+      showSessionExpiredToast(messageService, error.error?.type);
       authService.logout();
       return EMPTY;
     }
@@ -110,19 +126,19 @@ const handleError = (
               return next(newReq);
             }
             authService.logout();
-            messageService.add({ severity: 'error', summary: 'Session Expired', detail: error.error?.type || 'Your session has expired. Please log in again.' });
+            showSessionExpiredToast(messageService, error.error?.type);
             return EMPTY;
           }),
           catchError((err) => {
             authService.logout();
-            messageService.add({ severity: 'error', summary: 'Session Expired', detail: error.error?.type || 'Your session has expired. Please log in again.' });
+            showSessionExpiredToast(messageService, error.error?.type);
             return EMPTY;
           })
         );
     }
     case 5003:
     case 5009: {
-      messageService.add({ severity: 'error', summary: 'Session Expired', detail: error.error?.type || 'Your session has expired. Please log in again.' });
+      showSessionExpiredToast(messageService, error.error?.type);
       authService.logout();
       return EMPTY;
     }

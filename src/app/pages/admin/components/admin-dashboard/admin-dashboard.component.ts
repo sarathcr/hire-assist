@@ -157,19 +157,8 @@ export class AdminDashboardComponent implements OnInit {
           }
 
           if (res.data.userDetails) {
-            const blobId = res.data.userDetails.profileImage;
-            if (blobId && blobId.trim() !== '' && !blobId.startsWith('blob:')) {
-              this.profileServices.GetPhoto(blobId, 3).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-                next: (blob: Blob) => {
-                  const url = URL.createObjectURL(blob);
-                  this.storeService.setProfileImageUrl(url);
-                },
-                error: () => console.error('Failed to load profile image')
-              });
-            } else if (blobId && blobId.startsWith('blob:')) {
-              this.storeService.setProfileImageUrl(blobId);
-            }
-            
+            // Note: Profile image loading is now handled centrally by dashboard.component.ts
+            // We just update the user name in the store.
             const currentUserData = this.storeService.getUserData();
             if (currentUserData) {
               this.storeService.setUser(currentUserData.id, res.data.userDetails.name, currentUserData.role);

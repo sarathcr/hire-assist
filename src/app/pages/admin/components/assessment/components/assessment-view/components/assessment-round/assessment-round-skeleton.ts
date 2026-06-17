@@ -76,5 +76,5 @@ import { SkeletonModule } from 'primeng/skeleton';
   styleUrl: './assessment-round.component.scss',
 })
 export class AssessmentRoundSkeletonComponent {
-  stepSkeletons = [1, 2, 3]; // Array to create multiple skeleton items for rounds
+  stepSkeletons = [1, 2, 3];
 }
