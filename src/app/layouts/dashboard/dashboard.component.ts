@@ -62,9 +62,28 @@ export class DashboardComponent implements OnInit {
   }
 
   private loadProfileImageIfNeeded(): void {
-    // Note: Profile image and details are now fetched from the main /api/dashboard endpoint 
-    // inside the AdminDashboardComponent (or similar dashboard components) 
-    // to avoid an extra API call.
+    if (!this.storeService.getProfileImageUrl() && !this.storeService.getIsLoadingProfileImage()) {
+      this.storeService.setIsLoadingProfileImage(true);
+      this.profileServices.GetProfileDetails().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: (res) => {
+          if (res.profilePhoto?.id && res.profilePhoto?.attachmentType) {
+            this.profileServices.GetPhoto(res.profilePhoto.id, res.profilePhoto.attachmentType)
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe({
+                next: (blob: Blob) => {
+                  const url = URL.createObjectURL(blob);
+                  this.storeService.setProfileImageUrl(url);
+                  this.storeService.setIsLoadingProfileImage(false);
+                },
+                error: () => this.storeService.setIsLoadingProfileImage(false)
+              });
+          } else {
+            this.storeService.setIsLoadingProfileImage(false);
+          }
+        },
+        error: () => this.storeService.setIsLoadingProfileImage(false)
+      });
+    }
   }
 
   private getAdminLinks(userRole: string[]): MenuItem[] {

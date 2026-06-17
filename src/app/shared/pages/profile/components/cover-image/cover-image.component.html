@@ -22,7 +22,7 @@
   @if (!isLoading()) {
     <div class="cover-image__icon">
       <p-button
-        icon="pi pi-pencil "
+        [icon]="(coverUrl() !== undefined && coverUrl() !== null && coverUrl() !== '') ? 'pi pi-pencil' : 'pi pi-plus'"
         [rounded]="true"
         [text]="true"
         [raised]="true"
@@ -36,6 +36,7 @@
         [text]="true"
         [raised]="true"
         severity="info"
+        [disabled]="coverUrl() === undefined || coverUrl() === null || coverUrl() === ''"
         (click)="onDeleteCoverImage()"
         (keydown)="onDeleteButtonKeyDown($event)"
       />

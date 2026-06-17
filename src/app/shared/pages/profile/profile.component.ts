@@ -182,7 +182,9 @@ export class ProfileComponent extends BaseComponent implements OnInit {
           name: this.profileDetailsDataSource?.name || '',
           email: data.email,
           phoneNumber: data.phone,
-          dob: data.dob ? new Date(data.dob).toISOString().split('T')[0] : null,
+          dob: data.dob 
+            ? `${new Date(data.dob).getFullYear()}-${String(new Date(data.dob).getMonth() + 1).padStart(2, '0')}-${String(new Date(data.dob).getDate()).padStart(2, '0')}`
+            : null,
           gender: data.gender,
           designation: '',
         };
@@ -258,21 +260,51 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     if (!this.coverBlob) {
       return;
     }
-    this.profileServices
-      .DeleteImage(this.coverBlob, AttachmentTypeEnum.CoverImage)
-      .subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Cover photo deleted successfully',
+
+    const modalData: DialogData = {
+      message: 'Are you sure you want to delete the cover photo?',
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Delete',
+    };
+    
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Confirm Deletion',
+      width: '400px',
+      modal: true,
+      breakpoints: {
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        this.profileServices
+          .DeleteImage(this.coverBlob!, AttachmentTypeEnum.CoverImage)
+          .subscribe({
+            next: () => {
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Cover photo deleted successfully',
+              });
+              this.coverImageUrl = '';
+              this.coverBlob = undefined;
+            },
+            error: () => {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Failed to delete cover photo',
+              });
+            },
           });
-          this.coverImageUrl = '';
-        },
-        error: () => {
-          // Error handling
-        },
-      });
+      }
+    });
   }
 
   public onEditSkills(): void {

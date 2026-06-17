@@ -41,6 +41,8 @@ export class PersonalDetailsDialogComponent extends BaseComponent implements OnI
   }
 
   ngOnInit(): void {
+    // Restrict minimum age to 18 years
+    this.today.setFullYear(this.today.getFullYear() - 18);
     this.profileDetails = this.config.data.userDetails;
     this.initializeForm();
   }

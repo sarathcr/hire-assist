@@ -52,9 +52,9 @@ export class StoreService {
   }
 
   // Setters
-  public setUser(id: string, name: string, role: string) {
+  public setUser(id: string, name: string, role: any) {
     const state = _.cloneDeep(this.state);
-    state.userState = { id, name, role };
+    state.userState = { ...state.userState, id, name, role };
     this.state = state;
     this.updateStore();
   }

@@ -25,6 +25,7 @@ import { Assessment as AssessmentModel } from '../../models/assessment.model';
 import { DashboardService } from '../../services/dashboard.service';
 import { AssessmentService } from '../../services/assessment.service';
 import { UserState } from '../../../../shared/models/user.models';
+import { ProfileServicesService } from '../../../../shared/pages/profile/services/profile-services.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -93,6 +94,7 @@ export class AdminDashboardComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService) as DashboardService<DashboardData>;
   private readonly assessmentService = inject(AssessmentService);
   private readonly storeService = inject(StoreService);
+  private readonly profileServices = inject(ProfileServicesService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -155,7 +157,18 @@ export class AdminDashboardComponent implements OnInit {
           }
 
           if (res.data.userDetails) {
-            this.storeService.setProfileImageUrl(res.data.userDetails.profileImage);
+            const blobId = res.data.userDetails.profileImage;
+            if (blobId && blobId.trim() !== '' && !blobId.startsWith('blob:')) {
+              this.profileServices.GetPhoto(blobId, 3).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+                next: (blob: Blob) => {
+                  const url = URL.createObjectURL(blob);
+                  this.storeService.setProfileImageUrl(url);
+                },
+                error: () => console.error('Failed to load profile image')
+              });
+            } else if (blobId && blobId.startsWith('blob:')) {
+              this.storeService.setProfileImageUrl(blobId);
+            }
             
             const currentUserData = this.storeService.getUserData();
             if (currentUserData) {
