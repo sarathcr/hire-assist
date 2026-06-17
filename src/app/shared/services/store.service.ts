@@ -107,6 +107,7 @@ export class StoreService {
     const parsedState = JSON.parse(state) as AppState;
     if (parsedState.userState) {
       parsedState.userState.profileImageUrl = undefined;
+      parsedState.userState.isLoadingProfileImage = false;
     }
     return parsedState;
   }

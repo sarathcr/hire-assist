@@ -71,7 +71,7 @@ export class InterviewService extends ApiService<any> {
   }
   public GetFeedbackCriteria(interviewId: number, InterviewerId: string) {
     return this.httpClient.get<Feedbackcriteria[]>(
-      `${this.getResourceUrl()}/FeedbackCriteria?interviewId=${interviewId}&interviewerId=${InterviewerId}`,
+      `${this.getResourceUrl()}/FeedbackCriteria?interviewId=${interviewId}&interviewerId=${encodeURIComponent(InterviewerId)}`,
     );
   }
 
