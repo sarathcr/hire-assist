@@ -646,20 +646,36 @@ export class InterviewerFeedbackComponent
       .GetCandidateDetails(payload)
       .subscribe({ next, error });
   }
+
+  public get hasReachedAttachmentLimit(): boolean {
+    return (this.pendingFiles.length + this.uploadedFile.length) >= 10;
+  }
+
   public onFileChange(event: any): void {
     const files = event.files || event.currentFiles || [];
     if (files && files.length > 0) {
       const newFiles: File[] = [];
       let hasLargeFile = false;
       let hasInvalidType = false;
+      let hasExceededLimit = false;
+      let hasDuplicateFile = false;
 
       // 5MB limit: 5 * 1024 * 1024 = 5242880 bytes
       const MAX_SIZE = 5242880;
       // Only allow PNG and JPEG
       const ALLOWED_TYPES = ['image/png', 'image/jpeg'];
+      const MAX_ATTACHMENTS = 10;
+      
+      let currentTotalFiles = this.pendingFiles.length + this.uploadedFile.length;
 
       Array.from(files).forEach((file: any) => {
         if (file) {
+          // Check limit before processing the file
+          if (currentTotalFiles >= MAX_ATTACHMENTS) {
+            hasExceededLimit = true;
+            return;
+          }
+
           // Validation: file type
           if (!ALLOWED_TYPES.includes(file.type)) {
             hasInvalidType = true;
@@ -683,23 +699,33 @@ export class InterviewerFeedbackComponent
             (uploaded) => uploaded.name === file.name,
           );
 
-          if (!isDuplicate && !isAlreadyUploaded) {
+          if (isDuplicate || isAlreadyUploaded) {
+            hasDuplicateFile = true;
+          } else {
             newFiles.push(file);
             this.pendingFiles.push(file);
-            const reader = new FileReader();
-            reader.onload = (e: ProgressEvent<FileReader>) => {
-              if (
-                e.target?.result &&
-                typeof e.target.result === 'string' &&
-                !this.pendingFilePreviews.includes(e.target.result)
-              ) {
-                this.pendingFilePreviews.push(e.target.result);
-              }
-            };
-            reader.readAsDataURL(file);
+            currentTotalFiles++;
           }
         }
       });
+
+      if (hasExceededLimit) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Attachment Limit Exceeded',
+          detail: `You can only upload up to ${MAX_ATTACHMENTS} attachments.`,
+          life: 5000,
+        });
+      }
+
+      if (hasDuplicateFile) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Duplicate File',
+          detail: 'One or more files have already been uploaded or selected.',
+          life: 5000,
+        });
+      }
 
       if (hasInvalidType) {
         this.messageService.add({
@@ -1402,21 +1428,21 @@ export class InterviewerFeedbackComponent
 
   // ── Drag & Drop Handlers ───────────────────────────
   public onDragOver(event: DragEvent): void {
-    if (this.isSubmitted) return;
+    if (this.isSubmitted || this.hasReachedAttachmentLimit) return;
     event.preventDefault();
     event.stopPropagation();
     this.isDragOver = true;
   }
 
   public onDragLeave(event: DragEvent): void {
-    if (this.isSubmitted) return;
+    if (this.isSubmitted || this.hasReachedAttachmentLimit) return;
     event.preventDefault();
     event.stopPropagation();
     this.isDragOver = false;
   }
 
   public onDrop(event: DragEvent): void {
-    if (this.isSubmitted) return;
+    if (this.isSubmitted || this.hasReachedAttachmentLimit) return;
     event.preventDefault();
     event.stopPropagation();
     this.isDragOver = false;

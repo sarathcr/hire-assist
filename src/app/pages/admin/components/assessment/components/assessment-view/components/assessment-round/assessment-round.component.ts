@@ -321,12 +321,67 @@ export class AssessmentRoundComponent
     this.cdr.detectChanges();
   }
 
+  public onCriteriaTitleChange(criteriaIdx: number, roundIdx: number): void {
+    const group = this.getRoundFormGroup(roundIdx);
+    const criteriaArray = group.get('feedbackCriteria') as FormArray;
+    const criteriaControl = criteriaArray.at(criteriaIdx);
+    
+    if (criteriaControl) {
+      const titleControl = criteriaControl.get('title');
+      if (titleControl && typeof titleControl.value === 'string') {
+        const rawTitle = titleControl.value;
+        if (/\s{2,}/.test(rawTitle)) {
+          const sanitizedTitle = rawTitle.replace(/\s{2,}/g, ' ');
+          titleControl.setValue(sanitizedTitle, { emitEvent: false });
+        }
+      }
+
+      if (criteriaControl.get('isImported')?.value) {
+        const newTitle = criteriaControl.get('title')?.value?.trim();
+        const removedId = criteriaControl.get('id')?.value?.toString();
+        
+        // If the title is empty or just whitespace, don't remove it yet
+        if (!newTitle) return;
+
+        const originalOption = this.feedbackCriteriaOptions.find(o => o.value?.toString() === removedId);
+        
+        // If the trimmed title matches the original label, it's just spaces added, so don't remove
+        if (originalOption && originalOption.label === newTitle) return;
+
+        criteriaControl.get('isImported')?.setValue(false, { emitEvent: false });
+        
+        const selectionCtrl = group.get('importSelection');
+        const currentSelection = selectionCtrl?.value || [];
+        
+        if (removedId) {
+          selectionCtrl?.setValue(
+            currentSelection.filter((val: any) => val?.toString() !== removedId),
+            { emitEvent: true }
+          );
+        }
+      }
+    }
+  }
+
+  private specialCharactersOnlyValidator(control: AbstractControl): ValidationErrors | null {
+    const value = control.value;
+    if (!value) return null;
+
+    // Reject if it doesn't contain any letter (supports international characters)
+    if (!/\p{L}/u.test(value)) {
+      return { specialCharactersOnly: true };
+    }
+
+    return null;
+  }
+
   private createCriteriaFormGroup(data?: FeedbackCriteriaConfig): FormGroup {
     return new FormGroup({
       id: new FormControl(data?.id || null),
       title: new FormControl(data?.title || '', [
         Validators.required,
         Validators.pattern(/^[^0-9]*$/),
+        this.specialCharactersOnlyValidator.bind(this),
         Validators.minLength(3),
         Validators.maxLength(30),
         this.duplicateTitleValidator.bind(this)

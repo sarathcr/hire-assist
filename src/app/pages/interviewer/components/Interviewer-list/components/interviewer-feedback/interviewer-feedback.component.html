@@ -665,16 +665,16 @@
                     [showUploadButton]="false"
                     [showCancelButton]="false"
                     (onSelect)="onFileChange($event)"
-                    [disabled]="isSubmitted"
+                    [disabled]="isSubmitted || hasReachedAttachmentLimit"
                     mode="advanced"
                   >
                     <!-- ── Custom Drop Zone in Content Template ── -->
                     <ng-template pTemplate="header">
                       <div
                         class="ifb__drop-zone"
-                        [class.ifb__drop-zone--disabled]="isSubmitted"
+                        [class.ifb__drop-zone--disabled]="isSubmitted || hasReachedAttachmentLimit"
                         [class.ifb__drop-zone--over]="isDragOver"
-                        (click)="!isSubmitted && fileUpload.choose()"
+                        (click)="!(isSubmitted || hasReachedAttachmentLimit) && fileUpload.choose()"
                         (dragover)="onDragOver($event)"
                         (dragleave)="onDragLeave($event)"
                         (drop)="onDrop($event)"
@@ -682,11 +682,18 @@
                         <div class="ifb__drop-zone-icon">
                           <i class="pi pi-cloud-upload"></i>
                         </div>
-                        <p class="ifb__drop-zone-title">Drop your image here</p>
-                        <p class="ifb__drop-zone-sub">
-                          or click to browse — PNG, JPG up to 5MB
-                        </p>
-                        @if (!isSubmitted) {
+                        @if (hasReachedAttachmentLimit) {
+                          <p class="ifb__drop-zone-title" style="color: var(--p-red-500, #ef4444);">Maximum upload limit reached (10/10)</p>
+                          <p class="ifb__drop-zone-sub">
+                            You cannot upload any more attachments.
+                          </p>
+                        } @else {
+                          <p class="ifb__drop-zone-title">Drop your image here</p>
+                          <p class="ifb__drop-zone-sub">
+                            or click to browse — PNG, JPG up to 5MB
+                          </p>
+                        }
+                        @if (!(isSubmitted || hasReachedAttachmentLimit)) {
                           <button
                             type="button"
                             class="ifb__drop-zone-btn"
