@@ -206,30 +206,71 @@
           <div class="profile__timeline">
             @if (experienceTimeline && experienceTimeline.length > 0) {
               <p-timeline [value]="experienceTimeline" align="left" styleClass="customized-timeline">
-                <ng-template pTemplate="marker" let-event>
-                  <span class="profile__timeline-marker" [style.background-color]="event.color">
-                    <i [class]="event.icon"></i>
+                <ng-template pTemplate="marker" let-companyGroup>
+                  <span class="profile__timeline-marker" [style.background-color]="companyGroup.isCurrent ? '#4f46e5' : '#64748b'">
+                    <i class="pi pi-briefcase"></i>
                   </span>
                 </ng-template>
-                <ng-template pTemplate="content" let-event>
+                <ng-template pTemplate="content" let-companyGroup>
                   <div class="profile__timeline-card">
                     <div class="profile__timeline-card-inner">
-                      <div class="profile__timeline-header">
-                        <div class="profile__timeline-main">
-                          <h3 class="profile__timeline-role">{{ event.status }}</h3>
-                          <span class="profile__timeline-company">{{ event.company }}</span>
+                      @if (companyGroup.roles.length === 1) {
+                        <!-- Single Role Layout -->
+                        @let role = companyGroup.roles[0];
+                        <div class="profile__timeline-header">
+                          <div class="profile__timeline-main">
+                            <h3 class="profile__timeline-role">{{ role.role }}</h3>
+                            <span class="profile__timeline-company">{{ companyGroup.company }}</span>
+                          </div>
+                          <span class="profile__timeline-date">{{ role.dateRange }}</span>
                         </div>
-                        <span class="profile__timeline-date">{{ event.date }}</span>
-                      </div>
-                      <p class="profile__timeline-desc">{{ event.description }}</p>
-                      <div class="profile__timeline-actions">
-                        <button class="profile__timeline-btn" (click)="onEditExperience(event.id)" title="Edit">
-                          <i class="pi pi-pencil"></i>
-                        </button>
-                        <button class="profile__timeline-btn profile__timeline-btn--delete" (click)="onDeleteExperience(event.id)" title="Delete">
-                          <i class="pi pi-trash"></i>
-                        </button>
-                      </div>
+                        <p class="profile__timeline-desc">{{ role.description }}</p>
+                        <div class="profile__timeline-actions">
+                          <button class="profile__timeline-btn" (click)="onEditExperience(role.id)" title="Edit">
+                            <i class="pi pi-pencil"></i>
+                          </button>
+                          <button class="profile__timeline-btn profile__timeline-btn--delete" (click)="onDeleteExperience(role.id)" title="Delete">
+                            <i class="pi pi-trash"></i>
+                          </button>
+                        </div>
+                      } @else {
+                        <!-- Multiple Roles Layout (LinkedIn style) -->
+                        <div class="profile__company-header">
+                          <span class="profile__timeline-company-name">{{ companyGroup.company }}</span>
+                          @if (companyGroup.totalDuration) {
+                            <span class="profile__company-duration">{{ companyGroup.totalDuration }}</span>
+                          }
+                        </div>
+                        <div class="profile__nested-roles">
+                          @for (role of companyGroup.roles; track role.id; let isLast = $last) {
+                            <div class="profile__nested-role-item">
+                              <div class="profile__nested-role-marker">
+                                <span class="profile__nested-role-dot" [class.profile__nested-role-dot--current]="role.isCurrent"></span>
+                                @if (!isLast) {
+                                  <span class="profile__nested-role-line"></span>
+                                }
+                              </div>
+                              <div class="profile__nested-role-content">
+                                <div class="profile__timeline-header">
+                                  <div class="profile__timeline-main">
+                                    <h3 class="profile__timeline-role">{{ role.role }}</h3>
+                                  </div>
+                                  <span class="profile__timeline-date">{{ role.dateRange }}</span>
+                                </div>
+                                <p class="profile__timeline-desc">{{ role.description }}</p>
+                                <div class="profile__timeline-actions">
+                                  <button class="profile__timeline-btn" (click)="onEditExperience(role.id)" title="Edit">
+                                    <i class="pi pi-pencil"></i>
+                                  </button>
+                                  <button class="profile__timeline-btn profile__timeline-btn--delete" (click)="onDeleteExperience(role.id)" title="Delete">
+                                    <i class="pi pi-trash"></i>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      }
                     </div>
                   </div>
                 </ng-template>

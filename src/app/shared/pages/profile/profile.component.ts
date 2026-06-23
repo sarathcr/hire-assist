@@ -443,15 +443,62 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       
       // Map experiences to timeline
       if (res.userExperiences) {
-        this.experienceTimeline = res.userExperiences.map((exp: any) => ({
-          id: exp.id,
-          status: exp.role,
-          company: exp.company,
-          date: this.formatDateRange(exp.startDate, exp.endDate, exp.isCurrent),
-          icon: 'pi pi-briefcase',
-          color: exp.isCurrent ? '#4f46e5' : '#64748b',
-          description: exp.description
-        }));
+        const groups: { [key: string]: any[] } = {};
+        res.userExperiences.forEach((exp: any) => {
+          const key = exp.company?.trim().toLowerCase() || '';
+          if (!groups[key]) {
+            groups[key] = [];
+          }
+          groups[key].push(exp);
+        });
+
+        this.experienceTimeline = Object.keys(groups).map(key => {
+          const groupExps = groups[key];
+          
+          // Sort roles within company by startDate descending
+          groupExps.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+          
+          const primaryExp = groupExps[0];
+          const isCurrentGroup = groupExps.some(exp => exp.isCurrent);
+          
+          let totalDuration = '';
+          if (groupExps.length > 1) {
+            let minStart = new Date(groupExps[0].startDate);
+            let maxEnd: Date | null = groupExps[0].isCurrent ? null : new Date(groupExps[0].endDate || new Date());
+            
+            groupExps.forEach(exp => {
+              const start = new Date(exp.startDate);
+              if (start < minStart) minStart = start;
+              
+              if (!exp.isCurrent && exp.endDate) {
+                const end = new Date(exp.endDate);
+                if (maxEnd && end > maxEnd) maxEnd = end;
+              } else if (exp.isCurrent) {
+                maxEnd = null;
+              }
+            });
+            
+            totalDuration = this.calculateTotalDuration(minStart, maxEnd);
+          }
+
+          return {
+            company: primaryExp.company,
+            isCurrent: isCurrentGroup,
+            latestStartDate: new Date(primaryExp.startDate).getTime(),
+            totalDuration,
+            roles: groupExps.map(exp => ({
+              id: exp.id,
+              role: exp.role,
+              dateRange: this.formatDateRange(exp.startDate, exp.endDate, exp.isCurrent),
+              isCurrent: exp.isCurrent,
+              description: exp.description,
+              startDate: exp.startDate
+            }))
+          };
+        });
+
+        // Sort the timeline by the most recent experience's start date descending
+        this.experienceTimeline.sort((a, b) => b.latestStartDate - a.latestStartDate);
       }
 
       this.coverBlob = res.coverPhoto?.id;
@@ -550,6 +597,23 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     }
     const endStr = end ? datePipe.transform(end, 'MMM yyyy') || '' : '';
     return `${startStr} - ${endStr}`;
+  }
+
+  private calculateTotalDuration(startDate: Date | string, endDate: Date | string | null | undefined): string {
+    const start = new Date(startDate);
+    const end = endDate ? new Date(endDate) : new Date();
+    
+    // Add 1 month to include the starting month (e.g. Jan to Jan is 1 month, not 0)
+    let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+    if (months < 0) months = 0;
+    
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    
+    const yearsStr = years > 0 ? `${years} yr${years > 1 ? 's' : ''}` : '';
+    const monthsStr = remainingMonths > 0 ? `${remainingMonths} mo${remainingMonths > 1 ? 's' : ''}` : '';
+    
+    return [yearsStr, monthsStr].filter(Boolean).join(' ');
   }
 
   public onAddExperience(): void {

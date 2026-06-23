@@ -166,6 +166,7 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
 
   private duplicateExperienceValidator(control: AbstractControl): ValidationErrors | null {
     const company = control.get('company')?.value?.trim().toLowerCase();
+    const role = control.get('role')?.value?.trim().toLowerCase();
     const id = control.get('id')?.value;
     
     const startDate = control.get('startDate')?.value;
@@ -175,12 +176,13 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
     const existing = this.config.data?.existingExperiences || [];
     const errors: any = {};
 
-    if (company) {
-      const isDuplicateCompany = existing.some((exp: any) => 
+    if (company && role) {
+      const isDuplicateExperience = existing.some((exp: any) => 
         (id === 0 || exp.id !== id) && 
-        exp.company?.trim().toLowerCase() === company
+        exp.company?.trim().toLowerCase() === company &&
+        exp.role?.trim().toLowerCase() === role
       );
-      if (isDuplicateCompany) {
+      if (isDuplicateExperience) {
         errors.duplicateExperience = true;
       }
     }
