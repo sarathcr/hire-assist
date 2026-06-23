@@ -794,6 +794,7 @@
 
   .round-content {
     flex-grow: 1;
+    min-width: 0;
     padding-bottom: 2.5rem;
 
     .round-header {
@@ -983,9 +984,42 @@
   }
 
   .remarks-cell {
-    color: var(--text-muted);
-    font-style: italic;
+    // color: var(--text-muted);
+    color: var(--text-main);
     line-height: 1.5;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    font-weight: normal;
+
+    // Support Quill rich text formatting in remarks
+    p {
+      margin: 0 0 0.5rem 0;
+      &:last-child {
+        margin-bottom: 0;
+      }
+      strong,
+      b {
+        font-weight: bold !important;
+      }
+      em,
+      i {
+        font-style: italic !important;
+      }
+      u {
+        text-decoration: underline !important;
+      }
+    }
+    // strong,
+    // b {
+    //   font-weight: 700 !important;
+    // }
+    // em,
+    // i {
+    //   font-style: italic !important;
+    // }
+    // u {
+    //   text-decoration: underline !important;
+    // }
   }
 }
 
@@ -1195,9 +1229,23 @@
   p {
     font-size: 0.875rem;
     line-height: 1.6;
-    color: #78350f;
+    color: var(--text-main);
     margin: 0;
-    font-style: italic;
+    word-break: break-word;
+    overflow-wrap: break-word;
+
+    // Support Quill rich text formatting in overall comments
+    strong,
+    b {
+      font-weight: bold !important;
+    }
+    em,
+    i {
+      font-style: italic !important;
+    }
+    u {
+      text-decoration: underline !important;
+    }
   }
 }
 

@@ -51,13 +51,40 @@ export class RecruitmentSummaryComponent implements OnInit {
       .pipe(finalize(() => this.isLoading = false))
       .subscribe({
         next: (data) => {
-          this.summaryData = data;
+          this.summaryData = this.sortFeedbackCriteria(data);
           this.expandAllAccordions();
         },
         error: (error) => {
           console.error('Error fetching recruitment summary:', error);
         }
       });
+  }
+
+  private sortFeedbackCriteria(data: any): any {
+    if (data?.detailedCandidates) {
+      data.detailedCandidates.forEach((candidate: any) => {
+        if (candidate.roundsData) {
+          candidate.roundsData.forEach((round: any) => {
+            if (round.feedbackCriteria && round.feedbackCriteria.length > 0) {
+              round.feedbackCriteria.sort((a: any, b: any) => {
+                const idA = Number(a.feedbackCriteriaId || a.id);
+                const idB = Number(b.feedbackCriteriaId || b.id);
+
+                if (!isNaN(idA) && !isNaN(idB)) {
+                  return idA - idB;
+                }
+
+                // Fallback to alphabetical sorting by name if IDs are missing
+                const nameA = (a.name || '').toLowerCase();
+                const nameB = (b.name || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+              });
+            }
+          });
+        }
+      });
+    }
+    return data;
   }
 
   private expandAllAccordions(): void {
