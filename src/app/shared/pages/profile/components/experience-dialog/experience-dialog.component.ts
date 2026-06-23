@@ -168,7 +168,6 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
     const company = control.get('company')?.value?.trim().toLowerCase();
     const role = control.get('role')?.value?.trim().toLowerCase();
     const id = control.get('id')?.value;
-    
     const startDate = control.get('startDate')?.value;
     const endDate = control.get('endDate')?.value;
     const isCurrent = control.get('isCurrent')?.value;
@@ -176,6 +175,62 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
     const existing = this.config.data?.existingExperiences || [];
     const errors: any = {};
 
+    // 1. Check for duplicate current workplace
+    if (isCurrent) {
+      const hasCurrent = existing.some((exp: any) => 
+        (id === 0 || exp.id !== id) && exp.isCurrent
+      );
+      if (hasCurrent) {
+        errors.duplicateCurrent = true;
+      }
+    }
+
+    // 2. Check for duplicate starting month/year globally
+    if (startDate) {
+      const startM = new Date(startDate).getMonth();
+      const startY = new Date(startDate).getFullYear();
+
+      const hasDuplicateDate = existing.some((exp: any) => {
+        if (id !== 0 && exp.id === id) return false;
+        const eStart = new Date(exp.startDate);
+        return eStart.getMonth() === startM && eStart.getFullYear() === startY;
+      });
+
+      if (hasDuplicateDate) {
+        errors.duplicateDate = true;
+      }
+    }
+
+    // 3. Check for overlapping timeframe globally (only if timeframe dates are filled)
+    if (startDate && (isCurrent || endDate)) {
+      const start = new Date(startDate);
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+
+      const end = isCurrent ? new Date(9999, 11, 31) : new Date(endDate);
+      end.setDate(1);
+      end.setHours(0, 0, 0, 0);
+
+      const hasOverlap = existing.some((exp: any) => {
+        if (id !== 0 && exp.id === id) return false;
+
+        const expStart = new Date(exp.startDate);
+        expStart.setDate(1);
+        expStart.setHours(0, 0, 0, 0);
+
+        const expEnd = exp.isCurrent ? new Date(9999, 11, 31) : (exp.endDate ? new Date(exp.endDate) : new Date());
+        expEnd.setDate(1);
+        expEnd.setHours(0, 0, 0, 0);
+
+        return (start < expEnd) && (expStart < end);
+      });
+
+      if (hasOverlap) {
+        errors.overlapDate = true;
+      }
+    }
+
+    // 4. Check for identical experience (same company and role)
     if (company && role) {
       const isDuplicateExperience = existing.some((exp: any) => 
         (id === 0 || exp.id !== id) && 
@@ -184,33 +239,6 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
       );
       if (isDuplicateExperience) {
         errors.duplicateExperience = true;
-      }
-    }
-
-    if (startDate) {
-      const startM = new Date(startDate).getMonth();
-      const startY = new Date(startDate).getFullYear();
-
-      const isDuplicateDate = existing.some((exp: any) => {
-        if (id !== 0 && exp.id === id) return false;
-        
-        const eStart = new Date(exp.startDate);
-        const isStartMatch = eStart.getMonth() === startM && eStart.getFullYear() === startY;
-        
-        if (!isStartMatch) return false;
-
-        if (isCurrent && exp.isCurrent) return true;
-        if (!isCurrent && !exp.isCurrent && endDate && exp.endDate) {
-          const eEnd = new Date(exp.endDate);
-          const endM = new Date(endDate).getMonth();
-          const endY = new Date(endDate).getFullYear();
-          return (eEnd.getMonth() === endM && eEnd.getFullYear() === endY);
-        }
-        return false;
-      });
-
-      if (isDuplicateDate) {
-        errors.duplicateDate = true;
       }
     }
 

@@ -54,6 +54,16 @@
     line-height: 1.2;
   }
 
+  &__row-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  &__checkbox-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
   &__row {
     display: grid;
     grid-template-columns: 1fr 1fr;
