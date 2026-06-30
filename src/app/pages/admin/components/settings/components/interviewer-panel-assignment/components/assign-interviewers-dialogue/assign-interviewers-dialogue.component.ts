@@ -102,6 +102,40 @@ export class AssignInterviewersDialogueComponent implements OnInit {
         interviewers: [],
         panels: null,
       });
+
+      // Asynchronously fetch all existing assignments to bypass pagination limit
+      const payload = {
+        multiSortedColumns: [],
+        filterMap: {},
+        pagination: {
+          pageNumber: 1,
+          pageSize: -1,
+        },
+      };
+      this.coordinatorPanelBridgeService
+        .paginationEntity<any>('panel/activePanelSummary', payload)
+        .subscribe({
+          next: (res: any) => {
+            const resData = (res.data || []).map((item: any) => {
+              return {
+                ...item,
+                interviewerNames:
+                  item.interviewers?.map((i: any) => i.name).join(', ') ?? '',
+                interviewers: item.interviewers ?? [],
+                name:
+                  item.name ||
+                  item.panelName ||
+                  item.panel ||
+                  item.title,
+              };
+            });
+            this.existingAssignments = resData;
+            this.setOptions();
+          },
+          error: () => {
+            // Keep using the initial set of assignments from config.data
+          },
+        });
     }
     this.initialValue = this.fGroup.value;
   }
@@ -296,9 +330,17 @@ export class AssignInterviewersDialogueComponent implements OnInit {
       );
     }
 
-    (this.configMap['interviewers'] as CustomSelectConfig).options =
-      interviewerOptions;
-    (this.configMap['panels'] as CustomSelectConfig).options = panelOptions;
+    this.configMap = {
+      ...this.configMap,
+      interviewers: {
+        ...this.configMap['interviewers'],
+        options: interviewerOptions,
+      } as CustomSelectConfig,
+      panels: {
+        ...this.configMap['panels'],
+        options: panelOptions,
+      } as CustomSelectConfig,
+    };
   }
 
   private loadCollections() {
