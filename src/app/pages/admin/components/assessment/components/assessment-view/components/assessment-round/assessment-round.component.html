@@ -131,9 +131,9 @@
                           <span class="assessment-round__round-name">{{ data.name }}</span>
                         </div>
                         <div class="header-status">
-                          @if (getRoundFormGroup(idx).invalid && getRoundFormGroup(idx).touched) {
+                          @if (getRoundFormGroup(idx).invalid) {
                             <span class="error-badge"><i class="pi pi-exclamation-circle"></i> Incomplete</span>
-                          } @else if (getRoundFormGroup(idx).valid && getRoundFormGroup(idx).touched) {
+                          } @else if (getRoundFormGroup(idx).valid) {
                             <span class="success-badge"><i class="pi pi-check-circle"></i> Configured</span>
                           }
                           @if (isAptitudeRound(getRoundFormGroup(idx).get('roundType')?.value) && getRoundFormGroup(idx).get('maxTerminationCount')?.value) {
@@ -376,7 +376,7 @@
           class="assessment-round__submit-button"
           [buttonLabel]="'Complete Rounds'"
           [isLoading]="isLoading"
-          [disabled]="isReadOnly() || !submittedData || submittedData.length === 0 || !isDirty"
+          [disabled]="isReadOnly() || !submittedData || submittedData.length === 0 || !isDirty || roundConfigForms.invalid"
           [buttonSize]="'small'"
           (btnClick)="onSubmitAll()"
         ></app-button>
