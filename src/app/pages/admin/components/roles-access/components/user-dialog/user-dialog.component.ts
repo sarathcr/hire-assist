@@ -93,7 +93,14 @@ export class UserDialogComponent implements OnInit {
     this.fGroup.markAllAsTouched();
     const isFormValid = this.fGroup.valid;
     if (isFormValid) {
-      this.ref.close(this.fGroup.value);
+      const result = { ...this.fGroup.value };
+      if (result.name) {
+        result.name = result.name.trim();
+      }
+      if (result.email) {
+        result.email = result.email.trim();
+      }
+      this.ref.close(result);
       // this.router.navigate(['/candidate']);
     }
   }

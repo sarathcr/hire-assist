@@ -22,8 +22,8 @@ export class UserRoleAccessDataModel extends FormEntity {
       name: [
         Validators.required,
         Validators.minLength(3),
-        Validators.maxLength(150),
-        Validators.pattern('^[A-Za-z]+([ .][A-Za-z]+)*$'),
+        Validators.maxLength(50),
+        Validators.pattern('^[A-Za-z]+([ .][A-Za-z]+)*[ .]?$'),
       ],
       email: [
         Validators.required,
