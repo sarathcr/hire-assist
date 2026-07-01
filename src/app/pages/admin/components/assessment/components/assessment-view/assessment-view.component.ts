@@ -12,7 +12,7 @@ import { BaseComponent } from '../../../../../../shared/components/base/base.com
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import type { Option } from '../../../../../../shared/models/option';
 import { CordinatorData } from '../../../../models/assessment-schedule.model';
-import { Assessment, RoundModel } from '../../../../models/assessment.model';
+import { Assessment, RoundModel, CoordinatorDto } from '../../../../models/assessment.model';
 import {
   StepStatus,
   StepsStatusService,
@@ -92,6 +92,7 @@ export class AssessmentViewComponent
   public stepsLoaded = false;
   public isStepUpdating = false;
   public hasModifiedQuestionSetAfterComplete = false;
+  public isCoordinatorIncomplete = false;
   private lastProgressPercentage = 0;
   public stepKeys: (keyof StepStatus)[] = [
     'rounds',
@@ -254,6 +255,16 @@ export class AssessmentViewComponent
   public setActiveStep(step: number): void {
     if (this.isStepUpdating) return;
 
+    // Block if coordinator assignment is incomplete and navigating past step 2
+    if (this.isCoordinatorIncomplete && step > 2) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Please assign coordinators to all recruitment rounds before proceeding.',
+      });
+      return;
+    }
+
     // Block ANY navigation away from the Question Set step (step 1)
     // when there are question sets created but not all have been submitted.
     if (this.activeStep === 1 && step !== 1) {
@@ -369,6 +380,11 @@ export class AssessmentViewComponent
       return false;
     }
 
+    // If coordinator assignment is incomplete, block any step beyond index 2
+    if (this.isCoordinatorIncomplete && stepIndex > 2) {
+      return false;
+    }
+
     const prevStep = currentConfig[itemIndex - 1];
     const prevStatus = this.stepsStatus[this.stepKeys[prevStep.index]];
     const canActivate =
@@ -434,12 +450,14 @@ export class AssessmentViewComponent
           switchMap((rounds: RoundModel[]) => {
             this.assessmentRounds = rounds;
             
+            // 1. Question Set Validation Observable
+            let questionSetVal$: Observable<boolean>;
             if (this.hasOnlineAptitudeRound) {
               const payload = new PaginatedPayload();
               payload.filterMap = { assessmentId: this.assessmentId };
               payload.pagination.pageSize = -1;
 
-              return this.assessmentService.paginationEntity<any>('QuestionSetSummary', payload).pipe(
+              questionSetVal$ = this.assessmentService.paginationEntity<any>('QuestionSetSummary', payload).pipe(
                 switchMap(res => {
                   const questionSets = res.data || [];
                   const createdSets = questionSets.filter((qs: any) => qs.id > 0);
@@ -450,16 +468,7 @@ export class AssessmentViewComponent
                   });
 
                   if (hasMissingSet || createdSets.length === 0) {
-                    this.isQuestionSetIncomplete = true;
-                    if (this.stepsStatus.questionSets === 'Completed') {
-                      this.stepsStatus.questionSets = 'Active';
-                    }
-                    this.updateCompletedStepsFromStatus();
-                    if (shouldUpdateActiveStep) {
-                      this.setActiveStepFromStatus();
-                    }
-                    this.isStepUpdating = false;
-                    return of(null);
+                    return of(true);
                   }
 
                   const questionSetQueries = createdSets.map(qs => 
@@ -471,32 +480,61 @@ export class AssessmentViewComponent
                   return forkJoin(questionSetQueries).pipe(
                     map((results: any[]) => {
                       const hasEmptySet = results.some(res => !res.questions || res.questions.length === 0);
-                      this.isQuestionSetIncomplete = hasEmptySet;
-
-                      if ((this.isQuestionSetIncomplete || this.hasModifiedQuestionSetAfterComplete) && this.stepsStatus.questionSets === 'Completed') {
-                        this.stepsStatus.questionSets = 'Active';
-                      }
-
-                      this.updateCompletedStepsFromStatus();
-
-                      if (shouldUpdateActiveStep) {
-                        this.setActiveStepFromStatus();
-                      }
-                      this.isStepUpdating = false;
-                      return null;
+                      return hasEmptySet;
                     })
                   );
-                })
+                }),
+                catchError(() => of(true))
               );
+            } else {
+              questionSetVal$ = of(false);
             }
-            
-            this.isQuestionSetIncomplete = false;
-            this.updateCompletedStepsFromStatus();
-            if (shouldUpdateActiveStep) {
-              this.setActiveStepFromStatus();
+
+            // 2. Coordinator Validation Observable
+            const technicalRounds = this.assessmentRounds.filter(r => r.roundTypeId === 2);
+            let coordinatorVal$: Observable<boolean>;
+            if (technicalRounds.length > 0) {
+              coordinatorVal$ = this.assessmentService.Getcoordinator(this.assessmentId).pipe(
+                map((res: CoordinatorDto) => {
+                  const assignedRoundIds = (res.coordinatorRound || []).flatMap(item => 
+                    (item.assessmentRoundId || []).map(id => Number(id))
+                  );
+                  const requiredRoundIds = technicalRounds.map(r => r.id).filter((id): id is number => id !== undefined);
+                  const hasMissing = requiredRoundIds.some(id => !assignedRoundIds.includes(id));
+                  return hasMissing;
+                }),
+                catchError(() => of(true))
+              );
+            } else {
+              coordinatorVal$ = of(false);
             }
-            this.isStepUpdating = false;
-            return of(null);
+
+            // Combine both validations in parallel
+            return forkJoin({
+              isQuestionSetIncomplete: questionSetVal$,
+              isCoordinatorIncomplete: coordinatorVal$
+            }).pipe(
+              map(({ isQuestionSetIncomplete, isCoordinatorIncomplete }) => {
+                this.isQuestionSetIncomplete = isQuestionSetIncomplete;
+                this.isCoordinatorIncomplete = isCoordinatorIncomplete;
+
+                if ((this.isQuestionSetIncomplete || this.hasModifiedQuestionSetAfterComplete) && this.stepsStatus.questionSets === 'Completed') {
+                  this.stepsStatus.questionSets = 'Active';
+                }
+
+                if (this.isCoordinatorIncomplete && this.stepsStatus.coordinators === 'Completed') {
+                  this.stepsStatus.coordinators = 'Active';
+                }
+
+                this.updateCompletedStepsFromStatus();
+
+                if (shouldUpdateActiveStep) {
+                  this.setActiveStepFromStatus();
+                }
+                this.isStepUpdating = false;
+                return null;
+              })
+            );
           })
         );
       })
@@ -578,6 +616,11 @@ export class AssessmentViewComponent
 
     // Block if we have modified question sets and haven't clicked Complete yet
     if (this.hasModifiedQuestionSetAfterComplete && stepIndex > 1) {
+      return false;
+    }
+
+    // If coordinator assignment is incomplete, block all steps after index 2
+    if (this.isCoordinatorIncomplete && stepIndex > 2) {
       return false;
     }
 

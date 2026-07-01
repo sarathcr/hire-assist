@@ -189,6 +189,19 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
         detail.coordinator.length > 0,
     );
 
+    const assignedRoundIds = filteredData.flatMap((detail) => (detail.assessmentRound as unknown as string[]) || []);
+    const requiredRoundIds = (this.cordinatorData?.assessmentRounds || []).map(r => r.value);
+    const hasMissingRounds = requiredRoundIds.some(id => !assignedRoundIds.includes(id));
+
+    if (hasMissingRounds) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validation Error',
+        detail: 'Please assign coordinators to all recruitment rounds before proceeding.',
+      });
+      return;
+    }
+
 
     const apiPayload = filteredData.flatMap((detail) => {
 

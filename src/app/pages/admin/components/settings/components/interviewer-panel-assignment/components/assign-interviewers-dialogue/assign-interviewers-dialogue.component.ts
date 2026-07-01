@@ -122,11 +122,7 @@ export class AssignInterviewersDialogueComponent implements OnInit {
                 interviewerNames:
                   item.interviewers?.map((i: any) => i.name).join(', ') ?? '',
                 interviewers: item.interviewers ?? [],
-                name:
-                  item.name ||
-                  item.panelName ||
-                  item.panel ||
-                  item.title,
+                name: item.name || item.panelName || item.panel || item.title,
               };
             });
             this.existingAssignments = resData;
