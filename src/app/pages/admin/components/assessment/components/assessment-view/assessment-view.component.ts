@@ -88,6 +88,7 @@ export class AssessmentViewComponent
   };
   public stepsLoaded = false;
   public isStepUpdating = false;
+  public hasModifiedQuestionSetAfterComplete = false;
   public stepKeys: (keyof StepStatus)[] = [
     'rounds',
     'questionSets',
@@ -215,6 +216,9 @@ export class AssessmentViewComponent
     this.stepStatusUpdateSubscription =
       this.stepsStatusService.stepStatusUpdate$.subscribe((assessmentId) => {
         if (assessmentId === this.assessmentId) {
+          if (this.activeStep === 1) {
+            this.hasModifiedQuestionSetAfterComplete = true;
+          }
           this.loadStepsStatus(false);
         }
       });
@@ -223,6 +227,7 @@ export class AssessmentViewComponent
     this.stepCompletedSubscription =
       this.stepsStatusService.stepCompleted$.subscribe((assessmentId) => {
         if (assessmentId === this.assessmentId) {
+          this.hasModifiedQuestionSetAfterComplete = false;
           this.moveToNextStep();
         }
       });
@@ -261,6 +266,16 @@ export class AssessmentViewComponent
       }
 
       if (comp) {
+        // Block if we have modified question sets and haven't clicked Complete yet
+        if (step > 1 && this.hasModifiedQuestionSetAfterComplete) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Warning',
+            detail: 'Please click "Complete Question Set Step" to complete the step before proceeding.',
+          });
+          return;
+        }
+
         // Block if step has unsaved changes/modifications
         if (step > 1 && comp.isDirty) {
           this.messageService.add({
@@ -342,6 +357,11 @@ export class AssessmentViewComponent
 
     // Block if child component has dirty/unsaved changes
     if (this.questionSetStepComponent?.isDirty && stepIndex > 1) {
+      return false;
+    }
+
+    // Block if we have modified question sets and haven't clicked Complete yet
+    if (this.hasModifiedQuestionSetAfterComplete && stepIndex > 1) {
       return false;
     }
 
@@ -447,7 +467,7 @@ export class AssessmentViewComponent
                       const hasEmptySet = results.some(res => !res.questions || res.questions.length === 0);
                       this.isQuestionSetIncomplete = hasEmptySet;
 
-                      if (this.isQuestionSetIncomplete && this.stepsStatus.questionSets === 'Completed') {
+                      if ((this.isQuestionSetIncomplete || this.hasModifiedQuestionSetAfterComplete) && this.stepsStatus.questionSets === 'Completed') {
                         this.stepsStatus.questionSets = 'Active';
                       }
 
@@ -547,6 +567,11 @@ export class AssessmentViewComponent
 
     // Block if child component has dirty/unsaved changes
     if (this.questionSetStepComponent?.isDirty && stepIndex > 1) {
+      return false;
+    }
+
+    // Block if we have modified question sets and haven't clicked Complete yet
+    if (this.hasModifiedQuestionSetAfterComplete && stepIndex > 1) {
       return false;
     }
 

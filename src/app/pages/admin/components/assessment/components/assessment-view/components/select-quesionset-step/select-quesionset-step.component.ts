@@ -162,6 +162,7 @@ export class SelectQuesionsetStepComponent
   public stepStatus = input<string>('Pending');
   public isIncomplete = input<boolean>(false);
   public isParentLoading = input<boolean>(true);
+  public hasModifiedAfterComplete = input<boolean>(false);
 
   private hasLocalModifications = false;
 
@@ -1306,9 +1307,9 @@ export class SelectQuesionsetStepComponent
 
     if (!isValid) return false;
 
-    // If step is already completed, allow proceeding to the next step if valid
+    // If step is already completed, it only stays enabled if there are new changes (isDirty) or modifications in session
     if (status === 'Completed') {
-      return true;
+      return isDirty || this.hasModifiedAfterComplete();
     }
 
     // If step is not yet completed (Active/Pending), allow completion if valid
