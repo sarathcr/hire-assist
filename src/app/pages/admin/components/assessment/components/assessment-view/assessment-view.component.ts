@@ -87,6 +87,7 @@ export class AssessmentViewComponent
     schedule: 'Pending',
   };
   public stepsLoaded = false;
+  public isStepUpdating = false;
   public stepKeys: (keyof StepStatus)[] = [
     'rounds',
     'questionSets',
@@ -242,6 +243,8 @@ export class AssessmentViewComponent
   }
 
   public setActiveStep(step: number): void {
+    if (this.isStepUpdating) return;
+
     // Block ANY navigation away from the Question Set step (step 1)
     // when there are question sets created but not all have been submitted.
     if (this.activeStep === 1 && step !== 1) {
@@ -325,6 +328,8 @@ export class AssessmentViewComponent
   }
 
   public canActivateStep(stepIndex: number): boolean {
+    if (this.isStepUpdating) return false;
+
     const currentConfig = this.filteredStepConfig;
     const itemIndex = currentConfig.findIndex((s) => s.index === stepIndex);
 
@@ -383,6 +388,8 @@ export class AssessmentViewComponent
   public loadStepsStatus(shouldUpdateActiveStep: boolean = true, providedStatus?: StepStatus): void {
     if (!this.assessmentId) return;
 
+    this.isStepUpdating = true;
+
     // Use provided status if available, otherwise fetch from API
     const statusObs = providedStatus 
       ? of(providedStatus) 
@@ -421,9 +428,11 @@ export class AssessmentViewComponent
                     if (this.stepsStatus.questionSets === 'Completed') {
                       this.stepsStatus.questionSets = 'Active';
                     }
+                    this.updateCompletedStepsFromStatus();
                     if (shouldUpdateActiveStep) {
                       this.setActiveStepFromStatus();
                     }
+                    this.isStepUpdating = false;
                     return of(null);
                   }
 
@@ -442,9 +451,12 @@ export class AssessmentViewComponent
                         this.stepsStatus.questionSets = 'Active';
                       }
 
+                      this.updateCompletedStepsFromStatus();
+
                       if (shouldUpdateActiveStep) {
                         this.setActiveStepFromStatus();
                       }
+                      this.isStepUpdating = false;
                       return null;
                     })
                   );
@@ -453,14 +465,20 @@ export class AssessmentViewComponent
             }
             
             this.isQuestionSetIncomplete = false;
+            this.updateCompletedStepsFromStatus();
             if (shouldUpdateActiveStep) {
               this.setActiveStepFromStatus();
             }
+            this.isStepUpdating = false;
             return of(null);
           })
         );
       })
-    ).subscribe();
+    ).subscribe({
+      error: () => {
+        this.isStepUpdating = false;
+      }
+    });
   }
 
   private updateCompletedStepsFromStatus(): void {
@@ -516,6 +534,11 @@ export class AssessmentViewComponent
 
   public isStepEnabled(stepIndex: number): boolean {
     if (!this.stepsLoaded || !this.stepsStatus) return false;
+
+    // If step is currently updating status/validating, disable navigation
+    if (this.isStepUpdating) {
+      return false;
+    }
 
     // If question set is incomplete, block all steps after index 1
     if (this.isQuestionSetIncomplete && stepIndex > 1) {

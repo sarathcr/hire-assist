@@ -563,7 +563,21 @@
     max-height: none;
     overflow: visible;
 
+    &loading-overlay, .assessment-schedule__loading-overlay {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      padding: 3rem 0;
+      color: #6b7280;
+      font-size: 1.1rem;
+      min-height: 300px;
 
+      i {
+        color: #1e88e5;
+      }
+    }
   }
 
   // ============================================

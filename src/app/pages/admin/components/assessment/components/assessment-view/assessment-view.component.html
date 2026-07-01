@@ -163,34 +163,41 @@
       </p>
     </div>
     <div class="assessment-schedule__content">
-      @if (this.activeStep === 0) {
-        <app-assessment-round
-          [assessmentId]="assessmentId"
-          [isReadOnly]="isSchedulingConfigReadOnly"
-        ></app-assessment-round>
-      } @else if (this.activeStep === 1) {
-        <app-select-quesionset-step
-          [assessmentId]="assessmentId"
-          [isReadOnly]="isSchedulingConfigReadOnly"
-          [stepStatus]="stepsStatus.questionSets"
-          [isIncomplete]="isQuestionSetIncomplete"
-          [isParentLoading]="!stepsLoaded"
-        ></app-select-quesionset-step>
-      } @else if (this.activeStep === 2) {
-        <app-coordinator-step
-          [assessmentId]="assessmentId"
-          [isReadOnly]="isSchedulingConfigReadOnly"
-        ></app-coordinator-step>
-      } @else if (this.activeStep === 3) {
-        <app-front-desk
-          [assessmentId]="assessmentId"
-          [isReadOnly]="isSchedulingConfigReadOnly"
-        ></app-front-desk>
-      } @else if (this.activeStep === 4) {
-        <app-import-candidate-list-step
-          [assessmentId]="assessmentId"
-          [isReadOnly]="isCandidateSchedulingReadOnly"
-        ></app-import-candidate-list-step>
+      @if (isStepUpdating) {
+        <div class="assessment-schedule__loading-overlay">
+          <i class="pi pi-spin pi-spinner text-4xl"></i>
+          <span>Validating step status...</span>
+        </div>
+      } @else {
+        @if (this.activeStep === 0) {
+          <app-assessment-round
+            [assessmentId]="assessmentId"
+            [isReadOnly]="isSchedulingConfigReadOnly"
+          ></app-assessment-round>
+        } @else if (this.activeStep === 1) {
+          <app-select-quesionset-step
+            [assessmentId]="assessmentId"
+            [isReadOnly]="isSchedulingConfigReadOnly"
+            [stepStatus]="stepsStatus.questionSets"
+            [isIncomplete]="isQuestionSetIncomplete"
+            [isParentLoading]="!stepsLoaded"
+          ></app-select-quesionset-step>
+        } @else if (this.activeStep === 2) {
+          <app-coordinator-step
+            [assessmentId]="assessmentId"
+            [isReadOnly]="isSchedulingConfigReadOnly"
+          ></app-coordinator-step>
+        } @else if (this.activeStep === 3) {
+          <app-front-desk
+            [assessmentId]="assessmentId"
+            [isReadOnly]="isSchedulingConfigReadOnly"
+          ></app-front-desk>
+        } @else if (this.activeStep === 4) {
+          <app-import-candidate-list-step
+            [assessmentId]="assessmentId"
+            [isReadOnly]="isCandidateSchedulingReadOnly"
+          ></app-import-candidate-list-step>
+        }
       }
     </div>
   </div>
