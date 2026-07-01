@@ -26,7 +26,7 @@ import { SelectQuesionsetStepComponent } from './components/select-quesionset-st
 import { AssessmentService } from '../../../../services/assessment.service';
 import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
 import { forkJoin, of, Observable } from 'rxjs';
-import { switchMap, map } from 'rxjs/operators';
+import { switchMap, map, catchError } from 'rxjs/operators';
 
 export interface AssessmentViewModel {
   id?: string;
@@ -258,6 +258,16 @@ export class AssessmentViewComponent
       }
 
       if (comp) {
+        // Block if step has unsaved changes/modifications
+        if (step > 1 && comp.isDirty) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Warning',
+            detail: 'Please click "Complete Question Set Step" to complete the step before proceeding.',
+          });
+          return;
+        }
+
         // 2. Block only FORWARD navigation if rounds are missing sets
         if (step > 1 && !comp.hasAllRoundsConfigured) {
           this.messageService.add({
@@ -325,6 +335,11 @@ export class AssessmentViewComponent
       return false;
     }
 
+    // Block if child component has dirty/unsaved changes
+    if (this.questionSetStepComponent?.isDirty && stepIndex > 1) {
+      return false;
+    }
+
     const prevStep = currentConfig[itemIndex - 1];
     const prevStatus = this.stepsStatus[this.stepKeys[prevStep.index]];
     const canActivate =
@@ -386,31 +401,61 @@ export class AssessmentViewComponent
           switchMap((rounds: RoundModel[]) => {
             this.assessmentRounds = rounds;
             
-            // 3. Set Active Step now that we have rounds (and thus structure)
-            if (shouldUpdateActiveStep) {
-              this.setActiveStepFromStatus();
-            }
-
-            // 4. Perform deep validation ONLY if we are on the Question Set step (Active Step 1)
-            if (this.hasOnlineAptitudeRound && this.activeStep === 1) {
+            if (this.hasOnlineAptitudeRound) {
               const payload = new PaginatedPayload();
               payload.filterMap = { assessmentId: this.assessmentId };
               payload.pagination.pageSize = -1;
 
               return this.assessmentService.paginationEntity<any>('QuestionSetSummary', payload).pipe(
-                map(res => {
+                switchMap(res => {
                   const questionSets = res.data || [];
-                  this.isQuestionSetIncomplete = questionSets.length === 0;
+                  const createdSets = questionSets.filter((qs: any) => qs.id > 0);
+                  const aptitudeRounds = this.assessmentRounds.filter((r) => r.roundTypeId === 1);
                   
-                  if (this.isQuestionSetIncomplete && this.stepsStatus.questionSets === 'Completed') {
-                    this.stepsStatus.questionSets = 'Active';
+                  const hasMissingSet = aptitudeRounds.some(round => {
+                    return !createdSets.some((qs: any) => qs.assessmentRoundId === round.id);
+                  });
+
+                  if (hasMissingSet || createdSets.length === 0) {
+                    this.isQuestionSetIncomplete = true;
+                    if (this.stepsStatus.questionSets === 'Completed') {
+                      this.stepsStatus.questionSets = 'Active';
+                    }
+                    if (shouldUpdateActiveStep) {
+                      this.setActiveStepFromStatus();
+                    }
+                    return of(null);
                   }
-                  return null;
+
+                  const questionSetQueries = createdSets.map(qs => 
+                    this.assessmentService.getQuestionsBySet(qs.id.toString()).pipe(
+                      catchError(() => of({ questions: [] }))
+                    )
+                  );
+
+                  return forkJoin(questionSetQueries).pipe(
+                    map((results: any[]) => {
+                      const hasEmptySet = results.some(res => !res.questions || res.questions.length === 0);
+                      this.isQuestionSetIncomplete = hasEmptySet;
+
+                      if (this.isQuestionSetIncomplete && this.stepsStatus.questionSets === 'Completed') {
+                        this.stepsStatus.questionSets = 'Active';
+                      }
+
+                      if (shouldUpdateActiveStep) {
+                        this.setActiveStepFromStatus();
+                      }
+                      return null;
+                    })
+                  );
                 })
               );
             }
             
             this.isQuestionSetIncomplete = false;
+            if (shouldUpdateActiveStep) {
+              this.setActiveStepFromStatus();
+            }
             return of(null);
           })
         );
@@ -474,6 +519,11 @@ export class AssessmentViewComponent
 
     // If question set is incomplete, block all steps after index 1
     if (this.isQuestionSetIncomplete && stepIndex > 1) {
+      return false;
+    }
+
+    // Block if child component has dirty/unsaved changes
+    if (this.questionSetStepComponent?.isDirty && stepIndex > 1) {
       return false;
     }
 

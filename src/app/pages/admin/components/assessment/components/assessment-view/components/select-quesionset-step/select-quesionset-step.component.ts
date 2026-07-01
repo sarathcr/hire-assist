@@ -1306,9 +1306,9 @@ export class SelectQuesionsetStepComponent
 
     if (!isValid) return false;
 
-    // If step is already completed, it only stays enabled if there are new changes (isDirty)
+    // If step is already completed, allow proceeding to the next step if valid
     if (status === 'Completed') {
-      return isDirty;
+      return true;
     }
 
     // If step is not yet completed (Active/Pending), allow completion if valid
