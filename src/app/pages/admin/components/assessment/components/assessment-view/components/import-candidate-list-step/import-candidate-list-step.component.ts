@@ -439,20 +439,82 @@ export class ImportCandidateListStepComponent implements OnInit {
         try {
           const parsed = parseCsvToJson(text);
           const namePattern = /^[A-Za-z]+([ .][A-Za-z]+)*[ .]?$/;
-          const invalidCandidateNames: string[] = [];
+          const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+          const phonePattern = /^\+?[0-9]{10,12}$/;
+          const validationIssues: string[] = [];
 
-          for (const row of parsed) {
-            const name = row['Candidate Name'] || row['name'] || row['Full Name'] || row['Fullname'] || '';
-            if (name && !namePattern.test(name.trim())) {
-              invalidCandidateNames.push(name.trim());
+          parsed.forEach((row, idx) => {
+            const lineNum = idx + 2; // Line 1 is headers
+            const rawName = row['Candidate Name'] || row['name'] || row['Full Name'] || row['Fullname'] || '';
+            const name = rawName.trim();
+            const email = (row['Email Id'] || row['Email address'] || row['email'] || row['Email ID'] || row['emailId'] || '').trim();
+            const phone = (row['Mobile number'] || row['phoneNumber'] || row['phone'] || row['Mobile Number'] || row['Contact Number'] || '').trim().replace(/\s/g, '');
+            const dob = (row['Date of Birth'] || row['dob'] || row['Date Of Birth'] || row['dateOfBirth'] || row['DOB'] || '').trim();
+            const gender = (row['Gender'] || row['gender'] || '').trim().toLowerCase();
+
+            const displayName = name || `Candidate on Line ${lineNum}`;
+            const errors: string[] = [];
+
+            // 1. Name validation
+            if (!name) {
+              errors.push('Name is required');
+            } else if (name.length < 3) {
+              errors.push('Name must be at least 3 characters');
+            } else if (!namePattern.test(name)) {
+              errors.push('Name cannot contain numbers or special characters');
             }
-          }
 
-          if (invalidCandidateNames.length > 0) {
+            // 2. Email validation
+            if (!email) {
+              errors.push('Email address is required');
+            } else if (!emailPattern.test(email)) {
+              errors.push('Invalid email address format');
+            }
+
+            // 3. Phone validation
+            if (!phone) {
+              errors.push('Phone number is required');
+            } else if (!phonePattern.test(phone)) {
+              errors.push('Phone number must be 10-12 digits');
+            }
+
+            // 4. DOB validation
+            if (!dob) {
+              errors.push('Date of Birth is required');
+            } else {
+              const dobDate = new Date(dob);
+              if (isNaN(dobDate.getTime())) {
+                errors.push('Invalid Date of Birth format (use YYYY-MM-DD or MM/DD/YYYY)');
+              } else {
+                const today = new Date();
+                let age = today.getFullYear() - dobDate.getFullYear();
+                const m = today.getMonth() - dobDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+                  age--;
+                }
+                if (age < 18) {
+                  errors.push('Candidate must be at least 18 years old');
+                }
+              }
+            }
+
+            // 5. Gender validation
+            if (!gender) {
+              errors.push('Gender is required');
+            } else if (!['male', 'female', 'other'].includes(gender)) {
+              errors.push('Gender must be Male, Female, or Other');
+            }
+
+            if (errors.length > 0) {
+              validationIssues.push(`${displayName} (Line ${lineNum}): ${errors.join(', ')}`);
+            }
+          });
+
+          if (validationIssues.length > 0) {
             const modalData: DialogData = {
               title: 'Validation Error',
-              message: 'The following candidates contain numbers or special characters in their name. Only letters, spaces, and dots are allowed. Please correct the CSV file and reupload it.',
-              candidateNames: invalidCandidateNames,
+              message: 'The following CSV records contain invalid fields. Please correct the CSV file and reupload it.',
+              candidateNames: validationIssues,
               isChoice: false,
               acceptButtonText: 'OK'
             };
@@ -460,11 +522,11 @@ export class ImportCandidateListStepComponent implements OnInit {
               data: modalData,
               header: 'Import Validation Failed',
               maximizable: false,
-              width: '40vw',
+              width: '50vw',
               modal: true,
               focusOnShow: false,
               breakpoints: {
-                '960px': '60vw',
+                '960px': '75vw',
                 '640px': '90vw',
               },
               templates: {

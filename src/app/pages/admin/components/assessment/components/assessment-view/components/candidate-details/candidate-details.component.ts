@@ -113,6 +113,8 @@ export class CandidateDetailsComponent {
     if (lowerKey === 'email' || lowerKey === 'email id' || lowerKey === 'email_id' || lowerKey === 'email address' || lowerKey === 'emailaddress') return 'Email Address';
     if (lowerKey === 'aadhaar number' || lowerKey === 'adhar number' || lowerKey === 'aadhaarnumber' || lowerKey === 'adharnumber') return 'Aadhaar Number';
     if (lowerKey === 'mobile number' || lowerKey === 'phone number' || lowerKey === 'contact number' || lowerKey === 'phonenumber' || lowerKey === 'mobilenumber') return 'Mobile Number';
+    if (lowerKey === 'dob' || lowerKey === 'date of birth' || lowerKey === 'dateofbirth') return 'Date of Birth';
+    if (lowerKey === 'gender') return 'Gender';
 
     // TIER 2: ENTITY/INSTITUTION EXCLUSION (Bail out early to prevent mis-mapping to name)
     const entityKeywords = [
@@ -233,6 +235,20 @@ export class CandidateDetailsComponent {
       });
     }
 
+    if (targetLabel === 'Date of Birth') {
+      updatedData['dob'] = value;
+      ['Date of Birth', 'date of birth', 'dob', 'dateOfBirth'].forEach(v => {
+        if (updatedData[v] !== undefined) updatedData[v] = value;
+      });
+    }
+
+    if (targetLabel === 'Gender') {
+      updatedData['gender'] = value;
+      ['Gender', 'gender'].forEach(v => {
+        if (updatedData[v] !== undefined) updatedData[v] = value;
+      });
+    }
+
     this.onUpdate.emit(updatedData);
     this.localEditKey.set(null);
     this.errorMessage.set(null);
@@ -263,6 +279,31 @@ export class CandidateDetailsComponent {
         error = 'Name must be at least 3 characters';
       } else if (!/^[A-Za-z]+([ .][A-Za-z]+)*[ .]?$/.test(trimmedValue)) {
         error = 'Name cannot contain special characters (only letters, spaces, and dots allowed)';
+      }
+    } else if (targetLabel === 'Date of Birth') {
+      if (!trimmedValue) {
+        error = 'Date of Birth is required';
+      } else {
+        const dobDate = new Date(trimmedValue);
+        if (isNaN(dobDate.getTime())) {
+          error = 'Invalid Date of Birth format (use YYYY-MM-DD or MM/DD/YYYY)';
+        } else {
+          const today = new Date();
+          let age = today.getFullYear() - dobDate.getFullYear();
+          const m = today.getMonth() - dobDate.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+            age--;
+          }
+          if (age < 18) {
+            error = 'Candidate must be at least 18 years old';
+          }
+        }
+      }
+    } else if (targetLabel === 'Gender') {
+      if (!trimmedValue) {
+        error = 'Gender is required';
+      } else if (!['male', 'female', 'other'].includes(trimmedValue.toLowerCase())) {
+        error = 'Gender must be Male, Female, or Other';
       }
     }
 
