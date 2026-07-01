@@ -685,6 +685,8 @@ export class AssessmentRoundComponent
   }
 
   public onRemoveRound(roundId: string): void {
+    const removedRound = this.submittedData.find((r) => r.id === roundId);
+
     // Remove from submitted data
     this.submittedData = this.submittedData.filter(
       (round) => round.id !== roundId,
@@ -693,24 +695,20 @@ export class AssessmentRoundComponent
     // If it's an existing round (not a temp ID), also remove from form selection
     if (roundId.startsWith('new-')) {
       // Remove from newRoundsToCreate if it was a new round
-      const removedRound = this.submittedData.find((r) => r.id === roundId);
       if (removedRound) {
         this.newRoundsToCreate = this.newRoundsToCreate.filter(
           (round) => round.name !== removedRound.name,
         );
       }
+      this.buildRoundConfigForms();
+      this.reinitSortable();
     } else {
       const currentSelection = this.fGroup.value.round || [];
-      this.fGroup.patchValue(
-        {
-          round: currentSelection.filter((id: string) => id !== roundId),
-        },
-        { emitEvent: false },
-      ); // Prevent triggering valueChanges
+      this.fGroup.patchValue({
+        round: currentSelection.filter((id: string) => id !== roundId),
+      }); // Allow emitting event to sync PrimeNG MultiSelect correctly!
     }
     this.roundsUpdated.emit(this.submittedData.length);
-    this.buildRoundConfigForms();
-    this.reinitSortable();
   }
 
   public openCreateRoundModal(): void {
