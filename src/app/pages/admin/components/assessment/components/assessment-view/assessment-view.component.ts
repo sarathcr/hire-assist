@@ -47,6 +47,8 @@ export interface CollectionInterface {
   panels: Option[];
 }
 
+import { SkeletonModule } from 'primeng/skeleton';
+
 @Component({
   selector: 'app-assessment-view',
   imports: [
@@ -59,6 +61,7 @@ export interface CollectionInterface {
     AssessmentRoundComponent,
     FrontDeskComponent,
     ImportCandidateListStepComponent,
+    SkeletonModule,
   ],
 
   templateUrl: './assessment-view.component.html',
@@ -89,6 +92,7 @@ export class AssessmentViewComponent
   public stepsLoaded = false;
   public isStepUpdating = false;
   public hasModifiedQuestionSetAfterComplete = false;
+  private lastProgressPercentage = 0;
   public stepKeys: (keyof StepStatus)[] = [
     'rounds',
     'questionSets',
@@ -421,8 +425,10 @@ export class AssessmentViewComponent
         this.stepsLoaded = true;
         this.updateCompletedStepsFromStatus();
 
-        // 2. Load rounds ALWAYS so stepper config stays up-to-date with round changes
-        const roundsObs: Observable<RoundModel[]> = this.assessmentScheduleService.GetAssessmentRound(this.assessmentId!);
+        // 2. Load rounds from API only if not loaded yet or active step is 0 (Rounds)
+        const roundsObs: Observable<RoundModel[]> = (this.assessmentRounds.length > 0 && this.activeStep !== 0)
+          ? of(this.assessmentRounds)
+          : this.assessmentScheduleService.GetAssessmentRound(this.assessmentId!);
 
         return roundsObs.pipe(
           switchMap((rounds: RoundModel[]) => {
@@ -649,6 +655,9 @@ export class AssessmentViewComponent
 
   public getProgressPercentage(): number {
     if (!this.stepsLoaded || !this.stepsStatus) return 0;
+    if (this.isStepUpdating) {
+      return this.lastProgressPercentage;
+    }
     const currentKeys = this.filteredStepKeys;
     const totalSteps = currentKeys.length;
     if (totalSteps === 0) return 0;
@@ -656,7 +665,8 @@ export class AssessmentViewComponent
     const completedSteps = currentKeys.filter(
       (key) => this.stepsStatus[key] === 'Completed',
     ).length;
-    return Math.round((completedSteps / totalSteps) * 100);
+    this.lastProgressPercentage = Math.round((completedSteps / totalSteps) * 100);
+    return this.lastProgressPercentage;
   }
 
   public goToRecruitmentDetail(): void {

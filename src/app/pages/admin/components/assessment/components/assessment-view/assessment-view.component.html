@@ -75,77 +75,110 @@
     </div>
   }
 
-  <!-- Modern Step Navigation -->
-  <div class="assessment-schedule__stepper-wrapper">
-    <div class="assessment-schedule__stepper">
-      @for (step of filteredStepConfig; track step.index; let i = $index) {
-        <div
-          class="assessment-schedule__stepper-item"
-          [ngClass]="{
-            active: activeStep === step.index,
-            completed:
-              stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed',
-            disabled: !stepsLoaded || !isStepEnabled(step.index),
-            pending:
-              stepsLoaded &&
-              stepsStatus[stepKeys[step.index]] === 'Pending' &&
-              activeStep !== step.index,
-          }"
-        >
-          <button
-            type="button"
-            class="assessment-schedule__stepper-button"
-            [disabled]="!stepsLoaded || !isStepEnabled(step.index)"
-            (click)="setActiveStep(step.index)"
-            [attr.aria-label]="step.label"
-          >
-            <div class="assessment-schedule__stepper-indicator">
-              @if (
-                stepsLoaded && stepsStatus[stepKeys[step.index]] === "Completed"
-              ) {
-                <i class="pi pi-check"></i>
-              } @else {
-                <i [class]="step.icon"></i>
-              }
-            </div>
-            <div class="assessment-schedule__stepper-content">
-              <span class="assessment-schedule__stepper-label">{{
-                step.label
-              }}</span>
-            </div>
-            @if (activeStep === step.index) {
-              <div class="assessment-schedule__stepper-arrow">
-                <i class="pi pi-chevron-down"></i>
+  <!-- Modern Step Navigation & Progress Bar -->
+  @if (!stepsLoaded) {
+    <div class="assessment-schedule__stepper-wrapper">
+      <div class="assessment-schedule__stepper">
+        @for (i of [1, 2, 3, 4, 5]; track i; let last = $last) {
+          <div class="assessment-schedule__stepper-item disabled">
+            <div class="assessment-schedule__stepper-button">
+              <div class="assessment-schedule__stepper-indicator">
+                <p-skeleton shape="circle" size="2.5rem"></p-skeleton>
               </div>
+              <div class="assessment-schedule__stepper-content">
+                <p-skeleton width="6rem" height="1.2rem"></p-skeleton>
+              </div>
+            </div>
+            @if (!last) {
+              <div class="assessment-schedule__stepper-connector"></div>
             }
-          </button>
-          @if (i < filteredStepConfig.length - 1) {
-            <div
-              class="assessment-schedule__stepper-connector"
-              [ngClass]="{
-                completed:
-                  stepsLoaded &&
-                  stepsStatus[stepKeys[step.index]] === 'Completed',
-              }"
-            ></div>
-          }
-        </div>
-      }
+          </div>
+        }
+      </div>
     </div>
-  </div>
 
-  <!-- Progress Bar -->
-  <div class="assessment-schedule__progress">
-    <div class="assessment-schedule__progress-bar">
-      <div
-        class="assessment-schedule__progress-fill"
-        [style.width.%]="getProgressPercentage()"
-      ></div>
+    <!-- Progress Bar Skeleton -->
+    <div class="assessment-schedule__progress">
+      <div class="assessment-schedule__progress-bar">
+        <p-skeleton width="100%" height="8px" borderRadius="4px"></p-skeleton>
+      </div>
+      <div class="assessment-schedule__progress-text" style="margin-top: 4px;">
+        <p-skeleton width="5rem" height="1rem"></p-skeleton>
+      </div>
     </div>
-    <span class="assessment-schedule__progress-text">
-      {{ getProgressPercentage() }}% Complete
-    </span>
-  </div>
+  } @else {
+    <!-- Modern Step Navigation -->
+    <div class="assessment-schedule__stepper-wrapper">
+      <div class="assessment-schedule__stepper">
+        @for (step of filteredStepConfig; track step.index; let i = $index) {
+          <div
+            class="assessment-schedule__stepper-item"
+            [ngClass]="{
+              active: activeStep === step.index,
+              completed:
+                stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed',
+              disabled: !stepsLoaded || !isStepEnabled(step.index),
+              pending:
+                stepsLoaded &&
+                stepsStatus[stepKeys[step.index]] === 'Pending' &&
+                activeStep !== step.index,
+            }"
+          >
+            <button
+              type="button"
+              class="assessment-schedule__stepper-button"
+              [disabled]="!stepsLoaded || !isStepEnabled(step.index)"
+              (click)="setActiveStep(step.index)"
+              [attr.aria-label]="step.label"
+            >
+              <div class="assessment-schedule__stepper-indicator">
+                @if (
+                  stepsLoaded && stepsStatus[stepKeys[step.index]] === "Completed"
+                ) {
+                  <i class="pi pi-check"></i>
+                } @else {
+                  <i [class]="step.icon"></i>
+                }
+              </div>
+              <div class="assessment-schedule__stepper-content">
+                <span class="assessment-schedule__stepper-label">{{
+                  step.label
+                }}</span>
+              </div>
+              @if (activeStep === step.index) {
+                <div class="assessment-schedule__stepper-arrow">
+                  <i class="pi pi-chevron-down"></i>
+                </div>
+              }
+            </button>
+            @if (i < filteredStepConfig.length - 1) {
+              <div
+                class="assessment-schedule__stepper-connector"
+                [ngClass]="{
+                  completed:
+                    stepsLoaded &&
+                    stepsStatus[stepKeys[step.index]] === 'Completed',
+                }"
+              ></div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="assessment-schedule__progress">
+      <div class="assessment-schedule__progress-bar">
+        <div
+          class="assessment-schedule__progress-fill"
+          [style.width.%]="getProgressPercentage()"
+        ></div>
+      </div>
+      <span class="assessment-schedule__progress-text">
+        {{ getProgressPercentage() }}% Complete
+      </span>
+    </div>
+  }
 
   <!-- Content Area -->
   <div class="assessment-schedule__content-wrapper">
