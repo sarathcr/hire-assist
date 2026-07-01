@@ -259,7 +259,11 @@ export class CandidateDetailsComponent {
         error = 'Mobile number must be 10-12 digits';
       }
     } else if (targetLabel === 'Candidate Name') {
-      if (trimmedValue.length < 3) error = 'Name must be at least 3 characters';
+      if (trimmedValue.length < 3) {
+        error = 'Name must be at least 3 characters';
+      } else if (!/^[A-Za-z]+([ .][A-Za-z]+)*[ .]?$/.test(trimmedValue)) {
+        error = 'Name cannot contain special characters (only letters, spaces, and dots allowed)';
+      }
     }
 
     this.errorMessage.set(error);

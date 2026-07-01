@@ -432,6 +432,63 @@ export class ImportCandidateListStepComponent implements OnInit {
     this.importCandidates(file);
   }
   public importCandidates(file: File) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (text) {
+        try {
+          const parsed = parseCsvToJson(text);
+          const namePattern = /^[A-Za-z]+([ .][A-Za-z]+)*[ .]?$/;
+          const invalidCandidateNames: string[] = [];
+
+          for (const row of parsed) {
+            const name = row['Candidate Name'] || row['name'] || row['Full Name'] || row['Fullname'] || '';
+            if (name && !namePattern.test(name.trim())) {
+              invalidCandidateNames.push(name.trim());
+            }
+          }
+
+          if (invalidCandidateNames.length > 0) {
+            const modalData: DialogData = {
+              title: 'Validation Error',
+              message: 'The following candidates contain numbers or special characters in their name. Only letters, spaces, and dots are allowed. Please correct the CSV file and reupload it.',
+              candidateNames: invalidCandidateNames,
+              isChoice: false,
+              acceptButtonText: 'OK'
+            };
+            this.ref = this.dialog.open(DialogComponent, {
+              data: modalData,
+              header: 'Import Validation Failed',
+              maximizable: false,
+              width: '40vw',
+              modal: true,
+              focusOnShow: false,
+              breakpoints: {
+                '960px': '60vw',
+                '640px': '90vw',
+              },
+              templates: {
+                footer: DialogFooterComponent,
+              },
+            });
+            this.isUploading = false;
+            this.isLoading = false;
+            return;
+          }
+        } catch (err) {
+          console.error('Error parsing CSV during validation:', err);
+        }
+      }
+
+      this.uploadFile(file);
+    };
+    reader.onerror = () => {
+      this.uploadFile(file);
+    };
+    reader.readAsText(file);
+  }
+
+  private uploadFile(file: File) {
     this.assessmentService
       .uploadFileAndReturnData<CandidateImportResponseDto>(
         file,
