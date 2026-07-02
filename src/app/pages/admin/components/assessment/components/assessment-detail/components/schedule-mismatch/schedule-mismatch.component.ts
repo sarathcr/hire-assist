@@ -21,6 +21,7 @@ export class ScheduleMismatchComponent implements OnInit {
   public fGroup!: FormGroup;
   public mismatchedCandidates: any[] = [];
   public minDate!: Date;
+  public maxDate!: Date;
   public isLoading = false;
   public dateError: string | null = null;
 
@@ -50,11 +51,39 @@ export class ScheduleMismatchComponent implements OnInit {
       return candidate;
     });
 
-    // Set validation min date to today's date
+    // Find the overlap range for all mismatched candidates
+    let batchMinStart: Date | null = null;
+    let batchMaxEnd: Date | null = null;
+
+    for (const candidate of this.mismatchedCandidates) {
+      if (candidate.batchStartDate) {
+        const start = new Date(candidate.batchStartDate.endsWith('Z') ? candidate.batchStartDate : `${candidate.batchStartDate}Z`);
+        if (!batchMinStart || start > batchMinStart) {
+          batchMinStart = start;
+        }
+      }
+      if (candidate.batchEndDate) {
+        const end = new Date(candidate.batchEndDate.endsWith('Z') ? candidate.batchEndDate : `${candidate.batchEndDate}Z`);
+        if (!batchMaxEnd || end < batchMaxEnd) {
+          batchMaxEnd = end;
+        }
+      }
+    }
+
     const now = new Date();
-    this.minDate = new Date(now);
-    this.minDate.setSeconds(0, 0);
-    this.minDate.setMilliseconds(0);
+    now.setSeconds(0, 0);
+    now.setMilliseconds(0);
+
+    // Set validation min and max dates
+    if (batchMinStart && batchMinStart > now) {
+      this.minDate = batchMinStart;
+    } else {
+      this.minDate = now;
+    }
+
+    if (batchMaxEnd) {
+      this.maxDate = batchMaxEnd;
+    }
 
     this.fGroup = this.fb.group({
       scheduleDate: [null, [Validators.required]]
@@ -66,9 +95,26 @@ export class ScheduleMismatchComponent implements OnInit {
         if (dateTime < this.minDate) {
           this.dateError = 'Schedule Date & Time cannot be in the past.';
           this.fGroup.get('scheduleDate')?.setErrors({ invalidDate: true });
-        } else {
-          this.dateError = null;
+          return;
         }
+
+        // Validate against each mismatched candidate's batch start/end dates
+        for (const candidate of this.mismatchedCandidates) {
+          if (candidate.batchStartDate && candidate.batchEndDate) {
+            const start = new Date(candidate.batchStartDate.endsWith('Z') ? candidate.batchStartDate : `${candidate.batchStartDate}Z`);
+            const end = new Date(candidate.batchEndDate.endsWith('Z') ? candidate.batchEndDate : `${candidate.batchEndDate}Z`);
+            if (dateTime < start || dateTime > end) {
+              const datePipe = new DatePipe('en-US');
+              const startStr = datePipe.transform(start, 'dd MMM yyyy hh:mm a');
+              const endStr = datePipe.transform(end, 'dd MMM yyyy hh:mm a');
+              this.dateError = `Selected date must be between ${startStr} and ${endStr}.`;
+              this.fGroup.get('scheduleDate')?.setErrors({ invalidRange: true });
+              return;
+            }
+          }
+        }
+
+        this.dateError = null;
       }
     });
   }

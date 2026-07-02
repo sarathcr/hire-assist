@@ -684,23 +684,25 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private handleScheduleMismatch(errorBody: any): void {
     this.ref?.close(); // Close any currently open scheduling dialog first
     
-    this.ref = this.dialog.open(ScheduleMismatchComponent, {
-      showHeader: false,
-      width: '520px',
-      modal: true,
-      focusOnShow: false,
-      styleClass: 'standard-dialog-wrapper',
-      breakpoints: {
-        '960px': '75vw',
-        '640px': '90vw',
-      },
-      data: {
-        mismatchedCandidates: errorBody.mismatchedCandidates,
-        onSubmit: (newDate: Date) => {
-          this.confirmSchedule(newDate);
+    setTimeout(() => {
+      this.ref = this.dialog.open(ScheduleMismatchComponent, {
+        showHeader: false,
+        width: '520px',
+        modal: true,
+        focusOnShow: false,
+        styleClass: 'standard-dialog-wrapper',
+        breakpoints: {
+          '960px': '75vw',
+          '640px': '90vw',
+        },
+        data: {
+          mismatchedCandidates: errorBody.mismatchedCandidates,
+          onSubmit: (newDate: Date) => {
+            this.confirmSchedule(newDate);
+          }
         }
-      }
-    });
+      });
+    }, 100);
   }
 
   public rejectSchedule(): void {
