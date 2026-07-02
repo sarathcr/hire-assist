@@ -23,7 +23,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { MessageService } from 'primeng/api';
-import { Accordion, AccordionPanel, AccordionHeader, AccordionContent } from 'primeng/accordion';
+import {
+  Accordion,
+  AccordionPanel,
+  AccordionHeader,
+  AccordionContent,
+} from 'primeng/accordion';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { FloatLabelModule } from 'primeng/floatlabel';
@@ -54,7 +59,10 @@ import {
   FeedbackCriteriaConfig,
 } from '../../../../../../models/assessment-schedule.model';
 import { MultiSelectChangeEvent } from 'primeng/multiselect';
-import { AssessmentRoundFormGroup, RoundModel } from '../../../../../../models/assessment.model';
+import {
+  AssessmentRoundFormGroup,
+  RoundModel,
+} from '../../../../../../models/assessment.model';
 import { AssessmentScheduleService } from '../../../../services/assessment-schedule.service';
 import { AssessmentRoundSkeletonComponent } from './assessment-round-skeleton';
 import { CollectionService } from '../../../../../../../../shared/services/collection.service';
@@ -109,7 +117,7 @@ export class AssessmentRoundComponent
   public isFetchingRoundTypes = false;
   private isFullCriteriaLoaded = false;
   public submitted = false;
-  
+
   private readonly ROUND_TYPE_APTITUDE = '1';
   private readonly ROUND_TYPE_INTERVIEW = '2';
   private readonly ROUND_TYPE_APTITUDE_LABEL = 'Online Aptitude Test';
@@ -119,11 +127,10 @@ export class AssessmentRoundComponent
     if (!type) return false;
     const typeStr = type.toString();
     if (typeStr === this.ROUND_TYPE_APTITUDE) return true;
-    
-    const option = this.roundTypeOptions.find(o => o.value === typeStr);
+
+    const option = this.roundTypeOptions.find((o) => o.value === typeStr);
     return option?.label === this.ROUND_TYPE_APTITUDE_LABEL;
   }
-
 
   public assessmentId = input<number>();
   public isReadOnly = input<boolean>(false);
@@ -157,7 +164,7 @@ export class AssessmentRoundComponent
   ngOnInit(): void {
     this.setConfigMaps();
     this.loadCollections();
-    this.setOptions(); 
+    this.setOptions();
     this.GetAssessmentRoundbyAssessment();
     this.fetchRoundTypeOptions();
     this.setupRoundSelectionListener();
@@ -225,10 +232,12 @@ export class AssessmentRoundComponent
     if (selectedRoundIds && selectedRoundIds.length > this.MAX_ROUNDS) {
       this.isUpdatingRounds = true;
       const truncatedIds = selectedRoundIds.slice(0, this.MAX_ROUNDS);
-      
+
       // Use setTimeout to ensure the value update happens after the current event loop
       setTimeout(() => {
-        this.fGroup.get('round')?.setValue([...truncatedIds], { emitEvent: false });
+        this.fGroup
+          .get('round')
+          ?.setValue([...truncatedIds], { emitEvent: false });
         this.fGroup.get('round')?.updateValueAndValidity();
         this.cdr.detectChanges();
         this.isUpdatingRounds = false;
@@ -288,7 +297,9 @@ export class AssessmentRoundComponent
   }
 
   public getCriteriaFormArray(roundIdx: number): FormArray {
-    return this.getRoundFormGroup(roundIdx).get('feedbackCriteria') as FormArray;
+    return this.getRoundFormGroup(roundIdx).get(
+      'feedbackCriteria',
+    ) as FormArray;
   }
 
   public addCriteria(roundIdx: number): void {
@@ -301,7 +312,7 @@ export class AssessmentRoundComponent
     const group = this.getRoundFormGroup(roundIdx);
     const criteriaArray = group.get('feedbackCriteria') as FormArray;
     const removedItem = criteriaArray.at(criteriaIdx).value;
-    
+
     criteriaArray.removeAt(criteriaIdx);
 
     // If it was an imported item, remove it from the dropdown selection too
@@ -309,11 +320,11 @@ export class AssessmentRoundComponent
       const selectionCtrl = group.get('importSelection');
       const currentSelection = selectionCtrl?.value || [];
       const removedId = removedItem.id?.toString();
-      
+
       if (removedId) {
         selectionCtrl?.setValue(
           currentSelection.filter((val: any) => val?.toString() !== removedId),
-          { emitEvent: true }
+          { emitEvent: true },
         );
       }
     }
@@ -325,7 +336,7 @@ export class AssessmentRoundComponent
     const group = this.getRoundFormGroup(roundIdx);
     const criteriaArray = group.get('feedbackCriteria') as FormArray;
     const criteriaControl = criteriaArray.at(criteriaIdx);
-    
+
     if (criteriaControl) {
       const titleControl = criteriaControl.get('title');
       if (titleControl && typeof titleControl.value === 'string') {
@@ -339,31 +350,39 @@ export class AssessmentRoundComponent
       if (criteriaControl.get('isImported')?.value) {
         const newTitle = criteriaControl.get('title')?.value?.trim();
         const removedId = criteriaControl.get('id')?.value?.toString();
-        
+
         // If the title is empty or just whitespace, don't remove it yet
         if (!newTitle) return;
 
-        const originalOption = this.feedbackCriteriaOptions.find(o => o.value?.toString() === removedId);
-        
+        const originalOption = this.feedbackCriteriaOptions.find(
+          (o) => o.value?.toString() === removedId,
+        );
+
         // If the trimmed title matches the original label, it's just spaces added, so don't remove
         if (originalOption && originalOption.label === newTitle) return;
 
-        criteriaControl.get('isImported')?.setValue(false, { emitEvent: false });
-        
+        criteriaControl
+          .get('isImported')
+          ?.setValue(false, { emitEvent: false });
+
         const selectionCtrl = group.get('importSelection');
         const currentSelection = selectionCtrl?.value || [];
-        
+
         if (removedId) {
           selectionCtrl?.setValue(
-            currentSelection.filter((val: any) => val?.toString() !== removedId),
-            { emitEvent: true }
+            currentSelection.filter(
+              (val: any) => val?.toString() !== removedId,
+            ),
+            { emitEvent: true },
           );
         }
       }
     }
   }
 
-  private specialCharactersOnlyValidator(control: AbstractControl): ValidationErrors | null {
+  private specialCharactersOnlyValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
 
@@ -384,7 +403,7 @@ export class AssessmentRoundComponent
         this.specialCharactersOnlyValidator.bind(this),
         Validators.minLength(3),
         Validators.maxLength(30),
-        this.duplicateTitleValidator.bind(this)
+        this.duplicateTitleValidator.bind(this),
       ]),
       description: new FormControl(data?.description || '', [
         this.plainTextMaxLengthValidator(1000),
@@ -399,13 +418,15 @@ export class AssessmentRoundComponent
   }
 
   public onExistingCriteriaSelected(event: any, idx: number): void {
-    const selectedValues = (event.value as any[] || []).map(v => v?.toString());
+    const selectedValues = ((event.value as any[]) || []).map((v) =>
+      v?.toString(),
+    );
     const feedbackCriteria = this.getCriteriaFormArray(idx);
-    
+
     // 1. Identify which imported items were DESELECTED in the dropdown
     // First, collect all controls that need to be removed to avoid index shift issues
     const controlsToRemove: number[] = [];
-    
+
     feedbackCriteria.controls.forEach((control, i) => {
       if (control.get('isImported')?.value) {
         const id = control.get('id')?.value?.toString();
@@ -417,21 +438,25 @@ export class AssessmentRoundComponent
     });
 
     // Remove from end to start to maintain index stability
-    controlsToRemove.sort((a, b) => b - a).forEach(i => {
-      feedbackCriteria.removeAt(i);
-    });
+    controlsToRemove
+      .sort((a, b) => b - a)
+      .forEach((i) => {
+        feedbackCriteria.removeAt(i);
+      });
 
     // 2. Identify which items were SELECTED in the dropdown but ARE NOT in the list
     selectedValues.forEach((val) => {
       // Find the option by its value (ID or Title)
       const option = this.feedbackCriteriaOptions.find(
-        (o) => o.value?.toString() === val
+        (o) => o.value?.toString() === val,
       );
 
       if (option && option.label) {
         // Check if this specific item already exists in the list (match by ID OR Title)
         const alreadyExists = feedbackCriteria.value.some(
-          (c: any) => c.isImported && (c.id?.toString() === val || c.title === option.label)
+          (c: any) =>
+            c.isImported &&
+            (c.id?.toString() === val || c.title === option.label),
         );
 
         if (!alreadyExists) {
@@ -442,7 +467,7 @@ export class AssessmentRoundComponent
               description: (option as any).description || '',
               maxScore: (option as any).maxScore || 10,
               isImported: true,
-            })
+            }),
           );
         }
       }
@@ -451,31 +476,52 @@ export class AssessmentRoundComponent
     this.cdr.detectChanges();
   }
 
-
   public fetchCriteriaOptions(): void {
     if (this.isFetchingCriteria || this.isFullCriteriaLoaded) {
       return;
     }
-    
+
     this.isFetchingCriteria = true;
-    this.assessmentScheduleService.GetExceptCommonFeedbackCriteria()
+    this.assessmentScheduleService
+      .GetExceptCommonFeedbackCriteria()
       .pipe(
         catchError(() => {
           this.isFetchingCriteria = false;
           return of([]);
-        })
+        }),
       )
       .subscribe((response: any) => {
         // Handle both raw array and { data: [] } response shapes
-        const criteria = Array.isArray(response) ? response : (response?.data || response?.items || []);
-        
+        const criteria = Array.isArray(response)
+          ? response
+          : response?.data || response?.items || [];
+
         this.feedbackCriteriaOptions = criteria.map((c: any) => ({
-          label: c.label || c.title || c.Title || c.name || c.Name || c.criteriaTitle || c.criteria_title || c.criteriaName || c.criteria_name || 'Untitled',
-          value: (c.value || c.id || c.Id || c.title || c.Title || c.name || c.Name)?.toString(), 
-          description: c.description || c.Description || c.criteria_description || '',
-          maxScore: c.maxScore || c.MaxScore || c.max_score || 10
+          label:
+            c.label ||
+            c.title ||
+            c.Title ||
+            c.name ||
+            c.Name ||
+            c.criteriaTitle ||
+            c.criteria_title ||
+            c.criteriaName ||
+            c.criteria_name ||
+            'Untitled',
+          value: (
+            c.value ||
+            c.id ||
+            c.Id ||
+            c.title ||
+            c.Title ||
+            c.name ||
+            c.Name
+          )?.toString(),
+          description:
+            c.description || c.Description || c.criteria_description || '',
+          maxScore: c.maxScore || c.MaxScore || c.max_score || 10,
         })) as any[];
-        
+
         this.isFetchingCriteria = false;
         this.isFullCriteriaLoaded = true;
       });
@@ -487,39 +533,59 @@ export class AssessmentRoundComponent
     }
 
     this.isFetchingRoundTypes = true;
-    this.collectionService.GetRoundTypes()
+    this.collectionService
+      .GetRoundTypes()
       .pipe(
         catchError(() => {
           this.isFetchingRoundTypes = false;
           // Fallback options if API fails
           this.roundTypeOptions = [
-            { label: this.ROUND_TYPE_APTITUDE_LABEL, value: this.ROUND_TYPE_APTITUDE },
-            { label: this.ROUND_TYPE_INTERVIEW_LABEL, value: this.ROUND_TYPE_INTERVIEW }
+            {
+              label: this.ROUND_TYPE_APTITUDE_LABEL,
+              value: this.ROUND_TYPE_APTITUDE,
+            },
+            {
+              label: this.ROUND_TYPE_INTERVIEW_LABEL,
+              value: this.ROUND_TYPE_INTERVIEW,
+            },
           ];
           return of(this.roundTypeOptions);
-        })
+        }),
       )
       .subscribe((response: any) => {
-        const types = Array.isArray(response) ? response : (response?.data || []);
+        const types = Array.isArray(response) ? response : response?.data || [];
         if (types.length > 0) {
           this.roundTypeOptions = types.map((t: any) => ({
-            label: t.label || t.name || t.Title || t.roundTypeName || 'Untitled',
-            value: (t.value || t.id || t.roundType || t.label || t.name)?.toString()
+            label:
+              t.label || t.name || t.Title || t.roundTypeName || 'Untitled',
+            value: (
+              t.value ||
+              t.id ||
+              t.roundType ||
+              t.label ||
+              t.name
+            )?.toString(),
           }));
         } else {
           // Fallback if empty array
           this.roundTypeOptions = [
-            { label: this.ROUND_TYPE_APTITUDE_LABEL, value: this.ROUND_TYPE_APTITUDE },
-            { label: this.ROUND_TYPE_INTERVIEW_LABEL, value: this.ROUND_TYPE_INTERVIEW }
+            {
+              label: this.ROUND_TYPE_APTITUDE_LABEL,
+              value: this.ROUND_TYPE_APTITUDE,
+            },
+            {
+              label: this.ROUND_TYPE_INTERVIEW_LABEL,
+              value: this.ROUND_TYPE_INTERVIEW,
+            },
           ];
         }
         this.isFetchingRoundTypes = false;
-        
+
         // After options are loaded, rebuild forms if data already exists to fix validators
         if (this.submittedData && this.submittedData.length > 0) {
           this.buildRoundConfigForms();
         }
-        
+
         this.cdr.detectChanges();
       });
   }
@@ -589,12 +655,20 @@ export class AssessmentRoundComponent
     return (control: AbstractControl): ValidationErrors | null => {
       if (!control.value) return null;
       // Strip HTML and common entities to get true text length
-      const text = control.value.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
-      return text.length > limit ? { maxlength: { requiredLength: limit, actualLength: text.length } } : null;
+      const text = control.value
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return text.length > limit
+        ? { maxlength: { requiredLength: limit, actualLength: text.length } }
+        : null;
     };
   }
 
-  private duplicateTitleValidator(control: AbstractControl): ValidationErrors | null {
+  private duplicateTitleValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
     const title = control.value?.toLowerCase().trim();
     if (!title) return null;
 
@@ -828,7 +902,10 @@ export class AssessmentRoundComponent
       let initialRoundType = data.roundType;
       if (!initialRoundType) {
         const lowerName = data.name?.toLowerCase() || '';
-        if (lowerName.includes('aptitude') || lowerName.includes('online test')) {
+        if (
+          lowerName.includes('aptitude') ||
+          lowerName.includes('online test')
+        ) {
           initialRoundType = this.ROUND_TYPE_APTITUDE;
         } else {
           initialRoundType = this.ROUND_TYPE_INTERVIEW;
@@ -844,15 +921,27 @@ export class AssessmentRoundComponent
           Validators.required,
           (control) => {
             const val = control.value;
-            if (val && val instanceof Date && val.getHours() === 0 && val.getMinutes() === 0) {
+            if (
+              val &&
+              val instanceof Date &&
+              val.getHours() === 0 &&
+              val.getMinutes() === 0
+            ) {
               return { invalidDuration: true };
             }
             return null;
-          }
+          },
         ]),
         maxTerminationCount: new FormControl(
           data.maxTerminationCount,
-          isAptitude ? [Validators.required, Validators.min(1), Validators.max(10), Validators.pattern('^[0-9]+$')] : [],
+          isAptitude
+            ? [
+                Validators.required,
+                Validators.min(1),
+                Validators.max(10),
+                Validators.pattern('^[0-9]+$'),
+              ]
+            : [],
         ),
         feedbackCriteria: new FormArray(
           (data.feedbackCriteria || []).map((c) =>
@@ -870,19 +959,27 @@ export class AssessmentRoundComponent
       group.get('roundType')?.valueChanges.subscribe((type) => {
         data.roundType = (type as string) || undefined;
         const isNowAptitude = this.isAptitudeRound(type);
-        
+
         const countCtrl = group.get('maxTerminationCount');
         const criteriaArray = group.get('feedbackCriteria') as FormArray;
 
         if (isNowAptitude) {
-          countCtrl?.setValidators([Validators.required, Validators.min(1), Validators.max(10), Validators.pattern('^[0-9]+$')]);
+          countCtrl?.setValidators([
+            Validators.required,
+            Validators.min(1),
+            Validators.max(10),
+            Validators.pattern('^[0-9]+$'),
+          ]);
           criteriaArray.setValidators([]);
         } else {
           countCtrl?.setValidators([]);
           countCtrl?.setValue(0);
-          criteriaArray.setValidators([Validators.required, Validators.minLength(1)]);
+          criteriaArray.setValidators([
+            Validators.required,
+            Validators.minLength(1),
+          ]);
         }
-        
+
         countCtrl?.updateValueAndValidity();
         criteriaArray.updateValueAndValidity();
         this.cdr.detectChanges();
@@ -897,11 +994,11 @@ export class AssessmentRoundComponent
       });
 
       group.get('feedbackCriteria')?.valueChanges.subscribe((val) => {
-        data.feedbackCriteria = val as FeedbackCriteriaConfig[] ?? [];
-        
+        data.feedbackCriteria = (val as FeedbackCriteriaConfig[]) ?? [];
+
         // Trigger re-validation for all titles to catch duplicates
         const criteriaArray = group.get('feedbackCriteria') as FormArray;
-        criteriaArray.controls.forEach(c => {
+        criteriaArray.controls.forEach((c) => {
           c.get('title')?.updateValueAndValidity({ emitEvent: false });
         });
       });
@@ -1064,18 +1161,21 @@ export class AssessmentRoundComponent
         maxTerminationCount: item.maxTerminationCount || 0,
         roundTypeId: item.roundType ? Number(item.roundType) : 0,
         isActive: true,
-        assessmentRoundFeedbackCriteria: (item.feedbackCriteria || []).map((c: any) => {
-          const rawDescription = c.description || '';
-          const plainText = rawDescription.replace(/<[^>]*>/g, '').trim();
-          const finalDescription = plainText === '' ? null : rawDescription;
+        assessmentRoundFeedbackCriteria: (item.feedbackCriteria || []).map(
+          (c: any) => {
+            const rawDescription = c.description || '';
+            const plainText = rawDescription.replace(/<[^>]*>/g, '').trim();
+            const finalDescription = plainText === '' ? null : rawDescription;
 
-          return {
-            feedbackCriteriaId: c.id && !isNaN(Number(c.id)) ? Number(c.id) : 0,
-            criteriaName: c.title,
-            description: finalDescription,
-            maxScore: c.maxScore || 10,
-          };
-        }),
+            return {
+              feedbackCriteriaId:
+                c.id && !isNaN(Number(c.id)) ? Number(c.id) : 0,
+              criteriaName: c.title,
+              description: finalDescription,
+              maxScore: c.maxScore || 10,
+            };
+          },
+        ),
       }),
     );
 
@@ -1127,61 +1227,72 @@ export class AssessmentRoundComponent
           this.isLoading = false;
           this.isDataLoaded = true;
           this.assessmentRounds = response;
-          
+
           // Seed dropdown options from response data BEFORE building the forms
           const allCriteriaOptions: Option[] = [];
-          response.forEach(item => {
-            const criteriaList = ((item as any).assessmentRoundFeedbackCriteria || []) as any[];
-            criteriaList.forEach(fc => {
+          response.forEach((item) => {
+            const criteriaList = ((item as any)
+              .assessmentRoundFeedbackCriteria || []) as any[];
+            criteriaList.forEach((fc) => {
               if (fc.feedbackCriteriaId && fc.feedbackCriteriaId !== 0) {
-                const exists = allCriteriaOptions.some(o => o.value?.toString() === fc.feedbackCriteriaId.toString());
+                const exists = allCriteriaOptions.some(
+                  (o) =>
+                    o.value?.toString() === fc.feedbackCriteriaId.toString(),
+                );
                 if (!exists) {
-                   allCriteriaOptions.push({
-                      label: fc.criteriaName,
-                      value: fc.feedbackCriteriaId.toString()
-                   });
+                  allCriteriaOptions.push({
+                    label: fc.criteriaName,
+                    value: fc.feedbackCriteriaId.toString(),
+                  });
                 }
               }
             });
           });
-          
+
           if (allCriteriaOptions.length > 0) {
-            this.feedbackCriteriaOptions = [...this.feedbackCriteriaOptions, ...allCriteriaOptions];
+            this.feedbackCriteriaOptions = [
+              ...this.feedbackCriteriaOptions,
+              ...allCriteriaOptions,
+            ];
           }
 
-          this.submittedData = [...response].sort((a, b) => a.sequence - b.sequence).map((item) => {
-            const date = new Date();
+          this.submittedData = [...response]
+            .sort((a, b) => a.sequence - b.sequence)
+            .map((item) => {
+              const date = new Date();
 
-            if (item.timerHour) {
-              const timeString =
-                typeof item.timerHour === 'string'
-                  ? item.timerHour
-                  : '00:00:00';
-              const [h, m, s] = timeString.split(':').map(Number);
-              date.setHours(h || 0, m || 0, s || 0, 0);
-            } else {
-              date.setHours(0, 0, 0, 0);
-            }
+              if (item.timerHour) {
+                const timeString =
+                  typeof item.timerHour === 'string'
+                    ? item.timerHour
+                    : '00:00:00';
+                const [h, m, s] = timeString.split(':').map(Number);
+                date.setHours(h || 0, m || 0, s || 0, 0);
+              } else {
+                date.setHours(0, 0, 0, 0);
+              }
 
-            const criteriaList = ((item as any).assessmentRoundFeedbackCriteria || []) as any[];
-            return {
-              name: item.round,
-              id: item.roundId.toString(),
-              sequence: item.sequence,
-              timerHour: item.timerHour || 0,
-              durationDate: date,
-              maxTerminationCount: item.maxTerminationCount || 0,
-              feedbackCriteria: criteriaList.map((fc: any) => ({
-                id: fc.feedbackCriteriaId || fc.id,
-                title: fc.criteriaName,
-                description: fc.description || '',
-                maxScore: fc.maxScore || 10,
-                isImported: !!fc.feedbackCriteriaId && fc.feedbackCriteriaId !== 0,
-              })),
-              roundType: item.roundTypeId?.toString(),
-            };
-          });
-          
+              const criteriaList = ((item as any)
+                .assessmentRoundFeedbackCriteria || []) as any[];
+              return {
+                name: item.round,
+                id: item.roundId.toString(),
+                sequence: item.sequence,
+                timerHour: item.timerHour || 0,
+                durationDate: date,
+                maxTerminationCount: item.maxTerminationCount || 0,
+                feedbackCriteria: criteriaList.map((fc: any) => ({
+                  id: fc.feedbackCriteriaId || fc.id,
+                  title: fc.criteriaName,
+                  description: fc.description || '',
+                  maxScore: fc.maxScore || 10,
+                  isImported:
+                    !!fc.feedbackCriteriaId && fc.feedbackCriteriaId !== 0,
+                })),
+                roundType: item.roundTypeId?.toString(),
+              };
+            });
+
           // Truncate if existing rounds exceed limit
           if (this.submittedData.length > this.MAX_ROUNDS) {
             this.submittedData = this.submittedData.slice(0, this.MAX_ROUNDS);
@@ -1229,7 +1340,9 @@ export class AssessmentRoundComponent
   public getRoundTypeLabel(idx: number): string {
     const value = this.getRoundFormGroup(idx).get('roundType')?.value;
     if (!value) return '';
-    const option = this.roundTypeOptions.find(o => o.value === value.toString());
+    const option = this.roundTypeOptions.find(
+      (o) => o.value === value.toString(),
+    );
     return option?.label || value.toString();
   }
 
@@ -1258,7 +1371,10 @@ export class AssessmentRoundComponent
 
   public get isDirty(): boolean {
     if (!this.initialSnapshot) return false;
-    return this.getSnapshot() !== this.initialSnapshot || this.newRoundsToCreate.length > 0;
+    return (
+      this.getSnapshot() !== this.initialSnapshot ||
+      this.newRoundsToCreate.length > 0
+    );
   }
 
   private checkStepStatusAndMoveNext(): void {

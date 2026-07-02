@@ -165,6 +165,9 @@ export interface Candidate {
   visibleButtonIndices?: number[];
   disabledButtonIndices?: number[];
   candidateId?: string;
+  isDisabled?: boolean;
+  isActionsDisabled?: boolean;
+  disabledReason?: string;
 }
 
 export interface ButtonAction {
@@ -176,6 +179,7 @@ export interface Batch {
   id: string;
   name: string;
   scheduledTime: string;
+  startDate?: Date;
 }
 
 export interface AssignToAnotherBatchDialogData {
@@ -486,6 +490,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
           if (parts.length === 2) {
             const startStr = this.parseCustomDate(parts[0].trim());
             const endStr = this.parseCustomDate(parts[1].trim());
+            batch.startDate = new Date(startStr);
             const datePipe = new DatePipe('en-US');
             const format = 'dd/MM/yyyy, hh:mm a';
             const formattedStart = datePipe.transform(startStr, format) || parts[0].trim();
@@ -580,7 +585,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     const next = (res: PaginatedData<Candidate>) => {
       const updatedRes: PaginatedData<Candidate> = {
         ...res,
-        data: res.data.map((candidate) => this.mapCandidateData(candidate)),
+        data: res.data.map((candidate) => this.mapCandidateData(candidate, batchId)),
       };
       this.candidatesByBatch[batchId] = updatedRes;
       this.loadingBatches[batchId] = false;
@@ -638,7 +643,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
           const updatedRes: PaginatedData<Candidate> = {
             ...response,
             data: response.data.map((candidate) =>
-              this.mapCandidateData(candidate),
+              this.mapCandidateData(candidate, batchId),
             ),
           };
           this.candidatesByBatch[batchId] = updatedRes;
@@ -646,8 +651,26 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       });
   }
 
-  private mapCandidateData(candidate: Candidate): Candidate {
+  private mapCandidateData(candidate: Candidate, batchId?: string): Candidate {
     const statusLower = candidate.status?.toLowerCase() || '';
+
+    // Check if the batch is scheduled in the future
+    let isFutureBatch = false;
+    if (this.isAptitudeRound && batchId && this.batchList) {
+      const batch = this.batchList.find(b => b.id === batchId);
+      if (batch && batch.startDate) {
+        isFutureBatch = batch.startDate > new Date();
+      }
+    }
+
+    if (isFutureBatch) {
+      return {
+        ...candidate,
+        isActionsDisabled: true,
+        disabledReason: 'Check-in and batch actions will be enabled once the scheduled start time is reached.',
+        disabledButtonIndices: [0, 1, 2, 3]
+      };
+    }
 
     const hasReportedTime =
       candidate.reportingTime &&

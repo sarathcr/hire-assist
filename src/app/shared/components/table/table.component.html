@@ -625,7 +625,8 @@
                           [disabled]="
                             (product.disabledButtonIndices?.includes(i) ||
                               product.isDisabled ||
-                              product.isSelf) ??
+                              product.isSelf ||
+                              product.isActionsDisabled) ??
                             false
                           "
                           styleClass="w-full text-left justify-content-start"
@@ -646,7 +647,9 @@
                   [rounded]="true"
                   [text]="true"
                   [plain]="true"
-                  [disabled]="product.isDisabled || product.isSelf"
+                  [disabled]="product.isDisabled || product.isSelf || product.isActionsDisabled"
+                  [pTooltip]="product.isActionsDisabled ? product.disabledReason : ''"
+                  tooltipPosition="left"
                   (onClick)="op.toggle($event)"
                 ></p-button>
               }
