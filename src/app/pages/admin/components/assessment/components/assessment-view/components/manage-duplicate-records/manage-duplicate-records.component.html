@@ -57,81 +57,88 @@
   <div class="validation-workspace">
     @if (data().length > 0) {
 
-      <!-- CATEGORY 1: DUPLICATES (Focused side-by-side card cluster review) -->
-      @if (activeCategory() === 'duplicate' && splitPanelList().length > 0) {
-        <div class="duplicate-flow">
-          <!-- Cluster Stepper Header -->
-          <div class="cluster-stepper">
-            <div class="cluster-stepper__info">
-              <span class="cluster-stepper__title">Duplicate Cluster</span>
-              <span class="cluster-stepper__count">({{ currentClusterIndex() + 1 }} of {{ duplicateGroups().length }} remaining)</span>
-            </div>
-            
-            @if (duplicateGroups().length > 1) {
-              <div class="cluster-stepper__nav">
-                <button class="nav-btn" [disabled]="isFirstCluster()" (click)="prevCluster()">
-                  <i class="pi pi-chevron-left"></i> Previous Cluster
-                </button>
-                <button class="nav-btn" [disabled]="isLastCluster()" (click)="nextCluster()">
-                  Next Cluster <i class="pi pi-chevron-right"></i>
-                </button>
-              </div>
-            }
-          </div>
-
-          <!-- Candidates Grid Side-by-Side -->
-          <div class="duplicates-grid">
-            @for (candidate of splitPanelList(); track candidate.panelId) {
-              <div 
-                class="duplicate-panel" 
-                [class.duplicate-panel--selected]="selectedPanelId() === candidate.panelId"
-                (click)="onDetailsClick(candidate)"
-              >
-                <div class="duplicate-panel__card">
-                  <div class="duplicate-panel__header">
-                    <button class="action-icon action-icon--danger" (click)="$event.stopPropagation(); onRejectRecord(candidate, activeGroupId()!)" pTooltip="Reject/Delete Candidate">
-                      <i class="pi pi-trash"></i>
-                    </button>
-                    
-                    <div class="duplicate-panel__select">
-                      @if (selectedPanelId() === candidate.panelId) {
-                        <span class="status-badge status-badge--success"><i class="pi pi-check"></i> SELECTED TO KEEP</span>
-                      } @else {
-                        <span class="status-badge status-badge--action">CLICK TO SELECT</span>
-                      }
-                    </div>
+      <!-- CATEGORY 1: DUPLICATES -->
+      @if (activeCategory() === 'duplicate') {
+        @if (!selectedClusterId()) {
+          <!-- Top Level Clusters Dashboard -->
+          <div class="clusters-dashboard">
+            <h3 class="clusters-dashboard__title">Duplicate Groups ({{ duplicateGroups().length }})</h3>
+            <div class="clusters-grid">
+              @for (group of duplicateGroups(); let idx = $index; track group.groupId) {
+                <div class="cluster-card" (click)="onDuplicateRecordClick(group.candidates, group.groupId)">
+                  <div class="cluster-card__icon-wrapper">
+                    <i class="pi pi-copy"></i>
                   </div>
-
-                  <div class="duplicate-panel__body">
-                    <app-candidate-details
-                      [data]="candidate"
-                      [isEditable]="false"
-                      [editField]="null"
-                    ></app-candidate-details>
+                  <div class="cluster-card__details">
+                    <h4 class="cluster-card__key">Group {{ idx + 1 }}</h4>
+                    <p class="cluster-card__subtext">
+                      {{ group.candidates.length }} duplicate candidate records found
+                    </p>
                   </div>
-
-                  <div class="duplicate-panel__footer">
-                    <p-tag [value]="candidate['failureReason'] || 'Duplicate Record'" severity="warn" [rounded]="true"></p-tag>
+                  <div class="cluster-card__badge-wrapper">
+                    <span class="cluster-badge">{{ group.candidates.length }} records</span>
+                    <i class="pi pi-chevron-right cluster-arrow"></i>
                   </div>
                 </div>
+              }
+            </div>
+          </div>
+        } @else if (splitPanelList().length > 0) {
+          <!-- Detailed Side-by-Side Candidates Grid -->
+          <div class="duplicate-flow">
+            <!-- Cluster Header with Back Button -->
+            <div class="cluster-header">
+              <button class="btn-back" (click)="backToClusters()">
+                <i class="pi pi-arrow-left"></i> Back to Clusters
+              </button>
+              <div class="cluster-header__info">
+                <span class="cluster-header__title">Resolving Cluster: <strong>{{ activeGroupKey() }}</strong></span>
+                <span class="cluster-header__count">({{ activeCandidatesCount() }} candidates)</span>
               </div>
-            }
-          </div>
+            </div>
 
-          <!-- Bottom Action Confirmation Bar for Duplicates -->
-          <div class="duplicate-actions-bar">
-            <button class="btn btn--outlined" (click)="onRejectRecord(splitPanelList()[0], activeGroupId()!)">
-              <i class="pi pi-trash"></i> Discard Entire Cluster
-            </button>
-            <button 
-              class="btn btn--primary" 
-              [disabled]="!selectedPanelId() || isLoading() || !isSelectedCandidateValid()"
-              (click)="onSubmit()"
-            >
-              Keep Selected & Resolve <i class="pi pi-arrow-right"></i>
-            </button>
+            <!-- Candidates Grid Side-by-Side -->
+            <div class="duplicates-grid">
+              @for (candidate of splitPanelList(); track candidate.panelId) {
+                <div 
+                  class="duplicate-panel" 
+                  [class.duplicate-panel--selected]="selectedPanelId() === candidate.panelId"
+                  (click)="onDetailsClick(candidate)"
+                >
+                  <div class="duplicate-panel__card">
+                    <div class="duplicate-panel__header">
+                      <button class="action-icon action-icon--danger" (click)="$event.stopPropagation(); onRejectRecord(candidate, activeGroupId()!)" pTooltip="Reject/Delete Candidate">
+                        <i class="pi pi-trash"></i>
+                      </button>
+                      
+                      <div class="duplicate-panel__select">
+                        @if (selectedPanelId() === candidate.panelId) {
+                          <span class="status-badge status-badge--success"><i class="pi pi-check"></i> SELECTED TO KEEP</span>
+                        } @else {
+                          <span class="status-badge status-badge--action">CLICK TO SELECT</span>
+                        }
+                      </div>
+                    </div>
+
+                    <div class="duplicate-panel__body">
+                      <app-candidate-details
+                        [data]="candidate"
+                        [isEditable]="false"
+                        [editField]="null"
+                      ></app-candidate-details>
+                    </div>
+
+                    <div class="duplicate-panel__footer">
+                      <p-tag [value]="candidate['failureReason'] || 'Duplicate Record'" severity="warn" [rounded]="true"></p-tag>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+
           </div>
-        </div>
+        }
       }
 
       <!-- CATEGORY 2: INVALIDS (Spacious Dashboard Grid) -->
@@ -225,9 +232,21 @@
       <button class="btn btn--outlined" (click)="onClose()">
         Discard & Exit Importer
       </button>
-      <span class="validation-footer__remaining">
-        <strong>{{ data().length }}</strong> unresolved record{{ data().length > 1 ? 's' : '' }} remaining
-      </span>
+      
+      @if (activeCategory() === 'duplicate' && selectedClusterId() && splitPanelList().length > 0) {
+        <div class="validation-footer__actions">
+          <button class="btn btn--outlined" (click)="onRejectRecord(splitPanelList()[0], activeGroupId()!)">
+            <i class="pi pi-trash"></i> Discard Entire Cluster
+          </button>
+          <button 
+            class="btn btn--primary" 
+            [disabled]="!selectedPanelId() || isLoading() || !isSelectedCandidateValid()"
+            (click)="onSubmit()"
+          >
+            Keep Selected & Resolve <i class="pi pi-arrow-right"></i>
+          </button>
+        </div>
+      }
     </div>
   }
 </div>

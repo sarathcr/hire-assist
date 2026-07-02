@@ -67,6 +67,22 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   );
 
   // Duplicate Cluster Navigation
+  public selectedClusterId = signal<string | null>(null);
+
+  public activeGroupKey = computed(() => {
+    const activeId = this.activeGroupId();
+    if (!activeId) return '';
+    const index = this.duplicateGroups().findIndex((g) => g.groupId === activeId);
+    return index !== -1 ? `Group ${index + 1}` : '';
+  });
+
+  public activeCandidatesCount = computed(() => {
+    const activeId = this.activeGroupId();
+    if (!activeId) return 0;
+    const group = this.duplicateGroups().find((g) => g.groupId === activeId);
+    return group ? group.candidates.length : 0;
+  });
+
   public currentClusterIndex = computed(() => {
     const activeId = this.activeGroupId();
     return this.duplicateGroups().findIndex((g) => g.groupId === activeId);
@@ -92,6 +108,13 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     }
   }
 
+  public backToClusters() {
+    this.selectedClusterId.set(null);
+    this.selectedPanelId.set(null);
+    this.splitPanelList.set([]);
+    this.activeGroupId.set(null);
+  }
+
   public getGroupsForCategory(
     cat: 'duplicate' | 'invalid' | 'noneligible',
   ): CandidateData[] {
@@ -103,9 +126,16 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   public setCategory(cat: 'duplicate' | 'invalid' | 'noneligible') {
     this.activeCategory.set(cat);
     this.selectedPanelId.set(null);
-    const groups = this.getGroupsForCategory(cat);
-    if (groups.length > 0) {
-      this.onDuplicateRecordClick(groups[0].candidates, groups[0].groupId);
+    this.selectedClusterId.set(null);
+    
+    if (cat !== 'duplicate') {
+      const groups = this.getGroupsForCategory(cat);
+      if (groups.length > 0) {
+        this.onDuplicateRecordClick(groups[0].candidates, groups[0].groupId);
+      } else {
+        this.splitPanelList.set([]);
+        this.activeGroupId.set(null);
+      }
     } else {
       this.splitPanelList.set([]);
       this.activeGroupId.set(null);
@@ -182,6 +212,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   // Public Events
   public onDuplicateRecordClick(candidates: CandidateData[], groupId: string) {
     this.activeGroupId.set(groupId);
+    this.selectedClusterId.set(groupId); // Set selected cluster ID when clicked!
     this.selectedPanelId.set(null);
     this.splitPanelRendered.set(false);
 
@@ -399,16 +430,22 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     // Determine initial active category
     if (this.duplicateGroups().length > 0) {
       this.activeCategory.set('duplicate');
+      this.activeGroupId.set(null);
+      this.splitPanelList.set([]);
+      this.selectedClusterId.set(null);
     } else if (this.invalidGroups().length > 0) {
       this.activeCategory.set('invalid');
     } else if (this.nonEligibleGroups().length > 0) {
       this.activeCategory.set('noneligible');
     }
 
-    const groups = this.getGroupsForCategory(this.activeCategory());
-    if (groups.length > 0) {
-      this.activeGroupId.set(groups[0].groupId);
-      this.splitPanelList.set(groups[0].candidates);
+    // Only auto-initialize splitPanelList for non-duplicate categories
+    if (this.activeCategory() !== 'duplicate') {
+      const groups = this.getGroupsForCategory(this.activeCategory());
+      if (groups.length > 0) {
+        this.activeGroupId.set(groups[0].groupId);
+        this.splitPanelList.set(groups[0].candidates);
+      }
     }
   }
 
@@ -538,14 +575,13 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     );
     this.activeGroupId.set(null);
     this.splitPanelList.set([]);
+    this.selectedClusterId.set(null); // Reset cluster selection!
 
     // Refresh active category and find next group
     const currentCat = this.activeCategory();
     let groups = this.getGroupsForCategory(currentCat);
 
-    if (groups.length > 0) {
-      this.onDuplicateRecordClick(groups[0].candidates, groups[0].groupId);
-    } else {
+    if (groups.length === 0) {
       // Current category is finished, find the next non-empty category
       if (this.duplicateGroups().length > 0) {
         this.setCategory('duplicate');
@@ -557,6 +593,9 @@ export class ManageDuplicateRecordsComponent implements OnInit {
         // Everything is fully resolved!
         this.closeDialog();
       }
+    } else if (currentCat !== 'duplicate') {
+      // For non-duplicate tabs, auto-advance to next group
+      this.onDuplicateRecordClick(groups[0].candidates, groups[0].groupId);
     }
   }
 
