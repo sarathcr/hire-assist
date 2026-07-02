@@ -60,6 +60,14 @@ const aptitudeTableColumns: TableColumnsData = {
       hasTextFilter: true,
       filterAlias: 'statusFilter',
       hasMultiStatus: true,
+      filterOptions: [
+        { label: 'Present', value: 'Present' },
+        { label: 'Absent', value: 'Absent' },
+        { label: 'Completed', value: 'Completed' },
+        { label: 'Selected', value: 'Selected' },
+        { label: 'Rejected', value: 'Rejected' },
+        { label: 'Quit', value: 'Quit' },
+      ],
     },
     {
       field: 'button',
@@ -123,6 +131,14 @@ const nonAptitudeTableColumns: TableColumnsData = {
       hasTextFilter: true,
       filterAlias: 'statusFilter',
       hasMultiStatus: true,
+      filterOptions: [
+        { label: 'Present', value: 'Present' },
+        { label: 'Absent', value: 'Absent' },
+        { label: 'Completed', value: 'Completed' },
+        { label: 'Selected', value: 'Selected' },
+        { label: 'Rejected', value: 'Rejected' },
+        { label: 'Quit', value: 'Quit' },
+      ],
     },
     {
       field: 'button',

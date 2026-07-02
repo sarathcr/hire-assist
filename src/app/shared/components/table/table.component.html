@@ -285,9 +285,11 @@
                       [ngModel]="value"
                       (ngModelChange)="filter($event)"
                       [options]="
-                        headerColumn.hasMultiStatus
-                          ? statusOptions
-                          : statusOptionsForSchedule
+                        headerColumn.filterOptions
+                          ? headerColumn.filterOptions
+                          : (headerColumn.hasMultiStatus
+                            ? statusOptions
+                            : statusOptionsForSchedule)
                       "
                       placeholder="Select One"
                       styleClass="w-full"

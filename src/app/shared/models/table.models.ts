@@ -25,6 +25,7 @@ export interface ColumnField {
   filterAlias?: string;
   hasTextFilter?: boolean;
   hasMultiStatus?: boolean;
+  filterOptions?: any[];
 }
 
 export enum FieldType {
