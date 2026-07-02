@@ -300,8 +300,8 @@ export class InterviewCandidateListComponent implements OnInit {
           let sortedData = [...res.data];
           // Fix logical order: "Status Updated" to Selected should logically happen AFTER "Score Added", so it should appear above it in desc order.
           sortedData.sort((a, b) => {
-            const timeA = new Date(a.changedAt + (a.changedAt.endsWith('Z') ? '' : 'Z')).getTime();
-            const timeB = new Date(b.changedAt + (b.changedAt.endsWith('Z') ? '' : 'Z')).getTime();
+            const timeA = new Date(a.changedAt).getTime();
+            const timeB = new Date(b.changedAt).getTime();
             if (Math.abs(timeA - timeB) < 15 * 60 * 1000) {
               if (a.action === 'Status Updated' && b.action === 'Score Added') return -1;
               if (b.action === 'Status Updated' && a.action === 'Score Added') return 1;
@@ -312,7 +312,7 @@ export class InterviewCandidateListComponent implements OnInit {
           const newEvents = sortedData.map((item: any) => ({
             status: this.formatAction(item.action),
             user: (item.action === 'Score Added' && this.currentHistoryPanelName) ? this.currentHistoryPanelName : item.changedByName,
-            date: new Date(item.changedAt ? item.changedAt + (item.changedAt.endsWith('Z') ? '' : 'Z') : new Date()),
+            date: new Date(item.changedAt ? item.changedAt : new Date()),
             icon: this.getHistoryIcon(item.action),
             description: this.getHistoryDescription(item)
           }));

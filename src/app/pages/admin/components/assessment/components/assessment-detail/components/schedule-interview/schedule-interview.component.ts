@@ -76,9 +76,9 @@ export class ScheduleInterviewComponent
       this.maxDate.setHours(23, 59, 59, 999);
     }
 
-    // Capture precise current time for validation
+    // Capture precise current time + 30 minutes for validation
     const now = new Date();
-    this.validationMinDate = new Date(now);
+    this.validationMinDate = new Date(now.getTime() + 30 * 60 * 1000);
     this.validationMinDate.setSeconds(0, 0);
     this.validationMinDate.setMilliseconds(0);
 
@@ -185,7 +185,7 @@ export class ScheduleInterviewComponent
 
         if (this.validationMinDate && dateTime < this.validationMinDate) {
           dateControl.setErrors({
-            errorMessage: 'Schedule Date must be today or later.',
+            errorMessage: 'Interview must be scheduled at least 30 minutes from now.',
           });
         } else if (this.maxDate && dateTime > this.maxDate) {
           dateControl.setErrors({
