@@ -135,15 +135,15 @@ export class CreateBatchDialogComponent implements OnInit {
   private updateDatesFromBatch(batchId: string) {
     const selectedBatch = this.batches.find((b) => b.id.toString() === batchId);
     if (selectedBatch) {
-      const start = selectedBatch.startDate ? new Date(selectedBatch.startDate) : new Date();
-      const end = selectedBatch.endDate ? new Date(selectedBatch.endDate) : new Date();
+      const start = selectedBatch.startDate ? new Date(selectedBatch.startDate) : null;
+      const end = selectedBatch.endDate ? new Date(selectedBatch.endDate) : null;
       this.fGroup.patchValue({
         startDate: start,
         endDate: end,
       });
       this.originalDates = {
-        startDate: start,
-        endDate: end,
+        startDate: start || new Date(),
+        endDate: end || new Date(),
       };
       this.cdr.detectChanges();
     }

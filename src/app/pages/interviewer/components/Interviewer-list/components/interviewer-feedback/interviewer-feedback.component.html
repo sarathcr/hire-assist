@@ -530,7 +530,7 @@
                                       @for (file of feedback.fileDto; track file.id) {
                                         <div class="ifb__attachment-card" (click)="viewFile(file)">
                                           @if (getFileUrl(file)) {
-                                            <app-image [imageUrl]="getFileUrl(file)" [isZoomable]="true" [removeIcon]="true" width="100%" height="100%" />
+                                            <app-image [imageUrl]="getFileUrl(file)" [isZoomable]="false" [removeIcon]="true" width="100%" height="100%" />
                                             <div class="ifb__attachment-overlay">
                                               <i class="pi pi-eye"></i>
                                             </div>
@@ -757,7 +757,7 @@
                             [imageUrl]="getFileUrl(file)"
                             [paddingTop]="'0'"
                             [forceCancelRequest]="[]"
-                            [isZoomable]="true"
+                            [isZoomable]="false"
                             [removeIcon]="true"
                             class="ifb__app-image"
                           >
