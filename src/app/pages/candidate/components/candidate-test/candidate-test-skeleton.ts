@@ -71,13 +71,18 @@ import { SkeletonModule } from 'primeng/skeleton';
         </div>
 
         <div class="assessment__question">
-          <div class="assessment__checkbox-group">
-            <p-skeleton width="60%" height="2rem" class="mb-4" />
-
+          <p-skeleton width="70%" height="2rem" styleClass="mb-4" />
+          <div class="assessment__divider"></div>
+          
+          <div class="assessment__options-container">
             @for (opt of [1, 2, 3, 4]; track opt) {
-              <div class="assessment__checkbox-item">
-                <p-skeleton shape="circle" size="1.2rem" class="mr-2" />
-                <p-skeleton width="10rem" height="1.2rem" />
+              <div class="assessment__option-card" style="cursor: default; pointer-events: none;">
+                <div class="assessment__option-selector">
+                  <p-skeleton shape="circle" size="1.25rem" />
+                </div>
+                <div class="assessment__option-details">
+                  <p-skeleton width="45%" height="1.25rem" />
+                </div>
               </div>
             }
           </div>

@@ -27,7 +27,7 @@ import { CountdownTimerComponent } from "../../../../shared/components/countdown
 import { DialogFooterComponent } from '../../../../shared/components/dialog-footer/dialog-footer.component';
 import { DialogHeaderComponent } from '../../../../shared/components/dialog-header/dialog-header.component';
 import { DialogComponent } from '../../../../shared/components/dialog/dialog.component';
-import { InputRadioComponent } from '../../../../shared/components/form/input-radio/input-radio.component';
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { ImageComponent } from '../../../../shared/components/image';
 import { ImageSkeletonComponent } from '../../../../shared/components/image/image-skeleton';
 import { StatusEnum } from '../../../../shared/enums/status.enum';
@@ -72,7 +72,7 @@ interface CandidateAnswer {
     QuestionComponent,
     CommonModule,
     ButtonComponent,
-    InputRadioComponent,
+    RadioButtonModule,
     CarouselModule,
     TimerComponent,
     ButtonModule,
@@ -320,6 +320,36 @@ export class CandidateTestComponent
     this.selectedValues[questionId] = selectedValue;
   }
 
+  public isOptionSelected(optionId: number): boolean {
+    if (!this.activeQuestion) return false;
+    const vals = this.selectedValues[this.activeQuestion.id];
+    if (Array.isArray(vals)) {
+      return vals.includes(optionId);
+    }
+    return vals === optionId;
+  }
+
+  public toggleCheckbox(optionId: number, event: Event): void {
+    if (!this.activeQuestion) return;
+    let vals = this.selectedValues[this.activeQuestion.id];
+    if (!Array.isArray(vals)) {
+      vals = [];
+    }
+    if (vals.includes(optionId)) {
+      vals = vals.filter((id: number) => id !== optionId);
+    } else {
+      vals = [...vals, optionId];
+    }
+    this.selectedValues[this.activeQuestion.id] = vals;
+    this.onCheckboxChange({} as any, this.activeQuestion.id);
+  }
+
+  public selectRadio(optionId: number): void {
+    if (!this.activeQuestion) return;
+    this.selectedValues[this.activeQuestion.id] = optionId;
+    this.onOptionSelect(this.activeQuestion.id, optionId);
+  }
+
   public isAnswerValid(): boolean {
     if (!this.activeQuestion) return false;
     const value = this.selectedValues[this.activeQuestion.id];
@@ -373,7 +403,43 @@ export class CandidateTestComponent
   }
 
   public onQuitBtnClick() {
-    this.quitAssessment();
+    if (this.isAptitudeRound()) {
+      const modalData: DialogData = {
+        headerTitle: 'Confirm Quit',
+        message: 'Are you sure you want to quit the assessment? Once you quit, you will not be able to resume, and your test will be submitted as-is.',
+        isChoice: true,
+        acceptButtonText: 'Yes, Quit',
+        cancelButtonText: 'Cancel',
+        closeOnNavigation: false,
+      };
+      this.ref = this.dialog.open(DialogComponent, {
+        data: modalData,
+        width: '40vw',
+        modal: true,
+        focusOnShow: false,
+        breakpoints: {
+          '960px': '60vw',
+          '640px': '85vw',
+        },
+        templates: {
+          header: DialogHeaderComponent,
+          footer: DialogFooterComponent,
+        },
+      });
+      this.ref?.onClose.subscribe((result) => {
+        if (result === true) {
+          this.quitAssessment();
+        }
+        this.ref = undefined;
+      });
+    } else {
+      this.quitAssessment();
+    }
+  }
+
+  private isAptitudeRound(): boolean {
+    const roundName = this.candidateInterview?.assessment?.round?.toLowerCase() ?? '';
+    return roundName.includes('aptitude') || roundName.includes('test');
   }
 
   public onSaveBtnClick() {

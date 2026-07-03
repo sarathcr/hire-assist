@@ -31,6 +31,34 @@ export class ImageComponent implements OnInit, OnChanges {
   @Input() removeIcon = false;
   @Output() closeImage = new EventEmitter<void>();
 
+  private _width: string = '100%';
+  private _height: string = '100%';
+
+  @Input()
+  set width(val: string | number) {
+    this._width = this.formatSize(val);
+  }
+  get width(): string {
+    return this._width;
+  }
+
+  @Input()
+  set height(val: string | number) {
+    this._height = this.formatSize(val);
+  }
+  get height(): string {
+    return this._height;
+  }
+
+  private formatSize(val: string | number): string {
+    if (!val) return '100%';
+    const str = String(val).trim();
+    if (/^\d+$/.test(str)) {
+      return `${str}px`;
+    }
+    return str;
+  }
+
   public description = 'image';
   public blobURL = '';
   public loaded = false;

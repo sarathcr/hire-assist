@@ -736,7 +736,7 @@
         }
       </tr>
 
-      <tr *ngIf="product.isExpanded">
+      <tr *ngIf="product.isExpanded" class="table__expanded-row">
         <td [attr.colspan]="(columnsData()?.columns?.length || 0) + (hasCheckbox ? 1 : 0) + (columnsData()?.hasExpanded ? 1 : 0)">
           <div>
             @for (
@@ -754,10 +754,10 @@
                       track imgUrl;
                       let i = $index
                     ) {
-                      <div class="table__previewImage">
+                      <div class="table__questionImage">
                         <app-image
-                          width="100"
-                          height="70"
+                          width="160"
+                          height="120"
                           [imageUrl]="imgUrl"
                           [paddingTop]="'0'"
                           [forceCancelRequest]="[]"
@@ -768,7 +768,7 @@
                       </div>
                     }
                   } @else {
-                    <div class="table__previewImage" style="width: 100px; height: 70px; border-radius: 4px; overflow: hidden; display: inline-block;">
+                    <div class="table__questionImage-skeleton">
                       <app-image-skeleton></app-image-skeleton>
                     </div>
                   }
@@ -786,44 +786,38 @@
               "
             >
               @for (option of product.options; track option) {
-                @if (option.isCorrect) {
-                  <li class="table__expanded__correctAnswer">
-                    {{ option.optionText }}
-                  </li>
-                } @else {
-                  <li>
-                    {{ option.optionText }}
-                  </li>
-                }
-                @if (option.hasAttachments) {
-                  @if (
-                    previewImageUrls[option.id] &&
-                    previewImageUrls[option.id].length
-                  ) {
-                    @for (
-                      imgUrl of previewImageUrls[option.id];
-                      track imgUrl;
-                      let i = $index
+                <li [class.table__expanded__correctAnswer]="option.isCorrect">
+                  <span>{{ option.optionText }}</span>
+                  @if (option.hasAttachments) {
+                    @if (
+                      previewImageUrls[option.id] &&
+                      previewImageUrls[option.id].length
                     ) {
-                      <div class="table__previewImage">
-                        <app-image
-                          width="100"
-                          height="70"
-                          [imageUrl]="imgUrl"
-                          [paddingTop]="'0'"
-                          [forceCancelRequest]="[]"
-                          [isZoomable]="true"
-                          [removeIcon]="true"
-                        >
-                        </app-image>
+                      @for (
+                        imgUrl of previewImageUrls[option.id];
+                        track imgUrl;
+                        let i = $index
+                      ) {
+                        <div class="table__previewImage">
+                          <app-image
+                            width="120"
+                            height="90"
+                            [imageUrl]="imgUrl"
+                            [paddingTop]="'0'"
+                            [forceCancelRequest]="[]"
+                            [isZoomable]="true"
+                            [removeIcon]="true"
+                          >
+                          </app-image>
+                        </div>
+                      }
+                    } @else {
+                      <div class="table__previewImage-skeleton">
+                        <app-image-skeleton></app-image-skeleton>
                       </div>
                     }
-                  } @else {
-                    <div class="table__previewImage" style="width: 100px; height: 70px; border-radius: 4px; overflow: hidden; display: inline-block;">
-                      <app-image-skeleton></app-image-skeleton>
-                    </div>
                   }
-                }
+                </li>
               }
             </ol>
           </div>
