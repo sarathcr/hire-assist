@@ -48,7 +48,7 @@ export class DeviceWarningService {
 
   private getDeviceWarningDialogData(): DialogData {
     return {
-      message: `This assessment can only be accessed using a laptop or desktop. Please switch to a laptop or desktop device to continue.`,
+      message: `This assessment requires a screen width of 1024px or above. If you are using a tablet, please switch to landscape mode, or use a desktop/laptop device to continue.`,
       isChoice: false,
       closeOnNavigation: true,
       acceptButtonText: 'OK',
