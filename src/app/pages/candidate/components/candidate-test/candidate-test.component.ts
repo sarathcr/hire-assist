@@ -247,6 +247,36 @@ export class CandidateTestComponent
   // }
 
   // Listener Events
+  @HostListener('document:keydown', ['$event'])
+  public onKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Meta') {
+      event.preventDefault();
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'The Windows/Command/Super key is disabled during the assessment.',
+        life: 3000
+      });
+      if (this.everEnteredFullScreen && !this.isSubmitting && !this.isTestEnded) {
+        this.handleViolation();
+      }
+    }
+  }
+
+  @HostListener('document:keyup', ['$event'])
+  public onKeyUp(event: KeyboardEvent): void {
+    if (event.key === 'Meta') {
+      event.preventDefault();
+    }
+  }
+
+  @HostListener('window:blur')
+  public onWindowBlur(): void {
+    if (this.everEnteredFullScreen && !this.isSubmitting && !this.isTestEnded) {
+      this.handleViolation();
+    }
+  }
+
   @HostListener('document:fullscreenchange')
   public onFullscreenChange(): void {
     this.isFullScreen = !!document.fullscreenElement;
@@ -633,6 +663,12 @@ export class CandidateTestComponent
         .requestFullscreen()
         .then(() => {
           this.everEnteredFullScreen = true;
+          // Activate Keyboard Lock
+          if (typeof navigator !== 'undefined' && 'keyboard' in navigator && (navigator as any).keyboard?.lock) {
+            (navigator as any).keyboard.lock(['MetaLeft', 'MetaRight', 'Tab', 'AltLeft', 'AltRight', 'Escape'])
+              .then(() => console.log('Keyboard lock active'))
+              .catch((err: any) => console.error('Keyboard lock failed:', err));
+          }
         })
         .catch(() => {
           // If entering fullscreen fails, it is usually due to missing user gesture (common on refresh).
@@ -1086,6 +1122,10 @@ export class CandidateTestComponent
         document.exitFullscreen().then(() => {
           this.latestFullscreenExitTime = new Date().toISOString();
         });
+      }
+      // Unlock Keyboard
+      if (typeof navigator !== 'undefined' && 'keyboard' in navigator && (navigator as any).keyboard?.unlock) {
+        (navigator as any).keyboard.unlock();
       }
     } else {
       this.messageService.add({
