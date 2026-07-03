@@ -190,6 +190,7 @@ export class SelectPanelDailogComponent implements OnInit {
                 item.interviewers?.map((i) => i.name).join(', ') ?? '',
               interviewers: item.interviewers ?? [],
               name: item.name || (item as any).panelName || (item as any).panel,
+              panelDescription: item.panelDescription || (item as any).description,
               isDisabled: !this.isPanelSelectable(item),
             };
           });
@@ -346,6 +347,7 @@ export class SelectPanelDailogComponent implements OnInit {
                 item.interviewers?.map((i) => i.name).join(', ') ?? '',
               interviewers: item.interviewers ?? [],
               name: item.name || (item as any).panelName || (item as any).panel,
+              panelDescription: item.panelDescription || (item as any).description,
               isDisabled: !this.isPanelSelectable(item),
             };
           });
@@ -380,7 +382,9 @@ export class SelectPanelDailogComponent implements OnInit {
         (panel as any)?.title ||
         'the panel';
 
-      if (panel.status?.toLowerCase() === 'assigned') {
+      const isAlreadyAssignedToCurrent = this.existingPanel.includes(String(panel.id)) || (this.selectedPanel && this.selectedPanel.includes(String(panel.id)));
+
+      if (panel.status?.toLowerCase() === 'assigned' && !isAlreadyAssignedToCurrent) {
         this.messageService.add({
           severity: 'warn',
           summary: 'Information',
@@ -703,6 +707,10 @@ export class SelectPanelDailogComponent implements OnInit {
    * Panels in "Assigned" status should be blocked
    */
   private isPanelSelectable(panel: any): boolean {
+    const panelId = String(panel.id);
+    if (this.existingPanel.includes(panelId) || (this.selectedPanel && this.selectedPanel.includes(panelId))) {
+      return true;
+    }
     const status = panel?.status?.trim().toLowerCase() || '';
     return status !== 'assigned';
   }

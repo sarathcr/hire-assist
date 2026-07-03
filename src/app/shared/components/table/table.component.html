@@ -467,7 +467,7 @@
                     class="mr-2"
                     [rounded]="true"
                     [outlined]="true"
-                    [disabled]="product.isSelf || product.isDisabled"
+                    [disabled]="product.isSelf || product.isDisabled || product.status?.toLowerCase() === 'assigned' || product.originalStatus?.toLowerCase() === 'assigned'"
                     (onClick)="onEdit(product)"
                     pTooltip="Edit record"
                     tooltipPosition="bottom"

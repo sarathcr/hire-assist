@@ -284,6 +284,7 @@
                   <p-button
                     label="Schedule Panel"
                     icon="pi pi-calendar-plus"
+                    [loading]="isScheduling"
                     [disabled]="
                       selectedCandidatesIds.length === 0 ||
                       selectedPanelIds.length === 0 ||
@@ -298,18 +299,6 @@
             </p-card>
           }
         </div>
-        @if (!isSchedulingSuccessful) {
-          <div
-            class="coordinator-detail__step-actions coordinator-detail__step-actions--start"
-          >
-            <p-button
-              label="Back"
-              icon="pi pi-arrow-left"
-              [outlined]="true"
-              (onClick)="setActiveStep(1)"
-            ></p-button>
-          </div>
-        }
       }
     </div>
   </div>

@@ -33,6 +33,7 @@ import {
 import { ConfigMap } from '../../../../../../shared/utilities/form.utility';
 import { InterviewService } from '../../../../../admin/components/assessment/services/interview.service';
 import { AssignInterviewersDialogueComponent } from '../../../../../admin/components/settings/components/interviewer-panel-assignment/components/assign-interviewers-dialogue/assign-interviewers-dialogue.component';
+import { AssessmentService } from '../../../../../admin/services/assessment.service';
 import { interviewerEditResponse } from '../../../../../admin/components/settings/components/interviewer-panel-assignment/interviewer-panel-assignment.component';
 import {
   InterviewSummary,
@@ -181,8 +182,10 @@ export class CoordinatorAssignmentComponent implements OnInit {
   public combinedPayloadData: any;
   public isCandidateLoading = false;
   public isPanelLoading = false;
+  public isScheduling = false;
   public isSchedulingSuccessful = false;
   private lastSelectedPanelId: string | null = null;
+  public candidateAssignedPanelId: string | null = null;
 
   private ref: DynamicDialogRef | undefined;
 
@@ -192,6 +195,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
     private readonly interviewService: InterviewService,
     private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
     private readonly activatedRoute: ActivatedRoute,
+    private readonly assessmentService: AssessmentService,
     @Inject('CANDIDATE_TABLE') public dataSource1: TableDataSourceService<any>,
     @Inject('PANEL_TABLE') public dataSource2: TableDataSourceService<any>,
   ) {}
@@ -258,13 +262,15 @@ export class CoordinatorAssignmentComponent implements OnInit {
       if (candidate) {
         this.selectedCandidatesIds = [candidate];
         this.selectedCandidate = [String(candidate.id)]; // Persist selection
-        this.getInterviewPanel(Number(candidate.id));
+        this.getInterviewPanel(Number(candidate.interviewId || candidate.id));
       } else {
         this.selectedCandidatesIds = [];
         this.selectedPanel = [];
         this.selectedCandidate = [];
         this.selectedPanelIds = [];
         this.lastSelectedPanelId = null;
+        this.candidateAssignedPanelId = null;
+        this.remapPanelData();
         // Reset stepper state if candidate not found
         this.completedSteps = this.completedSteps.filter((step) => step !== 0);
       }
@@ -274,6 +280,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
       this.selectedCandidate = [];
       this.selectedPanelIds = [];
       this.lastSelectedPanelId = null;
+      this.candidateAssignedPanelId = null;
+      this.remapPanelData();
       // Reset stepper state on deselection
       this.completedSteps = this.completedSteps.filter((step) => step !== 0);
 
@@ -290,17 +298,22 @@ export class CoordinatorAssignmentComponent implements OnInit {
             const panelId = String(res.panelId);
             this.selectedPanel = [panelId];
             this.lastSelectedPanelId = panelId;
+            this.candidateAssignedPanelId = panelId;
             this.updateSelectedPanelFromData(panelId);
           } else {
             this.selectedPanel = [];
             this.lastSelectedPanelId = null;
             this.selectedPanelIds = [];
+            this.candidateAssignedPanelId = null;
+            this.remapPanelData();
           }
         },
         error: () => {
           this.selectedPanel = [];
           this.lastSelectedPanelId = null;
           this.selectedPanelIds = [];
+          this.candidateAssignedPanelId = null;
+          this.remapPanelData();
         },
       });
   }
@@ -323,7 +336,10 @@ export class CoordinatorAssignmentComponent implements OnInit {
         (p) => String(p.id) === String(selectedId),
       );
 
-      if (panel?.status?.toLowerCase() === 'assigned') {
+      // Allow selection if it's the candidate's currently assigned panel in DB
+      const isAlreadyAssignedToCurrent = this.candidateAssignedPanelId && String(selectedId) === String(this.candidateAssignedPanelId);
+
+      if (panel?.status?.toLowerCase() === 'assigned' && !isAlreadyAssignedToCurrent) {
         const pName =
           panel?.name ||
           (panel as any)?.panelName ||
@@ -339,7 +355,6 @@ export class CoordinatorAssignmentComponent implements OnInit {
         });
         this.selectedPanel = [];
         this.selectedPanelIds = [];
-        this.lastSelectedPanelId = null;
         return;
       }
 
@@ -360,7 +375,6 @@ export class CoordinatorAssignmentComponent implements OnInit {
         // Clear selection to prevent blue background
         this.selectedPanel = [];
         this.selectedPanelIds = [];
-        this.lastSelectedPanelId = null;
         return;
       }
       this.lastSelectedPanelId = selectedId;
@@ -369,7 +383,6 @@ export class CoordinatorAssignmentComponent implements OnInit {
     } else {
       this.selectedPanelIds = [];
       this.selectedPanel = [];
-      this.lastSelectedPanelId = null;
     }
   }
 
@@ -379,6 +392,10 @@ export class CoordinatorAssignmentComponent implements OnInit {
         (p) => String(p.id) === String(panelId),
       );
       if (panel) {
+        if (this.candidateAssignedPanelId && String(panel.id) === String(this.candidateAssignedPanelId)) {
+          panel.status = 'Assigned';
+        }
+        (panel as any).isDisabled = false;
         if (!this.isPanelValid(panel)) {
           this.messageService.add({
             severity: 'warn',
@@ -390,6 +407,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
           this.selectedPanelIds = [panel];
         }
       }
+      this.remapPanelData();
     }
   }
 
@@ -454,6 +472,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
           const resData = res.data.map((item: PanelSummary) => {
             return {
               ...item,
+              originalStatus: (item as any).originalStatus || item.status,
               interviewerNames:
                 item.interviewers?.map((i) => i.name).join(', ') ?? '',
               interviewers: item.interviewers ?? [],
@@ -462,6 +481,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
                 (item as any).panelName ||
                 (item as any).panel ||
                 (item as any).title,
+              panelDescription: item.panelDescription || (item as any).description,
+              status: (this.candidateAssignedPanelId && String(item.id) === String(this.candidateAssignedPanelId)) ? 'Assigned' : ((item as any).originalStatus || item.status),
               isDisabled: !this.isPanelSelectable(item),
             };
           });
@@ -493,6 +514,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
       return;
     }
 
+    this.isScheduling = true;
+
     const selectedCandidate = this.selectedCandidatesIds[0];
     const selectedPanel = this.selectedPanelIds[0];
     const selectedInterviewerIds =
@@ -501,14 +524,17 @@ export class CoordinatorAssignmentComponent implements OnInit {
     const payload: InterviewPanels = {
       panel: selectedPanel.panelName,
       assessmentId: this.assessmentId,
-      interviewId: Number(selectedCandidate.id),
+      interviewId: Number(selectedCandidate.interviewId || selectedCandidate.id),
       panelId: selectedPanel.id,
       interviewers: selectedInterviewerIds,
     };
-    this.getInterviewPanels(selectedCandidate.id, payload);
+    this.getInterviewPanels(String(selectedCandidate.interviewId || selectedCandidate.id), payload);
   }
 
-  public editPanel(panelData: InterviewPanels) {
+  public editPanel(panelData: any) {
+    if (panelData?.status?.toLowerCase() === 'assigned' || panelData?.originalStatus?.toLowerCase() === 'assigned') {
+      return;
+    }
     this.fGroup?.get('panels')?.setValidators(Validators.required);
     this.fGroup?.get('panels')?.updateValueAndValidity();
 
@@ -586,16 +612,21 @@ export class CoordinatorAssignmentComponent implements OnInit {
   private addInterviewPanels(payload: InterviewPanels): void {
     this.interviewService.addinterviewpanel(payload).subscribe({
       next: () => {
-        this.getPaginatedCandidateData(this.combinedPayloadData);
-        this.getPaginatedPanelData();
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Interview panel assigned successfully.',
+        const candidate = this.selectedCandidatesIds[0];
+        this.scheduleInterviewTime(candidate, () => {
+          this.isScheduling = false;
+          this.getPaginatedCandidateData(this.combinedPayloadData);
+          this.getPaginatedPanelData();
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Interview panel assigned successfully.',
+          });
+          this.resetAndGoToStart();
         });
-        this.isSchedulingSuccessful = true;
       },
       error: (error: CustomErrorResponse) => {
+        this.isScheduling = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -627,6 +658,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       const isAlreadyScheduled =
         isInterviewIdSame && isPanelIdSame && isInterviewerSame;
       if (isAlreadyScheduled) {
+        this.isScheduling = false;
         this.messageService.add({
           severity: 'info',
           summary: 'Already Exists',
@@ -645,6 +677,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       ) {
         this.addInterviewPanels(payload);
       } else {
+        this.isScheduling = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -666,14 +699,21 @@ export class CoordinatorAssignmentComponent implements OnInit {
     };
     this.interviewService.updateinterviewpanel(payloaddata).subscribe({
       next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Interview panel Updated successfully.',
+        const candidate = this.selectedCandidatesIds[0];
+        this.scheduleInterviewTime(candidate, () => {
+          this.isScheduling = false;
+          this.getPaginatedCandidateData(this.combinedPayloadData);
+          this.getPaginatedPanelData();
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Interview panel Updated successfully.',
+          });
+          this.resetAndGoToStart();
         });
-        this.isSchedulingSuccessful = true;
       },
       error: (error: CustomErrorResponse) => {
+        this.isScheduling = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -718,6 +758,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
         const resData = response.data.map((item: any) => {
           return {
             ...item,
+            originalStatus: item.originalStatus || item.status,
             interviewerNames:
               item.interviewers?.map((i: Interviewer) => i.name).join(', ') ??
               '',
@@ -727,6 +768,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
               (item as any).panelName ||
               (item as any).panel ||
               (item as any).title,
+            panelDescription: item.panelDescription || (item as any).description,
+            status: (this.candidateAssignedPanelId && String(item.id) === String(this.candidateAssignedPanelId)) ? 'Assigned' : (item.originalStatus || item.status),
             isDisabled: !this.isPanelSelectable(item),
           };
         });
@@ -859,6 +902,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
     this.selectedPanelIds = [];
     this.selectedPanel = [];
     this.lastSelectedPanelId = null;
+    this.candidateAssignedPanelId = null;
+    this.remapPanelData();
 
     // Reset state
     this.isSchedulingSuccessful = false;
@@ -890,9 +935,49 @@ export class CoordinatorAssignmentComponent implements OnInit {
 
   /**
    * Helper to determine if a panel can be selected
-   * Panels in "Assigned" status should be blocked
+   * Panels in "Assigned" status should be blocked, except if it is the currently selected candidate's assigned panel in DB
    */
   private isPanelSelectable(panel: any): boolean {
-    return panel?.status?.toLowerCase() !== 'assigned';
+    if (this.candidateAssignedPanelId && String(panel.id) === String(this.candidateAssignedPanelId)) {
+      return true;
+    }
+    const status = panel.originalStatus || panel.status;
+    return status?.toLowerCase() !== 'assigned';
+  }
+
+  /**
+   * Recalculates candidate-relative assignment statuses and isDisabled states for panels in memory
+   */
+  private remapPanelData(): void {
+    if (this.panelData?.data) {
+      this.panelData.data.forEach((p) => {
+        const origStatus = (p as any).originalStatus || p.status;
+        (p as any).originalStatus = origStatus;
+        p.status = (this.candidateAssignedPanelId && String(p.id) === String(this.candidateAssignedPanelId)) ? 'Assigned' : origStatus;
+        (p as any).isDisabled = !this.isPanelSelectable(p);
+      });
+      this.panelData = { ...this.panelData };
+    }
+  }
+
+  /**
+   * Syncs the candidate's scheduled date and time with the backend interview schedule table
+   */
+  private scheduleInterviewTime(candidate: any, callback: () => void): void {
+    const payload = {
+      assessmentId: String(this.assessmentId),
+      candidateIds: [String(candidate.id)],
+      assessmentRoundId: this.assessmentRoundId,
+      scheduledDate: new Date().toISOString()
+    };
+    this.assessmentService.createEntity(payload, 'schedule').subscribe({
+      next: () => {
+        callback();
+      },
+      error: () => {
+        // Run callback as fallback so flow is not interrupted
+        callback();
+      }
+    });
   }
 }
