@@ -153,6 +153,10 @@
   cursor: pointer;
   padding: 4px;
   transition: all 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 
   &:hover {
     opacity: 0.8;

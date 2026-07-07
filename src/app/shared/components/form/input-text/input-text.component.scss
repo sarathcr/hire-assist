@@ -31,6 +31,19 @@
   &__label {
     font-weight: 300;
     font-size: var(--font-size-base);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  ::ng-deep {
+    label {
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      -moz-user-select: none !important;
+      -ms-user-select: none !important;
+    }
   }
 
   &__wrapper {
@@ -73,6 +86,10 @@
     color: var(--p-inputtext-icon-color);
     z-index: 2;
     padding: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 
     &:hover {
       color: var(--p-primary-color);
