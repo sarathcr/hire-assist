@@ -271,7 +271,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: error?.error?.type,
+              detail: this.formatDeleteErrorMessage(error?.error?.type),
             });
           } else {
             this.messageService.add({
@@ -395,7 +395,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: error?.error?.type,
+              detail: this.formatDeleteErrorMessage(error?.error?.type),
             });
           } else {
             this.messageService.add({
@@ -598,5 +598,38 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         });
       }
     });
+  }
+
+  private formatDeleteErrorMessage(errorDetail: string): string {
+    if (!errorDetail) {
+      return '';
+    }
+    // Normalize newlines to spaces and trim extra spaces
+    const cleanDetail = errorDetail.replace(/\r?\n/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // Check if it's the 3111 delete reference error pattern
+    const separator = /not deleted due to reference in/i;
+    if (separator.test(cleanDetail)) {
+      const parts = cleanDetail.split(separator);
+      const entityPart = parts[0].replace(/^(?:\[3111\]\s*)?entities?\s+/i, '').trim();
+      const entities = entityPart.split(',').map((e) => e.trim()).filter(Boolean);
+
+      const restPart = parts[1].trim();
+      const dotIndex = restPart.indexOf('.');
+      const referenceIn = dotIndex !== -1 ? restPart.substring(0, dotIndex).trim() : restPart;
+      const extraMsg = dotIndex !== -1 ? restPart.substring(dotIndex + 1).trim() : '';
+
+      let html = `<div style="font-weight: 500; margin-bottom: 6px;">Entity/entities were not deleted due to reference in ${referenceIn}:</div>`;
+      html += `<ul style="margin: 0 0 6px 0; padding-left: 18px; list-style-type: disc; display: flex; flex-direction: column; gap: 4px;">`;
+      entities.forEach((entity) => {
+        html += `<li style="word-break: break-all;">${entity}</li>`;
+      });
+      html += `</ul>`;
+      if (extraMsg) {
+        html += `<div style="font-size: 0.95em; opacity: 0.9;">${extraMsg}</div>`;
+      }
+      return html;
+    }
+    return errorDetail;
   }
 }

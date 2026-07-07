@@ -1,2 +1,10 @@
-<p-toast></p-toast>
+<p-toast>
+  <ng-template let-message pTemplate="message">
+    <span class="p-toast-message-icon pi" [class.pi-info-circle]="message.severity === 'info'" [class.pi-exclamation-triangle]="message.severity === 'warn'" [class.pi-times-circle]="message.severity === 'error'" [class.pi-check-circle]="message.severity === 'success'"></span>
+    <div class="p-toast-message-text">
+      <span class="p-toast-summary">{{message.summary}}</span>
+      <div class="p-toast-detail" [innerHTML]="message.detail"></div>
+    </div>
+  </ng-template>
+</p-toast>
 <router-outlet></router-outlet>

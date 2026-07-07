@@ -1083,7 +1083,7 @@ $white: #ffffff;
     line-height: 1.6;
     color: $slate-600;
     word-wrap: break-word;
-    word-break: auto-phrase;
+    word-break: break-word;
     ::ng-deep {
       em,
       i {
