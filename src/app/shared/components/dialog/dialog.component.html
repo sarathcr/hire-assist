@@ -1,15 +1,17 @@
 <div class="dialog">
-  <div class="dialog__header">
-    @if (data.candidateNames && data.candidateNames.length > 0) {
-      <div class="dialog__header-icon-wrapper">
-        <i class="pi pi-exclamation-triangle dialog__header-icon"></i>
-      </div>
-    }
-    <h2>{{ data.title }}</h2>
-  </div>
+  @if (data.title || (data.candidateNames && data.candidateNames.length > 0)) {
+    <div class="dialog__header">
+      @if (data.candidateNames && data.candidateNames.length > 0) {
+        <div class="dialog__header-icon-wrapper">
+          <i class="pi pi-exclamation-triangle dialog__header-icon"></i>
+        </div>
+      }
+      <h2>{{ data.title }}</h2>
+    </div>
+  }
 
   @if (data.isHtml) {
-    <p class="dialog__description" [innerHTML]="data.message"></p>
+    <div class="dialog__description" [innerHTML]="safeMessage"></div>
   } @else {
     <p class="dialog__description">{{ data.message }}</p>
   }

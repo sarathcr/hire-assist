@@ -2,6 +2,7 @@ import { Component, OnInit, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DialogData } from '../../models/dialog.models';
 
 @Component({
@@ -15,15 +16,20 @@ export class DialogComponent implements OnInit {
   public btnSubmit = output();
 
   public data!: DialogData;
+  public safeMessage!: SafeHtml;
 
   constructor(
     private ref: DynamicDialogRef,
     public config: DynamicDialogConfig,
+    private sanitizer: DomSanitizer,
   ) {}
 
   // LifeCycle Hooks
   ngOnInit(): void {
     this.data = this.config.data ?? { title: '', message: '' };
+    if (this.data.isHtml && this.data.message) {
+      this.safeMessage = this.sanitizer.bypassSecurityTrustHtml(this.data.message);
+    }
   }
 
   // Public Events

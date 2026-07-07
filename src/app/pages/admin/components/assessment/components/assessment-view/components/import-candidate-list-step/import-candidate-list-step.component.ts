@@ -812,16 +812,135 @@ export class ImportCandidateListStepComponent implements OnInit {
     this.ref.onClose.subscribe((result) => {
       if (result) {
         result.assessmentId = this.assessmentId();
-        const next = () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Created the Candidate Successfully',
-          });
+        this.isLoading = true;
+        const next = (res: any) => {
+          this.isLoading = false;
+          if (res && typeof res === 'object' && res.name) {
+            const isNameMismatch = res.name?.trim().toLowerCase() !== result.name?.trim().toLowerCase();
+            const isEmailMismatch = res.email?.trim().toLowerCase() !== result.email?.trim().toLowerCase();
+            const isPhoneMismatch = (res.phoneNumber || '').trim() !== (result.phoneNumber || '').trim();
+            const isGenderMismatch = (res.gender || '').trim().toLowerCase() !== (result.gender || '').trim().toLowerCase();
+            const isDobMismatch = res.dob !== result.dob;
 
-          this.getAllCandidates(new PaginatedPayload());
+            const modalData: DialogData = {
+              message: `
+                <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 4px 0; white-space: normal;">
+                  <p style="font-size: 14.5px; color: #475569; line-height: 1.6; margin-bottom: 20px;">
+                    A candidate with Aadhaar Number <strong style="color: #0f172a; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">${res.aadhaarNumber}</strong> is already registered. The details you entered differ from the existing record:
+                  </p>
+
+                  <div style="border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; text-align: left;">
+                      <thead>
+                        <tr style="background-color: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #475569;">
+                          <th style="padding: 12px 16px; font-weight: 600;">Field</th>
+                          <th style="padding: 12px 16px; font-weight: 600; color: #2563eb;">Registered (Existing)</th>
+                          <th style="padding: 12px 16px; font-weight: 600; color: #d97706;">Entered (New)</th>
+                        </tr>
+                      </thead>
+                      <tbody style="color: #334155;">
+                        <tr style="border-bottom: 1px solid #f1f5f9; ${isNameMismatch ? 'background-color: #fffbeb;' : ''}">
+                          <td style="padding: 12px 16px; font-weight: 500; color: #64748b;">
+                            Name ${isNameMismatch ? '<span style="background-color: #fef3c7; color: #b45309; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 8px;">Diff</span>' : ''}
+                          </td>
+                          <td style="padding: 12px 16px; font-weight: 600; color: #0f172a;">${res.name}</td>
+                          <td style="padding: 12px 16px; color: ${isNameMismatch ? '#b45309' : '#94a3b8'};">${result.name}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9; ${isEmailMismatch ? 'background-color: #fffbeb;' : ''}">
+                          <td style="padding: 12px 16px; font-weight: 500; color: #64748b;">
+                            Email ${isEmailMismatch ? '<span style="background-color: #fef3c7; color: #b45309; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 8px;">Diff</span>' : ''}
+                          </td>
+                          <td style="padding: 12px 16px; font-weight: 600; color: #0f172a; word-break: break-all;">${res.email}</td>
+                          <td style="padding: 12px 16px; color: ${isEmailMismatch ? '#b45309' : '#94a3b8'}; word-break: break-all;">${result.email}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9; ${isPhoneMismatch ? 'background-color: #fffbeb;' : ''}">
+                          <td style="padding: 12px 16px; font-weight: 500; color: #64748b;">
+                            Phone ${isPhoneMismatch ? '<span style="background-color: #fef3c7; color: #b45309; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 8px;">Diff</span>' : ''}
+                          </td>
+                          <td style="padding: 12px 16px; font-weight: 600; color: #0f172a;">${res.phoneNumber || 'N/A'}</td>
+                          <td style="padding: 12px 16px; color: ${isPhoneMismatch ? '#b45309' : '#94a3b8'};">${result.phoneNumber || 'N/A'}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9; ${isGenderMismatch ? 'background-color: #fffbeb;' : ''}">
+                          <td style="padding: 12px 16px; font-weight: 500; color: #64748b;">
+                            Gender ${isGenderMismatch ? '<span style="background-color: #fef3c7; color: #b45309; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 8px;">Diff</span>' : ''}
+                          </td>
+                          <td style="padding: 12px 16px; font-weight: 600; color: #0f172a;">${res.gender || 'N/A'}</td>
+                          <td style="padding: 12px 16px; color: ${isGenderMismatch ? '#b45309' : '#94a3b8'};">${result.gender || 'N/A'}</td>
+                        </tr>
+                        <tr style="${isDobMismatch ? 'background-color: #fffbeb;' : ''}">
+                          <td style="padding: 12px 16px; font-weight: 500; color: #64748b;">
+                            DOB ${isDobMismatch ? '<span style="background-color: #fef3c7; color: #b45309; font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 8px;">Diff</span>' : ''}
+                          </td>
+                          <td style="padding: 12px 16px; font-weight: 600; color: #0f172a;">${res.dob || 'N/A'}</td>
+                          <td style="padding: 12px 16px; color: ${isDobMismatch ? '#b45309' : '#94a3b8'};">${result.dob || 'N/A'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <p style="font-size: 14.5px; font-weight: 500; color: #1e293b; margin-top: 20px; line-height: 1.6;">
+                    Do you want to <strong style="color: #2563eb;">Restore</strong> and use the registered details, or <strong style="color: #64748b;">Cancel</strong> this candidate's addition?
+                  </p>
+                </div>
+              `.trim(),
+              isChoice: true,
+              isHtml: true,
+              cancelButtonText: 'Cancel',
+              acceptButtonText: 'Restore',
+            };
+            this.ref = this.dialog.open(DialogComponent, {
+              data: modalData,
+              header: 'Details Mismatch Warning',
+              maximizable: false,
+              width: '50vw',
+              modal: true,
+              focusOnShow: false,
+              breakpoints: {
+                '960px': '75vw',
+                '640px': '90vw',
+              },
+              templates: {
+                footer: DialogFooterComponent,
+              },
+            });
+            this.ref.onClose.subscribe((accept) => {
+              if (accept) {
+                this.isLoading = true;
+                result.bypassMismatchCheck = true;
+                this.candidateService.createEntity(result).subscribe({
+                  next: () => {
+                    this.isLoading = false;
+                    this.messageService.add({
+                      severity: 'success',
+                      summary: 'Success',
+                      detail: 'Candidate added with existing Aadhaar details.',
+                    });
+                    this.getAllCandidates(new PaginatedPayload());
+                  },
+                  error: (err) => {
+                    this.isLoading = false;
+                    this.errorMessage(err);
+                  }
+                });
+              } else {
+                this.messageService.add({
+                  severity: 'info',
+                  summary: 'Cancelled',
+                  detail: 'Candidate association cancelled.',
+                });
+              }
+            });
+          } else {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Created the Candidate Successfully',
+            });
+            this.getAllCandidates(new PaginatedPayload());
+          }
         };
         const error = (error: CustomErrorResponse) => {
+          this.isLoading = false;
           this.errorMessage(error);
         };
         this.candidateService.createEntity(result).subscribe({ next, error });

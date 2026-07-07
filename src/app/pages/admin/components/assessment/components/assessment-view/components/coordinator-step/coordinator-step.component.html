@@ -125,7 +125,7 @@
           (btnClick)="onSubmit()"
           [icon]="'pi pi-check'"
           [buttonSize]="'small'"
-          [disabled]="isReadOnly() || fGroup.pristine || fGroup.invalid"
+          [disabled]="isReadOnly() || fGroup.pristine || fGroup.invalid || assessmentRoundsDetailsFormArray.length === 0"
           class="coordinator__submit-btn"
         ></app-button>
       </footer>
