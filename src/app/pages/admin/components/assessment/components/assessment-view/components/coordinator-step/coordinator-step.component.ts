@@ -264,6 +264,12 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
   }
 
   public addRound(): void {
+    if (
+      this.assessmentRoundsDetailsFormArray.length >=
+      (this.coordinatorData?.assessmentRounds?.length || 0)
+    ) {
+      return;
+    }
     this.assessmentRoundConfigs.push(this.createRoundConfig());
     this.assessmentRoundsDetailsFormArray.push(this.createRoundFormGroup());
     this.updateAvailableOptions();
