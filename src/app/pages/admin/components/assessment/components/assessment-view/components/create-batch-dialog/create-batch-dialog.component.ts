@@ -49,6 +49,7 @@ export class CreateBatchDialogComponent implements OnInit {
   public questionSets: any[] = [];
   private originalDates: Record<string, Date> = {};
   public minDate: Date = new Date();
+  public maxDate: Date | null = null;
   public isLoading = true;
 
   constructor(
@@ -61,6 +62,16 @@ export class CreateBatchDialogComponent implements OnInit {
   ngOnInit(): void {
     this.fGroup = buildFormGroup(this.candidateDataModel);
     this.candidateData = this.config.data;
+    
+    if (this.config.data?.recruitmentStartDate) {
+      const recStart = new Date(this.config.data.recruitmentStartDate);
+      const today = new Date();
+      this.minDate = recStart > today ? recStart : today;
+    }
+    if (this.config.data?.recruitmentEndDate) {
+      this.maxDate = new Date(this.config.data.recruitmentEndDate);
+    }
+
     this.createConfigMap();
     
     if (this.config.data?.batches$ && this.config.data?.questionSets$) {

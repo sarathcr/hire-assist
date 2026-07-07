@@ -413,11 +413,14 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       this.reloadPaginatedData();
       this.isLoading = false;
     };
-    const error = () => {
+    const error = (error: CustomErrorResponse) => {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
         detail:
+          error.error?.type ||
+          error.error?.message ||
+          error.error?.errorValue ||
           'Cannot delete this recruitment because it is referenced in the recruitment steps.',
       });
       this.isLoading = false;

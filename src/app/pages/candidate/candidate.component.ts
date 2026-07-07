@@ -248,6 +248,46 @@ export class CandidateComponent extends BaseComponent implements OnInit {
 
   private parseDateSafely(dateStr: string): Date {
     if (!dateStr) return new Date('');
+    
+    const normalized = dateStr.trim();
+    const parts = normalized.split(/[\sT]+/);
+    const datePart = parts[0];
+    const timePart = parts.length > 1 ? parts[1] : '';
+    const ampmPart = parts.length > 2 ? parts[2] : '';
+
+    const dateSeparators = datePart.includes('-') ? '-' : datePart.includes('/') ? '/' : '';
+    if (dateSeparators) {
+      const dateParts = datePart.split(dateSeparators);
+      if (dateParts.length === 3 && dateParts[0].length <= 2 && dateParts[2].length === 4) {
+        const day = parseInt(dateParts[0], 10);
+        const month = parseInt(dateParts[1], 10) - 1;
+        const year = parseInt(dateParts[2], 10);
+
+        let hours = 0;
+        let minutes = 0;
+        let seconds = 0;
+
+        if (timePart) {
+          const timeParts = timePart.split(':');
+          hours = parseInt(timeParts[0], 10);
+          minutes = timeParts.length > 1 ? parseInt(timeParts[1], 10) : 0;
+          seconds = timeParts.length > 2 ? parseInt(timeParts[2], 10) : 0;
+
+          if (ampmPart && ampmPart.toLowerCase().includes('pm') && hours < 12) {
+            hours += 12;
+          } else if (ampmPart && ampmPart.toLowerCase().includes('am') && hours === 12) {
+            hours = 0;
+          } else if (timePart.toLowerCase().includes('pm') && hours < 12) {
+            hours += 12;
+          } else if (timePart.toLowerCase().includes('am') && hours === 12) {
+            hours = 0;
+          }
+        }
+
+        return new Date(year, month, day, hours, minutes, seconds);
+      }
+    }
+
     let d = new Date(dateStr);
     if (isNaN(d.getTime())) {
       d = new Date(dateStr.replace(/-/g, '/').replace('T', ' ').split('.')[0]);

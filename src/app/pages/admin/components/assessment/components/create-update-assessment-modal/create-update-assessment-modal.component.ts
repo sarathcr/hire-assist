@@ -146,6 +146,14 @@ export class CreateUpdateAssessmentModalComponent
     const isProgress100 = activeRoundsPercentage === 100;
     const isInProgress = activeRoundsPercentage > 0;
 
+    const startDateObj = this.parseDDMMYYYY(startFormatted);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (startDateObj) {
+      startDateObj.setHours(0, 0, 0, 0);
+    }
+    const isStarted = startDateObj ? startDateObj < today : false;
+
     if (isProgress100) {
       this.data.fGroup.get('name')?.disable();
       this.data.fGroup.get('description')?.disable();
@@ -156,6 +164,8 @@ export class CreateUpdateAssessmentModalComponent
       this.data.fGroup.get('description')?.disable();
       this.data.fGroup.get('startDateTime')?.disable();
       // Keep endDateTime enabled so they can extend or shorten the recruitment
+    } else if (isStarted) {
+      this.data.fGroup.get('startDateTime')?.disable();
     }
   }
   private parseDDMMYYYY(dateStr: string): Date | null {

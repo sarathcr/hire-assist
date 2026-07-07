@@ -195,10 +195,30 @@
   }
 
   &__option-selector {
-    margin-top: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 22.5px;
+    margin-top: 0;
+
+    p-checkbox,
+    p-radiobutton {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      height: 100% !important;
+    }
+
+    ::ng-deep {
+      p-checkbox,
+      p-radiobutton,
+      .p-checkbox,
+      .p-radiobutton {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+    }
   }
 
   &__option-details {

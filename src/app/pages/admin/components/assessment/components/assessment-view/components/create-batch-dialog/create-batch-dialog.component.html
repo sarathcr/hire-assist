@@ -21,6 +21,7 @@
         [config]="configMap['startDate']"
         [showTime]="true"
         [minDate]="minDate"
+        [maxDate]="maxDate"
         [hasDateError]="
           isDateChanged('startDate')
             ? 'Modifying the Start Date will update the entire batch schedule.'
@@ -34,6 +35,7 @@
         [config]="configMap['endDate']"
         [showTime]="true"
         [minDate]="minDate"
+        [maxDate]="maxDate"
         [hasDateError]="
           isDateChanged('endDate')
             ? 'Modifying the End Date will update the entire batch schedule.'

@@ -4,6 +4,12 @@
   </div>
   <div class="card__content">
     <ng-content></ng-content>
+    @if (isFutureTest) {
+      <div class="card__countdown">
+        <i class="pi pi-clock"></i>
+        <span>Starts in: <span class="card__countdown-time">{{ countdownText }}</span></span>
+      </div>
+    }
   </div>
   @if (showButton) {
     <div class="card__footer">

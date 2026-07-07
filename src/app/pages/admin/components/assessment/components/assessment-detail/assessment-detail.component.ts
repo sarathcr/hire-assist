@@ -239,7 +239,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private loadAssignmentData(): void {
     const batchesPayload = new PaginatedPayload();
     batchesPayload.pagination.pageSize = -1;
-    batchesPayload.filterMap = { status: 'Active' };
+    batchesPayload.filterMap = { status: 'unassigned', assessmentId: this.assessmentId };
     this.batchService.paginationEntity('Batchsummary', batchesPayload).subscribe(res => {
       this.availableBatches = res;
     });
@@ -494,7 +494,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private onAssignToBatch(candidate: any): void {
     const batchesPayload = new PaginatedPayload();
     batchesPayload.pagination.pageSize = -1;
-    batchesPayload.filterMap = { status: 'Active' };
+    batchesPayload.filterMap = { status: 'unassigned', assessmentId: this.assessmentId };
     const batches$ = this.batchService.paginationEntity('Batchsummary', batchesPayload);
 
     const questionSetsPayload = new PaginatedPayload();
@@ -518,7 +518,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           questionSets$: questionSets$,
           assessmentId: this.assessmentId,
           currentRoundId: this.currentStep,
-          candidateData: this.tableData
+          candidateData: this.tableData,
+          recruitmentEndDate: this.data?.endDateTime,
+          recruitmentStartDate: this.data?.startDateTime,
         }
       });
 

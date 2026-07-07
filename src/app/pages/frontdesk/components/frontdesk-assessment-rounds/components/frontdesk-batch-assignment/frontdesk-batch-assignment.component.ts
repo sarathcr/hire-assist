@@ -61,7 +61,6 @@ const aptitudeTableColumns: TableColumnsData = {
       filterAlias: 'statusFilter',
       hasMultiStatus: true,
       filterOptions: [
-        { label: 'Present', value: 'Present' },
         { label: 'Absent', value: 'Absent' },
         { label: 'Completed', value: 'Completed' },
         { label: 'Selected', value: 'Selected' },
@@ -132,7 +131,6 @@ const nonAptitudeTableColumns: TableColumnsData = {
       filterAlias: 'statusFilter',
       hasMultiStatus: true,
       filterOptions: [
-        { label: 'Present', value: 'Present' },
         { label: 'Absent', value: 'Absent' },
         { label: 'Completed', value: 'Completed' },
         { label: 'Selected', value: 'Selected' },
