@@ -140,6 +140,19 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
     >;
   }
 
+  get areAllRoundsSelected(): boolean {
+    if (!this.coordinatorData || !this.coordinatorData.assessmentRounds) {
+      return false;
+    }
+    const allSelectedValues = this.assessmentRoundsDetailsFormArray.controls
+      .flatMap((ctrl) => ctrl.get('assessmentRound')?.value || [])
+      .filter((val) => val != null);
+
+    return (
+      allSelectedValues.length >= this.coordinatorData.assessmentRounds.length
+    );
+  }
+
   constructor(
     private readonly fb: FormBuilder,
     public messageService: MessageService,
@@ -264,10 +277,7 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
   }
 
   public addRound(): void {
-    if (
-      this.assessmentRoundsDetailsFormArray.length >=
-      (this.coordinatorData?.assessmentRounds?.length || 0)
-    ) {
+    if (this.areAllRoundsSelected) {
       return;
     }
     this.assessmentRoundConfigs.push(this.createRoundConfig());
