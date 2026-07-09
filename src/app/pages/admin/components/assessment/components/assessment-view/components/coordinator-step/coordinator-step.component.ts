@@ -148,9 +148,10 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
       .flatMap((ctrl) => ctrl.get('assessmentRound')?.value || [])
       .filter((val) => val != null);
 
-    return (
-      allSelectedValues.length >= this.coordinatorData.assessmentRounds.length
-    );
+    const isAllSelected = allSelectedValues.length >= this.coordinatorData.assessmentRounds.length;
+    const isMaxRows = this.assessmentRoundsDetailsFormArray.length >= this.coordinatorData.assessmentRounds.length;
+
+    return isAllSelected || isMaxRows;
   }
 
   constructor(
