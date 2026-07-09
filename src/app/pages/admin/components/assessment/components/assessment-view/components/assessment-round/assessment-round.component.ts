@@ -6,6 +6,7 @@ import {
   effect,
   ElementRef,
   EventEmitter,
+  HostListener,
   OnDestroy,
   OnInit,
   Output,
@@ -130,6 +131,15 @@ export class AssessmentRoundComponent
 
     const option = this.roundTypeOptions.find((o) => o.value === typeStr);
     return option?.label === this.ROUND_TYPE_APTITUDE_LABEL;
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    // Triggers change detection on window resize
+  }
+
+  get isSmallScreen(): boolean {
+    return typeof window !== 'undefined' ? window.innerWidth < 375 : false;
   }
 
   public assessmentId = input<number>();
@@ -412,10 +422,12 @@ export class AssessmentRoundComponent
         Validators.required,
         Validators.min(1),
         Validators.max(100),
+        Validators.pattern(/^[0-9]+$/),
       ]),
       isImported: new FormControl(data?.isImported || false),
     });
   }
+
 
   public onExistingCriteriaSelected(event: any, idx: number): void {
     const selectedValues = ((event.value as any[]) || []).map((v) =>

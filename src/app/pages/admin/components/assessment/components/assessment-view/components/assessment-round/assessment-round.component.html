@@ -54,17 +54,8 @@
         <!-- Use opacity and pointer-events to prevent layout shifts while hiding -->
         <div
           class="assessment-round__rounds-section"
-          [style.opacity]="
-            submittedData && submittedData.length > 0 ? '1' : '0'
-          "
-          [style.pointer-events]="
-            submittedData && submittedData.length > 0 ? 'auto' : 'none'
-          "
-          [style.max-height]="
-            submittedData && submittedData.length > 0 ? 'none' : '0'
-          "
-          [style.overflow]="
-            submittedData && submittedData.length > 0 ? 'visible' : 'hidden'
+          [style.display]="
+            submittedData && submittedData.length > 0 ? 'block' : 'none'
           "
         >
           <div #roundsList class="assessment-round__rounds-list">
@@ -98,17 +89,8 @@
         <!-- Use opacity and pointer-events to prevent layout shifts while hiding -->
         <div
           class="assessment-round__empty-state"
-          [style.opacity]="
-            !submittedData || submittedData.length === 0 ? '1' : '0'
-          "
-          [style.pointer-events]="
-            !submittedData || submittedData.length === 0 ? 'auto' : 'none'
-          "
-          [style.max-height]="
-            !submittedData || submittedData.length === 0 ? 'none' : '0'
-          "
-          [style.overflow]="
-            !submittedData || submittedData.length === 0 ? 'visible' : 'hidden'
+          [style.display]="
+            !submittedData || submittedData.length === 0 ? 'flex' : 'none'
           "
         >
           <i class="pi pi-inbox assessment-round__empty-icon"></i>
@@ -221,6 +203,7 @@
                               <div class="assessment-round__criteria-actions">
                                 <p-multiSelect
                                   #ms
+                                  class="assessment-round__multiselect-host"
                                   [formControl]="$any(getRoundFormGroup(idx).get('importSelection'))"
                                   [options]="feedbackCriteriaOptions"
                                   optionLabel="label"
@@ -229,11 +212,11 @@
                                   filterPlaceHolder="Search criteria..."
                                   (onChange)="onExistingCriteriaSelected($event, idx)"
                                   (onFocus)="fetchCriteriaOptions()"
-                                  [display]="ms.value && ms.value.length > 3 ? 'comma' : 'chip'"
+                                  [display]="isSmallScreen ? 'comma' : (ms.value && ms.value.length > 3 ? 'comma' : 'chip')"
                                   [filter]="true"
                                   appendTo="body"
-                                  [maxSelectedLabels]="3"
-                                  selectedItemsLabel="{0} items selected"
+                                  [maxSelectedLabels]="isSmallScreen ? 0 : 3"
+                                  [selectedItemsLabel]="ms.value && ms.value.length === 1 ? '1 item selected' : '{0} items selected'"
                                   styleClass="assessment-round__criteria-multiselect"
                                   [disabled]="isReadOnly()"
                                 >
@@ -298,14 +281,19 @@
                                             type="number"
                                             formControlName="maxScore"
                                             placeholder=""
+                                            step="1"
                                             [readonly]="isReadOnly()"
                                           />
-                                          @if (criteria.get('maxScore')?.invalid && (criteria.get('maxScore')?.touched || submitted)) {
-                                            <small class="p-error">
-                                              @if (criteria.get('maxScore')?.errors?.['min']) { Min 1. }
-                                              @else if (criteria.get('maxScore')?.errors?.['max']) { Max 100. }
-                                              @else { Required. }
-                                            </small>
+                                          @if (criteria.get('maxScore')?.invalid && (criteria.get('maxScore')?.dirty || criteria.get('maxScore')?.touched || submitted)) {
+                                            <div class="criteria-error-tooltip" #errTooltip (click)="errTooltip.style.display = 'none'">
+                                              <span>
+                                                @if (criteria.get('maxScore')?.errors?.['min']) { Min 1. }
+                                                @else if (criteria.get('maxScore')?.errors?.['max']) { Max 100. }
+                                                @else if (criteria.get('maxScore')?.errors?.['pattern']) { Only integer numbers are allowed. }
+                                                @else { Required. }
+                                              </span>
+                                              <i class="pi pi-times criteria-error-tooltip-close"></i>
+                                            </div>
                                           }
                                         </div>
                                       </div>

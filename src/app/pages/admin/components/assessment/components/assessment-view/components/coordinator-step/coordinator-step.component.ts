@@ -430,9 +430,27 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
   }
 
   private updateAvailableOptions(): void {
+    const totalRounds = this.coordinatorData?.assessmentRounds?.length || 0;
     const allSelectedValues = this.assessmentRoundsDetailsFormArray.controls
       .flatMap((ctrl) => ctrl.get('assessmentRound')?.value || [])
       .filter((val) => val != null);
+
+    if (totalRounds > 0 && allSelectedValues.length >= totalRounds) {
+      let changed = false;
+      for (let i = this.assessmentRoundsDetailsFormArray.length - 1; i >= 0; i--) {
+        const roundCtrl = this.assessmentRoundsDetailsFormArray.at(i).get('assessmentRound');
+        const isEmpty = !roundCtrl?.value || roundCtrl.value.length === 0;
+        if (isEmpty) {
+          this.assessmentRoundConfigs.splice(i, 1);
+          this.assessmentRoundsDetailsFormArray.removeAt(i);
+          changed = true;
+        }
+      }
+      if (changed) {
+        this.updateAvailableOptions();
+        return;
+      }
+    }
 
     this.assessmentRoundConfigs.forEach((config, index) => {
       const currentRowValues =
