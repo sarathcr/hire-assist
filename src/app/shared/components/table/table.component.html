@@ -409,7 +409,7 @@
           track headerColumn.field
         ) {
           @if (headerColumn.field === "actions") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)" (click)="$event.stopPropagation()">
               <div class="flex flex-wrap gap-1">
                 @if (
                   headerColumn.actions?.includes(PaginatedDataActions.View)
@@ -587,7 +587,7 @@
               />
             </td>
           } @else if (headerColumn.field === "button") {
-            <td class="table__buttonColumn" [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
+            <td class="table__buttonColumn" [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)" (click)="$event.stopPropagation()">
               @if (headerColumn?.buttonIcons?.length === 0) {
                 <p-button
                   [outlined]="true"
@@ -700,7 +700,7 @@
               </ng-template>
             </td>
           } @else if (headerColumn.fieldType === "masked") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
+            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)" (click)="$event.stopPropagation()">
               <div class="flex align-items-center gap-2">
                 <span>{{
                   unmaskedRows[product.id + headerColumn.field]
