@@ -627,7 +627,7 @@ export class CandidateTestComponent
 
   private saveOrUpdateCandidateAnswer(payload: Payload): Observable<void> {
     return this.candidatetestservice
-      .getCandidateAnswer(payload.assessmentId, payload.candidateId)
+      .getCandidateAnswer(payload.assessmentId, payload.candidateId, payload.interviewId)
       .pipe(
         switchMap((existingAnswers: any) => {
           // Handle both array and single object responses
@@ -670,8 +670,9 @@ export class CandidateTestComponent
 
   private fetchCandidateAnswers(): void {
     if (this.assessmentId != null && this.candidateId != null) {
+      const interviewId = this.candidateInterview?.assessment?.interviewId;
       this.candidatetestservice
-        .getCandidateAnswer(this.assessmentId, this.candidateId)
+        .getCandidateAnswer(this.assessmentId, this.candidateId, interviewId)
         .subscribe({
           next: (response: any) => {
             if (!response) {
@@ -1076,7 +1077,8 @@ export class CandidateTestComponent
         detail: error,
       });
     };
-    this.candidatetestservice.getQuestionSet(this.assessmentId).subscribe({ next, error });
+    const interviewId = this.candidateInterview?.assessment?.interviewId;
+    this.candidatetestservice.getQuestionSet(this.assessmentId, interviewId).subscribe({ next, error });
   }
 
   private createCandidateAnswer(payload: Payload): Observable<void> {

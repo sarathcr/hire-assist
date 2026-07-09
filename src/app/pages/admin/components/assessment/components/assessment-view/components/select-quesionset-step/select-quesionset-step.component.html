@@ -26,7 +26,14 @@
                     <i class="pi pi-calendar-plus QuestionSet__accordion-icon--expanded"></i>
                   </div>
                   <div class="QuestionSet__accordion-item-content">
-                    <span class="QuestionSet__accordion-item-title">{{ round.roundName }}</span>
+                    <div class="QuestionSet__accordion-title-container">
+                      <span class="QuestionSet__accordion-item-title">{{ round.roundName }}</span>
+                      @if (getEmptyQuestionSetsForRound(round.assessmentRoundId ?? 0).length > 0) {
+                        <span class="QuestionSet__round-warning-tag">
+                          <i class="pi pi-exclamation-triangle"></i> Incomplete Sets
+                        </span>
+                      }
+                    </div>
                     <div class="QuestionSet__accordion-item-description">
                       <i class="pi pi-info-circle"></i>
                       <span>{{ getQuestionSetsForRound(round.assessmentRoundId ?? 0).length }} Question Sets</span>
@@ -46,6 +53,17 @@
               </p-accordion-header>
               <p-accordion-content>
                 @let roundSets = getQuestionSetsForRound(round.assessmentRoundId ?? 0);
+                @let emptySets = getEmptyQuestionSetsForRound(round.assessmentRoundId ?? 0);
+
+                @if (emptySets.length > 0) {
+                  <div class="QuestionSet__round-validation-message">
+                    <i class="pi pi-exclamation-triangle"></i>
+                    <span>
+                      Please select questions for the following question sets: 
+                      <strong>{{ emptySets.join(', ') }}</strong>
+                    </span>
+                  </div>
+                }
                 
                 @if (roundSets.length === 0) {
                   <div class="QuestionSet__create-placeholder">
@@ -244,15 +262,6 @@
 
   <!-- Complete Step Button - Always Visible -->
   <div class="QuestionSet__complete-section">
-    @if (emptyQuestionSets.length > 0) {
-      <div class="QuestionSet__validation-message">
-        <i class="pi pi-exclamation-triangle"></i>
-        <span>
-          Please select questions for the following question sets to mark step as complete: 
-          <strong>{{ emptyQuestionSets.join(', ') }}</strong>
-        </span>
-      </div>
-    }
     <app-button
       class="QuestionSet__complete-button"
       [buttonLabel]="'Complete Question Set Step'"

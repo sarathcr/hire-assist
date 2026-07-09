@@ -527,7 +527,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     };
 
     this.assessmentService
-      .getBatchesForFrontDesk(this.assessmentId)
+      .getBatchesForFrontDesk(this.assessmentId, this.assessmentRoundId)
       .subscribe({ next, error });
   }
 

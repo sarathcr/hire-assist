@@ -69,6 +69,29 @@
           </div>
         </div>
 
+        <!-- Buffer Time Section -->
+        <div class="schedule-interview-dialog__buffer-section">
+          <div class="schedule-interview-dialog__buffer-header">
+            <i class="pi pi-hourglass"></i>
+            <span class="schedule-interview-dialog__buffer-label">Minimum Scheduling Buffer (Minutes)</span>
+          </div>
+          <div class="schedule-interview-dialog__buffer-input-wrapper">
+            <input
+              type="number"
+              pInputText
+              formControlName="bufferMinutes"
+              min="0"
+              class="schedule-interview-dialog__buffer-input"
+              placeholder="e.g. 30"
+            />
+          </div>
+          @if (fGroup.get('bufferMinutes')?.touched && fGroup.get('bufferMinutes')?.errors) {
+            <small class="schedule-interview-dialog__buffer-error">
+              Buffer minutes is required and must be 0 or greater.
+            </small>
+          }
+        </div>
+
         <!-- Date Picker Section -->
         <div class="schedule-interview-dialog__date-section">
           <div class="schedule-interview-dialog__date-header">

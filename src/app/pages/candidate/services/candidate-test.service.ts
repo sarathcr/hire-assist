@@ -40,10 +40,10 @@ export class CandidateTestService extends ApiService<any> {
     // return apiUrl;
   }
 
-  public getQuestionSet(assessmentId: number) {
+  public getQuestionSet(assessmentId: number, interviewId: number) {
     return this.httpClient.get<CandidateTestQuestionSet>(
       // `${this.getResourceUrl()}/api/assessment/candidate-questions`
-      `${this.getResourceUrl()}/candidate-questions?assessmentId=${assessmentId}`,
+      `${this.getResourceUrl()}/candidate-questions?assessmentId=${assessmentId}&interviewId=${interviewId}`,
     );
   }
   public addcandidateAnswer(payload: Payload) {
@@ -61,10 +61,10 @@ export class CandidateTestService extends ApiService<any> {
       payload,
     );
   }
-  public getCandidateAnswer(assessmentId: number, candidateId: string) {
+  public getCandidateAnswer(assessmentId: number, candidateId: string, interviewId: number) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.httpClient.get<any>(
-      `${this.getResourceUrl()}/candidateAnswer?assessmentId=${assessmentId}&candidateId=${candidateId}`,
+      `${this.getResourceUrl()}/candidateAnswer?assessmentId=${assessmentId}&candidateId=${candidateId}&interviewId=${interviewId}`,
       // `${this.getResourceUrl()}/api/assessment/candidateAnswer?assessmentId=${assessmentId}&candidateId=${candidateId}`
     );
   }

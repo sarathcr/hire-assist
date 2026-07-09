@@ -126,10 +126,12 @@ export class AssessmentService extends ApiService<any> {
     );
   }
 
-  public getBatchesForFrontDesk(id: number) {
-    return this.httpClient.get<Batch[]>(
-      `${this.getResourceUrl()}/${id}/Batches`,
-    );
+  public getBatchesForFrontDesk(id: number, assessmentRoundId?: number) {
+    let url = `${this.getResourceUrl()}/${id}/Batches`;
+    if (assessmentRoundId !== undefined) {
+      url += `?assessmentRoundId=${assessmentRoundId}`;
+    }
+    return this.httpClient.get<Batch[]>(url);
   }
 
   public markasPresent(request: MarkAsPresentRequest) {

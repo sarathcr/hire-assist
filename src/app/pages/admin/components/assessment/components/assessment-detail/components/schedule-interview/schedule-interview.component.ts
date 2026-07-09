@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Chip } from 'primeng/chip';
 import { SkeletonModule } from 'primeng/skeleton';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { InputTextModule } from 'primeng/inputtext';
 import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputTextCalenderComponent } from '../../../../../../../../shared/components/form/input-text-calender/input-text-calender.component';
@@ -23,6 +24,7 @@ import { ScheduleInterview } from '../../../../../../models/schedule-interview.m
     CommonModule,
     Chip,
     SkeletonModule,
+    InputTextModule,
   ],
   templateUrl: './schedule-interview.component.html',
   styleUrl: './schedule-interview.component.scss',
@@ -54,6 +56,11 @@ export class ScheduleInterviewComponent
   }
 
   ngOnInit(): void {
+    this.fGroup.addControl(
+      'bufferMinutes',
+      new FormControl(30, [Validators.required, Validators.min(0)])
+    );
+
     this.data = this.config.data?.candidateIds || this.config.data;
     this.setConfigMap();
     if (this.config.data?.candidates) {
@@ -76,11 +83,8 @@ export class ScheduleInterviewComponent
       this.maxDate.setHours(23, 59, 59, 999);
     }
 
-    // Capture precise current time + 30 minutes for validation
-    const now = new Date();
-    this.validationMinDate = new Date(now.getTime() + 30 * 60 * 1000);
-    this.validationMinDate.setSeconds(0, 0);
-    this.validationMinDate.setMilliseconds(0);
+    // Capture precise current time + buffer minutes for validation
+    this.updateValidationMinDate();
 
     // Normalize minDate time to 00:00:00 for the UI picker.
     // This resolves a PrimeNG bug where the minDate's time component 
@@ -171,6 +175,16 @@ export class ScheduleInterviewComponent
     this.selectedCandidates.splice(index, 1);
   }
 
+  private updateValidationMinDate(): void {
+    const bufferControl = this.fGroup.get('bufferMinutes');
+    const bufferVal = bufferControl?.value;
+    const bufferMinutes = (bufferControl?.valid && bufferVal !== null && bufferVal !== undefined && !isNaN(bufferVal)) ? Number(bufferVal) : 30;
+    const now = new Date();
+    this.validationMinDate = new Date(now.getTime() + bufferMinutes * 60 * 1000);
+    this.validationMinDate.setSeconds(0, 0);
+    this.validationMinDate.setMilliseconds(0);
+  }
+
   private validateScheduleDate(form: FormGroup, dateField: string): void {
     const dateControl = form.get(dateField);
     const dateValue = dateControl?.value;
@@ -183,9 +197,13 @@ export class ScheduleInterviewComponent
       } else {
         const dateTime = new Date(dateValue);
 
+        this.updateValidationMinDate();
+
         if (this.validationMinDate && dateTime < this.validationMinDate) {
+          const bufferVal = this.fGroup.get('bufferMinutes')?.value;
+          const bufferMinutes = (bufferVal !== null && bufferVal !== undefined && !isNaN(bufferVal)) ? Number(bufferVal) : 30;
           dateControl.setErrors({
-            errorMessage: 'Interview must be scheduled at least 30 minutes from now.',
+            errorMessage: `Interview must be scheduled at least ${bufferMinutes} minutes from now.`,
           });
         } else if (this.maxDate && dateTime > this.maxDate) {
           dateControl.setErrors({
@@ -197,11 +215,24 @@ export class ScheduleInterviewComponent
   }
 
   private setupDateValidation(): void {
-    const sub = this.fGroup.get('scheduleDate')?.valueChanges.subscribe(() => {
+    const scheduleDateControl = this.fGroup.get('scheduleDate');
+    const bufferControl = this.fGroup.get('bufferMinutes');
+
+    const subDate = scheduleDateControl?.valueChanges.subscribe(() => {
       this.validateScheduleDate(this.fGroup, 'scheduleDate');
     });
-    if (sub) {
-      this.subscriptionList.push(sub);
+    if (subDate) {
+      this.subscriptionList.push(subDate);
+    }
+
+    const subBuffer = bufferControl?.valueChanges.subscribe(() => {
+      this.updateValidationMinDate();
+      if (scheduleDateControl?.value) {
+        this.validateScheduleDate(this.fGroup, 'scheduleDate');
+      }
+    });
+    if (subBuffer) {
+      this.subscriptionList.push(subBuffer);
     }
   }
 }

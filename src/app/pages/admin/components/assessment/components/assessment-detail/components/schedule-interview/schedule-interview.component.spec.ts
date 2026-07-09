@@ -93,13 +93,13 @@ describe('ScheduleInterviewComponent', () => {
     control?.setValue(new Date('2000-01-01'));
     tick();
     expect(control?.errors).toEqual({
-      errorMessage: 'Schedule Date must be today or later.',
+      errorMessage: 'Interview must be scheduled at least 30 minutes from now.',
     });
   }));
 
-  it("should clear validation error for today's date", fakeAsync(() => {
+  it("should clear validation error for future date beyond buffer", fakeAsync(() => {
     const control = component.fGroup.get('scheduleDate');
-    control?.setValue(new Date());
+    control?.setValue(new Date(Date.now() + 35 * 60 * 1000));
     tick();
     expect(control?.errors).toBeNull();
   }));
@@ -140,5 +140,25 @@ describe('ScheduleInterviewComponent', () => {
     expect((component as any).subscriptionList.length).toBeGreaterThan(
       initialLength,
     );
+  }));
+
+  it('should validate correctly with custom buffer minutes', fakeAsync(() => {
+    const scheduleControl = component.fGroup.get('scheduleDate');
+    const bufferControl = component.fGroup.get('bufferMinutes');
+
+    // Set buffer to 10 minutes
+    bufferControl?.setValue(10);
+    
+    // 15 minutes from now should be valid (since buffer is 10)
+    scheduleControl?.setValue(new Date(Date.now() + 15 * 60 * 1000));
+    tick();
+    expect(scheduleControl?.errors).toBeNull();
+
+    // 5 minutes from now should be invalid
+    scheduleControl?.setValue(new Date(Date.now() + 5 * 60 * 1000));
+    tick();
+    expect(scheduleControl?.errors).toEqual({
+      errorMessage: 'Interview must be scheduled at least 10 minutes from now.',
+    });
   }));
 });

@@ -1226,6 +1226,18 @@ export class SelectQuesionsetStepComponent
     );
   }
 
+  public getEmptyQuestionSetsForRound(roundId: number): string[] {
+    const emptyNames: string[] = [];
+    const roundSets = this.getQuestionSetsForRound(roundId);
+    for (const qs of roundSets) {
+      const data = this.questionSetAccordionData.get(qs.id.toString());
+      if (data && data.hasLoadedSelectedQuestions && (!data.selectedIds || data.selectedIds.length === 0)) {
+        emptyNames.push(qs.title);
+      }
+    }
+    return emptyNames;
+  }
+
   public get emptyQuestionSets(): string[] {
     const emptyNames: string[] = [];
     for (const data of this.questionSetAccordionData.values()) {
