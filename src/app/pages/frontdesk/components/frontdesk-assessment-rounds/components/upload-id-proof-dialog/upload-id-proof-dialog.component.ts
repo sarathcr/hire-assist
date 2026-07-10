@@ -343,6 +343,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
           }
           this.imageUrl = this.imageUrl.filter((_, i) => i !== index);
           this.fGroup.patchValue({ idFile: null });
+          this.fileValidationError = null;
 
           this.messageService.add({
             severity: 'success',
