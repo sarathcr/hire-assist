@@ -761,6 +761,8 @@ export class CandidateTestComponent
       data: modalData,
       width: '50vw',
       modal: true,
+      closable: false,
+      closeOnEscape: false,
       focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
@@ -821,6 +823,8 @@ export class CandidateTestComponent
       header: 'Sorry',
       width: '50vw',
       modal: true,
+      closable: false,
+      closeOnEscape: false,
       focusOnShow: false,
       breakpoints: {
         '960px': '75vw',
