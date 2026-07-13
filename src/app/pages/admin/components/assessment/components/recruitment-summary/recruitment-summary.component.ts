@@ -119,15 +119,26 @@ export class RecruitmentSummaryComponent implements OnInit {
   public getRoundTotalScore(round: any): { score: number; maxScore: number } | null {
     if (!round) return null;
     
+    const hasTotalScore = round.totalScore !== undefined && round.totalScore !== null && !isNaN(Number(round.totalScore));
+    const hasOutofScore = round.outofScore !== undefined && round.outofScore !== null && !isNaN(Number(round.outofScore)) && Number(round.outofScore) > 0;
+    
+    if (hasTotalScore && hasOutofScore) {
+      return {
+        score: Number(round.totalScore),
+        maxScore: Number(round.outofScore)
+      };
+    }
+    
     if (round.isAptitude) {
       let score = 0;
       let maxScore = 0;
       if (round.aptitudeQuestions && round.aptitudeQuestions.length > 0) {
+        const firstQuestionMarks = Number(round.aptitudeQuestions[0].marks || 0);
+        maxScore = (round.totalQuestions || 0) * firstQuestionMarks;
+        
         round.aptitudeQuestions.forEach((q: any) => {
-          const marks = Number(q.marks || 0);
-          maxScore += marks;
           if (q.isCorrect) {
-            score += marks;
+            score += Number(q.marks || 0);
           }
         });
       } else {
