@@ -120,10 +120,21 @@ export class RecruitmentSummaryComponent implements OnInit {
     if (!round) return null;
     
     if (round.isAptitude) {
-      return {
-        score: round.correctCount || 0,
-        maxScore: round.totalQuestions || 0
-      };
+      let score = 0;
+      let maxScore = 0;
+      if (round.aptitudeQuestions && round.aptitudeQuestions.length > 0) {
+        round.aptitudeQuestions.forEach((q: any) => {
+          const marks = Number(q.marks || 0);
+          maxScore += marks;
+          if (q.isCorrect) {
+            score += marks;
+          }
+        });
+      } else {
+        score = round.correctCount || 0;
+        maxScore = round.totalQuestions || 0;
+      }
+      return { score, maxScore };
     }
     
     if (round.feedbackCriteria && round.feedbackCriteria.length > 0) {
