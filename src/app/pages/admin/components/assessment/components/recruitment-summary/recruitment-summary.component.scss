@@ -1344,6 +1344,10 @@
   }
 }
 
+.only-print {
+  display: none !important;
+}
+
 /* Printing Utilities */
 @media print {
   .no-print {
@@ -1352,6 +1356,10 @@
 
   .only-print {
     display: block !important;
+  }
+
+  .print-footer.only-print {
+    display: flex !important;
   }
 
   body {

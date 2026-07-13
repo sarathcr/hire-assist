@@ -13,19 +13,24 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 @Component({
   selector: 'app-recruitment-summary',
   standalone: true,
-  imports: [CommonModule, ButtonModule, AccordionModule, SkeletonModule, DialogModule],
+  imports: [
+    CommonModule,
+    ButtonModule,
+    AccordionModule,
+    SkeletonModule,
+    DialogModule,
+  ],
   templateUrl: './recruitment-summary.component.html',
-  styleUrl: './recruitment-summary.component.scss'
+  styleUrl: './recruitment-summary.component.scss',
 })
 export class RecruitmentSummaryComponent implements OnInit {
-
   public assessmentId!: number;
   public isLoading = false;
   public isExporting = false;
   public summaryData: any = null;
 
   public activeAccordionIds: string[] = [];
-  
+
   public showPdfModal = false;
   public safePdfUrl: SafeResourceUrl | null = null;
 
@@ -33,11 +38,11 @@ export class RecruitmentSummaryComponent implements OnInit {
     private location: Location,
     private route: ActivatedRoute,
     private interviewService: InterviewService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       if (params['id']) {
         this.assessmentId = +params['id'];
         this.fetchSummaryData();
@@ -47,8 +52,9 @@ export class RecruitmentSummaryComponent implements OnInit {
 
   private fetchSummaryData(): void {
     this.isLoading = true;
-    this.interviewService.getSelectedStatus(this.assessmentId)
-      .pipe(finalize(() => this.isLoading = false))
+    this.interviewService
+      .getSelectedStatus(this.assessmentId)
+      .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (data) => {
           this.summaryData = this.sortFeedbackCriteria(data);
@@ -56,7 +62,7 @@ export class RecruitmentSummaryComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error fetching recruitment summary:', error);
-        }
+        },
       });
   }
 
@@ -89,53 +95,70 @@ export class RecruitmentSummaryComponent implements OnInit {
 
   private expandAllAccordions(): void {
     if (this.summaryData?.detailedCandidates) {
-      this.activeAccordionIds = this.summaryData.detailedCandidates.map((c: any) => c.id);
+      this.activeAccordionIds = this.summaryData.detailedCandidates.map(
+        (c: any) => c.id,
+      );
     }
   }
 
-  public printSummary(): void {
-    if (this.isExporting) return;
-
+  public exportPdf(): void {
     this.isExporting = true;
-    
-    this.interviewService.exportRecruitmentSummaryPdf(this.assessmentId)
-      .pipe(finalize(() => this.isExporting = false))
+    this.interviewService
+      .exportRecruitmentSummaryPdf(this.assessmentId)
+      .pipe(finalize(() => (this.isExporting = false)))
       .subscribe({
         next: (blob) => {
-          const blobURL = URL.createObjectURL(blob);
-          this.safePdfUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobURL);
+          const safeBlob = new Blob([blob], { type: 'application/pdf' });
+          const blobURL = URL.createObjectURL(safeBlob);
+          this.safePdfUrl =
+            this.sanitizer.bypassSecurityTrustResourceUrl(blobURL);
           this.showPdfModal = true;
         },
         error: (error) => {
-          console.error('Error exporting audit report:', error);
-        }
+          console.error('Error exporting PDF:', error);
+        },
       });
+  }
+
+  public printSummary(): void {
+    this.exportPdf();
   }
 
   public goBack(): void {
     this.location.back();
   }
 
-  public getRoundTotalScore(round: any): { score: number; maxScore: number } | null {
+  public getRoundTotalScore(
+    round: any,
+  ): { score: number; maxScore: number } | null {
     if (!round) return null;
-    
-    const hasTotalScore = round.totalScore !== undefined && round.totalScore !== null && !isNaN(Number(round.totalScore));
-    const hasOutofScore = round.outofScore !== undefined && round.outofScore !== null && !isNaN(Number(round.outofScore)) && Number(round.outofScore) > 0;
-    
+
+    const hasTotalScore =
+      round.totalScore !== undefined &&
+      round.totalScore !== null &&
+      !isNaN(Number(round.totalScore));
+    const hasOutofScore =
+      round.outofScore !== undefined &&
+      round.outofScore !== null &&
+      !isNaN(Number(round.outofScore)) &&
+      Number(round.outofScore) > 0;
+
     if (hasTotalScore && hasOutofScore) {
       return {
         score: Number(round.totalScore),
-        maxScore: Number(round.outofScore)
+        maxScore: Number(round.outofScore),
       };
     }
-    
+
     if (round.isAptitude) {
       let score = 0;
       let maxScore = 0;
       if (round.aptitudeQuestions && round.aptitudeQuestions.length > 0) {
-        const firstQuestionMarks = Number(round.aptitudeQuestions[0].marks || 0);
+        const firstQuestionMarks = Number(
+          round.aptitudeQuestions[0].marks || 0,
+        );
         maxScore = (round.totalQuestions || 0) * firstQuestionMarks;
-        
+
         round.aptitudeQuestions.forEach((q: any) => {
           if (q.isCorrect) {
             score += Number(q.marks || 0);
@@ -147,10 +170,13 @@ export class RecruitmentSummaryComponent implements OnInit {
       }
       return { score, maxScore };
     }
-    
+
     if (round.feedbackCriteria && round.feedbackCriteria.length > 0) {
-      const interviewerScores: Record<string, { score: number; maxScore: number }> = {};
-      
+      const interviewerScores: Record<
+        string,
+        { score: number; maxScore: number }
+      > = {};
+
       round.feedbackCriteria.forEach((crit: any) => {
         const interviewer = crit.interviewerName || 'default';
         if (!interviewerScores[interviewer]) {
@@ -159,27 +185,29 @@ export class RecruitmentSummaryComponent implements OnInit {
         interviewerScores[interviewer].score += Number(crit.score || 0);
         interviewerScores[interviewer].maxScore += Number(crit.maxScore || 0);
       });
-      
+
       const interviewers = Object.keys(interviewerScores);
       if (interviewers.length === 0) return { score: 0, maxScore: 0 };
-      
+
       let totalScoreSum = 0;
       let totalMaxScoreSum = 0;
-      
+
       interviewers.forEach((interviewer) => {
         totalScoreSum += interviewerScores[interviewer].score;
         totalMaxScoreSum += interviewerScores[interviewer].maxScore;
       });
-      
-      const averageScore = Math.round((totalScoreSum / interviewers.length) * 100) / 100;
-      const averageMaxScore = Math.round((totalMaxScoreSum / interviewers.length) * 100) / 100;
-      
+
+      const averageScore =
+        Math.round((totalScoreSum / interviewers.length) * 100) / 100;
+      const averageMaxScore =
+        Math.round((totalMaxScoreSum / interviewers.length) * 100) / 100;
+
       return {
         score: averageScore,
-        maxScore: averageMaxScore
+        maxScore: averageMaxScore,
       };
     }
-    
+
     return null;
   }
 
