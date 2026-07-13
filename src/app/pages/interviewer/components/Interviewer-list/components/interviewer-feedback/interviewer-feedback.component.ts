@@ -125,6 +125,7 @@ export class InterviewerFeedbackComponent
   public responseData!: InterviewerCandidate;
   public feedbackRequest!: InterviewerFeedback;
   public isImageLoading = false;
+  public showAadhaar = false;
   public isUploadingFiles = false;
   public isDragOver = false;
   /** Per-round report data keyed by assessmentRoundId */
@@ -614,6 +615,14 @@ export class InterviewerFeedbackComponent
         this.imageLoadingStates[key] = false;
       },
     });
+  }
+
+  public getMaskedAadhaar(aadhaar: string): string {
+    if (!aadhaar) return '';
+    const clean = aadhaar.replace(/\s+/g, '');
+    if (clean.length < 4) return clean;
+    const last4 = clean.slice(-4);
+    return `•••• •••• ${last4}`;
   }
 
   public getCorrectAnswers(

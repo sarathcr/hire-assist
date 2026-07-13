@@ -75,26 +75,34 @@
         </div>
         <div class="ifb__candidate-divider"></div>
         <div class="ifb__candidate-meta">
+          <!-- Aadhaar Number -->
+          <div class="ifb__meta-item">
+            <div class="ifb__meta-icon">
+              <i class="pi pi-id-card"></i>
+            </div>
+            <div class="ifb__meta-info">
+              <span class="ifb__meta-label">Aadhaar Number</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="ifb__meta-value">{{
+                  showAadhaar ? responseData.candidateId : getMaskedAadhaar(responseData.candidateId)
+                }}</span>
+                <i
+                  class="pi"
+                  [ngClass]="showAadhaar ? 'pi-eye-slash' : 'pi-eye'"
+                  style="cursor: pointer; color: #6366f1; font-size: 14px;"
+                  (click)="showAadhaar = !showAadhaar"
+                ></i>
+              </div>
+            </div>
+          </div>
+          <!-- Email -->
           <div class="ifb__meta-item">
             <div class="ifb__meta-icon">
               <i class="pi pi-envelope"></i>
             </div>
             <div class="ifb__meta-info">
               <span class="ifb__meta-label">Email</span>
-              <span class="ifb__meta-value">{{
-                responseData.candidateId
-              }}</span>
-            </div>
-          </div>
-          <div class="ifb__meta-item">
-            <div class="ifb__meta-icon">
-              <i class="pi pi-briefcase"></i>
-            </div>
-            <div class="ifb__meta-info">
-              <span class="ifb__meta-label">Assessment ID</span>
-              <span class="ifb__meta-value"
-                >#{{ responseData.assessmentId }}</span
-              >
+              <span class="ifb__meta-value">{{ candidateid }}</span>
             </div>
           </div>
         </div>

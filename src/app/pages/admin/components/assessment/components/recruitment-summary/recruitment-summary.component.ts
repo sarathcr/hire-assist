@@ -116,6 +116,51 @@ export class RecruitmentSummaryComponent implements OnInit {
     this.location.back();
   }
 
+  public getRoundTotalScore(round: any): { score: number; maxScore: number } | null {
+    if (!round) return null;
+    
+    if (round.isAptitude) {
+      return {
+        score: round.correctCount || 0,
+        maxScore: round.totalQuestions || 0
+      };
+    }
+    
+    if (round.feedbackCriteria && round.feedbackCriteria.length > 0) {
+      const interviewerScores: Record<string, { score: number; maxScore: number }> = {};
+      
+      round.feedbackCriteria.forEach((crit: any) => {
+        const interviewer = crit.interviewerName || 'default';
+        if (!interviewerScores[interviewer]) {
+          interviewerScores[interviewer] = { score: 0, maxScore: 0 };
+        }
+        interviewerScores[interviewer].score += Number(crit.score || 0);
+        interviewerScores[interviewer].maxScore += Number(crit.maxScore || 0);
+      });
+      
+      const interviewers = Object.keys(interviewerScores);
+      if (interviewers.length === 0) return { score: 0, maxScore: 0 };
+      
+      let totalScoreSum = 0;
+      let totalMaxScoreSum = 0;
+      
+      interviewers.forEach((interviewer) => {
+        totalScoreSum += interviewerScores[interviewer].score;
+        totalMaxScoreSum += interviewerScores[interviewer].maxScore;
+      });
+      
+      const averageScore = Math.round((totalScoreSum / interviewers.length) * 100) / 100;
+      const averageMaxScore = Math.round((totalMaxScoreSum / interviewers.length) * 100) / 100;
+      
+      return {
+        score: averageScore,
+        maxScore: averageMaxScore
+      };
+    }
+    
+    return null;
+  }
+
   public maskAadhaar(id: string): string {
     if (!id) return 'N/A';
     const str = id.toString();

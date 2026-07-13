@@ -25,7 +25,7 @@ import { finalize } from 'rxjs/operators';
 import { forkJoin, Observable } from 'rxjs';
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { AssessmentService } from '../../../../services/assessment.service';
-import { CandidateService } from '../../../../services/candidate.service';
+import { CandidateService } from '../../../assessment/services/candidate.service';
 import { CoordinatorPanelBridgeService } from '../../../../../coordinator/services/coordinator-panel-bridge.service';
 import { PanelService } from '../../../../services/panel.service';
 import { Assessment } from '../../../../models/assessment.model';

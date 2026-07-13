@@ -40,6 +40,10 @@ describe('AssessmentCardComponent', () => {
   });
 
   it('should set action items on init', () => {
+    const dataNotStarted = { ...mockData, activeRoundsPercentage: 0 };
+    fixture.componentRef.setInput('data', dataNotStarted);
+    (component as any).setActionItems();
+
     expect(component.actionItems.length).toBeGreaterThan(0);
     const labels = component.actionItems.map((item: MenuItem) => item.label);
     expect(labels).toContain('Edit');
@@ -69,7 +73,7 @@ describe('AssessmentCardComponent', () => {
   it('should return correct progress color', () => {
     expect(component.getProgressColor(95)).toBe('#16a34a');
     expect(component.getProgressColor(80)).toBe('#f97316');
-    expect(component.getProgressColor(50)).toBe('');
+    expect(component.getProgressColor(50)).toBe('var(--primary-color)');
   });
 
   it('should return last updated info from private getLastUpdatedInfo()', () => {
@@ -151,6 +155,13 @@ describe('AssessmentCardComponent', () => {
       '.p-speeddial-action',
     );
     expect(actionButtons.length).toBe(0);
+  });
+
+  it('should not show action items when status is Completed', () => {
+    const completedData = { ...mockData, status: 'Completed' };
+    fixture.componentRef.setInput('data', completedData);
+    (component as any).setActionItems();
+    expect(component.actionItems.length).toBe(0);
   });
 
   it('should not throw errors when no rounds are present', () => {

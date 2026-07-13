@@ -72,8 +72,19 @@ export class AssessmentCardComponent implements OnInit {
     
     const isInactiveNotStarted = assessment?.status === 'Inactive' && activeRoundsPercentage === 0;
     
-    // A recruitment is fully completed/archived (no kebab menu) if it's inactive, has started, but hasn't reached 100%
-    const isCompleted = assessment?.isActive === false && !isInactiveNotStarted && activeRoundsPercentage !== 100;
+    let isCompleted = false;
+    if (assessment?.status) {
+      const statusLower = assessment.status.toLowerCase();
+      if (statusLower === 'completed') {
+        isCompleted = true;
+      } else if (statusLower === 'active' || statusLower === 'inactive') {
+        isCompleted = false;
+      } else {
+        isCompleted = assessment?.isActive === false && !isInactiveNotStarted && activeRoundsPercentage !== 100;
+      }
+    } else {
+      isCompleted = assessment?.isActive === false && !isInactiveNotStarted && activeRoundsPercentage !== 100;
+    }
     
     // A recruitment is in progress if it has started rounds but is not fully completed
     const isInProgress = activeRoundsPercentage > 0 && !isCompleted;
