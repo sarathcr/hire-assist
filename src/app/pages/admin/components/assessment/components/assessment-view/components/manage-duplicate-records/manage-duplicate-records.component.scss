@@ -238,7 +238,7 @@
 
 .duplicates-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
   gap: 1.5rem;
   align-items: stretch;
 }
@@ -340,7 +340,7 @@
 // 6. Category 2 & 3: Exceptions Grid Layouts
 .exceptions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
   gap: 1.5rem;
 }
 
@@ -625,12 +625,36 @@
 // 10. Responsive Breakpoints
 @media (max-width: 768px) {
   .validation-dashboard {
-    height: 90vh;
+    height: 100%;
+    min-height: auto;
+  }
+
+  .validation-workspace {
+    padding: 0 1rem 1rem 1rem;
+    overflow-x: hidden;
   }
 
   .validation-banner {
     margin: 1rem;
     padding: 1rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .cluster-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0 1rem 1rem 1rem;
+  }
+
+  .clusters-dashboard {
+    padding: 0 0 1rem 0;
+  }
+
+  .clusters-grid {
+    grid-template-columns: 1fr;
   }
 
   .duplicates-grid {
@@ -647,12 +671,51 @@
     align-items: stretch;
     text-align: center;
     padding: 1rem;
+
+    .validation-footer__actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+      width: 100%;
+
+      .btn {
+        width: 100%;
+      }
+    }
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 500px) {
+    .cluster-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1.25rem 1rem;
+
+      &__details {
+        width: 100%;
+      }
+
+      &__key {
+        white-space: normal;
+      }
+
+      &__badge-wrapper {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 0.25rem;
+        border-top: 1px dashed #e2e8f0;
+        padding-top: 0.5rem;
+      }
+    }
   }
 }
 
-// 11. Clusters Dashboard Top-Level View
 .clusters-dashboard {
-  padding: 0 1.5rem 1.5rem 1.5rem;
+  padding: 0 0 1.5rem 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -668,7 +731,7 @@
 
 .clusters-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
   gap: 1rem;
 }
 

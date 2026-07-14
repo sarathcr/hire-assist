@@ -1,48 +1,57 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Force refresh build
-import { CommonModule, NgClass } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, HostListener } from '@angular/core';
+import { CommonModule, isPlatformBrowser, NgClass } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  Inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+} from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MenuItem, MessageService, ConfirmationService } from 'primeng/api';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { finalize, map } from 'rxjs/operators';
-import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
-import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
-import { TableComponent } from '../../../../../../shared/components/table/table.component';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CarouselModule } from 'primeng/carousel';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Menu, MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
 import { StepperModule } from 'primeng/stepper';
 import { TooltipModule } from 'primeng/tooltip';
-import { of, forkJoin, Observable } from 'rxjs';
-import { PaginatedData, PaginatedPayload, FilterMap } from '../../../../../../shared/models/pagination.models';
-import { toLocalISOString } from '../../../../../../shared/utilities/date.utility';
+import { forkJoin, Observable } from 'rxjs';
+import { finalize, map } from 'rxjs/operators';
+import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
+import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
+import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
+import { TableComponent } from '../../../../../../shared/components/table/table.component';
+import { StatusEnum } from '../../../../../../shared/enums/status.enum';
+import {
+  FilterMap,
+  PaginatedData,
+  PaginatedPayload,
+} from '../../../../../../shared/models/pagination.models';
 import { recruitment } from '../../../../../../shared/models/stepper.models';
 import {
   FieldType,
   TableColumnsData,
 } from '../../../../../../shared/models/table.models';
-import { StatusEnum } from '../../../../../../shared/enums/status.enum';
-import { AssessmentService } from '../../../../services/assessment.service';
-import { CandidateService } from '../../services/candidate.service';
-import { InterviewService } from '../../services/interview.service';
 import {
   Assessment,
   AssessmentRound,
 } from '../../../../models/assessment.model';
-import { RoundCompletionWarningComponent } from './components/round-completion-warning/round-completion-warning.component';
-import { ForceCompleteWarningComponent } from './components/force-complete-warning/force-complete-warning.component';
-import { CreateBatchDialogComponent } from '../assessment-view/components/create-batch-dialog/create-batch-dialog.component';
+import { AssessmentService } from '../../../../services/assessment.service';
 import { BatchService } from '../../../../services/batch.service';
+import { CandidateService } from '../../services/candidate.service';
+import { InterviewService } from '../../services/interview.service';
+import { CreateBatchDialogComponent } from '../assessment-view/components/create-batch-dialog/create-batch-dialog.component';
+import { ForceCompleteWarningComponent } from './components/force-complete-warning/force-complete-warning.component';
+import { RoundCompletionWarningComponent } from './components/round-completion-warning/round-completion-warning.component';
 import { ScheduleInterviewComponent } from './components/schedule-interview/schedule-interview.component';
-import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
-import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
-import { SelectPanelDailogComponent } from './components/select-panel-dailog/select-panel-dailog.component';
 import { ScheduleMismatchComponent } from './components/schedule-mismatch/schedule-mismatch.component';
-
-
+import { SelectPanelDailogComponent } from './components/select-panel-dailog/select-panel-dailog.component';
 
 interface CandidateData {
   id: string;
@@ -96,9 +105,9 @@ const tableColumns: TableColumnsData = {
       displayName: 'Action',
       buttonIcons: ['pi pi-eye', 'pi pi-lock-open', 'pi pi-history'],
       buttonLabels: ['View', 'Unlock', 'History'],
-      buttonTooltips: ['View', 'Unlock', 'History']
+      buttonTooltips: ['View', 'Unlock', 'History'],
     },
-  ]
+  ],
 };
 
 @Component({
@@ -193,6 +202,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public isLoading: boolean = true;
   public isCompletingRound: boolean = false;
   public isAllRoundsCompleted: boolean = false;
+  public hasSelectedCandidates: boolean = false;
 
   public visible = false;
   public historyLoading = false;
@@ -210,13 +220,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private ref: DynamicDialogRef | undefined;
   public pendingScheduleCandidateIds: string[] = [];
 
-
   public availableBatches: any = null;
   public availableQuestionSets: any = null;
   public actionItems: MenuItem[] = [];
   public selectedGuideTab: 'aptitude' | 'interview' = 'interview';
 
   constructor(
+    @Inject(PLATFORM_ID) private readonly platformId: object,
     private readonly activatedRoute: ActivatedRoute,
     private readonly router: Router,
     private readonly assessmentService: AssessmentService,
@@ -245,17 +255,28 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private loadAssignmentData(): void {
     const batchesPayload = new PaginatedPayload();
     batchesPayload.pagination.pageSize = -1;
-    batchesPayload.filterMap = { status: 'unassigned', assessmentId: this.assessmentId };
-    this.batchService.paginationEntity('Batchsummary', batchesPayload).subscribe(res => {
-      this.availableBatches = res;
-    });
+    batchesPayload.filterMap = {
+      status: 'unassigned',
+      assessmentId: this.assessmentId,
+    };
+    this.batchService
+      .paginationEntity('Batchsummary', batchesPayload)
+      .subscribe((res) => {
+        this.availableBatches = res;
+      });
 
     const questionSetsPayload = new PaginatedPayload();
-    questionSetsPayload.filterMap = { assessmentId: this.assessmentId, assessmentRoundId: this.currentStep ?? 0, activeSet: '' };
+    questionSetsPayload.filterMap = {
+      assessmentId: this.assessmentId,
+      assessmentRoundId: this.currentStep ?? 0,
+      activeSet: '',
+    };
     questionSetsPayload.pagination.pageSize = -1;
-    this.assessmentService.paginationEntity('QuestionSetSummary', questionSetsPayload).subscribe(res => {
-      this.availableQuestionSets = res;
-    });
+    this.assessmentService
+      .paginationEntity('QuestionSetSummary', questionSetsPayload)
+      .subscribe((res) => {
+        this.availableQuestionSets = res;
+      });
   }
   ngOnDestroy() {
     if (this.ref) {
@@ -275,7 +296,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     // Automatically update selectedGuideTab based on the round type
     const roundName = selectedRound?.round?.toLowerCase() || '';
     const roundTypeId = selectedRound?.roundTypeId;
-    const isAptitude = roundTypeId === 1 || roundName.includes('aptitude') || roundName.includes('test');
+    const isAptitude =
+      roundTypeId === 1 ||
+      roundName.includes('aptitude') ||
+      roundName.includes('test');
     this.selectedGuideTab = isAptitude ? 'aptitude' : 'interview';
 
     this.filterMap = {
@@ -316,12 +340,16 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         sortedColumn: true,
         hasTextFilter: true,
         filterAlias: 'scoreFilter',
-      }
+      },
     ];
 
     const selectedRound = this.step?.[this.activeMenuItemIndex];
     const roundName = selectedRound?.round?.toLowerCase() || '';
-    const isPanel = roundTypeId === 2 || String(roundTypeId) === '2' || roundName.includes('panel') || roundName.includes('interview');
+    const isPanel =
+      roundTypeId === 2 ||
+      String(roundTypeId) === '2' ||
+      roundName.includes('panel') ||
+      roundName.includes('interview');
 
     if (isPanel) {
       baseColumns.push({
@@ -353,19 +381,18 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       });
     }
 
-    baseColumns.push(
-      {
-        field: 'status',
-        displayName: 'Status',
-        fieldType: FieldType.String,
-        sortedColumn: true,
-        hasTextFilter: true,
-        filterAlias: 'statusFilter',
-        hasMultiStatus: true,
-      }
-    );
+    baseColumns.push({
+      field: 'status',
+      displayName: 'Status',
+      fieldType: FieldType.String,
+      sortedColumn: true,
+      hasTextFilter: true,
+      filterAlias: 'statusFilter',
+      hasMultiStatus: true,
+    });
 
-    const isLastRound = this.activeMenuItemIndex === (this.step?.length || 0) - 1;
+    const isLastRound =
+      this.activeMenuItemIndex === (this.step?.length || 0) - 1;
     if (!isLastRound) {
       baseColumns.push({
         field: 'nextRoundStatus',
@@ -378,16 +405,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       });
     }
 
-    baseColumns.push(
-      {
-        field: 'interviewDate',
-        displayName: 'Interview Date',
-        fieldType: FieldType.StringToDateTime,
-        sortedColumn: true,
-        hasTextFilter: true,
-        filterAlias: 'textFilter',
-      }
-    );
+    baseColumns.push({
+      field: 'interviewDate',
+      displayName: 'Interview Date',
+      fieldType: FieldType.StringToDateTime,
+      sortedColumn: true,
+      hasTextFilter: true,
+      filterAlias: 'textFilter',
+    });
 
     // Add Actions column with dropdown
     const actionsColumn: any = {
@@ -395,7 +420,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       displayName: 'Action',
       buttonIcons: ['pi pi-eye', 'pi pi-lock-open', 'pi pi-history'],
       buttonLabels: ['View', 'Unlock', 'History'],
-      buttonTooltips: ['View', 'Unlock', 'History']
+      buttonTooltips: ['View', 'Unlock', 'History'],
     };
 
     baseColumns.push(actionsColumn);
@@ -405,28 +430,55 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   public getSelectedCandidatesOnTable(candidates: any[]): void {
-    this.selectedCandidateIds = candidates.map(c => c.id);
+    this.selectedCandidateIds = candidates.map((c) => c.id);
     this.updateActionItems();
   }
 
-  public navigateToSummary(): void {
-    if (this.isAllRoundsCompleted) {
-      this.router.navigate([`/admin/recruitments/recruitment-summary/${this.assessmentId}`]);
-    } else {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'In Progress',
-        detail: 'Complete all rounds to view the recruitment summary.'
-      });
+  public get isSummaryButtonDisabled(): boolean {
+    if (!this.isAllRoundsCompleted) {
+      return true;
     }
+    return !this.hasSelectedCandidates;
+  }
+
+  public get summaryTooltipText(): string {
+    if (!this.isAllRoundsCompleted) {
+      return 'Complete all rounds to view summary';
+    }
+    if (!this.hasSelectedCandidates) {
+      return 'No candidates were selected in this recruitment.';
+    }
+    return 'Click to view full summary';
+  }
+
+  public get tooltipEvent(): string {
+    if (isPlatformBrowser(this.platformId)) {
+      const isTouchDevice =
+        navigator.maxTouchPoints > 0 ||
+        (navigator as any).msMaxTouchPoints > 0 ||
+        'ontouchstart' in (globalThis as any);
+      return isTouchDevice ? 'both' : 'hover';
+    }
+    return 'hover';
+  }
+
+  public navigateToSummary(): void {
+    if (this.isSummaryButtonDisabled) {
+      return;
+    }
+    this.router.navigate([
+      `/admin/recruitments/recruitment-summary/${this.assessmentId}`,
+    ]);
   }
 
   public isAptitudeRound(): boolean {
     if (!this.step || this.activeMenuItemIndex === -1) return false;
     const currentRound = this.step[this.activeMenuItemIndex];
-    return currentRound?.roundTypeId === 1 ||
-           currentRound?.round?.toLowerCase().includes('aptitude') || 
-           currentRound?.round?.toLowerCase().includes('test');
+    return (
+      currentRound?.roundTypeId === 1 ||
+      currentRound?.round?.toLowerCase().includes('aptitude') ||
+      currentRound?.round?.toLowerCase().includes('test')
+    );
   }
 
   public isLastRound(): boolean {
@@ -470,7 +522,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const selectedCandidate = this.tableData?.data?.find((c: any) => c.id === this.selectedCandidateIds[0]);
+    const selectedCandidate = this.tableData?.data?.find(
+      (c: any) => c.id === this.selectedCandidateIds[0],
+    );
     if (!selectedCandidate) return;
 
     this.ref = this.dialog.open(SelectPanelDailogComponent, {
@@ -500,18 +554,35 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private onAssignToBatch(candidate: any): void {
     const batchesPayload = new PaginatedPayload();
     batchesPayload.pagination.pageSize = -1;
-    batchesPayload.filterMap = { status: 'unassigned', assessmentId: this.assessmentId };
-    const batches$ = this.batchService.paginationEntity('Batchsummary', batchesPayload);
+    batchesPayload.filterMap = {
+      status: 'unassigned',
+      assessmentId: this.assessmentId,
+    };
+    const batches$ = this.batchService.paginationEntity(
+      'Batchsummary',
+      batchesPayload,
+    );
 
     const questionSetsPayload = new PaginatedPayload();
-    questionSetsPayload.filterMap = { assessmentId: this.assessmentId, assessmentRoundId: this.currentStep ?? 0, activeSet: '' };
+    questionSetsPayload.filterMap = {
+      assessmentId: this.assessmentId,
+      assessmentRoundId: this.currentStep ?? 0,
+      activeSet: '',
+    };
     questionSetsPayload.pagination.pageSize = -1;
-    const questionSets$ = this.assessmentService.paginationEntity('QuestionSetSummary', questionSetsPayload);
+    const questionSets$ = this.assessmentService.paginationEntity(
+      'QuestionSetSummary',
+      questionSetsPayload,
+    );
 
     this.openAssignToBatchDialog(candidate, batches$, questionSets$);
   }
 
-  private openAssignToBatchDialog(candidate: any, batches$: any, questionSets$: any): void {
+  private openAssignToBatchDialog(
+    candidate: any,
+    batches$: any,
+    questionSets$: any,
+  ): void {
     this.isLoading = false;
     this.cdr.detectChanges();
     setTimeout(() => {
@@ -527,7 +598,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           candidateData: this.tableData,
           recruitmentEndDate: this.data?.endDateTime,
           recruitmentStartDate: this.data?.startDateTime,
-        }
+        },
       });
 
       this.ref.onClose.subscribe((result: any) => {
@@ -539,13 +610,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   private executeBatchAssignment(dialogResult: any, candidate: any): void {
-    const candidateIds = candidate.id ? [candidate.id] : this.selectedCandidateIds;
-    
+    const candidateIds = candidate.id
+      ? [candidate.id]
+      : this.selectedCandidateIds;
+
     if (candidateIds.length === 0) {
       this.messageService.add({
         severity: 'warn',
         summary: 'No Candidates Selected',
-        detail: 'Please select at least one candidate to assign.'
+        detail: 'Please select at least one candidate to assign.',
       });
       return;
     }
@@ -556,18 +629,23 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       assessmentId: this.assessmentId,
       batchId: dialogResult.batchId,
       questionSetIds: [dialogResult.questionSetId],
-      startDateTime: dialogResult.startDate ? new Date(dialogResult.startDate).toISOString() : null,
-      endDateTime: dialogResult.endDate ? new Date(dialogResult.endDate).toISOString() : null
+      startDateTime: dialogResult.startDate
+        ? new Date(dialogResult.startDate).toISOString()
+        : null,
+      endDateTime: dialogResult.endDate
+        ? new Date(dialogResult.endDate).toISOString()
+        : null,
     };
 
-    this.candidateService.createEntity(payload as any, 'add-batch')
-      .pipe(finalize(() => this.isLoading = false))
+    this.candidateService
+      .createEntity(payload as any, 'add-batch')
+      .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: () => {
           this.messageService.add({
             severity: 'success',
             summary: 'Success',
-            detail: 'Batch assigned successfully'
+            detail: 'Batch assigned successfully',
           });
           this.selectedCandidateIds = [];
           this.getPaginatedCandidateData(this.filterMap);
@@ -577,9 +655,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: err.error?.type || err.error?.message || 'Failed to assign batch'
+            detail:
+              err.error?.type || err.error?.message || 'Failed to assign batch',
           });
-        }
+        },
       });
   }
 
@@ -589,25 +668,42 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       ? candidateIdStr.split(',')
       : [candidateIdStr];
 
-    const candidatesToCheck = this.tableData?.data?.filter((c: any) => candidateIds.includes(String(c.id))) || [];
+    const candidatesToCheck =
+      this.tableData?.data?.filter((c: any) =>
+        candidateIds.includes(String(c.id)),
+      ) || [];
 
     if (this.isAptitudeRound()) {
-      const missingBatch = candidatesToCheck.some((c: any) => !c.batch || c.batch === '-' || String(c.batch).trim() === '' || String(c.batch).toLowerCase().includes('unassigned'));
+      const missingBatch = candidatesToCheck.some(
+        (c: any) =>
+          !c.batch ||
+          c.batch === '-' ||
+          String(c.batch).trim() === '' ||
+          String(c.batch).toLowerCase().includes('unassigned'),
+      );
       if (missingBatch) {
         this.messageService.add({
           severity: 'warn',
           summary: 'Warning',
-          detail: 'Please assign a batch to the selected candidate(s) before scheduling.',
+          detail:
+            'Please assign a batch to the selected candidate(s) before scheduling.',
         });
         return;
       }
     } else {
-      const missingPanel = candidatesToCheck.some((c: any) => !c.panel || c.panel === '-' || String(c.panel).trim() === '' || String(c.panel).toLowerCase().includes('unassigned'));
+      const missingPanel = candidatesToCheck.some(
+        (c: any) =>
+          !c.panel ||
+          c.panel === '-' ||
+          String(c.panel).trim() === '' ||
+          String(c.panel).toLowerCase().includes('unassigned'),
+      );
       if (missingPanel) {
         this.messageService.add({
           severity: 'warn',
           summary: 'Warning',
-          detail: 'Please assign a panel to the selected candidate(s) before scheduling.',
+          detail:
+            'Please assign a panel to the selected candidate(s) before scheduling.',
         });
         return;
       }
@@ -628,12 +724,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         candidateIds: this.pendingScheduleCandidateIds,
         candidates: candidatesToCheck.map((c: any) => ({
           id: String(c.id),
-          name: c.name || String(c.id)
+          name: c.name || String(c.id),
         })),
         assessmentId: this.assessmentId,
         startDateTime: this.data?.startDateTime,
         endDateTime: this.data?.endDateTime,
-        onSubmit: (formValue: { scheduleDate: Date, candidateIds?: string[] }) => {
+        onSubmit: (formValue: {
+          scheduleDate: Date;
+          candidateIds?: string[];
+        }) => {
           if (formValue.candidateIds) {
             this.pendingScheduleCandidateIds = formValue.candidateIds;
           }
@@ -641,8 +740,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         },
         setComponentInstance: (instance: ScheduleInterviewComponent) => {
           // You could store instance if needed
-        }
-      }
+        },
+      },
     });
   }
 
@@ -652,7 +751,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       assessmentId: String(this.assessmentId),
       candidateIds: this.pendingScheduleCandidateIds,
       assessmentRoundId: this.currentStep,
-      scheduledDate: scheduledDate ? new Date(scheduledDate).toISOString() : null
+      scheduledDate: scheduledDate
+        ? new Date(scheduledDate).toISOString()
+        : null,
     };
 
     this.assessmentService
@@ -660,7 +761,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (res: any) => {
-          if (this.isAptitudeRound() && res && res.isSuccess === false && res.mismatchedCandidates?.length > 0) {
+          if (
+            this.isAptitudeRound() &&
+            res &&
+            res.isSuccess === false &&
+            res.mismatchedCandidates?.length > 0
+          ) {
             this.handleScheduleMismatch(res);
             return;
           }
@@ -675,14 +781,22 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           const errorBody = err.error;
-          if (this.isAptitudeRound() && errorBody && errorBody.isSuccess === false && errorBody.mismatchedCandidates?.length > 0) {
+          if (
+            this.isAptitudeRound() &&
+            errorBody &&
+            errorBody.isSuccess === false &&
+            errorBody.mismatchedCandidates?.length > 0
+          ) {
             this.handleScheduleMismatch(errorBody);
             return;
           }
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: err.error?.type || err.error?.message || 'Failed to schedule interviews',
+            detail:
+              err.error?.type ||
+              err.error?.message ||
+              'Failed to schedule interviews',
           });
           this.ref?.close();
         },
@@ -691,7 +805,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   private handleScheduleMismatch(errorBody: any): void {
     this.ref?.close(); // Close any currently open scheduling dialog first
-    
+
     setTimeout(() => {
       this.ref = this.dialog.open(ScheduleMismatchComponent, {
         showHeader: false,
@@ -707,8 +821,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           mismatchedCandidates: errorBody.mismatchedCandidates,
           onSubmit: (newDate: Date) => {
             this.confirmSchedule(newDate);
-          }
-        }
+          },
+        },
       });
     }, 100);
   }
@@ -727,7 +841,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     if (payload.pagination) {
       this.filterMap['pagination'] = payload.pagination as any;
     }
-    
+
     if (payload.multiSortedColumns) {
       this.filterMap['multiSortedColumns'] = payload.multiSortedColumns as any;
     }
@@ -742,12 +856,16 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public onView(candidate: any): void {
     if (candidate.interviewId) {
       this.router.navigate(
-        [`admin/recruitments/candidateDetail/${this.assessmentId}/${candidate.id}/${candidate.interviewId}`],
+        [
+          `admin/recruitments/candidateDetail/${this.assessmentId}/${candidate.id}/${candidate.interviewId}`,
+        ],
         { queryParams: { assessmentRoundId: this.currentStep } },
       );
     } else {
       this.router.navigate(
-        [`admin/recruitments/candidateDetail/${this.assessmentId}/${candidate.id}`],
+        [
+          `admin/recruitments/candidateDetail/${this.assessmentId}/${candidate.id}`,
+        ],
         { queryParams: { assessmentRoundId: this.currentStep } },
       );
     }
@@ -777,28 +895,46 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     };
     paginatedPayload.pagination = {
       pageNumber: 1,
-      pageSize: -1
+      pageSize: -1,
     } as any;
 
-    return this.interviewService.paginationEntity<any>('InterviewSummary', paginatedPayload).pipe(
-      map((res: any) => res.data.map((item: any) => ({
-        id: item.candidateId || item.id,
-        name: item.candidateName || item.fullName || item.name || 'Unknown',
-        email: item.email,
-        score: ((item.score === 0 || item.score === '0') && !['completed', 'on review', 'selected', 'rejected'].includes(item.status?.toLowerCase() || '')) ? 'N/A' : (item.score === 0 || item.score === '0' ? item.score : (item.score || 'N/A')),
-        status: item.status || 'Pending',
-        isScheduled: item.isScheduled === true || (typeof item.isScheduled === 'string' && item.isScheduled.toLowerCase() !== 'false' && item.isScheduled.toLowerCase() !== 'not scheduled' && item.isScheduled.trim() !== ''),
-        assessmentRoundId: item.assessmentRoundId,
-        interviewId: item.id || item.interviewId,
-      })))
-    );
+    return this.interviewService
+      .paginationEntity<any>('InterviewSummary', paginatedPayload)
+      .pipe(
+        map((res: any) =>
+          res.data.map((item: any) => ({
+            id: item.candidateId || item.id,
+            name: item.candidateName || item.fullName || item.name || 'Unknown',
+            email: item.email,
+            score:
+              (item.score === 0 || item.score === '0') &&
+              !['completed', 'on review', 'selected', 'rejected'].includes(
+                item.status?.toLowerCase() || '',
+              )
+                ? 'N/A'
+                : item.score === 0 || item.score === '0'
+                  ? item.score
+                  : item.score || 'N/A',
+            status: item.status || 'Pending',
+            isScheduled:
+              item.isScheduled === true ||
+              (typeof item.isScheduled === 'string' &&
+                item.isScheduled.toLowerCase() !== 'false' &&
+                item.isScheduled.toLowerCase() !== 'not scheduled' &&
+                item.isScheduled.trim() !== ''),
+            assessmentRoundId: item.assessmentRoundId,
+            interviewId: item.id || item.interviewId,
+          })),
+        ),
+      );
   }
 
   public hasIncompleteCandidates(): boolean {
-    const pendingCandidates = this.tableData?.data?.filter((c: any) => {
-      const status = c.status?.toLowerCase();
-      return status !== 'selected' && status !== 'rejected';
-    }) || [];
+    const pendingCandidates =
+      this.tableData?.data?.filter((c: any) => {
+        const status = c.status?.toLowerCase();
+        return status !== 'selected' && status !== 'rejected';
+      }) || [];
     return pendingCandidates.length > 0;
   }
 
@@ -810,8 +946,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     } else {
       this.isCompletingRound = true;
       this.fetchAllCandidatesForCurrentRound()
-        .pipe(finalize(() => this.isCompletingRound = false))
-        .subscribe(candidates => this.processForceComplete(candidates));
+        .pipe(finalize(() => (this.isCompletingRound = false)))
+        .subscribe((candidates) => this.processForceComplete(candidates));
     }
   }
 
@@ -837,14 +973,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       if (statusLower === 'scheduled') {
         options = [
           { label: 'Absent', value: 'Absent', class: 'status-absent' },
-          { label: 'Rejected', value: 'Rejected', class: 'status-rejected' }
+          { label: 'Rejected', value: 'Rejected', class: 'status-rejected' },
         ];
         nextStatusLabel = 'Absent';
         nextStatusClass = 'status-absent';
       } else if (statusLower === 'completed') {
         options = [
           { label: 'Selected', value: 'Selected', class: 'status-selected' },
-          { label: 'Rejected', value: 'Rejected', class: 'status-rejected' }
+          { label: 'Rejected', value: 'Rejected', class: 'status-rejected' },
         ];
         nextStatusLabel = 'Selected';
         nextStatusClass = 'status-selected';
@@ -865,7 +1001,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         roundName: 'this round',
         candidates: pendingCandidates,
         onProceed: (updatedCandidates: any[]) => {
-          return new Observable(observer => {
+          return new Observable((observer) => {
             if (updatedCandidates.length === 0 || !this.assessmentId) {
               observer.next(true);
               observer.complete();
@@ -876,7 +1012,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               let statusId = StatusEnum.Rejected;
               const nextStatus = c.nextStatusLabel?.toLowerCase();
               if (nextStatus === 'absent') statusId = StatusEnum.NotAttended;
-              else if (nextStatus === 'selected') statusId = StatusEnum.Selected;
+              else if (nextStatus === 'selected')
+                statusId = StatusEnum.Selected;
 
               return {
                 candidateId: c.id,
@@ -887,23 +1024,26 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               };
             });
 
-            this.interviewService.updateEntity('InterviewStatus', payload).subscribe({
-              next: () => {
-                observer.next(true);
-                observer.complete();
-              },
-              error: () => {
-                this.messageService.add({
-                  severity: 'error',
-                  summary: 'Error',
-                  detail: 'Failed to update candidates statuses before completing round.',
-                });
-                observer.error();
-              }
-            });
+            this.interviewService
+              .updateEntity('InterviewStatus', payload)
+              .subscribe({
+                next: () => {
+                  observer.next(true);
+                  observer.complete();
+                },
+                error: () => {
+                  this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail:
+                      'Failed to update candidates statuses before completing round.',
+                  });
+                  observer.error();
+                },
+              });
           });
-        }
-      }
+        },
+      },
     });
 
     this.ref.onClose.subscribe((result: any) => {
@@ -917,16 +1057,20 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     if (!this.currentStep || this.hasUncompletedPreviousRound()) return;
 
     this.isCompletingRound = true;
-    
+
     forkJoin({
-      rounds: this.assessmentService.getAssessmentRoundByAssessmnetId(this.assessmentId),
-      allCandidates: this.fetchAllCandidatesForCurrentRound()
+      rounds: this.assessmentService.getAssessmentRoundByAssessmnetId(
+        this.assessmentId,
+      ),
+      allCandidates: this.fetchAllCandidatesForCurrentRound(),
     })
-      .pipe(finalize(() => this.isCompletingRound = false))
+      .pipe(finalize(() => (this.isCompletingRound = false)))
       .subscribe({
         next: ({ rounds, allCandidates }) => {
-          const currentRound = rounds.find(r => r.id === this.currentStep);
-          const currentIndex = rounds.findIndex(r => r.id === this.currentStep);
+          const currentRound = rounds.find((r) => r.id === this.currentStep);
+          const currentIndex = rounds.findIndex(
+            (r) => r.id === this.currentStep,
+          );
           const nextRound = rounds[currentIndex + 1];
           this.nextRoundId = nextRound ? nextRound.id : null;
 
@@ -949,8 +1093,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                   roundName: currentRound.round,
                   isLastRound: !nextRound,
                   candidates: pendingCandidates,
-                  warningType: 'pending'
-                }
+                  warningType: 'pending',
+                },
               });
 
               this.ref.onClose.subscribe((result: any) => {
@@ -958,8 +1102,17 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                   this.forceCompleteRound(allCandidates);
                 }
               });
-            } else if (nextRound && allCandidates.filter((c: any) => c.status?.toLowerCase() === 'selected' && !c.isScheduled).length > 0) {
-              const unscheduledCandidates = allCandidates.filter((c: any) => c.status?.toLowerCase() === 'selected' && !c.isScheduled);
+            } else if (
+              nextRound &&
+              allCandidates.filter(
+                (c: any) =>
+                  c.status?.toLowerCase() === 'selected' && !c.isScheduled,
+              ).length > 0
+            ) {
+              const unscheduledCandidates = allCandidates.filter(
+                (c: any) =>
+                  c.status?.toLowerCase() === 'selected' && !c.isScheduled,
+              );
               this.ref = this.dialog.open(RoundCompletionWarningComponent, {
                 showHeader: false,
                 styleClass: 'standard-dialog-wrapper',
@@ -972,8 +1125,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                   roundName: currentRound.round,
                   isLastRound: false,
                   candidates: unscheduledCandidates,
-                  warningType: 'unscheduled'
-                }
+                  warningType: 'unscheduled',
+                },
               });
 
               this.ref.onClose.subscribe((result: any) => {
@@ -1017,9 +1170,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to fetch round details'
+            detail: 'Failed to fetch round details',
           });
-        }
+        },
       });
   }
 
@@ -1028,7 +1181,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public viewHistory(candidate: any): void {
     this.historyPagination.candidateId = candidate.id;
     this.currentHistoryInterviewId = candidate.interviewId;
-    this.currentHistoryPanelName = candidate.panelMemberName || candidate.panelName || null;
+    this.currentHistoryPanelName =
+      candidate.panelMemberName || candidate.panelName || null;
     this.historyPagination.pageNumber = 1;
     this.events = [];
     this.visible = true;
@@ -1047,13 +1201,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     payload.pagination.pageSize = this.historyPagination.pageSize;
     payload.filterMap = {
       assessmentRoundId: Number(this.currentStep),
-      interviewId: this.currentHistoryInterviewId || ''
+      interviewId: this.currentHistoryInterviewId || '',
     };
 
     payload.multiSortedColumns = [{ active: 'ChangedAt', direction: 'desc' }];
 
-    this.interviewService.getInterviewHistory(payload)
-      .pipe(finalize(() => this.historyLoading = false))
+    this.interviewService
+      .getInterviewHistory(payload)
+      .pipe(finalize(() => (this.historyLoading = false)))
       .subscribe({
         next: (res: any) => {
           let sortedData = [...res.data];
@@ -1063,20 +1218,28 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             const timeB = new Date(b.changedAt).getTime();
             // If they are less than 15 minutes apart, force Status Updated to be "newer" than Score Added
             if (Math.abs(timeA - timeB) < 15 * 60 * 1000) {
-              if (a.action === 'Status Updated' && b.action === 'Score Added') return -1;
-              if (b.action === 'Status Updated' && a.action === 'Score Added') return 1;
+              if (a.action === 'Status Updated' && b.action === 'Score Added')
+                return -1;
+              if (b.action === 'Status Updated' && a.action === 'Score Added')
+                return 1;
             }
             return timeB - timeA; // default descending
           });
 
           const newEvents = sortedData.map((item: any) => ({
             status: this.formatAction(item.action),
-            user: (item.action === 'Score Added' && this.currentHistoryPanelName) ? this.currentHistoryPanelName : item.changedByName,
+            user:
+              item.action === 'Score Added' && this.currentHistoryPanelName
+                ? this.currentHistoryPanelName
+                : item.changedByName,
             date: new Date(item.changedAt ? item.changedAt : new Date()),
             icon: this.getHistoryIcon(item.action),
-            description: this.getHistoryDescription(item)
+            description: this.getHistoryDescription(item),
           }));
-          this.events = this.historyPagination.pageNumber === 1 ? newEvents : [...this.events, ...newEvents];
+          this.events =
+            this.historyPagination.pageNumber === 1
+              ? newEvents
+              : [...this.events, ...newEvents];
           this.historyPagination.totalRecords = res.totalRecords;
         },
       });
@@ -1090,12 +1253,17 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   private getHistoryIcon(action: string): string {
     switch (action?.toLowerCase()) {
-      case 'selected': return 'pi pi-check-circle';
-      case 'rejected': return 'pi pi-times-circle';
+      case 'selected':
+        return 'pi pi-check-circle';
+      case 'rejected':
+        return 'pi pi-times-circle';
       case 'scheduled':
-      case 'rescheduled': return 'pi pi-calendar';
-      case 'pending': return 'pi pi-clock';
-      default: return 'pi pi-info-circle';
+      case 'rescheduled':
+        return 'pi pi-calendar';
+      case 'pending':
+        return 'pi pi-clock';
+      default:
+        return 'pi pi-info-circle';
     }
   }
 
@@ -1103,22 +1271,32 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     if (item.details) return item.details;
     if (item.remarks) return item.remarks;
     if (item.field) {
-      const formatVal = (v: any) => v === '' || v === null || v === undefined ? 'null' : v;
+      const formatVal = (v: any) =>
+        v === '' || v === null || v === undefined ? 'null' : v;
       return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
     }
     return `Action performed by ${item.changedByName}`;
   }
 
   public openMenu(event: Event, menu: Menu): void {
-    const selectedCandidates = this.tableData?.data?.filter((c: any) => this.selectedCandidateIds.includes(c.id)) || [];
-    const movedCandidates = selectedCandidates.filter((c: any) => c.status?.toLowerCase() === 'selected' && c.isScheduled);
+    const selectedCandidates =
+      this.tableData?.data?.filter((c: any) =>
+        this.selectedCandidateIds.includes(c.id),
+      ) || [];
+    const movedCandidates = selectedCandidates.filter(
+      (c: any) => c.status?.toLowerCase() === 'selected' && c.isScheduled,
+    );
 
     if (movedCandidates.length > 0) {
-      const candidateNamesArray = movedCandidates.map((c: any) => c.name || c.candidateName || c.fullName || 'Unknown Candidate');
-      
+      const candidateNamesArray = movedCandidates.map(
+        (c: any) =>
+          c.name || c.candidateName || c.fullName || 'Unknown Candidate',
+      );
+
       const modalData = {
         title: 'Action Not Allowed',
-        message: 'The following candidate(s) have already been shortlisted for the next round. Modifications to their status in the current round are no longer permitted.',
+        message:
+          'The following candidate(s) have already been shortlisted for the next round. Modifications to their status in the current round are no longer permitted.',
         candidateNames: candidateNamesArray,
         isChoice: false,
         acceptButtonText: 'Ok',
@@ -1152,30 +1330,80 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const selectedRound = this.step?.[this.activeMenuItemIndex];
     const roundTypeId = selectedRound?.roundTypeId;
     const roundName = selectedRound?.round?.toLowerCase() || '';
-    const isPanel = roundTypeId === 2 || String(roundTypeId) === '2' || roundName.includes('panel') || roundName.includes('interview');
+    const isPanel =
+      roundTypeId === 2 ||
+      String(roundTypeId) === '2' ||
+      roundName.includes('panel') ||
+      roundName.includes('interview');
 
     const hasSelection = this.selectedCandidateIds.length > 0;
-    
+
     // Get the selected candidates' detailed data to check scheduling status
-    const selectedCandidates = this.tableData?.data?.filter((c: any) => this.selectedCandidateIds.includes(c.id)) || [];
+    const selectedCandidates =
+      this.tableData?.data?.filter((c: any) =>
+        this.selectedCandidateIds.includes(c.id),
+      ) || [];
 
-    const allCompleted = selectedCandidates.length > 0 && selectedCandidates.every((c: any) => c.status?.toLowerCase() === 'completed');
-    const allSelected = selectedCandidates.length > 0 && selectedCandidates.every((c: any) => c.status?.toLowerCase() === 'selected');
-    const allRejected = selectedCandidates.length > 0 && selectedCandidates.every((c: any) => c.status?.toLowerCase() === 'rejected');
-    const allQuit = selectedCandidates.length > 0 && selectedCandidates.every((c: any) => c.status?.toLowerCase() === 'quit');
+    const allCompleted =
+      selectedCandidates.length > 0 &&
+      selectedCandidates.every(
+        (c: any) => c.status?.toLowerCase() === 'completed',
+      );
+    const allSelected =
+      selectedCandidates.length > 0 &&
+      selectedCandidates.every(
+        (c: any) => c.status?.toLowerCase() === 'selected',
+      );
+    const allRejected =
+      selectedCandidates.length > 0 &&
+      selectedCandidates.every(
+        (c: any) => c.status?.toLowerCase() === 'rejected',
+      );
+    const allQuit =
+      selectedCandidates.length > 0 &&
+      selectedCandidates.every((c: any) => c.status?.toLowerCase() === 'quit');
 
-    const anyCompleted = selectedCandidates.some((c: any) => c.status?.toLowerCase() === 'completed');
-    const anySelected = selectedCandidates.some((c: any) => c.status?.toLowerCase() === 'selected');
-    const anyRejected = selectedCandidates.some((c: any) => c.status?.toLowerCase() === 'rejected');
-    const anyQuit = selectedCandidates.some((c: any) => c.status?.toLowerCase() === 'quit');
+    const anyCompleted = selectedCandidates.some(
+      (c: any) => c.status?.toLowerCase() === 'completed',
+    );
+    const anySelected = selectedCandidates.some(
+      (c: any) => c.status?.toLowerCase() === 'selected',
+    );
+    const anyRejected = selectedCandidates.some(
+      (c: any) => c.status?.toLowerCase() === 'rejected',
+    );
+    const anyQuit = selectedCandidates.some(
+      (c: any) => c.status?.toLowerCase() === 'quit',
+    );
     const anyScheduled = selectedCandidates.some((c: any) => c.isScheduled);
     const anyOnReview = selectedCandidates.some((c: any) => {
       const status = c.status?.toLowerCase() || '';
-      return status === 'on review' || status === 'onreview' || status === 'under review' || status.includes('review');
+      return (
+        status === 'on review' ||
+        status === 'onreview' ||
+        status === 'under review' ||
+        status.includes('review')
+      );
     });
 
-    const anyMissingBatch = isAptitude && selectedCandidates.some((c: any) => !c.batch || c.batch === '-' || String(c.batch).trim() === '' || String(c.batch).toLowerCase().includes('unassigned'));
-    const anyMissingPanel = isPanel && selectedCandidates.some((c: any) => !c.panel || c.panel === '-' || String(c.panel).trim() === '' || String(c.panel).toLowerCase().includes('unassigned'));
+    const anyMissingBatch =
+      isAptitude &&
+      selectedCandidates.some(
+        (c: any) =>
+          !c.batch ||
+          c.batch === '-' ||
+          String(c.batch).trim() === '' ||
+          String(c.batch).toLowerCase().includes('unassigned'),
+      );
+    const anyMissingPanel =
+      isPanel &&
+      selectedCandidates.some(
+        (c: any) =>
+          !c.panel ||
+          c.panel === '-' ||
+          String(c.panel).trim() === '' ||
+          String(c.panel).toLowerCase().includes('unassigned'),
+      );
 
     const items: MenuItem[] = [];
 
@@ -1183,7 +1411,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       items.push({
         label: 'Assign to Batch',
         icon: 'pi pi-users',
-        disabled: !hasSelection || anyCompleted || anyScheduled || anySelected || anyRejected || anyOnReview || anyQuit,
+        disabled:
+          !hasSelection ||
+          anyCompleted ||
+          anyScheduled ||
+          anySelected ||
+          anyRejected ||
+          anyOnReview ||
+          anyQuit,
         command: () => this.onAssignToBatch({ id: '' }), // Passing empty id as it's bulk/header action
       });
     }
@@ -1192,7 +1427,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       items.push({
         label: 'Assign to Panel',
         icon: 'pi pi-user-plus',
-        disabled: !hasSelection || anyCompleted || anySelected || anyRejected || anyOnReview || anyQuit || this.selectedCandidateIds.length > 1,
+        disabled:
+          !hasSelection ||
+          anyCompleted ||
+          anySelected ||
+          anyRejected ||
+          anyOnReview ||
+          anyQuit ||
+          this.selectedCandidateIds.length > 1,
         command: () => this.onAssignToPanel(),
       });
     }
@@ -1200,8 +1442,18 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     items.push({
       label: 'Schedule',
       icon: 'pi pi-calendar-plus',
-      disabled: !hasSelection || anyCompleted || anyScheduled || anySelected || anyRejected || anyOnReview || anyQuit || anyMissingBatch || anyMissingPanel,
-      command: () => this.onScheduleCandidate({ id: this.selectedCandidateIds.join(',') }),
+      disabled:
+        !hasSelection ||
+        anyCompleted ||
+        anyScheduled ||
+        anySelected ||
+        anyRejected ||
+        anyOnReview ||
+        anyQuit ||
+        anyMissingBatch ||
+        anyMissingPanel,
+      command: () =>
+        this.onScheduleCandidate({ id: this.selectedCandidateIds.join(',') }),
     });
 
     items.push({
@@ -1218,7 +1470,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       command: () => this.onRejectCandidates(),
     });
 
-    const hasNextRound = this.activeMenuItemIndex < (this.step?.length || 0) - 1;
+    const hasNextRound =
+      this.activeMenuItemIndex < (this.step?.length || 0) - 1;
     if (hasNextRound) {
       items.push({
         label: 'Move to Next Round',
@@ -1297,7 +1550,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  private updateBulkCandidateStatus(statusId: number, actionName: string): void {
+  private updateBulkCandidateStatus(
+    statusId: number,
+    actionName: string,
+  ): void {
     if (this.selectedCandidateIds.length === 0 || !this.assessmentId) {
       this.messageService.add({
         severity: 'error',
@@ -1307,7 +1563,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const payload = this.selectedCandidateIds.map(candidateId => ({
+    const payload = this.selectedCandidateIds.map((candidateId) => ({
       candidateId: candidateId,
       assessmentRoundId: Number(this.currentStep),
       isActive: true,
@@ -1358,18 +1614,19 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const payload = {
       assessmentId: this.assessmentId,
-      candidateIds: this.selectedCandidateIds
+      candidateIds: this.selectedCandidateIds,
     };
 
-    this.assessmentService.createEntity(payload, 'move-to-next-round')
-      .pipe(finalize(() => this.isLoading = false))
+    this.assessmentService
+      .createEntity(payload, 'move-to-next-round')
+      .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (res: any) => {
           if (res) {
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
-              detail: 'Candidates moved to the next round successfully'
+              detail: 'Candidates moved to the next round successfully',
             });
             this.selectedCandidateIds = [];
             this.getPaginatedCandidateData(this.filterMap);
@@ -1378,7 +1635,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'warn',
               summary: 'Warning',
-              detail: 'No candidates were moved. Ensure they are selected and a next round exists.'
+              detail:
+                'No candidates were moved. Ensure they are selected and a next round exists.',
             });
           }
         },
@@ -1386,9 +1644,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: err.error?.type || err.error?.message || 'Failed to move candidates'
+            detail:
+              err.error?.type ||
+              err.error?.message ||
+              'Failed to move candidates',
           });
-        }
+        },
       });
   }
 
@@ -1400,8 +1661,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       assessmentRoundId: Number(this.currentStep),
     };
 
-    this.assessmentService.updateEntity(undefined, payload, 'assessmentRound/assessmentRoundComplete')
-      .pipe(finalize(() => this.isCompletingRound = false))
+    this.assessmentService
+      .updateEntity(
+        undefined,
+        payload,
+        'assessmentRound/assessmentRoundComplete',
+      )
+      .pipe(finalize(() => (this.isCompletingRound = false)))
       .subscribe({
         next: () => {
           this.messageService.add({
@@ -1417,9 +1683,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: err.error?.type || err.error?.message || 'Failed to complete round',
+            detail:
+              err.error?.type ||
+              err.error?.message ||
+              'Failed to complete round',
           });
-        }
+        },
       });
   }
 
@@ -1438,7 +1707,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       this.isAllRoundsCompleted = res.statusId === StatusEnum.Completed;
       this.cdr.detectChanges();
     };
-    const error = () => { };
+    const error = () => {};
     this.assessmentService.getEntityById(id).subscribe({ next, error });
   }
 
@@ -1459,10 +1728,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     // Parse DD-MM-YYYY format to ISO if needed
     if (assessment.startDateTime) {
-      assessment.startDateTime = this.parseDate(assessment.startDateTime) || assessment.startDateTime;
+      assessment.startDateTime =
+        this.parseDate(assessment.startDateTime) || assessment.startDateTime;
     }
     if (assessment.endDateTime) {
-      assessment.endDateTime = this.parseDate(assessment.endDateTime) || assessment.endDateTime;
+      assessment.endDateTime =
+        this.parseDate(assessment.endDateTime) || assessment.endDateTime;
     }
   }
 
@@ -1501,9 +1772,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const next = (res: AssessmentRound[]) => {
       this.step = res.sort((a, b) => a.sequence - b.sequence);
       if (this.step.length > 0) {
-        const activeIndex = this.step.findIndex(s => s.status !== 'Completed');
+        const activeIndex = this.step.findIndex(
+          (s) => s.status !== 'Completed',
+        );
         const initialIndex = activeIndex !== -1 ? activeIndex : 0;
-        
+
         this.activeMenuItemIndex = initialIndex;
         this.currentStep = this.step[initialIndex].id;
         this.roundStatus = this.step[initialIndex].status === 'Completed';
@@ -1515,7 +1788,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         const initialRound = this.step[initialIndex];
         const roundName = initialRound?.round?.toLowerCase() || '';
         const roundTypeId = initialRound?.roundTypeId;
-        const isAptitude = roundTypeId === 1 || roundName.includes('aptitude') || roundName.includes('test');
+        const isAptitude =
+          roundTypeId === 1 ||
+          roundName.includes('aptitude') ||
+          roundName.includes('test');
         this.selectedGuideTab = isAptitude ? 'aptitude' : 'interview';
 
         this.filterMap = {
@@ -1532,55 +1808,93 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       this.isLoading = false;
       this.cdr.detectChanges();
     };
-    this.assessmentService.getAssessmentRoundByAssessmnetId(id).subscribe({ next, error });
+    this.assessmentService
+      .getAssessmentRoundByAssessmnetId(id)
+      .subscribe({ next, error });
   }
 
   private getPaginatedCandidateData(payload: FilterMap): void {
     this.isLoading = true;
     const paginatedPayload = new PaginatedPayload();
     const filterMapCopy = { ...payload };
-    
+
     if (filterMapCopy['pagination']) {
-       paginatedPayload.pagination = filterMapCopy['pagination'] as any;
-       delete filterMapCopy['pagination'];
+      paginatedPayload.pagination = filterMapCopy['pagination'] as any;
+      delete filterMapCopy['pagination'];
     }
 
     if (filterMapCopy['multiSortedColumns']) {
-       paginatedPayload.multiSortedColumns = filterMapCopy['multiSortedColumns'] as any;
-       delete filterMapCopy['multiSortedColumns'];
+      paginatedPayload.multiSortedColumns = filterMapCopy[
+        'multiSortedColumns'
+      ] as any;
+      delete filterMapCopy['multiSortedColumns'];
     }
 
     paginatedPayload.filterMap = filterMapCopy;
 
-    this.interviewService.paginationEntity<any>('InterviewSummary', paginatedPayload)
-      .pipe(finalize(() => {
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }))
+    this.interviewService
+      .paginationEntity<any>('InterviewSummary', paginatedPayload)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        }),
+      )
       .subscribe({
         next: (res: PaginatedData<any>) => {
           this.tableData = {
             ...res,
             data: res.data.map((item: any) => ({
               id: item.candidateId || item.id,
-              name: item.candidateName || item.fullName || item.name || 'Unknown',
+              name:
+                item.candidateName || item.fullName || item.name || 'Unknown',
               email: item.email,
-              score: ((item.score === 0 || item.score === '0') && !['completed', 'on review', 'selected', 'rejected'].includes(item.status?.toLowerCase() || '')) ? 'N/A' : (item.score === 0 || item.score === '0' ? item.score : (item.score || 'N/A')),
+              score:
+                (item.score === 0 || item.score === '0') &&
+                !['completed', 'on review', 'selected', 'rejected'].includes(
+                  item.status?.toLowerCase() || '',
+                )
+                  ? 'N/A'
+                  : item.score === 0 || item.score === '0'
+                    ? item.score
+                    : item.score || 'N/A',
               status: item.status || 'Pending',
-              nextRoundStatus: (item.isScheduled === true || (typeof item.isScheduled === 'string' && item.isScheduled.toLowerCase() !== 'false' && item.isScheduled.toLowerCase() !== 'not scheduled' && item.isScheduled.trim() !== '')) ? 'Scheduled' : 'Not scheduled',
+              nextRoundStatus:
+                item.isScheduled === true ||
+                (typeof item.isScheduled === 'string' &&
+                  item.isScheduled.toLowerCase() !== 'false' &&
+                  item.isScheduled.toLowerCase() !== 'not scheduled' &&
+                  item.isScheduled.trim() !== '')
+                  ? 'Scheduled'
+                  : 'Not scheduled',
               interviewDate: item.scheduledDate || 'Not Scheduled',
-              isScheduled: item.isScheduled === true || (typeof item.isScheduled === 'string' && item.isScheduled.toLowerCase() !== 'false' && item.isScheduled.toLowerCase() !== 'not scheduled' && item.isScheduled.trim() !== ''),
+              isScheduled:
+                item.isScheduled === true ||
+                (typeof item.isScheduled === 'string' &&
+                  item.isScheduled.toLowerCase() !== 'false' &&
+                  item.isScheduled.toLowerCase() !== 'not scheduled' &&
+                  item.isScheduled.trim() !== ''),
               scheduledDate: item.scheduledDate || 'Not Scheduled',
               assessmentRoundId: item.assessmentRoundId,
               interviewId: item.id || item.interviewId,
               batch: item.batchName || item.batch || 'Unassigned',
               batchId: item.batchId,
               panel: item.panel || item.Panel || 'Unassigned to Panel',
-              questionSet: item.questionSetName || item.questionSet || 'Unassigned',
+              questionSet:
+                item.questionSetName || item.questionSet || 'Unassigned',
               visibleButtonIndices: this.getVisibleButtonIndices(item),
-              disabledButtonIndices: (this.data && !this.data.isActive) ? [1] : [],
-              disabledButtonTooltips: (this.data && !this.data.isActive) ? { 1: 'recruitment is inactive you can only view the recruitment' } : {},
-              disabledReason: (this.data && !this.data.isActive) ? 'recruitment is inactive you can only view the recruitment' : ''
+              disabledButtonIndices:
+                this.data && !this.data.isActive ? [1] : [],
+              disabledButtonTooltips:
+                this.data && !this.data.isActive
+                  ? {
+                      1: 'Recruitment is inactive/completed, you can only view the recruitment.',
+                    }
+                  : {},
+              disabledReason:
+                this.data && !this.data.isActive
+                  ? 'Recruitment is inactive/completed, you can only view the recruitment.'
+                  : '',
             })),
           };
         },
@@ -1599,6 +1913,21 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   private getAssessmentSummaryData(id: number): void {
+    this.interviewService.getSelectedStatus(id).subscribe({
+      next: (res: any) => {
+        if (res && res.detailedCandidates && res.detailedCandidates.length > 0) {
+          this.hasSelectedCandidates = true;
+        } else {
+          this.hasSelectedCandidates = false;
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.hasSelectedCandidates = false;
+        this.cdr.detectChanges();
+      },
+    });
+
     this.interviewService.getAssessmentSummary(id).subscribe({
       next: (res: any) => {
         if (res) {
@@ -1610,7 +1939,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             rejected: summary.totalRejected || 0,
             pending: summary.totalPending || 0,
           };
-          
+
           // Map the roundWisePerformance array
           const rounds = res.roundWisePerformance || [];
           this.roundPerformanceData = rounds.map((round: any) => {
@@ -1619,16 +1948,20 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             const selected = round.selected || 0;
             const rejected = round.rejected || 0;
             const pending = round.pending || 0;
-            
+
             // Calculate completion percentage based on attended vs invited/totalScheduled
-            const completionPercentage = invited > 0 ? Math.round((attended / invited) * 100) : 0;
+            const completionPercentage =
+              invited > 0 ? Math.round((attended / invited) * 100) : 0;
 
             return {
               name: round.roundName,
               status: round.status || 'Pending',
-              statusClass: (round.status === 'Completed') 
-                ? 'status-active' // Using CSS class from scss line 519
-                : (round.status === 'Progress' ? 'status-progress' : 'status-queued'),
+              statusClass:
+                round.status === 'Completed'
+                  ? 'status-active' // Using CSS class from scss line 519
+                  : round.status === 'Progress'
+                    ? 'status-progress'
+                    : 'status-queued',
               statLabel: 'Attendance Rate',
               statValue: `${completionPercentage}%`,
               progress: completionPercentage,
@@ -1637,12 +1970,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               pending: pending,
               scheduled: round.scheduled || 0,
               totalScheduled: round.totalScheduled || 0,
-              isAllScheduled: (round.scheduled || 0) === (round.totalScheduled || 0) && round.totalScheduled > 0
+              isAllScheduled:
+                (round.scheduled || 0) === (round.totalScheduled || 0) &&
+                round.totalScheduled > 0,
             };
           });
         }
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -1677,13 +2012,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target) return;
 
-    const disabledElement = target.closest('button[disabled], input[disabled], select[disabled], textarea[disabled], .p-disabled, .disabled, [disabled], .p-button-disabled, .rounds-tab--disabled, .p-popover button[disabled]') as HTMLElement;
+    const disabledElement = target.closest(
+      'button[disabled], input[disabled], select[disabled], textarea[disabled], .p-disabled, .disabled, [disabled], .p-button-disabled, .rounds-tab--disabled, .p-popover button[disabled]',
+    ) as HTMLElement;
 
     if (disabledElement) {
       this.currentHoveredElement = disabledElement;
       const rect = disabledElement.getBoundingClientRect();
-      
-      const tooltipWidth = 320; 
+
+      const tooltipWidth = 320;
       const tooltipHeight = 40;
       const padding = 12;
 
@@ -1715,7 +2052,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public onMouseOut(event: MouseEvent): void {
     if (this.showHoverTooltip && this.currentHoveredElement) {
       const relatedTarget = event.relatedTarget as HTMLElement;
-      if (!relatedTarget || !this.currentHoveredElement.contains(relatedTarget)) {
+      if (
+        !relatedTarget ||
+        !this.currentHoveredElement.contains(relatedTarget)
+      ) {
         this.showHoverTooltip = false;
         this.currentHoveredElement = null;
       }

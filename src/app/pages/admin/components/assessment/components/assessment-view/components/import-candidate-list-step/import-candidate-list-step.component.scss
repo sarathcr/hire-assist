@@ -73,6 +73,11 @@
     @media (max-width: 768px) {
       width: 100%;
       justify-content: stretch;
+
+      span {
+        width: 100%;
+        display: block;
+      }
     }
   }
 
@@ -81,8 +86,10 @@
     min-width: 180px;
 
     @media (max-width: 768px) {
+      display: block;
       width: 100%;
       min-width: auto;
+      white-space: normal !important;
     }
 
     ::ng-deep {
@@ -91,6 +98,13 @@
         font-weight: 600;
         box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
         transition: all 0.3s ease;
+
+        @media (max-width: 768px) {
+          width: 100% !important;
+          white-space: normal !important;
+          text-align: center;
+          height: auto !important;
+        }
 
         &:hover:not(:disabled) {
           transform: translateY(-2px);

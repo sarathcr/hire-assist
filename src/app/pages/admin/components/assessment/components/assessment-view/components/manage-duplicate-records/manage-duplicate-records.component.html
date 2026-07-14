@@ -107,10 +107,6 @@
                 >
                   <div class="duplicate-panel__card">
                     <div class="duplicate-panel__header">
-                      <button class="action-icon action-icon--danger" (click)="$event.stopPropagation(); onRejectRecord(candidate, activeGroupId()!)" pTooltip="Reject/Delete Candidate">
-                        <i class="pi pi-trash"></i>
-                      </button>
-                      
                       <div class="duplicate-panel__select">
                         @if (selectedPanelId() === candidate.panelId) {
                           <span class="status-badge status-badge--success"><i class="pi pi-check"></i> SELECTED TO KEEP</span>

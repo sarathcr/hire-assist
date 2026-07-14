@@ -394,6 +394,9 @@ export class ManageDuplicateRecordsComponent implements OnInit {
         header: 'Confirm Cancel',
         width: '400px',
         modal: true,
+        breakpoints: {
+          '640px': '90vw',
+        },
         templates: {
           footer: DialogFooterComponent,
         },

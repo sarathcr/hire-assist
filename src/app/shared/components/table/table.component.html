@@ -8,7 +8,11 @@
   <p-table
     #dt
     [value]="displayData() || []"
-    [tableStyle]="{ 'min-width': '50rem', 'table-layout': 'auto', 'width': '100%' }"
+    [tableStyle]="{
+      'min-width': '50rem',
+      'table-layout': 'auto',
+      width: '100%',
+    }"
     [columns]="columnsData()?.columns"
     [rows]="tableData()?.pageSize"
     [totalRecords]="tableData()?.totalRecords || 0"
@@ -83,9 +87,17 @@
     <ng-template pTemplate="header" let-columns>
       <tr>
         @if (hasCheckbox) {
-          <th scope="col" class="table__headerCheckbox" style="width: 4rem; min-width: 4rem; max-width: 4rem;"
-              [pTooltip]="selectionDisabled() ? 'recruitment is inactive you can only view the recruitment' : ''"
-              tooltipPosition="right">
+          <th
+            scope="col"
+            class="table__headerCheckbox"
+            style="width: 4rem; min-width: 4rem; max-width: 4rem"
+            [pTooltip]="
+              selectionDisabled()
+                ? 'Recruitment is inactive/completed, you can only view the recruitment.'
+                : ''
+            "
+            tooltipPosition="right"
+          >
             <p-tableHeaderCheckbox
               (click)="$event.stopPropagation()"
               [disabled]="selectionDisabled()"
@@ -93,7 +105,10 @@
           </th>
         }
         @if (columnsData()?.hasExpanded) {
-          <th scope="col" style="width: 4rem; min-width: 4rem; max-width: 4rem;"></th>
+          <th
+            scope="col"
+            style="width: 4rem; min-width: 4rem; max-width: 4rem"
+          ></th>
         }
         @for (
           headerColumn of columnsData()?.columns;
@@ -114,7 +129,11 @@
               headerColumn.field === 'active'
             "
             [style.minWidth]="getColumnMinWidth(headerColumn)"
-            [style.width]="(displayData().length === 0 && !isLoading()) ? null : getColumnWidth(headerColumn)"
+            [style.width]="
+              displayData().length === 0 && !isLoading()
+                ? null
+                : getColumnWidth(headerColumn)
+            "
             [ngClass]="
               headerColumn.field === 'actions' ||
               headerColumn.field === 'button' ||
@@ -289,9 +308,9 @@
                       [options]="
                         headerColumn.filterOptions
                           ? headerColumn.filterOptions
-                          : (headerColumn.hasMultiStatus
+                          : headerColumn.hasMultiStatus
                             ? statusOptions
-                            : statusOptionsForSchedule)
+                            : statusOptionsForSchedule
                       "
                       placeholder="Select One"
                       styleClass="w-full"
@@ -375,9 +394,18 @@
         "
       >
         @if (hasCheckbox) {
-          <td style="width: 4rem; min-width: 4rem; max-width: 4rem;"
-              [pTooltip]="(selectionDisabled() || product.isSelectionDisabled || product.isDisabled) && product.disabledReason ? product.disabledReason : ''"
-              tooltipPosition="right">
+          <td
+            style="width: 4rem; min-width: 4rem; max-width: 4rem"
+            [pTooltip]="
+              (selectionDisabled() ||
+                product.isSelectionDisabled ||
+                product.isDisabled) &&
+              product.disabledReason
+                ? product.disabledReason
+                : ''
+            "
+            tooltipPosition="right"
+          >
             <p-tableCheckbox
               [value]="product"
               (click)="$event.stopPropagation()"
@@ -391,7 +419,7 @@
           </td>
         }
         @if (columnsData()?.hasExpanded) {
-          <td style="width: 4rem; min-width: 4rem; max-width: 4rem;">
+          <td style="width: 4rem; min-width: 4rem; max-width: 4rem">
             <p-button
               type="button"
               pRipple
@@ -413,7 +441,11 @@
           track headerColumn.field
         ) {
           @if (headerColumn.field === "actions") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)" (click)="$event.stopPropagation()">
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+              (click)="$event.stopPropagation()"
+            >
               <div class="flex flex-wrap gap-1">
                 @if (
                   headerColumn.actions?.includes(PaginatedDataActions.View)
@@ -454,10 +486,16 @@
                       [outlined]="true"
                       severity="success"
                       [disabled]="
-                        product.isDisabledStartInterview || product.isDisabled || product.isPresent === false
+                        product.isDisabledStartInterview ||
+                        product.isDisabled ||
+                        product.isPresent === false
                       "
                       (onClick)="onStartInterview(product)"
-                      [pTooltip]="product.isPresent === false ? 'The candidate is not reported yet' : ''"
+                      [pTooltip]="
+                        product.isPresent === false
+                          ? 'The candidate is not reported yet'
+                          : ''
+                      "
                       tooltipPosition="bottom"
                     />
                   }
@@ -471,7 +509,12 @@
                     class="mr-2"
                     [rounded]="true"
                     [outlined]="true"
-                    [disabled]="product.isSelf || product.isDisabled || product.status?.toLowerCase() === 'assigned' || product.originalStatus?.toLowerCase() === 'assigned'"
+                    [disabled]="
+                      product.isSelf ||
+                      product.isDisabled ||
+                      product.status?.toLowerCase() === 'assigned' ||
+                      product.originalStatus?.toLowerCase() === 'assigned'
+                    "
                     (onClick)="onEdit(product)"
                     pTooltip="Edit record"
                     tooltipPosition="bottom"
@@ -497,7 +540,7 @@
                 }
                 @if (
                   headerColumn.actions?.includes(PaginatedDataActions.Unlock) &&
-                  product.status?.toLowerCase() === 'terminated'
+                  product.status?.toLowerCase() === "terminated"
                 ) {
                   <p-button
                     icon="pi pi-lock-open"
@@ -556,10 +599,18 @@
               </div>
             </td>
           } @else if (headerColumn.hasChip) {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+            >
               <div class="flex flex-wrap gap-1">
                 @for (role of product[headerColumn.field]; track $index) {
-                  @if (role && (role.toString().toLowerCase().includes('unassigned') || role.toString().toLowerCase().includes('not scheduled') || role.toString().toLowerCase().includes('not reported'))) {
+                  @if (
+                    role &&
+                    (role.toString().toLowerCase().includes("unassigned") ||
+                      role.toString().toLowerCase().includes("not scheduled") ||
+                      role.toString().toLowerCase().includes("not reported"))
+                  ) {
                     <p-tag [value]="role" severity="warn" />
                   } @else {
                     <p-chip [label]="role" [removable]="false" />
@@ -567,15 +618,24 @@
                 }
               </div>
             </td>
-          } @else if (headerColumn.field === "status" || headerColumn.field === "nextRoundStatus") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
+          } @else if (
+            headerColumn.field === "status" ||
+            headerColumn.field === "nextRoundStatus"
+          ) {
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+            >
               <p-tag
                 [value]="product[headerColumn.field]"
                 [severity]="getSeverity(product[headerColumn.field])"
               />
             </td>
           } @else if (headerColumn.field === "isScheduled") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+            >
               @if (product[headerColumn.field] !== "") {
                 <p-tag
                   [value]="product[headerColumn.field]"
@@ -584,14 +644,19 @@
               }
             </td>
           } @else if (headerColumn.field === "score") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
-              <p-tag
-                [value]="product[headerColumn.field]"
-                severity="info"
-              />
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+            >
+              <p-tag [value]="product[headerColumn.field]" severity="info" />
             </td>
           } @else if (headerColumn.field === "button") {
-            <td class="table__buttonColumn" [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)" (click)="$event.stopPropagation()">
+            <td
+              class="table__buttonColumn"
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+              (click)="$event.stopPropagation()"
+            >
               @if (headerColumn?.buttonIcons?.length === 0) {
                 <p-button
                   [outlined]="true"
@@ -623,11 +688,20 @@
                           : product.toggleTooltipIconIndex !== i) ||
                         product.disabledButtonIndices?.includes(i)
                       ) {
-                        <div [pTooltip]="product.disabledButtonIndices?.includes(i) && product.disabledButtonTooltips?.[i] ? product.disabledButtonTooltips[i] : ''"
-                             tooltipPosition="left"
-                             style="width: 100%;">
+                        <div
+                          [pTooltip]="
+                            product.disabledButtonIndices?.includes(i) &&
+                            product.disabledButtonTooltips?.[i]
+                              ? product.disabledButtonTooltips[i]
+                              : ''
+                          "
+                          tooltipPosition="left"
+                          style="width: 100%"
+                        >
                           <p-button
-                            [icon]="headerColumn.buttonLabels?.[i] ? icon : icon"
+                            [icon]="
+                              headerColumn.buttonLabels?.[i] ? icon : icon
+                            "
                             [label]="headerColumn.buttonLabels?.[i] ?? ''"
                             [text]="true"
                             [plain]="true"
@@ -657,32 +731,54 @@
                   [rounded]="true"
                   [text]="true"
                   [plain]="true"
-                  [disabled]="product.isDisabled || product.isSelf || product.isActionsDisabled"
-                  [pTooltip]="product.isActionsDisabled ? product.disabledReason : ''"
+                  [disabled]="
+                    product.isDisabled ||
+                    product.isSelf ||
+                    product.isActionsDisabled
+                  "
+                  [pTooltip]="
+                    product.isActionsDisabled ? product.disabledReason : ''
+                  "
                   tooltipPosition="left"
                   (onClick)="op.toggle($event)"
                 ></p-button>
               }
             </td>
           } @else if (headerColumn.field === "active") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+            >
               <p-tag
                 [value]="product[headerColumn.field]"
                 [severity]="getSeverity(product[headerColumn.field])"
               />
             </td>
           } @else if (headerColumn.fieldType === "stringToDate") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+            >
               <ng-container
                 *ngIf="
-                  product[headerColumn.field] && product[headerColumn.field] !== '0001-01-01T00:00:00' && product[headerColumn.field] !== 'Not Scheduled' && product[headerColumn.field] !== 'Not scheduled' && product[headerColumn.field] !== 'not scheduled';
+                  product[headerColumn.field] &&
+                    product[headerColumn.field] !== '0001-01-01T00:00:00' &&
+                    product[headerColumn.field] !== 'Not Scheduled' &&
+                    product[headerColumn.field] !== 'Not scheduled' &&
+                    product[headerColumn.field] !== 'not scheduled';
                   else nilTplDate
                 "
               >
-                {{ getUtcDateString(product[headerColumn.field]) | date: "dd/MM/yyyy" }}
+                {{
+                  getUtcDateString(product[headerColumn.field])
+                    | date: "dd/MM/yyyy"
+                }}
               </ng-container>
               <ng-template #nilTplDate>
-                @if (headerColumn.field === 'reportingTime' || headerColumn.field === 'reportedAt') {
+                @if (
+                  headerColumn.field === "reportingTime" ||
+                  headerColumn.field === "reportedAt"
+                ) {
                   <p-tag value="Not reported" severity="warn" />
                 } @else {
                   <p-tag value="Not scheduled" severity="warn" />
@@ -690,17 +786,30 @@
               </ng-template>
             </td>
           } @else if (headerColumn.fieldType === "stringToDateTime") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+            >
               <ng-container
                 *ngIf="
-                  product[headerColumn.field] && product[headerColumn.field] !== '0001-01-01T00:00:00' && product[headerColumn.field] !== 'Not Scheduled' && product[headerColumn.field] !== 'Not scheduled' && product[headerColumn.field] !== 'not scheduled';
+                  product[headerColumn.field] &&
+                    product[headerColumn.field] !== '0001-01-01T00:00:00' &&
+                    product[headerColumn.field] !== 'Not Scheduled' &&
+                    product[headerColumn.field] !== 'Not scheduled' &&
+                    product[headerColumn.field] !== 'not scheduled';
                   else nilTpl
                 "
               >
-                {{ getUtcDateString(product[headerColumn.field]) | date: "dd/MM/yyyy, hh:mm a" }}
+                {{
+                  getUtcDateString(product[headerColumn.field])
+                    | date: "dd/MM/yyyy, hh:mm a"
+                }}
               </ng-container>
               <ng-template #nilTpl>
-                @if (headerColumn.field === 'reportingTime' || headerColumn.field === 'reportedAt') {
+                @if (
+                  headerColumn.field === "reportingTime" ||
+                  headerColumn.field === "reportedAt"
+                ) {
                   <p-tag value="Not reported" severity="warn" />
                 } @else {
                   <p-tag value="Not scheduled" severity="warn" />
@@ -708,7 +817,11 @@
               </ng-template>
             </td>
           } @else if (headerColumn.fieldType === "masked") {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)" (click)="$event.stopPropagation()">
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+              (click)="$event.stopPropagation()"
+            >
               <div class="flex align-items-center gap-2">
                 <span>{{
                   unmaskedRows[product.id + headerColumn.field]
@@ -733,8 +846,25 @@
               </div>
             </td>
           } @else {
-            <td [style.minWidth]="getColumnMinWidth(headerColumn)" [style.width]="getColumnWidth(headerColumn)">
-              @if (product[headerColumn.field] && (product[headerColumn.field].toString().toLowerCase().includes('unassigned') || product[headerColumn.field].toString().toLowerCase().includes('not scheduled') || product[headerColumn.field].toString().toLowerCase().includes('not reported'))) {
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+            >
+              @if (
+                product[headerColumn.field] &&
+                (product[headerColumn.field]
+                  .toString()
+                  .toLowerCase()
+                  .includes("unassigned") ||
+                  product[headerColumn.field]
+                    .toString()
+                    .toLowerCase()
+                    .includes("not scheduled") ||
+                  product[headerColumn.field]
+                    .toString()
+                    .toLowerCase()
+                    .includes("not reported"))
+              ) {
                 <p-tag [value]="product[headerColumn.field]" severity="warn" />
               } @else {
                 {{ product[headerColumn.field] }}
@@ -745,7 +875,13 @@
       </tr>
 
       <tr *ngIf="product.isExpanded" class="table__expanded-row">
-        <td [attr.colspan]="(columnsData()?.columns?.length || 0) + (hasCheckbox ? 1 : 0) + (columnsData()?.hasExpanded ? 1 : 0)">
+        <td
+          [attr.colspan]="
+            (columnsData()?.columns?.length || 0) +
+            (hasCheckbox ? 1 : 0) +
+            (columnsData()?.hasExpanded ? 1 : 0)
+          "
+        >
           <div>
             @for (
               headerColumn of columnsData()?.columns;
@@ -833,12 +969,14 @@
       </tr>
     </ng-template>
 
-
     <ng-template pTemplate="loadingbody" let-columns>
       @for (item of skeletonArray; track item) {
         <tr>
           @if (hasCheckbox) {
-            <td class="table__headerCheckbox" style="width: 4rem; min-width: 4rem; max-width: 4rem;">
+            <td
+              class="table__headerCheckbox"
+              style="width: 4rem; min-width: 4rem; max-width: 4rem"
+            >
               <p-skeleton
                 width="1.5rem"
                 height="1.5rem"
@@ -848,7 +986,7 @@
           }
 
           @if (columnsData()?.hasExpanded) {
-            <td style="width: 4rem; min-width: 4rem; max-width: 4rem;">
+            <td style="width: 4rem; min-width: 4rem; max-width: 4rem">
               <p-skeleton
                 shape="circle"
                 size="2rem"
@@ -869,8 +1007,8 @@
                   : ''
               "
             >
-              @if (col.field === 'actions' || col.field === 'button') {
-                <div style="display: flex; gap: 0.5rem;">
+              @if (col.field === "actions" || col.field === "button") {
+                <div style="display: flex; gap: 0.5rem">
                   <p-skeleton shape="circle" size="2rem"></p-skeleton>
                 </div>
               } @else {
@@ -884,7 +1022,13 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td [attr.colspan]="(columnsData()?.columns?.length || 0) + (hasCheckbox ? 1 : 0) + (columnsData()?.hasExpanded ? 1 : 0)">
+        <td
+          [attr.colspan]="
+            (columnsData()?.columns?.length || 0) +
+            (hasCheckbox ? 1 : 0) +
+            (columnsData()?.hasExpanded ? 1 : 0)
+          "
+        >
           No Records found.
         </td>
       </tr>

@@ -25,16 +25,24 @@
         }
       </div>
       @if (data) {
-        <div 
+        <div
           class="assessment-detail__hero-badge"
-          [ngClass]="{'assessment-detail__hero-badge--disabled': !isAllRoundsCompleted}"
+          [ngClass]="{
+            'assessment-detail__hero-badge--disabled': isSummaryButtonDisabled,
+          }"
+          [tabindex]="0"
           (click)="navigateToSummary()"
-          [pTooltip]="isAllRoundsCompleted ? 'Click to view full summary' : 'Complete all rounds to view summary'"
+          [pTooltip]="summaryTooltipText"
+          [tooltipEvent]="tooltipEvent"
           tooltipPosition="bottom"
-          style="cursor: pointer;">
+          style="cursor: pointer"
+        >
           <i class="pi pi-info-circle"></i>
           <span>Recruitment Summary</span>
-          <i class="pi pi-arrow-right" style="font-size: 0.8rem; margin-left: 0.5rem"></i>
+          <i
+            class="pi pi-arrow-right"
+            style="font-size: 0.8rem; margin-left: 0.5rem"
+          ></i>
         </div>
       }
     </div>
@@ -103,7 +111,7 @@
       <div class="assessment-detail__overview-section">
         <h3 class="assessment-detail__overview-subtitle">Overall Summary</h3>
         <div class="assessment-detail__stats-grid">
-          @for (i of [1,2,3,4]; track i) {
+          @for (i of [1, 2, 3, 4]; track i) {
             <div class="assessment-detail__stat-card skeleton-card">
               <div class="assessment-detail__stat-content">
                 <p-skeleton width="6rem" height="0.8rem" marginBottom="1rem" />
@@ -117,13 +125,19 @@
 
       <!-- Round-wise Performance Skeleton -->
       <div class="assessment-detail__overview-section">
-        <h3 class="assessment-detail__overview-subtitle">Round-wise Performance</h3>
+        <h3 class="assessment-detail__overview-subtitle">
+          Round-wise Performance
+        </h3>
         <div class="assessment-detail__round-grid-skeleton">
-          @for (i of [1,2,3]; track i) {
+          @for (i of [1, 2, 3]; track i) {
             <div class="round-card round-card--skeleton">
               <div class="round-card__header">
                 <p-skeleton width="8rem" height="1.2rem" />
-                <p-skeleton width="4rem" height="1.2rem" borderRadius="9999px" />
+                <p-skeleton
+                  width="4rem"
+                  height="1.2rem"
+                  borderRadius="9999px"
+                />
               </div>
               <div class="round-card__body">
                 <div class="round-card__stat-row">
@@ -138,11 +152,19 @@
               </div>
               <div class="round-card__footer">
                 <div class="round-card__footer-item">
-                  <p-skeleton width="3rem" height="0.6rem" marginBottom="0.4rem" />
+                  <p-skeleton
+                    width="3rem"
+                    height="0.6rem"
+                    marginBottom="0.4rem"
+                  />
                   <p-skeleton width="5rem" height="0.8rem" />
                 </div>
                 <div class="round-card__footer-item--right">
-                  <p-skeleton width="4rem" height="0.6rem" marginBottom="0.4rem" />
+                  <p-skeleton
+                    width="4rem"
+                    height="0.6rem"
+                    marginBottom="0.4rem"
+                  />
                   <p-skeleton width="3rem" height="0.8rem" />
                 </div>
               </div>
@@ -156,11 +178,14 @@
         <h3 class="assessment-detail__overview-subtitle">Overall Summary</h3>
         <div class="assessment-detail__stats-grid">
           @for (stat of statCardsConfig; track stat.key) {
-            <div 
-              class="assessment-detail__stat-card" 
-              [ngClass]="'assessment-detail__stat-card--' + stat.colorClass">
+            <div
+              class="assessment-detail__stat-card"
+              [ngClass]="'assessment-detail__stat-card--' + stat.colorClass"
+            >
               <div class="assessment-detail__stat-content">
-                <span class="assessment-detail__stat-label">{{ stat.label }}</span>
+                <span class="assessment-detail__stat-label">{{
+                  stat.label
+                }}</span>
                 <span class="assessment-detail__stat-value">
                   {{ summaryStats[stat.key] | number }}
                 </span>
@@ -175,20 +200,28 @@
 
       <!-- Round-wise Performance Section -->
       <div class="assessment-detail__overview-section">
-        <h3 class="assessment-detail__overview-subtitle">Round-wise Performance</h3>
-        
+        <h3 class="assessment-detail__overview-subtitle">
+          Round-wise Performance
+        </h3>
+
         <!-- Desktop/Tablet Carousel -->
         <div class="assessment-detail__carousel-container">
-          <p-carousel 
-            [value]="roundPerformanceData" 
-            [numVisible]="3" 
-            [numScroll]="1" 
-            [circular]="false" 
+          <p-carousel
+            [value]="roundPerformanceData"
+            [numVisible]="3"
+            [numScroll]="1"
+            [circular]="false"
             [responsiveOptions]="responsiveOptions"
-            styleClass="custom-carousel">
+            styleClass="custom-carousel"
+          >
             <ng-template let-round pTemplate="item">
               <div class="round-card-wrapper">
-                <ng-container *ngTemplateOutlet="roundCardTemplate; context: { $implicit: round }"></ng-container>
+                <ng-container
+                  *ngTemplateOutlet="
+                    roundCardTemplate;
+                    context: { $implicit: round }
+                  "
+                ></ng-container>
               </div>
             </ng-template>
           </p-carousel>
@@ -197,7 +230,12 @@
         <!-- Mobile Vertical Grid (Shown below 768px) -->
         <div class="assessment-detail__round-mobile-grid">
           @for (round of roundPerformanceData; track round.name) {
-            <ng-container *ngTemplateOutlet="roundCardTemplate; context: { $implicit: round }"></ng-container>
+            <ng-container
+              *ngTemplateOutlet="
+                roundCardTemplate;
+                context: { $implicit: round }
+              "
+            ></ng-container>
           }
         </div>
       </div>
@@ -207,9 +245,11 @@
         <div class="round-card">
           <div class="round-card__header">
             <h4 class="round-card__title">{{ round.name }}</h4>
-            <span class="round-card__badge" [ngClass]="round.statusClass">{{ round.status }}</span>
+            <span class="round-card__badge" [ngClass]="round.statusClass">{{
+              round.status
+            }}</span>
           </div>
-          
+
           <div class="round-card__body">
             <div class="round-card__stat-row">
               <span class="round-card__stat-label">
@@ -219,17 +259,24 @@
                 {{ round.statValue }}
               </span>
             </div>
-            
+
             <div class="round-card__progress-container">
-              <div class="round-card__progress-bar" [style.width.%]="round.progress"></div>
+              <div
+                class="round-card__progress-bar"
+                [style.width.%]="round.progress"
+              ></div>
             </div>
 
             <div class="round-card__inner-grid">
-              <div class="round-card__mini-stat round-card__mini-stat--selected">
+              <div
+                class="round-card__mini-stat round-card__mini-stat--selected"
+              >
                 <span class="round-card__mini-label">SELECTED</span>
                 <span class="round-card__mini-value">{{ round.selected }}</span>
               </div>
-              <div class="round-card__mini-stat round-card__mini-stat--rejected">
+              <div
+                class="round-card__mini-stat round-card__mini-stat--rejected"
+              >
                 <span class="round-card__mini-label">REJECTED</span>
                 <span class="round-card__mini-value">{{ round.rejected }}</span>
               </div>
@@ -243,7 +290,13 @@
             </div>
             <div class="round-card__footer-item round-card__footer-item--right">
               <span class="round-card__footer-label">SCHEDULED</span>
-              <span class="round-card__footer-value" [ngClass]="{'text-orange': !round.isAllScheduled && round.scheduled !== '-'}">
+              <span
+                class="round-card__footer-value"
+                [ngClass]="{
+                  'text-orange':
+                    !round.isAllScheduled && round.scheduled !== '-',
+                }"
+              >
                 {{ round.scheduled }}
               </span>
             </div>
@@ -321,12 +374,30 @@
     @if (step && step.length > 0) {
       <div class="assessment-detail__rounds-footer">
         <div class="assessment-detail__rounds-footer-content">
-          <div class="assessment-detail__rounds-footer-info" [ngClass]="{ 'warning-text': hasUncompletedPreviousRound() }">
-            <i [ngClass]="hasUncompletedPreviousRound() ? 'pi pi-exclamation-triangle' : 'pi pi-info-circle'"></i>
-            <span>{{ hasUncompletedPreviousRound() ? 'Please complete the previous round(s) first before completing this round.' : 'Complete the current round to proceed to the next stage' }}</span>
+          <div
+            class="assessment-detail__rounds-footer-info"
+            [ngClass]="{ 'warning-text': hasUncompletedPreviousRound() }"
+          >
+            <i
+              [ngClass]="
+                hasUncompletedPreviousRound()
+                  ? 'pi pi-exclamation-triangle'
+                  : 'pi pi-info-circle'
+              "
+            ></i>
+            <span>{{
+              hasUncompletedPreviousRound()
+                ? "Please complete the previous round(s) first before completing this round."
+                : "Complete the current round to proceed to the next stage"
+            }}</span>
           </div>
           <app-button
-            [disabled]="(data && !data.isActive) || roundStatus || hasUncompletedPreviousRound() || isCompletingRound"
+            [disabled]="
+              (data && !data.isActive) ||
+              roundStatus ||
+              hasUncompletedPreviousRound() ||
+              isCompletingRound
+            "
             [buttonSize]="'medium'"
             [buttonLabel]="'Complete Round'"
             [icon]="'pi pi-check-circle'"
@@ -338,22 +409,35 @@
     }
   </div>
 
-
   <!-- Recruitment Flow Indicator - Outside table section to save fixed space -->
   <div class="assessment-detail__flow-indicator">
     <div class="flow-header">
       <div class="flow-header__title-section">
         <h3><i class="pi pi-compass"></i> Recruitment Stage Action Guide</h3>
-        <p>Follow these quick instructions to guide candidates through this round successfully</p>
+        <p>
+          Follow these quick instructions to guide candidates through this round
+          successfully
+        </p>
       </div>
-      <div class="flow-header__badge" [ngClass]="isAptitudeRound() ? 'flow-header__badge--aptitude' : 'flow-header__badge--panel'">
+      <div
+        class="flow-header__badge"
+        [ngClass]="
+          isAptitudeRound()
+            ? 'flow-header__badge--aptitude'
+            : 'flow-header__badge--panel'
+        "
+      >
         <i [class]="isAptitudeRound() ? 'pi pi-desktop' : 'pi pi-comments'"></i>
-        <span>{{ isAptitudeRound() ? 'Aptitude/Test Round Flow' : 'Interview Round Flow' }}</span>
+        <span>{{
+          isAptitudeRound()
+            ? "Aptitude/Test Round Flow"
+            : "Interview Round Flow"
+        }}</span>
       </div>
     </div>
 
     <div class="flow-steps">
-      @if (selectedGuideTab === 'aptitude') {
+      @if (selectedGuideTab === "aptitude") {
         <!-- PHASE 1: ASSIGN BATCH -->
         <div class="flow-step flow-step--assign">
           <div class="flow-step__top">
@@ -366,7 +450,11 @@
             <h4 class="flow-step__title">Assign Batch</h4>
             <ul class="flow-step__instructions">
               <li>Select candidate(s) via checkboxes.</li>
-              <li>Click <strong>Actions</strong> menu ➔ choose <strong>Assign to Batch</strong> to link test duration and dates.</li>
+              <li>
+                Click <strong>Actions</strong> menu ➔ choose
+                <strong>Assign to Batch</strong> to link test duration and
+                dates.
+              </li>
             </ul>
           </div>
         </div>
@@ -382,8 +470,13 @@
           <div class="flow-step__content">
             <h4 class="flow-step__title">Schedule Test</h4>
             <ul class="flow-step__instructions">
-              <li>Click the <strong>Schedule</strong> row button in candidate's row.</li>
-              <li>Select their exact start Date & Time to send email invitations.</li>
+              <li>
+                Click the <strong>Schedule</strong> row button in candidate's
+                row.
+              </li>
+              <li>
+                Select their exact start Date & Time to send email invitations.
+              </li>
             </ul>
           </div>
         </div>
@@ -400,7 +493,10 @@
             <h4 class="flow-step__title">Monitor Status</h4>
             <ul class="flow-step__instructions">
               <li>Candidates receive invites and start their test.</li>
-              <li>Monitor live progress state: <strong>Assigned</strong> ➔ <strong>In Progress</strong> ➔ <strong>Completed</strong>.</li>
+              <li>
+                Monitor live progress state: <strong>Assigned</strong> ➔
+                <strong>In Progress</strong> ➔ <strong>Completed</strong>.
+              </li>
             </ul>
           </div>
         </div>
@@ -417,8 +513,13 @@
             <h4 class="flow-step__title">Select / Reject</h4>
             <ul class="flow-step__instructions">
               <li>Review test score reports in the candidate table.</li>
-              <li>Use **Actions** dropdown to **Select** or **Reject** candidates.</li>
-              <li>Use the **Unlock** action (available only if candidate test is terminated) to reset the test for technical retries.</li>
+              <li>
+                Use **Actions** dropdown to **Select** or **Reject** candidates.
+              </li>
+              <li>
+                Use the **Unlock** action (available only if candidate test is
+                terminated) to reset the test for technical retries.
+              </li>
             </ul>
           </div>
         </div>
@@ -435,8 +536,15 @@
             <div class="flow-step__content">
               <h4 class="flow-step__title">Schedule to Next Round</h4>
               <ul class="flow-step__instructions">
-                <li>Select candidates who are <strong>Selected</strong> in the candidates table.</li>
-                <li>Click on the bulk <strong>Actions</strong> button and choose <strong>Move to Next Round</strong> to schedule them to the next round.</li>
+                <li>
+                  Select candidates who are <strong>Selected</strong> in the
+                  candidates table.
+                </li>
+                <li>
+                  Click on the bulk <strong>Actions</strong> button and choose
+                  <strong>Move to Next Round</strong> to schedule them to the
+                  next round.
+                </li>
               </ul>
             </div>
           </div>
@@ -448,13 +556,21 @@
             <div class="flow-step__icon-wrapper">
               <i class="pi pi-arrow-circle-right"></i>
             </div>
-            <span class="flow-step__number">{{ !isLastRound() ? 'Phase 6' : 'Phase 5' }}</span>
+            <span class="flow-step__number">{{
+              !isLastRound() ? "Phase 6" : "Phase 5"
+            }}</span>
           </div>
           <div class="flow-step__content">
             <h4 class="flow-step__title">Complete Round</h4>
             <ul class="flow-step__instructions">
-              <li>Click <strong>Complete Round</strong> in the footer to finalize the current round.</li>
-              <li>All selected candidates must be scheduled to the next round (if a next round exists).</li>
+              <li>
+                Click <strong>Complete Round</strong> in the footer to finalize
+                the current round.
+              </li>
+              <li>
+                All selected candidates must be scheduled to the next round (if
+                a next round exists).
+              </li>
               <li>All other candidates must be rejected.</li>
             </ul>
           </div>
@@ -472,7 +588,10 @@
             <h4 class="flow-step__title">Assign Panel</h4>
             <ul class="flow-step__instructions">
               <li>Select candidate using table checkbox.</li>
-              <li>Click <strong>Actions</strong> menu ➔ choose <strong>Assign to Panel</strong> to match with interviewers.</li>
+              <li>
+                Click <strong>Actions</strong> menu ➔ choose
+                <strong>Assign to Panel</strong> to match with interviewers.
+              </li>
             </ul>
           </div>
         </div>
@@ -488,8 +607,13 @@
           <div class="flow-step__content">
             <h4 class="flow-step__title">Schedule Interview</h4>
             <ul class="flow-step__instructions">
-              <li>Click the <strong>Schedule</strong> row button in the candidate's row.</li>
-              <li>Choose interview date & time to notify panels and candidate.</li>
+              <li>
+                Click the <strong>Schedule</strong> row button in the
+                candidate's row.
+              </li>
+              <li>
+                Choose interview date & time to notify panels and candidate.
+              </li>
             </ul>
           </div>
         </div>
@@ -506,7 +630,9 @@
             <h4 class="flow-step__title">Conduct & Evaluate</h4>
             <ul class="flow-step__instructions">
               <li>Assigned panels conduct interview session.</li>
-              <li>Access histories, evaluation inputs, and feedback panel forms.</li>
+              <li>
+                Access histories, evaluation inputs, and feedback panel forms.
+              </li>
             </ul>
           </div>
         </div>
@@ -523,7 +649,10 @@
             <h4 class="flow-step__title">Select / Reject</h4>
             <ul class="flow-step__instructions">
               <li>Review live evaluation reports in candidate table.</li>
-              <li>Mark candidate as <strong>Selected</strong> or <strong>Rejected</strong> from the Actions dropdown.</li>
+              <li>
+                Mark candidate as <strong>Selected</strong> or
+                <strong>Rejected</strong> from the Actions dropdown.
+              </li>
             </ul>
           </div>
         </div>
@@ -540,8 +669,15 @@
             <div class="flow-step__content">
               <h4 class="flow-step__title">Schedule to Next Round</h4>
               <ul class="flow-step__instructions">
-                <li>Select candidates who are <strong>Selected</strong> in the candidates table.</li>
-                <li>Click on the bulk <strong>Actions</strong> button and choose <strong>Move to Next Round</strong> to schedule them to the next round.</li>
+                <li>
+                  Select candidates who are <strong>Selected</strong> in the
+                  candidates table.
+                </li>
+                <li>
+                  Click on the bulk <strong>Actions</strong> button and choose
+                  <strong>Move to Next Round</strong> to schedule them to the
+                  next round.
+                </li>
               </ul>
             </div>
           </div>
@@ -553,13 +689,21 @@
             <div class="flow-step__icon-wrapper">
               <i class="pi pi-arrow-circle-right"></i>
             </div>
-            <span class="flow-step__number">{{ !isLastRound() ? 'Phase 6' : 'Phase 5' }}</span>
+            <span class="flow-step__number">{{
+              !isLastRound() ? "Phase 6" : "Phase 5"
+            }}</span>
           </div>
           <div class="flow-step__content">
             <h4 class="flow-step__title">Complete Round</h4>
             <ul class="flow-step__instructions">
-              <li>Click <strong>Complete Round</strong> in the footer to finalize the current round.</li>
-              <li>All selected candidates must be scheduled to the next round (if a next round exists).</li>
+              <li>
+                Click <strong>Complete Round</strong> in the footer to finalize
+                the current round.
+              </li>
+              <li>
+                All selected candidates must be scheduled to the next round (if
+                a next round exists).
+              </li>
               <li>All other candidates must be rejected.</li>
             </ul>
           </div>
@@ -570,7 +714,6 @@
 
   <!-- Candidates Table Section -->
   <div class="assessment-detail__table-section">
-
     <div class="assessment-detail__table-header">
       <div class="assessment-detail__table-title-section">
         <h2 class="assessment-detail__table-title">
@@ -676,12 +819,14 @@
       </div>
     </ng-template>
   </p-confirmDialog>
-  <div *ngIf="showHoverTooltip" 
-       [style.left.px]="tooltipX" 
-       [style.top.px]="tooltipY" 
-       class="custom-hover-tooltip"
-       [ngClass]="{'custom-hover-tooltip--bottom': tooltipPositionBelow}">
-    recruitment is inactive you can only view the recruitment
+  <div
+    *ngIf="showHoverTooltip"
+    [style.left.px]="tooltipX"
+    [style.top.px]="tooltipY"
+    class="custom-hover-tooltip"
+    [ngClass]="{ 'custom-hover-tooltip--bottom': tooltipPositionBelow }"
+  >
+    Recruitment is inactive/completed, you can only view the recruitment.
     <div class="custom-hover-tooltip__arrow"></div>
   </div>
 </div>

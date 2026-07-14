@@ -102,7 +102,7 @@
       <div class="assessment-schedule__progress-bar">
         <p-skeleton width="100%" height="8px" borderRadius="4px"></p-skeleton>
       </div>
-      <div class="assessment-schedule__progress-text" style="margin-top: 4px;">
+      <div class="assessment-schedule__progress-text" style="margin-top: 4px">
         <p-skeleton width="5rem" height="1rem"></p-skeleton>
       </div>
     </div>
@@ -116,7 +116,8 @@
             [ngClass]="{
               active: activeStep === step.index,
               completed:
-                stepsLoaded && stepsStatus[stepKeys[step.index]] === 'Completed',
+                stepsLoaded &&
+                stepsStatus[stepKeys[step.index]] === 'Completed',
               disabled: !stepsLoaded || !isStepEnabled(step.index),
               pending:
                 stepsLoaded &&
@@ -133,7 +134,8 @@
             >
               <div class="assessment-schedule__stepper-indicator">
                 @if (
-                  stepsLoaded && stepsStatus[stepKeys[step.index]] === "Completed"
+                  stepsLoaded &&
+                  stepsStatus[stepKeys[step.index]] === "Completed"
                 ) {
                   <i class="pi pi-check"></i>
                 } @else {
@@ -209,13 +211,13 @@
           ></app-assessment-round>
         } @else if (this.activeStep === 1) {
           <app-select-quesionset-step
-          [assessmentId]="assessmentId"
-          [isReadOnly]="isSchedulingConfigReadOnly"
-          [stepStatus]="stepsStatus.questionSets"
-          [isIncomplete]="isQuestionSetIncomplete"
-          [isParentLoading]="!stepsLoaded"
-          [hasModifiedAfterComplete]="hasModifiedQuestionSetAfterComplete"
-        ></app-select-quesionset-step>
+            [assessmentId]="assessmentId"
+            [isReadOnly]="isSchedulingConfigReadOnly"
+            [stepStatus]="stepsStatus.questionSets"
+            [isIncomplete]="isQuestionSetIncomplete"
+            [isParentLoading]="!stepsLoaded"
+            [hasModifiedAfterComplete]="hasModifiedQuestionSetAfterComplete"
+          ></app-select-quesionset-step>
         } @else if (this.activeStep === 2) {
           <app-coordinator-step
             [assessmentId]="assessmentId"
@@ -430,12 +432,14 @@
       </p-step-panel>
     </p-step-item>
   </p-stepper> -->
-  <div *ngIf="showHoverTooltip" 
-       [style.left.px]="tooltipX" 
-       [style.top.px]="tooltipY" 
-       class="custom-hover-tooltip"
-       [ngClass]="{'custom-hover-tooltip--bottom': tooltipPositionBelow}">
-    recruitment is inactive you can only view the recruitment
+  <div
+    *ngIf="showHoverTooltip"
+    [style.left.px]="tooltipX"
+    [style.top.px]="tooltipY"
+    class="custom-hover-tooltip"
+    [ngClass]="{ 'custom-hover-tooltip--bottom': tooltipPositionBelow }"
+  >
+    Recruitment is inactive/completed, you can only view the recruitment.
     <div class="custom-hover-tooltip__arrow"></div>
   </div>
 </div>
