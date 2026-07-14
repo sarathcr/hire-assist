@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Force refresh build
 import { CommonModule, NgClass } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MenuItem, MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -122,6 +122,12 @@ const tableColumns: TableColumnsData = {
   styleUrl: './assessment-detail.component.scss',
 })
 export class AssessmentDetailComponent implements OnInit, OnDestroy {
+  public showHoverTooltip = false;
+  public tooltipX = 0;
+  public tooltipY = 0;
+  public tooltipPositionBelow = false;
+  private currentHoveredElement: HTMLElement | null = null;
+
   public assessmentId!: number;
   public sidebarConfig!: MenuItem[];
   public data!: Assessment;
@@ -1571,7 +1577,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               batchId: item.batchId,
               panel: item.panel || item.Panel || 'Unassigned to Panel',
               questionSet: item.questionSetName || item.questionSet || 'Unassigned',
-              visibleButtonIndices: this.getVisibleButtonIndices(item)
+              visibleButtonIndices: this.getVisibleButtonIndices(item),
+              disabledButtonIndices: (this.data && !this.data.isActive) ? [1] : [],
+              disabledButtonTooltips: (this.data && !this.data.isActive) ? { 1: 'recruitment is inactive you can only view the recruitment' } : {},
+              disabledReason: (this.data && !this.data.isActive) ? 'recruitment is inactive you can only view the recruitment' : ''
             })),
           };
         },
@@ -1656,5 +1665,60 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         ],
       },
     ];
+  }
+
+  @HostListener('document:mouseover', ['$event'])
+  public onMouseOver(event: MouseEvent): void {
+    if (!this.data || this.data.isActive) {
+      this.showHoverTooltip = false;
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    if (!target) return;
+
+    const disabledElement = target.closest('button[disabled], input[disabled], select[disabled], textarea[disabled], .p-disabled, .disabled, [disabled], .p-button-disabled, .rounds-tab--disabled, .p-popover button[disabled]') as HTMLElement;
+
+    if (disabledElement) {
+      this.currentHoveredElement = disabledElement;
+      const rect = disabledElement.getBoundingClientRect();
+      
+      const tooltipWidth = 320; 
+      const tooltipHeight = 40;
+      const padding = 12;
+
+      let left = rect.left + rect.width / 2;
+      let top = rect.top - 8;
+      let positionBelow = false;
+
+      if (left - tooltipWidth / 2 < padding) {
+        left = tooltipWidth / 2 + padding;
+      } else if (left + tooltipWidth / 2 > window.innerWidth - padding) {
+        left = window.innerWidth - tooltipWidth / 2 - padding;
+      }
+
+      if (top - tooltipHeight < padding) {
+        top = rect.bottom + 8;
+        positionBelow = true;
+      }
+
+      this.tooltipX = left;
+      this.tooltipY = top;
+      this.tooltipPositionBelow = positionBelow;
+      this.showHoverTooltip = true;
+    } else {
+      this.showHoverTooltip = false;
+    }
+  }
+
+  @HostListener('document:mouseout', ['$event'])
+  public onMouseOut(event: MouseEvent): void {
+    if (this.showHoverTooltip && this.currentHoveredElement) {
+      const relatedTarget = event.relatedTarget as HTMLElement;
+      if (!relatedTarget || !this.currentHoveredElement.contains(relatedTarget)) {
+        this.showHoverTooltip = false;
+        this.currentHoveredElement = null;
+      }
+    }
   }
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ViewChild, HostListener } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -71,6 +71,12 @@ export class AssessmentViewComponent
   extends BaseComponent
   implements OnInit, OnDestroy
 {
+  public showHoverTooltip = false;
+  public tooltipX = 0;
+  public tooltipY = 0;
+  public tooltipPositionBelow = false;
+  private currentHoveredElement: HTMLElement | null = null;
+
   public assessment!: Assessment;
 
   public assessmentId!: number;
@@ -683,10 +689,16 @@ export class AssessmentViewComponent
   }
 
   public get isSchedulingConfigReadOnly(): boolean {
+    if (this.assessment && !this.assessment.isActive) {
+      return true;
+    }
     return this.stepsLoaded && this.stepsStatus?.schedule === 'Completed';
   }
 
   public get isCandidateSchedulingReadOnly(): boolean {
+    if (this.assessment && !this.assessment.isActive) {
+      return true;
+    }
     const areAllRoundsFinished =
       this.assessmentRounds.length > 0 &&
       this.assessmentRounds.every(
@@ -717,6 +729,61 @@ export class AssessmentViewComponent
       this.router.navigate([`/admin/recruitments/${this.assessmentId}`]);
     } else {
       this.router.navigate(['/admin/recruitments']);
+    }
+  }
+
+  @HostListener('document:mouseover', ['$event'])
+  public onMouseOver(event: MouseEvent): void {
+    if (!this.assessment || this.assessment.isActive) {
+      this.showHoverTooltip = false;
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    if (!target) return;
+
+    const disabledElement = target.closest('button[disabled], input[disabled], select[disabled], textarea[disabled], .p-disabled, .disabled, [disabled], .p-button-disabled, .rounds-tab--disabled, .p-popover button[disabled]') as HTMLElement;
+
+    if (disabledElement) {
+      this.currentHoveredElement = disabledElement;
+      const rect = disabledElement.getBoundingClientRect();
+      
+      const tooltipWidth = 320; 
+      const tooltipHeight = 40;
+      const padding = 12;
+
+      let left = rect.left + rect.width / 2;
+      let top = rect.top - 8;
+      let positionBelow = false;
+
+      if (left - tooltipWidth / 2 < padding) {
+        left = tooltipWidth / 2 + padding;
+      } else if (left + tooltipWidth / 2 > window.innerWidth - padding) {
+        left = window.innerWidth - tooltipWidth / 2 - padding;
+      }
+
+      if (top - tooltipHeight < padding) {
+        top = rect.bottom + 8;
+        positionBelow = true;
+      }
+
+      this.tooltipX = left;
+      this.tooltipY = top;
+      this.tooltipPositionBelow = positionBelow;
+      this.showHoverTooltip = true;
+    } else {
+      this.showHoverTooltip = false;
+    }
+  }
+
+  @HostListener('document:mouseout', ['$event'])
+  public onMouseOut(event: MouseEvent): void {
+    if (this.showHoverTooltip && this.currentHoveredElement) {
+      const relatedTarget = event.relatedTarget as HTMLElement;
+      if (!relatedTarget || !this.currentHoveredElement.contains(relatedTarget)) {
+        this.showHoverTooltip = false;
+        this.currentHoveredElement = null;
+      }
     }
   }
 }

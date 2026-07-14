@@ -326,7 +326,7 @@
             <span>{{ hasUncompletedPreviousRound() ? 'Please complete the previous round(s) first before completing this round.' : 'Complete the current round to proceed to the next stage' }}</span>
           </div>
           <app-button
-            [disabled]="roundStatus || hasUncompletedPreviousRound() || isCompletingRound"
+            [disabled]="(data && !data.isActive) || roundStatus || hasUncompletedPreviousRound() || isCompletingRound"
             [buttonSize]="'medium'"
             [buttonLabel]="'Complete Round'"
             [icon]="'pi pi-check-circle'"
@@ -587,6 +587,7 @@
           label="Actions"
           [outlined]="true"
           severity="secondary"
+          [disabled]="data && !data.isActive"
           (onClick)="openMenu($event, actionsMenu)"
         />
         <p-menu
@@ -615,6 +616,7 @@
           [hasSearch]="true"
           [parentLoader]="isLoading"
           [alreadySelected]="selectedCandidateIds"
+          [selectionDisabled]="data && !data.isActive"
           (selectedIds)="getSelectedCandidatesOnTable($event)"
           (delete)="deleteCandidate($event)"
           (view)="onView($event)"
@@ -674,4 +676,12 @@
       </div>
     </ng-template>
   </p-confirmDialog>
+  <div *ngIf="showHoverTooltip" 
+       [style.left.px]="tooltipX" 
+       [style.top.px]="tooltipY" 
+       class="custom-hover-tooltip"
+       [ngClass]="{'custom-hover-tooltip--bottom': tooltipPositionBelow}">
+    recruitment is inactive you can only view the recruitment
+    <div class="custom-hover-tooltip__arrow"></div>
+  </div>
 </div>
