@@ -132,8 +132,21 @@ export class UserDialogComponent implements OnInit {
     (this.configMap['department'] as CustomSelectConfig).options = this
       .optionsMap['departments'] as unknown as Option[];
 
+    const userRole = this.storeService.getUserRole() || [];
+    const isSuperAdmin = userRole.includes('superadmin');
+
     (this.configMap['roles'] as CustomSelectConfig).options = (
       this.optionsMap['roles'] as unknown as Option[]
-    ).filter((role) => role.value !== '5');
+    ).filter((role) => {
+      // Exclude Candidate ('5')
+      if (role.value === '5') {
+        return false;
+      }
+      // If the current user is not a superadmin, also exclude Super Admin role ('2')
+      if (!isSuperAdmin && (role.value === '2' || role.label?.toLowerCase()?.replace(/\s+/g, '') === 'superadmin')) {
+        return false;
+      }
+      return true;
+    });
   }
 }

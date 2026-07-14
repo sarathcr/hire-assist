@@ -23,6 +23,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   public isMobile = false;
   public profileImageUrl: string | undefined;
+  public userName = '';
   public isLoadingProfileImage = false;
 
   @HostListener('window:resize')
@@ -38,6 +39,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
         this.profileImageUrl = state.userState.profileImageUrl;
+        this.userName = state.userState.name || 'User';
         this.isLoadingProfileImage = state.userState.isLoadingProfileImage || false;
       });
   }
@@ -49,6 +51,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   private loadProfileImage(): void {
     this.profileImageUrl = this.storeService.getProfileImageUrl();
+    this.userName = this.storeService.getUserData()?.name || 'User';
     this.isLoadingProfileImage = this.storeService.getIsLoadingProfileImage();
   }
 

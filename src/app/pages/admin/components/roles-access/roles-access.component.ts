@@ -133,6 +133,39 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     });
     this.ref.onClose.subscribe((result) => {
       if (result) {
+        // Prevent if user tries to assign Super Admin role and current user is not superadmin
+        const currentUserRole = this.storeService.getUserRole() || [];
+        const isCurrentUserSuperAdmin = currentUserRole.includes('superadmin');
+
+        const optionsMap = this.storeService.getCollection() || {};
+        const rolesList = optionsMap['roles'] || [];
+        const superAdminRoleOption = rolesList.find(
+          (r: any) =>
+            r.value === '2' ||
+            r.value === 2 ||
+            r.label?.toLowerCase()?.replace(/\s+/g, '') === 'superadmin',
+        );
+        const superAdminCode = superAdminRoleOption?.value || '2';
+        const superAdminLabel = superAdminRoleOption?.label;
+
+        const hasSuperAdminRole = result.roles?.some(
+          (r: any) =>
+            r === superAdminCode ||
+            r === Number(superAdminCode) ||
+            r === superAdminLabel ||
+            (typeof r === 'string' &&
+              r.toLowerCase().replace(/\s+/g, '') === 'superadmin'),
+        );
+
+        if (hasSuperAdminRole && !isCurrentUserSuperAdmin) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Only super admin users can assign the super admin role.',
+          });
+          return;
+        }
+
         this.setDataToCollection(result);
         this.isLoading = true;
         const next = () => {
@@ -192,6 +225,39 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     });
     this.ref.onClose.subscribe((result) => {
       if (result) {
+        // Prevent if user tries to assign/maintain Super Admin role and current user is not superadmin
+        const currentUserRole = this.storeService.getUserRole() || [];
+        const isCurrentUserSuperAdmin = currentUserRole.includes('superadmin');
+
+        const optionsMap = this.storeService.getCollection() || {};
+        const rolesList = optionsMap['roles'] || [];
+        const superAdminRoleOption = rolesList.find(
+          (r: any) =>
+            r.value === '2' ||
+            r.value === 2 ||
+            r.label?.toLowerCase()?.replace(/\s+/g, '') === 'superadmin',
+        );
+        const superAdminCode = superAdminRoleOption?.value || '2';
+        const superAdminLabel = superAdminRoleOption?.label;
+
+        const hasSuperAdminRole = result.roles?.some(
+          (r: any) =>
+            r === superAdminCode ||
+            r === Number(superAdminCode) ||
+            r === superAdminLabel ||
+            (typeof r === 'string' &&
+              r.toLowerCase().replace(/\s+/g, '') === 'superadmin'),
+        );
+
+        if (hasSuperAdminRole && !isCurrentUserSuperAdmin) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Only super admin users can assign the super admin role.',
+          });
+          return;
+        }
+
         this.isLoading = true;
         // api call to edit the user
         const next = () => {
@@ -228,6 +294,24 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public deleteUser(userId: string) {
     const user = this.data?.data?.find((u: any) => u.id === userId);
     if (user?.isSelf) {
+      return;
+    }
+
+    // Add client-side validation to prevent deleting a super admin by a non-superadmin
+    const currentUserRole = this.storeService.getUserRole() || [];
+    const isCurrentUserSuperAdmin = currentUserRole.includes('superadmin');
+
+    const hasSuperAdminRole = user?.roles?.some((roleLabel: string) => {
+      const normalized = roleLabel.toLowerCase().replace(/\s+/g, '');
+      return normalized === 'superadmin' || normalized === 'super_admin';
+    });
+
+    if (hasSuperAdminRole && !isCurrentUserSuperAdmin) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Only super admin users can delete super admins.',
+      });
       return;
     }
     const modalData: DialogData = {
@@ -277,7 +361,11 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Deletion is failed',
+              detail:
+                error?.error?.type ||
+                error?.error?.message ||
+                error?.error?.errorValue ||
+                'Deletion is failed',
             });
           }
         };
@@ -344,6 +432,29 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   public deleteSelectedUsers() {
+    // Add client-side validation to prevent deleting a super admin by a non-superadmin
+    const currentUserRole = this.storeService.getUserRole() || [];
+    const isCurrentUserSuperAdmin = currentUserRole.includes('superadmin');
+
+    if (!isCurrentUserSuperAdmin) {
+      const hasSuperAdminInSelection = this.selectedUsers.some((userId) => {
+        const user = this.data?.data?.find((u: any) => u.id === userId);
+        return user?.roles?.some((roleLabel: string) => {
+          const normalized = roleLabel.toLowerCase().replace(/\s+/g, '');
+          return normalized === 'superadmin' || normalized === 'super_admin';
+        });
+      });
+
+      if (hasSuperAdminInSelection) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Only super admin users can delete super admins.',
+        });
+        return;
+      }
+    }
+
     const modalData: DialogData = {
       message: `Are you sure you want to delete the selected user${this.selectedUsers.length > 1 ? 's' : ''}?`,
       isChoice: true,
@@ -401,7 +512,11 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Deletion is failed',
+              detail:
+                error?.error?.type ||
+                error?.error?.message ||
+                error?.error?.errorValue ||
+                'Deletion is failed',
             });
           }
         };

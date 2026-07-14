@@ -141,7 +141,7 @@ export class AdminDashboardComponent implements OnInit {
           this.questionsData.set(res.data.questions);
           
           if (res.data.recentActivities) {
-            this.recentActivities.set(res.data.recentActivities);
+            this.recentActivities.set(this.processRecentActivities(res.data.recentActivities));
           }
           
           if (res.data.upcomingInterviews) {
@@ -180,6 +180,29 @@ export class AdminDashboardComponent implements OnInit {
           this.isLoadingDashboard.set(false);
         },
       });
+  }
+
+  /**
+   * Processes recent activities to fix unknown assessment names if possible.
+   */
+  private processRecentActivities(activities: RecentActivity[]): RecentActivity[] {
+    return activities.map(activity => {
+      if (
+        activity.assessmentName &&
+        (activity.assessmentName.trim().toLowerCase() === 'unknown recruitment' ||
+         activity.assessmentName.trim().toLowerCase() === 'unknown')
+      ) {
+        const textToParse = activity.details || activity.message || '';
+        const match = textToParse.match(/Recruitment\s+['"“‘]([^'"”’]+)['"”’]/i);
+        if (match && match[1]) {
+          return {
+            ...activity,
+            assessmentName: match[1]
+          };
+        }
+      }
+      return activity;
+    });
   }
 
   /**

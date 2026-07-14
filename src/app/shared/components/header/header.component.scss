@@ -106,6 +106,35 @@
     }
   }
 
+  &__avatar-fallback {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    cursor: pointer;
+
+    @media (max-width: 1024px) {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  &__avatar-text {
+    color: #ffffff;
+    font-size: 1.125rem;
+    font-weight: 700;
+
+    @media (max-width: 1024px) {
+      font-size: 0.9375rem;
+    }
+  }
+
   &__profile-trigger {
     display: flex;
     align-items: center;

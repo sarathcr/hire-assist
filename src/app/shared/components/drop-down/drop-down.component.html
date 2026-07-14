@@ -8,11 +8,16 @@
       <!-- User Info Header -->
       <div class="dropdown__header">
         <div class="dropdown__user-avatar">
-          {{ userName() | slice:0:1 | uppercase }}
+          @if (profileImageUrl()) {
+            <img [src]="profileImageUrl()" class="dropdown__avatar-img" alt="avatar" />
+          } @else {
+            <span class="dropdown__avatar-text">{{ userName() | slice:0:1 | uppercase }}</span>
+          }
+          <div class="dropdown__user-status-dot"></div>
         </div>
         <div class="dropdown__user-details">
           <p class="dropdown__user-name">{{ userName() }}</p>
-          <p class="dropdown__user-role">{{ userRole() }}</p>
+          <span class="dropdown__user-role-badge">{{ userRole() }}</span>
         </div>
       </div>
 
@@ -21,13 +26,23 @@
       <!-- Menu Items -->
       <nav class="dropdown__nav">
         <button class="dropdown__item" (click)="navigateToProfile()">
-          <i class="pi pi-user dropdown__item-icon"></i>
-          <span>View Profile</span>
+          <div class="dropdown__item-icon-wrapper">
+            <i class="pi pi-user dropdown__item-icon"></i>
+          </div>
+          <div class="dropdown__item-text">
+            <span class="dropdown__item-title">View Profile</span>
+            <span class="dropdown__item-desc">Personal details & security</span>
+          </div>
         </button>
 
         <button class="dropdown__item dropdown__item--logout" (click)="handleLogout()">
-          <i class="pi pi-sign-out dropdown__item-icon"></i>
-          <span>Sign Out</span>
+          <div class="dropdown__item-icon-wrapper">
+            <i class="pi pi-sign-out dropdown__item-icon"></i>
+          </div>
+          <div class="dropdown__item-text">
+            <span class="dropdown__item-title">Sign Out</span>
+            <span class="dropdown__item-desc">End your active session</span>
+          </div>
         </button>
       </nav>
     </div>

@@ -27,11 +27,17 @@
       } @else {
         <app-drop-down class="dropdown">
           <div class="header__profile-trigger">
-            <img
-              [src]="profileImageUrl || 'avatar.png'"
-              alt="avatar"
-              (error)="onImageError()"
-            />
+            @if (profileImageUrl) {
+              <img
+                [src]="profileImageUrl"
+                alt="avatar"
+                (error)="onImageError()"
+              />
+            } @else {
+              <div class="header__avatar-fallback">
+                <span class="header__avatar-text">{{ userName | slice:0:1 | uppercase }}</span>
+              </div>
+            }
             <i class="pi pi-chevron-down header__profile-chevron"></i>
           </div>
         </app-drop-down>

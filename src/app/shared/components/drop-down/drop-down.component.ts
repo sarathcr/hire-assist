@@ -19,6 +19,7 @@ export class DropDownComponent implements OnInit {
   showMenu = signal(false);
   userName = signal('');
   userRole = signal('');
+  profileImageUrl = signal<string | undefined>(undefined);
   
   dropdownEl = viewChild<ElementRef>('dropdown');
 
@@ -34,6 +35,7 @@ export class DropDownComponent implements OnInit {
     this.storeService.state$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((state) => {
       const userData = state.userState;
       this.userName.set(userData?.name || 'User');
+      this.profileImageUrl.set(userData?.profileImageUrl);
 
       const roles = this.storeService.getUserRole();
       this.userRole.set(roles && roles.length > 0 ? roles.join(', ') : 'Guest');
