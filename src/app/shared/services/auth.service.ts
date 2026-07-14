@@ -75,6 +75,7 @@ x6bVCEwJyj6qnH8mdFtDZKp/ePT+lDgwi2LwYAEhXbbBsEqS1wgC2QIDAQAB
       }),
       map(() => void 0),
       catchError(() => {
+        this.logout();
         return of(undefined);
       })
     );

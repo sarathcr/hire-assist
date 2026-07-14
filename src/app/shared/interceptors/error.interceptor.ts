@@ -6,7 +6,7 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { Observable, catchError, switchMap, throwError, EMPTY } from 'rxjs';
+import { Observable, catchError, switchMap, throwError, EMPTY, Subject, take } from 'rxjs';
 
 import { StoreService } from '../services/store.service';
 import { REFRESH_TOKEN_URL } from '../constants/api';
@@ -30,6 +30,8 @@ const errorList = new Map([
 ]);
 
 let isSessionExpiredToastShown = false;
+let isRefreshing = false;
+let refreshTokenSubject = new Subject<string>();
 
 const showSessionExpiredToast = (messageService: MessageService, detail?: string) => {
   if (!isSessionExpiredToastShown) {
@@ -90,7 +92,7 @@ const handleError = (
   const status = (error as any).status || error.error?.status;
   if (status === 401 && error.error?.businessError !== 5000) {
     storeService.setIsLoading(false);
-    if (!req.url.includes('/login')) {
+    if (!req.url.includes('/login') && !req.url.includes('/refresh-token')) {
       showSessionExpiredToast(messageService, error.error?.type);
       authService.logout();
       return EMPTY;
@@ -105,36 +107,57 @@ const handleError = (
   }
   switch (error.error.businessError) {
     case 5000: {
-      const { accessToken, refreshToken } = storeService.getTokenData();
-      const options = { headers: { Authorization: `Bearer ${accessToken}` } };
-      return httpClient
-        .post<RefreshTokenResponse>(
-          REFRESH_TOKEN_URL,
-          { refreshToken },
-          options,
-        )
-        .pipe(
-          switchMap((response) => {
-            if (response && response?.accessToken) {
-              const newToken = response.accessToken;
-              storeService.setAccessTokenData(response.accessToken);
-              collectionService.getCollection();
-              const newReq = req.clone({
-                setHeaders: { Authorization: `Bearer ${newToken}` },
-              });
+      if (!isRefreshing) {
+        isRefreshing = true;
+        const { accessToken, refreshToken } = storeService.getTokenData();
+        const options = { headers: { Authorization: `Bearer ${accessToken}` } };
+        return httpClient
+          .post<RefreshTokenResponse>(
+            REFRESH_TOKEN_URL,
+            { refreshToken },
+            options,
+          )
+          .pipe(
+            switchMap((response) => {
+              isRefreshing = false;
+              if (response && response?.accessToken) {
+                const newToken = response.accessToken;
+                storeService.setAccessTokenData(response.accessToken);
+                collectionService.getCollection();
+                refreshTokenSubject.next(newToken);
+                const newReq = req.clone({
+                  setHeaders: { Authorization: `Bearer ${newToken}` },
+                });
 
-              return next(newReq);
-            }
-            authService.logout();
-            showSessionExpiredToast(messageService, error.error?.type);
-            return EMPTY;
-          }),
-          catchError((err) => {
-            authService.logout();
-            showSessionExpiredToast(messageService, error.error?.type);
-            return EMPTY;
+                return next(newReq);
+              }
+              const err = new Error('Token refresh failed');
+              refreshTokenSubject.error(err);
+              refreshTokenSubject = new Subject<string>();
+              authService.logout();
+              showSessionExpiredToast(messageService, error.error?.type);
+              return EMPTY;
+            }),
+            catchError((err) => {
+              isRefreshing = false;
+              refreshTokenSubject.error(err);
+              refreshTokenSubject = new Subject<string>();
+              authService.logout();
+              showSessionExpiredToast(messageService, error.error?.type);
+              return EMPTY;
+            })
+          );
+      } else {
+        return refreshTokenSubject.pipe(
+          take(1),
+          switchMap((newToken) => {
+            const newReq = req.clone({
+              setHeaders: { Authorization: `Bearer ${newToken}` },
+            });
+            return next(newReq);
           })
         );
+      }
     }
     case 5003:
     case 5009: {
