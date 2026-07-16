@@ -1340,6 +1340,9 @@
             font-size: 14px;
             line-height: 1.6;
             color: #1f2937;
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
 
             // Restore text formatting styles suppressed by CSS resets
             strong,

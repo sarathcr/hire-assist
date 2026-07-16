@@ -197,6 +197,10 @@ app-input-text-iftalabel {
 
 // Global Quill Rich Text Editor Output Styling
 .ql-editor {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+
   ul,
   ol {
     padding-left: 1.5rem !important;
