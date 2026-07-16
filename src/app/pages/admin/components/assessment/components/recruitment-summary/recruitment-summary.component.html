@@ -328,7 +328,7 @@
                   </label>
                   <div class="attachments-grid">
                     @for (file of getCandidateProfileDocs(candidate); track $index) {
-                      <div class="attachment-card" (click)="viewAttachment(file)">
+                      <div class="attachment-card" [class.attachment-card--loading]="imageLoadingStates[getImageId(file)]" (click)="!imageLoadingStates[getImageId(file)] && viewAttachment(file)">
                         <div class="attachment-preview">
                           @if (imageLoadingStates[getImageId(file)]) {
                             <div class="attachment-loading">
@@ -487,7 +487,7 @@
                             </label>
                             <div class="attachments-grid">
                               @for (file of getRoundAttachments(round); track file.id) {
-                                <div class="attachment-card" (click)="viewAttachment(file)">
+                                <div class="attachment-card" [class.attachment-card--loading]="imageLoadingStates[getImageId(file)]" (click)="!imageLoadingStates[getImageId(file)] && viewAttachment(file)">
                                   <div class="attachment-preview">
                                     @if (imageLoadingStates[getImageId(file)]) {
                                       <div class="attachment-loading">

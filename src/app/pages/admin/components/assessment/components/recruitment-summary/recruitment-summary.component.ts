@@ -334,8 +334,10 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   }
 
   public viewAttachment(file: FileDto): void {
-    this.currentViewingFile = file;
     const key = this.getImageId(file);
+    if (key && this.imageLoadingStates[key]) return; // Prevent preview while file is loading
+    
+    this.currentViewingFile = file;
     const blobUrl = this.reportImages[key];
     const filename = file.name || key || '';
     
