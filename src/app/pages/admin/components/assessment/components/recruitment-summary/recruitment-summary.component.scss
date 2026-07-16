@@ -589,17 +589,46 @@
     border-color: var(--primary);
   }
 
-  .p-accordion-header-link {
-    padding: 1.25rem !important;
+  .p-accordionheader,
+  .p-accordion-header {
     background: transparent !important;
     border: none !important;
-    box-shadow: none !important;
+    padding: 1.25rem !important;
 
     &:hover {
       background: #fcfcfd !important;
     }
+
+    button,
+    .p-accordion-header-link {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      width: 100% !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+
+      .p-accordion-toggle-icon,
+      .p-accordionheader-toggle-icon,
+      .p-icon-wrapper,
+      > svg {
+        flex-shrink: 0 !important;
+        margin-left: 1rem !important;
+        color: var(--text-muted) !important;
+        font-size: 0.875rem !important;
+        margin-right: 0.25rem !important;
+
+        @media (max-width: 768px) {
+          align-self: flex-start !important;
+          margin-top: 0.75rem !important;
+        }
+      }
+    }
   }
 
+  .p-accordioncontent-content,
   .p-accordion-content {
     padding: 0 !important;
     border: none !important;
@@ -618,7 +647,7 @@
     flex-direction: column;
     align-items: stretch;
     gap: 1rem;
-    padding-right: 0;
+    padding-right: 2rem;
   }
 
   .candidate-identity {
@@ -814,15 +843,6 @@
 
         @media (max-width: 640px) {
           font-size: 0.938rem;
-          &:before {
-            content: "Round " attr(data-round);
-            display: block;
-            font-size: 0.6rem;
-            font-weight: 800;
-            color: var(--primary);
-            text-transform: uppercase;
-            margin-bottom: 0.25rem;
-          }
         }
       }
 
@@ -1338,9 +1358,19 @@
   }
 }
 
+.worksheet-attachments {
+  margin-bottom: 1.5rem;
+}
+
+.candidate-profile-docs {
+  margin: 0 1.5rem 1.5rem 1.5rem;
+  @media (max-width: 640px) {
+    margin: 0 0.5rem 1.5rem 0.5rem;
+  }
+}
+
 .worksheet-attachments,
 .candidate-profile-docs {
-  margin-bottom: 1.5rem;
   padding: 1.25rem;
   background: var(--primary-light);
   border-radius: var(--radius-md);
@@ -1392,7 +1422,7 @@
       cursor: not-allowed;
       opacity: 0.7;
       pointer-events: none;
-      
+
       &:hover {
         transform: none !important;
         box-shadow: var(--shadow-sm) !important;
@@ -1557,7 +1587,8 @@
     padding: 1.25rem 1.5rem !important;
     border-top: 1px solid var(--border-color) !important;
     background: var(--bg-card) !important;
-
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
     app-button {
       .btn {
         .p-button {
@@ -1565,6 +1596,94 @@
           padding: 0.5rem 1.5rem !important;
           font-weight: 600 !important;
           border-radius: var(--radius-sm) !important;
+        }
+      }
+    }
+  }
+
+  .recruitment-summary__pdf-dialog {
+    width: 90vw !important;
+    height: 90vh !important;
+    max-width: 95vw !important;
+
+    .p-dialog-content {
+      height: calc(90vh - 100px) !important;
+      padding: 0 !important;
+    }
+
+    @media (max-width: 768px) {
+      width: 95vw !important;
+      height: 85vh !important;
+      .p-dialog-content {
+        height: calc(85vh - 90px) !important;
+      }
+    }
+  }
+
+  .recruitment-summary__image-dialog {
+    width: 65vw !important;
+    max-width: 90vw !important;
+
+    .p-dialog-content {
+      padding: 0 !important;
+      overflow: hidden !important;
+    }
+
+    @media (max-width: 1024px) {
+      width: 80vw !important;
+    }
+
+    @media (max-width: 768px) {
+      width: 90vw !important;
+      max-width: 95vw !important;
+    }
+
+    @media (max-width: 576px) {
+      width: 95vw !important;
+      max-width: 98vw !important;
+    }
+  }
+
+  .recruitment-summary__file-dialog {
+    width: 80vw !important;
+    height: 80vh !important;
+    max-width: 95vw !important;
+
+    .p-dialog-content {
+      height: calc(80vh - 100px) !important;
+      padding: 0 !important;
+    }
+
+    @media (max-width: 768px) {
+      width: 95vw !important;
+      height: 85vh !important;
+      .p-dialog-content {
+        height: calc(85vh - 90px) !important;
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  ::ng-deep {
+    .p-dialog-footer {
+      flex-direction: column-reverse !important;
+      align-items: stretch !important;
+      gap: 0.5rem !important;
+      padding: 1rem !important;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+      app-button {
+        width: 100% !important;
+        margin: 0 !important;
+
+        .btn {
+          width: 100% !important;
+
+          .p-button {
+            width: 100% !important;
+            justify-content: center !important;
+          }
         }
       }
     }

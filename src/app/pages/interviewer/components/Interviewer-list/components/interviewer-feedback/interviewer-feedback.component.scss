@@ -2309,6 +2309,16 @@ $white: #ffffff;
   overflow: hidden;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
 
+  @media (max-width: 1024px) {
+    width: 90vw;
+  }
+
+  @media (max-width: 768px) {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    height: 85vh;
+  }
+
   .p-dialog-header {
     background: $slate-50;
     padding: 16px 24px;
