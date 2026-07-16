@@ -1,6 +1,5 @@
 <div class="basic-info">
   <div class="basic-info__group">
-  <div class="basic-info__group">
     <label class="basic-info__label">Email Address</label>
     <p class="basic-info__value" [class.basic-info__value--empty]="!basicInformationForm.email">
       {{ basicInformationForm.email || 'Not provided' }}
@@ -33,6 +32,5 @@
     <p class="basic-info__value" [class.basic-info__value--empty]="!basicInformationForm.memberSince">
       {{ (basicInformationForm.memberSince | date:'MMMM d, y') || 'Not provided' }}
     </p>
-  </div>
   </div>
 </div>

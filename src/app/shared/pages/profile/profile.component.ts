@@ -317,11 +317,11 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     this.ref = this.dialog.open(SkillsDialogComponent, {
       data: data,
       header: hasSkills ? 'Edit Skills' : 'Add Skills',
-      width: '50vw',
+      width: '550px',
       modal: true,
       breakpoints: {
         '960px': '75vw',
-        '640px': '90vw',
+        '640px': '95vw',
       },
       contentStyle: { overflow: 'visible', padding: '0' },
     });
@@ -462,7 +462,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
           const isCurrentGroup = groupExps.some(exp => exp.isCurrent);
           
           let totalDuration = '';
-          if (groupExps.length > 1) {
+          if (groupExps.length > 0) {
             let minStart = new Date(groupExps[0].startDate);
             let maxEnd: Date | null = groupExps[0].isCurrent ? null : new Date(groupExps[0].endDate || new Date());
             
@@ -610,8 +610,8 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     const years = Math.floor(months / 12);
     const remainingMonths = months % 12;
     
-    const yearsStr = years > 0 ? `${years} yr${years > 1 ? 's' : ''}` : '';
-    const monthsStr = remainingMonths > 0 ? `${remainingMonths} mo${remainingMonths > 1 ? 's' : ''}` : '';
+    const yearsStr = years > 0 ? `${years} year${years > 1 ? 's' : ''}` : '';
+    const monthsStr = remainingMonths > 0 ? `${remainingMonths} month${remainingMonths > 1 ? 's' : ''}` : '';
     
     return [yearsStr, monthsStr].filter(Boolean).join(' ');
   }

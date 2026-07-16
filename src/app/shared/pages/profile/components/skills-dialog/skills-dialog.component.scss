@@ -1,6 +1,10 @@
 .skills-dialog {
   padding: 0;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -23,6 +27,11 @@
     flex-direction: column;
     gap: 1.5rem;
     min-height: 0; // Crucial for flex scrolling
+
+    @media (max-width: 480px) {
+      padding: 1rem 1rem;
+      gap: 1.25rem;
+    }
 
     &::-webkit-scrollbar {
       width: 6px;
@@ -122,6 +131,19 @@
     background: #f8fafc; // Slightly different background for footer
     border-top: 1px solid #e2e8f0;
     flex-shrink: 0;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+
+    @media (max-width: 480px) {
+      flex-direction: column-reverse;
+      align-items: stretch;
+      padding: 1rem 1rem;
+
+      ::ng-deep .p-button {
+        width: 100% !important;
+        justify-content: center;
+      }
+    }
   }
 
   &__cancel-btn {
@@ -194,9 +216,14 @@
       max-width: 100%;
       overflow-wrap: anywhere;
       word-break: break-word;
-      
+      display: inline-flex !important;
+      align-items: center !important;
+      padding: 0.15rem 0.5rem !important;
+
       .p-multiselect-token-label {
         white-space: normal;
+        line-height: 1.35 !important;
+        padding-bottom: 2px !important;
       }
     }
   }
