@@ -1536,6 +1536,29 @@
   display: none !important;
 }
 
+::ng-deep {
+  .p-dialog-footer {
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 1.25rem 1.5rem !important;
+    border-top: 1px solid var(--border-color) !important;
+    background: var(--bg-card) !important;
+
+    app-button {
+      .btn {
+        .p-button {
+          min-height: 40px !important;
+          padding: 0.5rem 1.5rem !important;
+          font-weight: 600 !important;
+          border-radius: var(--radius-sm) !important;
+        }
+      }
+    }
+  }
+}
+
 /* Printing Utilities */
 @media print {
   .no-print {

@@ -13,6 +13,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { FileDto } from '../../../../models/interviewer.model';
 import { ImageComponent } from '../../../../../../shared/components/image/image.component';
 import { SafePipe } from '../../../../../../shared/pipes/safepipe';
+import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
+import { AssessmentService } from '../../../../services/assessment.service';
 
 @Component({
   selector: 'app-recruitment-summary',
@@ -26,6 +28,7 @@ import { SafePipe } from '../../../../../../shared/pipes/safepipe';
     TooltipModule,
     ImageComponent,
     SafePipe,
+    ButtonComponent,
   ],
   templateUrl: './recruitment-summary.component.html',
   styleUrl: './recruitment-summary.component.scss',
@@ -53,11 +56,16 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   public isFileViewerImage = false;
   public currentViewingFile: FileDto | null = null;
 
+  // Fallback ID Proofs State
+  public fallbackIdProofs: Record<string, any[]> = {};
+  public isFallbackLoading: Record<string, boolean> = {};
+
   constructor(
     private location: Location,
     private route: ActivatedRoute,
     private interviewService: InterviewService,
     private sanitizer: DomSanitizer,
+    private assessmentService: AssessmentService,
   ) {}
 
   ngOnInit(): void {
@@ -83,6 +91,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
           this.summaryData = this.sortFeedbackCriteria(data);
           this.expandAllAccordions();
           this.preloadWorksheetAttachments();
+          this.loadFallbackIdProofs();
         },
         error: (error) => {
           console.error('Error fetching recruitment summary:', error);
@@ -107,6 +116,43 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
         profileDocs.forEach((file: FileDto) => {
           this.fetchFileBlob(file);
         });
+      });
+    }
+  }
+
+  private loadFallbackIdProofs(): void {
+    if (this.summaryData?.detailedCandidates) {
+      this.summaryData.detailedCandidates.forEach((candidate: any) => {
+        const candidateId = candidate.id;
+        if (candidateId) {
+          this.isFallbackLoading[candidateId] = true;
+          this.assessmentService.getIdProofsByCandidateId(candidateId).subscribe({
+            next: (res: any) => {
+              const proofs = res || [];
+              this.fallbackIdProofs[candidateId] = proofs;
+              this.isFallbackLoading[candidateId] = false;
+              
+              // Preload file blobs for fallback proofs
+              proofs.forEach((item: any) => {
+                const typeNum = item.attachmentType || 
+                                item.AttachmentType || 
+                                item.attachmentTypeId || 
+                                item.AttachmentTypeId || 
+                                this.getAttachmentTypeFromLabel(item.type || item.Type);
+                const file: FileDto = {
+                  name: item.name || item.Name,
+                  url: item.url || item.Url || item.path || item.Path,
+                  attachmentName: item.name || item.Name,
+                  attachmentType: typeNum
+                };
+                this.fetchFileBlob(file);
+              });
+            },
+            error: () => {
+              this.isFallbackLoading[candidateId] = false;
+            }
+          });
+        }
       });
     }
   }
@@ -137,14 +183,88 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   }
 
   public getCandidateProfileDocs(candidate: any): any[] {
-    if (!candidate || !candidate.frontdeskAttachment) return [];
-    return candidate.frontdeskAttachment.map((item: any) => ({
-      name: item.name,
-      url: item.url,
-      attachmentName: item.name,
-      attachmentType: this.getAttachmentTypeFromLabel(item.type),
-      idTypeLabel: item.type
-    }));
+    if (!candidate) return [];
+    
+    let attachments = candidate.frontdeskattachments ||
+                      candidate.frontdeskattachment ||
+                      candidate.frontdeskAttachment || 
+                      candidate.frontDeskAttachment || 
+                      candidate.frontdeskAttachments || 
+                      candidate.frontDeskAttachments ||
+                      candidate.frontdesk_attachment ||
+                      candidate.frontDesk_attachment ||
+                      candidate.frontdeskAttachmentDto ||
+                      candidate.frontDeskAttachmentDto ||
+                      candidate.frontdeskAttachmentDtos ||
+                      candidate.frontDeskAttachmentDtos ||
+                      candidate.frontdeskFiles ||
+                      candidate.frontDeskFiles ||
+                      candidate.idProofs ||
+                      candidate.idProof ||
+                      candidate.candidateIdProofs ||
+                      candidate.candidateIdProof ||
+                      candidate.attachment ||
+                      candidate.attachments;
+                      
+    // Fallback: If not found on candidate, look up dynamically loaded proofs
+    if (!attachments && candidate.id && this.fallbackIdProofs[candidate.id]) {
+      attachments = this.fallbackIdProofs[candidate.id];
+    }
+                      
+    if (!attachments) return [];
+    
+    if (typeof attachments === 'object' && attachments !== null && !Array.isArray(attachments)) {
+      attachments = attachments.attachment || 
+                    attachments.attachments || 
+                    attachments.fileDto || 
+                    attachments.files || 
+                    attachments;
+    }
+
+    if (typeof attachments === 'string') {
+      try {
+        attachments = JSON.parse(attachments);
+      } catch (e) {
+        console.error('Failed to parse frontdeskAttachment JSON string:', e);
+        return [];
+      }
+    }
+    
+    if (typeof attachments === 'object' && attachments !== null && !Array.isArray(attachments)) {
+      attachments = attachments.attachment || 
+                    attachments.attachments || 
+                    attachments.fileDto || 
+                    attachments.files || 
+                    attachments;
+    }
+    
+    if (!attachments) return [];
+    
+    if (!Array.isArray(attachments)) {
+      attachments = [attachments];
+    }
+
+    return attachments.map((item: any) => {
+      const name = item.name || item.Name || item.attachmentName || 'ID Document';
+      const url = item.url || item.Url || item.path || item.Path || '';
+      const rawType = item.attachmentType || 
+                      item.AttachmentType || 
+                      item.attachmentTypeId || 
+                      item.AttachmentTypeId;
+      const typeLabel = item.type || 
+                        item.Type || 
+                        item.attachmentName || 
+                        this.getAttachmentTypeLabel(rawType) || 
+                        'Document';
+      const typeVal = rawType || this.getAttachmentTypeFromLabel(item.type || item.Type || typeLabel);
+      return {
+        name: name,
+        url: url,
+        attachmentName: name,
+        attachmentType: typeVal,
+        idTypeLabel: typeLabel
+      };
+    });
   }
 
   public getRoundAttachments(round: any): FileDto[] {
@@ -154,10 +274,13 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
 
   public getImageId(file: FileDto): string {
     if (!file) return '';
+    const fileAny = file as any;
     if (file.id) return file.id;
+    if (fileAny.Id) return fileAny.Id;
     if (file.blobId) return file.blobId;
-    if (file.url || file.path) {
-      const url = file.url || file.path || '';
+    if (fileAny.BlobId) return fileAny.BlobId;
+    if (file.url || file.path || fileAny.Url || fileAny.Path) {
+      const url = file.url || file.path || fileAny.Url || fileAny.Path || '';
       return url.split('/').pop() || '';
     }
     return '';
@@ -175,7 +298,8 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
 
     this.imageLoadingStates[id] = true;
     const blobId = id.includes('/') ? id.split('/').pop()! : id;
-    const type = file.attachmentType || 9; // Default for feedback attachments
+    const fileAny = file as any;
+    const type = file.attachmentType || fileAny.AttachmentType || fileAny.attachmentTypeId || fileAny.AttachmentTypeId || 9;
 
     this.interviewService.GetFiles({ blobId: blobId, attachmentType: type }).subscribe({
       next: (blob: Blob) => {
@@ -277,8 +401,18 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   }
 
   private sortFeedbackCriteria(data: any): any {
+    console.log('=== RECRUITMENT SUMMARY RESPONSE DATA ===', data);
     if (data?.detailedCandidates) {
       data.detailedCandidates.forEach((candidate: any) => {
+        console.log('=== Candidate Data ===', {
+          id: candidate.id,
+          name: candidate.name,
+          keys: Object.keys(candidate),
+          frontdeskAttachment: candidate.frontdeskAttachment,
+          frontDeskAttachment: candidate.frontDeskAttachment,
+          frontdeskAttachments: candidate.frontdeskAttachments,
+          frontDeskAttachments: candidate.frontDeskAttachments
+        });
         if (candidate.roundsData) {
           candidate.roundsData.forEach((round: any) => {
             if (round.feedbackCriteria && round.feedbackCriteria.length > 0) {
