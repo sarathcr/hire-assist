@@ -59,6 +59,24 @@
         style="max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: var(--radius-sm); box-shadow: var(--shadow-md);" 
         alt="Feedback attachment screenshot" />
     </div>
+
+    <ng-template pTemplate="footer">
+      <div style="display: flex; justify-content: flex-end; gap: 8px; padding: 0.5rem 0;">
+        <p-button 
+          label="Download" 
+          icon="pi pi-download" 
+          [outlined]="true" 
+          severity="primary" 
+          (onClick)="downloadFile()">
+        </p-button>
+        <p-button 
+          label="Close" 
+          icon="pi pi-times" 
+          severity="secondary" 
+          (onClick)="showImageModal = false">
+        </p-button>
+      </div>
+    </ng-template>
   </p-dialog>
 
   <!-- File Viewer Modal (For worksheet attachments) -->
@@ -92,6 +110,24 @@
         </div>
       }
     </div>
+
+    <ng-template pTemplate="footer">
+      <div style="display: flex; justify-content: flex-end; gap: 8px; padding: 0.5rem 0;">
+        <p-button 
+          label="Download" 
+          icon="pi pi-download" 
+          [outlined]="true" 
+          severity="primary" 
+          (onClick)="downloadFile()">
+        </p-button>
+        <p-button 
+          label="Close" 
+          icon="pi pi-times" 
+          severity="secondary" 
+          (onClick)="displayFileViewer = false">
+        </p-button>
+      </div>
+    </ng-template>
   </p-dialog>
 
   <!-- Content Skeleton -->
@@ -293,6 +329,42 @@
               </p-accordion-header>
 
               <p-accordion-content>
+                <!-- Candidate Profile / ID Documents Section -->
+                <div class="candidate-profile-docs" *ngIf="getCandidateProfileDocs(candidate).length > 0">
+                  <label class="attachments-label">
+                    <i class="pi pi-id-card"></i> Candidate Profile / ID Documents
+                  </label>
+                  <div class="attachments-grid">
+                    @for (file of getCandidateProfileDocs(candidate); track $index) {
+                      <div class="attachment-card" (click)="viewAttachment(file)">
+                        <div class="attachment-preview">
+                          @if (imageLoadingStates[getImageId(file)]) {
+                            <div class="attachment-loading">
+                              <i class="pi pi-spin pi-spinner"></i>
+                            </div>
+                          } @else if (reportImages[getImageId(file)] && isImage(file.name || getImageId(file) || '')) {
+                            <app-image [imageUrl]="reportImages[getImageId(file)]" [isZoomable]="false" [removeIcon]="true" width="100%" height="100%"></app-image>
+                          } @else {
+                            <div class="file-icon-placeholder" [class.pdf-bg]="(file.name || getImageId(file) || '').toLowerCase().endsWith('.pdf')">
+                              <i class="pi" [ngClass]="(file.name || getImageId(file) || '').toLowerCase().endsWith('.pdf') ? 'pi-file-pdf' : 'pi-file'"></i>
+                            </div>
+                          }
+                          <div class="attachment-overlay">
+                            <i class="pi pi-eye"></i>
+                          </div>
+                        </div>
+                        <div class="attachment-info" [pTooltip]="file.name || 'ID Document'">
+                          <span class="attachment-name">{{ file.name || 'ID Document' }}</span>
+                          <span class="attachment-size">
+                            {{ file.idTypeLabel || 'Document' }}
+                            <span *ngIf="file.name"> • {{ (file.name || '').split('.').pop()?.toUpperCase() }} File</span>
+                          </span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+
                 <div class="round-breakdown">
                   @for (round of candidate.roundsData; track round.roundId; let last = $last; let idx = $index) {
                     <div class="round-item" [class.is-last]="last">

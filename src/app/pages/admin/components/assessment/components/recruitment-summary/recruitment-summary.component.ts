@@ -51,6 +51,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   public fileViewerTitle = '';
   public isFileViewerPdf = false;
   public isFileViewerImage = false;
+  public currentViewingFile: FileDto | null = null;
 
   constructor(
     private location: Location,
@@ -100,8 +101,50 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
             });
           });
         }
+
+        // Preload candidate profile/ID documents
+        const profileDocs = this.getCandidateProfileDocs(candidate);
+        profileDocs.forEach((file: FileDto) => {
+          this.fetchFileBlob(file);
+        });
       });
     }
+  }
+
+  public getAttachmentTypeFromLabel(label: string | undefined): number {
+    if (!label) return 6; // Default to Document
+    const cleanLabel = label.trim().toLowerCase();
+    if (cleanLabel.includes('resume')) return 1;
+    if (cleanLabel.includes('cover image')) return 2;
+    if (cleanLabel.includes('profile image')) return 3;
+    if (cleanLabel.includes('aadhaar') || cleanLabel.includes('adhar') || cleanLabel.includes('id card')) return 4;
+    if (cleanLabel.includes('pan')) return 5;
+    if (cleanLabel.includes('document')) return 6;
+    return 6;
+  }
+
+  public getAttachmentTypeLabel(type: number | undefined): string {
+    if (!type) return 'Document';
+    switch (type) {
+      case 1: return 'Resume';
+      case 2: return 'Cover Image';
+      case 3: return 'Profile Image';
+      case 4: return 'Aadhaar Card';
+      case 5: return 'PAN Card';
+      case 6: return 'Document';
+      default: return 'Document';
+    }
+  }
+
+  public getCandidateProfileDocs(candidate: any): any[] {
+    if (!candidate || !candidate.frontdeskAttachment) return [];
+    return candidate.frontdeskAttachment.map((item: any) => ({
+      name: item.name,
+      url: item.url,
+      attachmentName: item.name,
+      attachmentType: this.getAttachmentTypeFromLabel(item.type),
+      idTypeLabel: item.type
+    }));
   }
 
   public getRoundAttachments(round: any): FileDto[] {
@@ -167,6 +210,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   }
 
   public viewAttachment(file: FileDto): void {
+    this.currentViewingFile = file;
     const key = this.getImageId(file);
     const blobUrl = this.reportImages[key];
     const filename = file.name || key || '';
@@ -212,6 +256,23 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
         this.displayFileViewer = true;
         this.fileViewerUrl = null; // Clear to trigger loading state
       }
+    }
+  }
+
+  public downloadFile(): void {
+    if (!this.currentViewingFile) return;
+
+    const key = this.getImageId(this.currentViewingFile);
+    const blobUrl = this.reportImages[key];
+    const filename = this.currentViewingFile.name || key || 'download';
+
+    if (blobUrl) {
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   }
 
