@@ -1393,6 +1393,13 @@
               &::before {
                 display: none !important;
               }
+
+              p,
+              div {
+                display: inline !important;
+                margin: 0 !important;
+                padding: 0 !important;
+              }
             }
 
             ul li,

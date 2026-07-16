@@ -408,7 +408,7 @@
                                       <td data-label="Score" class="text-center">
                                         <span class="score-pill">{{ crit.score }} / {{ crit.maxScore }}</span>
                                       </td>
-                                      <td data-label="Remarks" class="remarks-cell" [innerHTML]="crit.remarks || 'No remarks'" (click)="onRemarksClick($event)"></td>
+                                      <td data-label="Remarks" class="remarks-cell" [innerHTML]="(crit.remarks || 'No remarks') | safe: 'html'" (click)="onRemarksClick($event)"></td>
                                     </tr>
                                   }
                                 }
@@ -452,7 +452,7 @@
                           <!-- Overall Comments -->
                           <div class="overall-comments" *ngIf="round.overallReason">
                             <label>Overall Assessment Comments</label>
-                            <p [innerHTML]="round.overallReason" (click)="onRemarksClick($event)"></p>
+                            <p [innerHTML]="round.overallReason | safe: 'html'" (click)="onRemarksClick($event)"></p>
                           </div>
                         </div>
                       </div>

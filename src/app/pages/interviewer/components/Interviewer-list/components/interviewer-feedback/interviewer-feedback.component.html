@@ -528,7 +528,7 @@
                                   </div>
                                    @if (feedback.feedbackDetails) {
                                      <div
-                                       [innerHTML]="feedback.feedbackDetails"
+                                       [innerHTML]="feedback.feedbackDetails | safe: 'html'"
                                        class="ifb__prev-feedback-html"
                                        (click)="onRemarksClick($event)"
                                      ></div>
@@ -657,7 +657,7 @@
                     <i class="pi pi-info-circle"></i>
                     <span>Evaluation Guidelines</span>
                   </div>
-                  <div [innerHTML]="getFeedbackDescription(feedback)" class="ifb__description-text"></div>
+                  <div [innerHTML]="getFeedbackDescription(feedback) | safe: 'html'" class="ifb__description-text"></div>
                 </div>
               }
 
@@ -811,7 +811,7 @@
                     @if (isSubmitted) {
                       <div
                         class="ifb__readonly-comments ql-editor"
-                        [innerHTML]="feedback.content || 'No comments entered.'"
+                        [innerHTML]="(feedback.content || 'No comments entered.') | safe: 'html'"
                         (click)="onRemarksClick($event)"
                       ></div>
                     } @else {

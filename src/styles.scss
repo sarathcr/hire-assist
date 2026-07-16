@@ -194,3 +194,44 @@ app-input-text-iftalabel {
   transform: translateY(-50%) !important;
   margin-top: 0 !important;
 }
+
+// Global Quill Rich Text Editor Output Styling
+.ql-editor {
+  ul,
+  ol {
+    padding-left: 1.5rem !important;
+    margin-bottom: 0.5rem !important;
+    display: block !important;
+  }
+
+  li {
+    display: list-item !important; // Restore standard browser list item behavior
+    list-style-position: outside !important; // Keep list markers outside text flow
+    padding-left: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
+
+    &::before {
+      display: none !important; // Disable Quill's custom bullet pseudo-elements
+      content: none !important;
+    }
+
+    // Prevent block elements inside list items (e.g. pasted <p> or <div>) from wrapping to a new line
+    p,
+    div {
+      display: inline !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+
+  ul li,
+  li[data-list="bullet"] {
+    list-style-type: disc !important;
+  }
+
+  ol li,
+  li[data-list="ordered"],
+  li[data-list="1"] {
+    list-style-type: decimal !important;
+  }
+}

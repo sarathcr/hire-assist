@@ -1833,12 +1833,20 @@ $white: #ffffff;
 
           li {
             display: list-item !important; // Bring back native list rendering
+            list-style-position: outside !important;
             padding-left: 0.25rem !important; // Override Quill's 1.5em default gap
             margin-bottom: 0.25rem !important;
 
             &::before {
               display: none !important; // Kill Quill's fake bullets
               content: none !important;
+            }
+
+            p,
+            div {
+              display: inline !important;
+              margin: 0 !important;
+              padding: 0 !important;
             }
           }
 

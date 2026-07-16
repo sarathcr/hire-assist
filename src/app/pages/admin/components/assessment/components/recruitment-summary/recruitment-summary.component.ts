@@ -12,6 +12,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TooltipModule } from 'primeng/tooltip';
 import { FileDto } from '../../../../models/interviewer.model';
 import { ImageComponent } from '../../../../../../shared/components/image/image.component';
+import { SafePipe } from '../../../../../../shared/pipes/safepipe';
 
 @Component({
   selector: 'app-recruitment-summary',
@@ -24,6 +25,7 @@ import { ImageComponent } from '../../../../../../shared/components/image/image.
     DialogModule,
     TooltipModule,
     ImageComponent,
+    SafePipe,
   ],
   templateUrl: './recruitment-summary.component.html',
   styleUrl: './recruitment-summary.component.scss',

@@ -633,7 +633,7 @@
                                                   <div
                                                     class="ql-editor p-0"
                                                     [innerHTML]="
-                                                      feedback.feedbackDetails
+                                                      feedback.feedbackDetails | safe: 'html'
                                                     "
                                                   ></div>
                                                 </div>
