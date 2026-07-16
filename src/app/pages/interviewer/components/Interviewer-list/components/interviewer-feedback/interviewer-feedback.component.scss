@@ -1049,6 +1049,22 @@ $white: #ffffff;
       li {
         margin: 3px 0;
       }
+      img {
+        max-width: 100% !important;
+        max-height: 250px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+        border-radius: 6px;
+        margin: 0.5rem 0;
+        display: block;
+        cursor: pointer !important;
+        transition: transform 0.2s ease-in-out;
+
+        &:hover {
+          transform: scale(1.02);
+        }
+      }
     }
   }
 
@@ -1169,6 +1185,37 @@ $white: #ffffff;
   &__editor-section {
     display: flex;
     flex-direction: column;
+  }
+
+  &__readonly-comments {
+    padding: 1rem !important;
+    background: $slate-50;
+    border: 1px solid $slate-200;
+    border-radius: 12px;
+    min-height: 100px;
+    font-size: 15px;
+    color: $slate-700;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+
+    ::ng-deep {
+      img {
+        max-width: 100% !important;
+        max-height: 300px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+        border-radius: 8px;
+        margin: 0.5rem 0;
+        display: block;
+        cursor: pointer !important;
+        transition: transform 0.2s ease-in-out;
+
+        &:hover {
+          transform: scale(1.02);
+        }
+      }
+    }
   }
 
   &__score-row {

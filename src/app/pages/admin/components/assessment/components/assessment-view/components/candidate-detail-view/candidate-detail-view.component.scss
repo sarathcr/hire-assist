@@ -623,6 +623,16 @@
             margin-bottom: 0;
           }
         }
+
+        img {
+          max-width: 100% !important;
+          height: auto !important;
+          object-fit: contain;
+          border-radius: var(--radius-sm);
+          margin-top: 0.5rem;
+          margin-bottom: 0.5rem;
+          display: block;
+        }
       }
     }
   }

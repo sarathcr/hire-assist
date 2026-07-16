@@ -1913,21 +1913,6 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   private getAssessmentSummaryData(id: number): void {
-    this.interviewService.getSelectedStatus(id).subscribe({
-      next: (res: any) => {
-        if (res && res.detailedCandidates && res.detailedCandidates.length > 0) {
-          this.hasSelectedCandidates = true;
-        } else {
-          this.hasSelectedCandidates = false;
-        }
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.hasSelectedCandidates = false;
-        this.cdr.detectChanges();
-      },
-    });
-
     this.interviewService.getAssessmentSummary(id).subscribe({
       next: (res: any) => {
         if (res) {
@@ -1939,6 +1924,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             rejected: summary.totalRejected || 0,
             pending: summary.totalPending || 0,
           };
+          this.hasSelectedCandidates =
+            Number(this.summaryStats['selected']) > 0;
 
           // Map the roundWisePerformance array
           const rounds = res.roundWisePerformance || [];

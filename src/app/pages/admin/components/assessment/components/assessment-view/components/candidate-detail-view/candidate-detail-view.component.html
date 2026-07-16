@@ -603,10 +603,10 @@
                                                     null &&
                                                   feedback.feedbackScore !==
                                                     undefined &&
-                                                  feedback.criteria !==
-                                                    "Attachments" &&
-                                                  feedback.criteria !==
-                                                    "Overall Comments"
+                                                  feedback.criteria.toLowerCase() !==
+                                                    "attachments" &&
+                                                  feedback.criteria.toLowerCase() !==
+                                                    "overall comments"
                                                 ) {
                                                   <p-tag
                                                     [value]="

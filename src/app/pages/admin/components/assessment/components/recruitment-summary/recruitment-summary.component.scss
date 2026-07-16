@@ -919,7 +919,8 @@
   background: white;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   margin-bottom: 1.25rem;
 }
 
@@ -927,6 +928,11 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.813rem;
+  table-layout: fixed;
+
+  @media (min-width: 641px) {
+    min-width: 650px;
+  }
 
   @media (max-width: 640px) {
     display: block;
@@ -979,6 +985,16 @@
     font-size: 0.65rem;
     letter-spacing: 0.05em;
     border-bottom: 1px solid var(--border-color);
+
+    &:nth-child(1) {
+      width: 25%;
+    }
+    &:nth-child(2) {
+      width: 15%;
+    }
+    &:nth-child(3) {
+      width: 60%;
+    }
   }
 
   td {
@@ -1019,39 +1035,59 @@
     // color: var(--text-muted);
     color: var(--text-main);
     line-height: 1.5;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
     font-weight: normal;
 
-    // Support Quill rich text formatting in remarks
-    p {
-      margin: 0 0 0.5rem 0;
-      &:last-child {
-        margin-bottom: 0;
+    ::ng-deep {
+      p,
+      span,
+      div,
+      li,
+      ul,
+      ol {
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
       }
-      strong,
-      b {
-        font-weight: bold !important;
+
+      // Support Quill rich text formatting in remarks
+      p {
+        margin: 0 0 0.5rem 0;
+        &:last-child {
+          margin-bottom: 0;
+        }
+        strong,
+        b {
+          font-weight: bold !important;
+        }
+        em,
+        i {
+          font-style: italic !important;
+        }
+        u {
+          text-decoration: underline !important;
+        }
       }
-      em,
-      i {
-        font-style: italic !important;
-      }
-      u {
-        text-decoration: underline !important;
+
+      img {
+        max-width: 100% !important;
+        max-height: 200px !important;
+        object-fit: contain !important;
+        border-radius: var(--radius-sm);
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        margin-right: auto;
+        display: block;
+        transition: transform 0.2s ease-in-out;
+        cursor: pointer;
+
+        &:hover {
+          transform: scale(1.02);
+        }
       }
     }
-    // strong,
-    // b {
-    //   font-weight: 700 !important;
-    // }
-    // em,
-    // i {
-    //   font-style: italic !important;
-    // }
-    // u {
-    //   text-decoration: underline !important;
-    // }
   }
 }
 
@@ -1258,25 +1294,176 @@
     margin-bottom: 0.5rem;
   }
 
-  p {
-    font-size: 0.875rem;
-    line-height: 1.6;
-    color: var(--text-main);
-    margin: 0;
-    word-break: break-word;
-    overflow-wrap: break-word;
+  ::ng-deep {
+    p {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: var(--text-main);
+      margin: 0;
+      word-break: break-word !important;
+      overflow-wrap: break-word !important;
+      white-space: normal !important;
 
-    // Support Quill rich text formatting in overall comments
-    strong,
-    b {
-      font-weight: bold !important;
+      // Support Quill rich text formatting in overall comments
+      strong,
+      b {
+        font-weight: bold !important;
+      }
+      em,
+      i {
+        font-style: italic !important;
+      }
+      u {
+        text-decoration: underline !important;
+      }
     }
-    em,
+
+    img {
+      max-width: 100% !important;
+      max-height: 300px !important;
+      width: auto !important;
+      height: auto !important;
+      object-fit: contain !important;
+      border-radius: var(--radius-sm);
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      display: block;
+      cursor: pointer !important;
+      transition: transform 0.2s ease-in-out;
+
+      &:hover {
+        transform: scale(1.02);
+      }
+    }
+  }
+}
+
+.worksheet-attachments {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: var(--primary-light);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+
+  .attachments-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+
     i {
-      font-style: italic !important;
+      font-size: 0.9rem;
     }
-    u {
-      text-decoration: underline !important;
+  }
+
+  .attachments-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .attachment-card {
+    width: 140px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: var(--shadow-sm);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary);
+
+      .attachment-overlay {
+        opacity: 1;
+      }
+    }
+
+    .attachment-preview {
+      position: relative;
+      height: 90px;
+      background: var(--bg-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+
+      .preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .file-icon-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        color: var(--text-lighter);
+        font-size: 1.75rem;
+        background: #f1f5f9;
+
+        &.pdf-bg {
+          background: #fef2f2;
+          color: #ef4444;
+        }
+      }
+
+      .attachment-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        color: var(--primary);
+      }
+
+      .attachment-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(79, 70, 229, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        color: #ffffff;
+        font-size: 1.25rem;
+      }
+    }
+
+    .attachment-info {
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+
+      .attachment-name {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .attachment-size {
+        font-size: 0.65rem;
+        color: var(--text-lighter);
+        font-weight: 700;
+      }
     }
   }
 }

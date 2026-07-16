@@ -512,7 +512,7 @@
                                       <i class="pi pi-tag"></i>
                                       <span>{{ feedback.criteria }}</span>
                                     </div>
-                                    @if (feedback.criteria !== "Attachments") {
+                                    @if (feedback.criteria !== "Attachments" && feedback.criteria.toLowerCase() !== "overall comments") {
                                       <div class="ifb__prev-feedback-score">
                                         <span class="ifb__prev-score-val">{{
                                           feedback.feedbackScore || 0
@@ -526,12 +526,13 @@
                                       </div>
                                     }
                                   </div>
-                                  @if (feedback.feedbackDetails) {
-                                    <div
-                                      [innerHTML]="feedback.feedbackDetails"
-                                      class="ifb__prev-feedback-html"
-                                    ></div>
-                                  }
+                                   @if (feedback.feedbackDetails) {
+                                     <div
+                                       [innerHTML]="feedback.feedbackDetails"
+                                       class="ifb__prev-feedback-html"
+                                       (click)="onRemarksClick($event)"
+                                     ></div>
+                                   }
 
                                   @if (feedback.criteria === 'Attachments' && feedback.fileDto && feedback.fileDto.length > 0) {
                                     <div class="ifb__attachment-grid mt-2">
@@ -758,18 +759,26 @@
 
                     @if (feedback.fileDto && feedback.fileDto.length > 0) {
                       @for (file of feedback.fileDto; track $index; let fi = $index) {
-                        <div class="ifb__attachment-card" (click)="viewFile(file)">
-                          <app-image
-                            width="100%"
-                            height="100%"
-                            [imageUrl]="getFileUrl(file)"
-                            [paddingTop]="'0'"
-                            [forceCancelRequest]="[]"
-                            [isZoomable]="false"
-                            [removeIcon]="true"
-                            class="ifb__app-image"
-                          >
-                          </app-image>
+                        <div 
+                          class="ifb__attachment-card" 
+                          [class.ifb__attachment-card--skeleton]="imageLoadingStates[file.blobId || file.id || ''] || !getFileUrl(file)"
+                          (click)="getFileUrl(file) ? viewFile(file) : null"
+                        >
+                          @if (imageLoadingStates[file.blobId || file.id || ''] || !getFileUrl(file)) {
+                            <app-image-skeleton></app-image-skeleton>
+                          } @else {
+                            <app-image
+                              width="100%"
+                              height="100%"
+                              [imageUrl]="getFileUrl(file)"
+                              [paddingTop]="'0'"
+                              [forceCancelRequest]="[]"
+                              [isZoomable]="false"
+                              [removeIcon]="true"
+                              class="ifb__app-image"
+                            >
+                            </app-image>
+                          }
                           <div class="ifb__attachment-overlay ifb__attachment-overlay--interactive">
                             <i class="pi pi-eye ifb__view-icon"></i>
                             @if (!isSubmitted) {
@@ -799,12 +808,20 @@
                       <i class="pi pi-align-left"></i>
                       Feedback Comments
                     </label>
-                    <p-editor
-                      [(ngModel)]="feedback.content"
-                      [style]="{ height: '200px' }"
-                      [readonly]="isSubmitted"
-                      placeholder="Enter your feedback comments here..."
-                    />
+                    @if (isSubmitted) {
+                      <div
+                        class="ifb__readonly-comments ql-editor"
+                        [innerHTML]="feedback.content || 'No comments entered.'"
+                        (click)="onRemarksClick($event)"
+                      ></div>
+                    } @else {
+                      <p-editor
+                        [(ngModel)]="feedback.content"
+                        [style]="{ height: '200px' }"
+                        [readonly]="isSubmitted"
+                        placeholder="Enter your feedback comments here..."
+                      />
+                    }
                   </div>
 
                   <div class="ifb__score-row">

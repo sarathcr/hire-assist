@@ -43,6 +43,57 @@
     </div>
   </p-dialog>
 
+  <!-- Image Viewer Modal -->
+  <p-dialog 
+    [(visible)]="showImageModal" 
+    [modal]="true" 
+    [dismissableMask]="true"
+    [style]="{maxWidth: '90vw', width: 'auto'}"
+    header="Attachment Preview"
+    [resizable]="false"
+    [draggable]="false">
+    
+    <div *ngIf="selectedImageUrl" class="image-preview-modal-container" style="text-align: center; display: flex; align-items: center; justify-content: center; padding: 0; background: #fff;">
+      <img 
+        [src]="selectedImageUrl" 
+        style="max-width: 100%; max-height: 70vh; object-fit: contain; border-radius: var(--radius-sm); box-shadow: var(--shadow-md);" 
+        alt="Feedback attachment screenshot" />
+    </div>
+  </p-dialog>
+
+  <!-- File Viewer Modal (For worksheet attachments) -->
+  <p-dialog 
+    [(visible)]="displayFileViewer" 
+    [modal]="true" 
+    [maximizable]="true"
+    [style]="{width: '80vw', height: '80vh'}"
+    [header]="fileViewerTitle"
+    [contentStyle]="{height: 'calc(80vh - 100px)', padding: '0'}">
+    
+    <div *ngIf="displayFileViewer" class="file-viewer-container" style="height: 100%; width: 100%; display: flex; align-items: center; justify-content: center; background: #f8fafc;">
+      @if (!fileViewerUrl) {
+        <div class="attachment-loading-indicator" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; color: var(--primary);">
+          <i class="pi pi-spin pi-spinner" style="font-size: 2rem;"></i>
+          <span style="font-size: 0.875rem; font-weight: 600;">Loading attachment...</span>
+        </div>
+      } @else {
+        <iframe 
+          *ngIf="isFileViewerPdf"
+          [src]="fileViewerUrl" 
+          width="100%" 
+          height="100%" 
+          style="border: none;">
+        </iframe>
+        <div *ngIf="isFileViewerImage" class="image-preview-modal-container" style="padding: 1.5rem; text-align: center; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+          <img 
+            [src]="fileViewerUrl" 
+            style="max-width: 100%; max-height: 65vh; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);" 
+            alt="Attachment Preview" />
+        </div>
+      }
+    </div>
+  </p-dialog>
+
   <!-- Content Skeleton -->
   <div *ngIf="isLoading" class="skeleton-container">
     <div class="skeleton-insights">
@@ -346,27 +397,62 @@
                               </thead>
                               <tbody>
                                 @for (crit of round.feedbackCriteria; track crit.name) {
-                                  <tr>
-                                    <td data-label="Criteria">
-                                      <span class="crit-name">{{ crit.name }}</span>
-                                      <div class="crit-interviewer" *ngIf="crit.interviewerName">
-                                        <i class="pi pi-user"></i> {{ crit.interviewerName }}
-                                      </div>
-                                    </td>
-                                    <td data-label="Score" class="text-center">
-                                      <span class="score-pill">{{ crit.score }} / {{ crit.maxScore }}</span>
-                                    </td>
-                                    <td data-label="Remarks" class="remarks-cell" [innerHTML]="crit.remarks || 'No remarks'"></td>
-                                  </tr>
+                                  @if (crit.name !== 'Attachments') {
+                                    <tr>
+                                      <td data-label="Criteria">
+                                        <span class="crit-name">{{ crit.name }}</span>
+                                        <div class="crit-interviewer" *ngIf="crit.interviewerName">
+                                          <i class="pi pi-user"></i> {{ crit.interviewerName }}
+                                        </div>
+                                      </td>
+                                      <td data-label="Score" class="text-center">
+                                        <span class="score-pill">{{ crit.score }} / {{ crit.maxScore }}</span>
+                                      </td>
+                                      <td data-label="Remarks" class="remarks-cell" [innerHTML]="crit.remarks || 'No remarks'" (click)="onRemarksClick($event)"></td>
+                                    </tr>
+                                  }
                                 }
                               </tbody>
                             </table>
                           </div>
 
+                          <!-- Worksheet Attachments Section -->
+                          <div class="worksheet-attachments" *ngIf="getRoundAttachments(round).length > 0">
+                            <label class="attachments-label">
+                              <i class="pi pi-paperclip"></i> Worksheet Attachments
+                            </label>
+                            <div class="attachments-grid">
+                              @for (file of getRoundAttachments(round); track file.id) {
+                                <div class="attachment-card" (click)="viewAttachment(file)">
+                                  <div class="attachment-preview">
+                                    @if (imageLoadingStates[getImageId(file)]) {
+                                      <div class="attachment-loading">
+                                        <i class="pi pi-spin pi-spinner"></i>
+                                      </div>
+                                    } @else if (reportImages[getImageId(file)] && isImage(file.name || getImageId(file) || '')) {
+                                      <app-image [imageUrl]="reportImages[getImageId(file)]" [isZoomable]="false" [removeIcon]="true" width="100%" height="100%"></app-image>
+                                    } @else {
+                                      <div class="file-icon-placeholder" [class.pdf-bg]="(file.name || getImageId(file) || '').toLowerCase().endsWith('.pdf')">
+                                        <i class="pi" [ngClass]="(file.name || getImageId(file) || '').toLowerCase().endsWith('.pdf') ? 'pi-file-pdf' : 'pi-file'"></i>
+                                      </div>
+                                    }
+                                    <div class="attachment-overlay">
+                                      <i class="pi pi-eye"></i>
+                                    </div>
+                                  </div>
+                                  <div class="attachment-info" [pTooltip]="file.attachmentName || file.name || 'Attachment'">
+                                    <span class="attachment-name">{{ file.attachmentName || file.name || 'Attachment' }}</span>
+                                    <span class="attachment-size" *ngIf="file.name">{{ (file.name || '').split('.').pop()?.toUpperCase() }} File</span>
+                                  </div>
+                                </div>
+                              }
+                            </div>
+                          </div>
+
                           <!-- Overall Comments -->
                           <div class="overall-comments" *ngIf="round.overallReason">
                             <label>Overall Assessment Comments</label>
-                            <p [innerHTML]="round.overallReason"></p>
+                            <p [innerHTML]="round.overallReason" (click)="onRemarksClick($event)"></p>
                           </div>
                         </div>
                       </div>

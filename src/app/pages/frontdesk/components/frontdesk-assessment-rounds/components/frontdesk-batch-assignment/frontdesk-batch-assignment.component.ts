@@ -668,6 +668,42 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
   private mapCandidateData(candidate: Candidate, batchId?: string): Candidate {
     const statusLower = candidate.status?.toLowerCase() || '';
 
+    // Button indices: 0: Mark as Present, 1: Mark as Absent, 2: Assign to Batch, 3: Upload ID Proof
+    if (statusLower === 'completed' || statusLower === 'selected' || statusLower === 'rejected' || statusLower === 'quit') {
+      // Cannot change status anymore for completed/selected/rejected assessments
+      return {
+        ...candidate,
+        visibleButtonIndices: [3],
+        disabledButtonIndices: this.isAptitudeRound ? [0, 1, 2] : [0, 1],
+      };
+    }
+
+    // Check if the candidate is assigned to a panel or a batch, and is not scheduled yet
+    const hasPanelOrBatch = !!((candidate as any).panel || candidate.batchQuestionSetsId || batchId);
+    const rawScheduled = (candidate as any).isScheduled;
+    const isScheduled = rawScheduled === true ||
+      (typeof rawScheduled === 'string' &&
+        rawScheduled.toLowerCase() !== 'false' &&
+        rawScheduled.toLowerCase() !== 'not scheduled' &&
+        rawScheduled.trim() !== '') ||
+      statusLower === 'scheduled' ||
+      statusLower === 'rescheduled' ||
+      statusLower === 'reported' ||
+      statusLower === 'present' ||
+      statusLower === 'not attended' ||
+      statusLower === 'notattended' ||
+      statusLower === 'absent' ||
+      candidate.statusId === StatusEnum.NotAttended;
+
+    if (hasPanelOrBatch && !isScheduled) {
+      return {
+        ...candidate,
+        isActionsDisabled: true,
+        disabledReason: 'Candidate interview is not scheduled yet',
+        disabledButtonIndices: [0, 1, 2, 3]
+      };
+    }
+
     // Check if the batch is scheduled in the future
     let isFutureBatch = false;
     if (this.isAptitudeRound && batchId && this.batchList) {
@@ -696,16 +732,6 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
 
     const hasNoOtherBatches = !this.batchList || this.batchList.length <= 1;
     let disabledButtonIndices: number[] = [];
-
-    // Button indices: 0: Mark as Present, 1: Mark as Absent, 2: Assign to Batch, 3: Upload ID Proof
-    if (statusLower === 'completed' || statusLower === 'selected' || statusLower === 'rejected' || statusLower === 'quit') {
-      // Cannot change status anymore for completed/selected/rejected assessments
-      return {
-        ...candidate,
-        visibleButtonIndices: [3],
-        disabledButtonIndices: this.isAptitudeRound ? [0, 1, 2] : [0, 1],
-      };
-    }
 
     if (isNotReported) {
       // ABSENT / NOT REPORTED STATE:

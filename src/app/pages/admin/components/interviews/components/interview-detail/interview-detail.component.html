@@ -262,7 +262,11 @@
                                             @if (
                                               feedback.feedbackScore !== null &&
                                               feedback.feedbackScore !==
-                                                undefined
+                                                undefined &&
+                                              feedback.criteria.toLowerCase() !==
+                                                "attachments" &&
+                                              feedback.criteria.toLowerCase() !==
+                                                "overall comments"
                                             ) {
                                               <div
                                                 class="interview-detail__feedback-score"

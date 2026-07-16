@@ -1290,6 +1290,18 @@ export class InterviewerFeedbackComponent
     }
   }
 
+  public onRemarksClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (target && target.tagName === 'IMG') {
+      const img = target as HTMLImageElement;
+      this.viewerUrl = img.src;
+      this.viewerTitle = 'Image Preview';
+      this.isViewerImage = true;
+      this.isViewerPdf = false;
+      this.displayViewer = true;
+    }
+  }
+
   public onPreviousRoundAccordionOpen(round: PreviousInterview): void {
     if (this.isAptitudeRound(round)) return;
 
