@@ -36,6 +36,7 @@ export interface Assessment {
   users?: AssessmentUsers[];
   activeRoundsPercentage?: number;
   progressPercentage?: number;
+  candidateCount?: number;
 }
 
 export interface AssessmentDetails {

@@ -63,6 +63,7 @@ export const uniqueStatuses = [
   { label: 'On Review', value: 'On Review' },
   { label: 'Enrolled', value: 'Enrolled' },
   { label: 'Not Enrolled', value: 'Not Enrolled' },
+  { label: 'Not Attended', value: 'Not Attended' },
 ];
 
 export const uniqueStatusesForIsSchedule = [
@@ -878,6 +879,9 @@ export class TableComponent<
         return 'warn';
       case 'assigned':
         return 'success';
+      case 'not attended':
+      case 'notattended':
+        return 'danger';
       default:
         return 'info';
     }

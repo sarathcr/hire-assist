@@ -66,6 +66,7 @@ const aptitudeTableColumns: TableColumnsData = {
         { label: 'Selected', value: 'Selected' },
         { label: 'Rejected', value: 'Rejected' },
         { label: 'Quit', value: 'Quit' },
+        { label: 'Not Attended', value: 'Not Attended' },
       ],
     },
     {
@@ -136,6 +137,7 @@ const nonAptitudeTableColumns: TableColumnsData = {
         { label: 'Selected', value: 'Selected' },
         { label: 'Rejected', value: 'Rejected' },
         { label: 'Quit', value: 'Quit' },
+        { label: 'Not Attended', value: 'Not Attended' },
       ],
     },
     {

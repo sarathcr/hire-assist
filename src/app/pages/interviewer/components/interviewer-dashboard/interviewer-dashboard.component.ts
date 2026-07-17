@@ -84,9 +84,11 @@ export class InterviewerDashboardComponent
   }
 
   public getCandidateCount(assessment: any): number {
-    return (
-      assessment.users?.filter((u: any) => u.role === 'Candidate').length ?? 0
-    );
+    const localCount =
+      assessment.users?.filter((u: any) => u.role === 'Candidate').length ?? 0;
+    return localCount === 0 && assessment.candidateCount != null
+      ? assessment.candidateCount
+      : localCount;
   }
 
   public toggleRounds(event: Event, id: number): void {
