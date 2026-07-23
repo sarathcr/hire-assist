@@ -13,6 +13,7 @@ export class CandidateDataModel extends FormEntity {
   gender = '';
   phone = '';
   aadhaarNumber = '';
+  currentLocation = '';
   // endDate = '';
   // startDate = '';
   metadata: Metadata = {
@@ -37,6 +38,7 @@ export class CandidateDataModel extends FormEntity {
         Validators.pattern(/^\d{12}$/),
         CandidateDataModel.verhoeffValidator,
       ],
+      currentLocation: [Validators.required],
       // startDate: [Validators.required],
       // endDate: [Validators.required],
       // batch: [Validators.required],
@@ -64,6 +66,7 @@ export class CandidateDataModel extends FormEntity {
         maxlength: 14,
         isMaskable: true,
       },
+      currentLocation: { id: 'currentLocation', labelKey: 'Current Location' },
     },
   };
 
@@ -156,6 +159,7 @@ export interface candidateDetails {
   aadhaarNumber: string;
   gender: string;
   dob: Date;
+  currentLocation?: string;
   answers?: CandidateApplicationAnswers[];
 }
 export interface CandidateApplicationAnswers {

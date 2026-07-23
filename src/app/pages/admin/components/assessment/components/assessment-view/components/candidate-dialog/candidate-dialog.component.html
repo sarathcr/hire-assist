@@ -39,6 +39,11 @@
         [config]="configMap['aadhaarNumber']"
         [floatLabel]="false"
       ></app-input-text>
+      <app-input-text
+        [formGroup]="fGroup"
+        [config]="configMap['currentLocation']"
+        [floatLabel]="false"
+      ></app-input-text>
       <!-- <app-input-select [formGroup]="fGroup" [config]="configMap['batch']" />
     @if (fGroup.get("batch")?.value) {
       <app-input-text-calender

@@ -185,13 +185,12 @@
     font-size: var(--font-size-16);
     color: var(--color-dune);
     font-weight: 500;
+    word-break: break-all;
   }
 
   &__value-wrapper {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
     gap: var(--spacing-10);
   }
 

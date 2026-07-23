@@ -72,7 +72,13 @@ const tableColumns: TableColumnsData = {
     },
     {
       field: 'email',
-      displayName: 'Email ID',
+      displayName: 'Email Id',
+      fieldType: FieldType.String,
+      sortedColumn: true,
+    },
+    {
+      field: 'currentLocation',
+      displayName: 'Location',
       fieldType: FieldType.String,
       sortedColumn: true,
     },
@@ -89,15 +95,15 @@ const tableColumns: TableColumnsData = {
       sortedColumn: true,
     },
     {
-      field: 'nextRoundStatus',
-      displayName: 'Next Round Status',
-      fieldType: FieldType.String,
-      sortedColumn: true,
-    },
-    {
       field: 'interviewDate',
       displayName: 'Interview Date',
       fieldType: FieldType.StringToDateTime,
+      sortedColumn: true,
+    },
+    {
+      field: 'nextRoundStatus',
+      displayName: 'Next Round Status',
+      fieldType: FieldType.String,
       sortedColumn: true,
     },
     {
@@ -327,19 +333,19 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       },
       {
         field: 'email',
-        displayName: 'Email ID',
+        displayName: 'Email Id',
         fieldType: FieldType.String,
         sortedColumn: true,
         hasTextFilter: true,
         filterAlias: 'textFilter',
       },
       {
-        field: 'score',
-        displayName: 'Score',
+        field: 'currentLocation',
+        displayName: 'Location',
         fieldType: FieldType.String,
         sortedColumn: true,
         hasTextFilter: true,
-        filterAlias: 'scoreFilter',
+        filterAlias: 'textFilter',
       },
     ];
 
@@ -382,6 +388,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
 
     baseColumns.push({
+      field: 'score',
+      displayName: 'Score',
+      fieldType: FieldType.String,
+      sortedColumn: true,
+      hasTextFilter: true,
+      filterAlias: 'scoreFilter',
+    });
+
+    baseColumns.push({
       field: 'status',
       displayName: 'Status',
       fieldType: FieldType.String,
@@ -389,6 +404,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       hasTextFilter: true,
       filterAlias: 'statusFilter',
       hasMultiStatus: true,
+    });
+
+    baseColumns.push({
+      field: 'interviewDate',
+      displayName: 'Interview Date',
+      fieldType: FieldType.StringToDateTime,
+      sortedColumn: true,
+      hasTextFilter: true,
+      filterAlias: 'textFilter',
     });
 
     const isLastRound =
@@ -404,15 +428,6 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         hasMultiStatus: false,
       });
     }
-
-    baseColumns.push({
-      field: 'interviewDate',
-      displayName: 'Interview Date',
-      fieldType: FieldType.StringToDateTime,
-      sortedColumn: true,
-      hasTextFilter: true,
-      filterAlias: 'textFilter',
-    });
 
     // Add Actions column with dropdown
     const actionsColumn: any = {
@@ -906,6 +921,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             id: item.candidateId || item.id,
             name: item.candidateName || item.fullName || item.name || 'Unknown',
             email: item.email,
+            currentLocation: item.currentLocation || item.location || 'N/A',
             score:
               (item.score === 0 || item.score === '0') &&
               !['completed', 'on review', 'selected', 'rejected'].includes(
@@ -1849,6 +1865,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               name:
                 item.candidateName || item.fullName || item.name || 'Unknown',
               email: item.email,
+              currentLocation: item.currentLocation || item.location || 'N/A',
               score:
                 (item.score === 0 || item.score === '0') &&
                 !['completed', 'on review', 'selected', 'rejected'].includes(

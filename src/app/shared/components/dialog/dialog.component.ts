@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { DialogData } from '../../models/dialog.models';
 
 @Component({
   selector: 'app-dialog',
-  imports: [ButtonModule, CommonModule],
+  imports: [ButtonModule, CommonModule, ProgressSpinnerModule],
 
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.scss',
@@ -15,7 +16,7 @@ import { DialogData } from '../../models/dialog.models';
 export class DialogComponent implements OnInit {
   public btnSubmit = output();
 
-  public data!: DialogData;
+  public data: DialogData = { message: '', isChoice: false };
   public safeMessage!: SafeHtml;
 
   constructor(

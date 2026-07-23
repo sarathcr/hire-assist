@@ -62,43 +62,26 @@
               <div class="candidate-detail__card">
                 @if (candidateDetailsDataSource !== undefined) {
                   <div class="candidate-detail__info-grid">
+                    <!-- Email Id -->
                     <div class="candidate-detail__info-item">
                       <div class="candidate-detail__info-icon">
-                        <i class="pi pi-calendar"></i>
+                        <i class="pi pi-envelope"></i>
                       </div>
                       <div class="candidate-detail__info-content">
-                        <span class="candidate-detail__info-label"
-                          >Date of Birth</span
-                        >
+                        <span class="candidate-detail__info-label">Email Id</span>
                         <span class="candidate-detail__info-value">
-                          {{
-                            candidateDetailsDataSource.dob
-                              | date: "dd MMMM yyyy"
-                          }}
+                          {{ candidateDetailsDataSource.email }}
                         </span>
                       </div>
                     </div>
 
-                    <div class="candidate-detail__info-item">
-                      <div class="candidate-detail__info-icon">
-                        <i class="pi pi-user"></i>
-                      </div>
-                      <div class="candidate-detail__info-content">
-                        <span class="candidate-detail__info-label">Gender</span>
-                        <span class="candidate-detail__info-value">
-                          {{ candidateDetailsDataSource.gender }}
-                        </span>
-                      </div>
-                    </div>
-
+                    <!-- Phone Number -->
                     <div class="candidate-detail__info-item">
                       <div class="candidate-detail__info-icon">
                         <i class="pi pi-phone"></i>
                       </div>
                       <div class="candidate-detail__info-content">
-                        <span class="candidate-detail__info-label"
-                          >Phone Number</span
-                        >
+                        <span class="candidate-detail__info-label">Phone Number</span>
                         <span class="candidate-detail__info-value">
                           {{ candidateDetailsDataSource.phoneNumber }}
                         </span>
@@ -122,6 +105,45 @@
                             (click)="toggleAadhaarVisibility()">
                           </i>
                         </div>
+                      </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="candidate-detail__info-item">
+                      <div class="candidate-detail__info-icon">
+                        <i class="pi pi-map-marker"></i>
+                      </div>
+                      <div class="candidate-detail__info-content">
+                        <span class="candidate-detail__info-label">Location</span>
+                        <span class="candidate-detail__info-value">
+                          {{ candidateDetailsDataSource.currentLocation || 'N/A' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Date of Birth -->
+                    <div class="candidate-detail__info-item">
+                      <div class="candidate-detail__info-icon">
+                        <i class="pi pi-calendar"></i>
+                      </div>
+                      <div class="candidate-detail__info-content">
+                        <span class="candidate-detail__info-label">Date of Birth</span>
+                        <span class="candidate-detail__info-value">
+                          {{ candidateDetailsDataSource.dob | date: "dd MMMM yyyy" }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Gender -->
+                    <div class="candidate-detail__info-item">
+                      <div class="candidate-detail__info-icon">
+                        <i class="pi pi-user"></i>
+                      </div>
+                      <div class="candidate-detail__info-content">
+                        <span class="candidate-detail__info-label">Gender</span>
+                        <span class="candidate-detail__info-value">
+                          {{ candidateDetailsDataSource.gender }}
+                        </span>
                       </div>
                     </div>
                   </div>

@@ -75,12 +75,6 @@ export const uniqueStatusesForIsSchedule = [
 export const uniqueStatusesForEnrolled = [
   { label: 'Enrolled', value: 'Enrolled' },
   { label: 'Not Enrolled', value: 'Not Enrolled' },
-  { label: 'Scheduled', value: 'Scheduled' },
-  { label: 'Assigned', value: 'Assigned' },
-  { label: 'Selected', value: 'Selected' },
-  { label: 'Completed', value: 'Completed' },
-  { label: 'Rejected', value: 'Rejected' },
-  { label: 'Active', value: 'Active' },
 ];
 export const uniquesActives = [
   { label: 'Active', value: 'Active' },
@@ -901,6 +895,8 @@ export class TableComponent<
     this.isAnyFilterActive = false;
     this.table.clear();
     const payload: PaginatedPayload = new PaginatedPayload();
+    this.globalPayload = payload;
+    this.lastPaginationCall = null;
     this.pageChangeAndSort.emit(payload);
   }
   @HostBinding('class.table-loading') get loadingClass() {

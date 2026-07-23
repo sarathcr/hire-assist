@@ -44,6 +44,18 @@ import { StoreService } from '../../../../../../../../shared/services/store.serv
 import { StepsStatusService } from '../../../../services/steps-status.service';
 import { finalize } from 'rxjs/operators';
 
+function getRowValue(row: any, keys: string[]): string {
+  if (!row) return '';
+  const normalize = (s: string) => s.toLowerCase().replace(/[\s_-]/g, '');
+  const normalizedKeys = keys.map(normalize);
+  for (const [k, v] of Object.entries(row)) {
+    if (normalizedKeys.includes(normalize(k))) {
+      return (v as string || '').trim();
+    }
+  }
+  return '';
+}
+
 const tableColumns: TableColumnsData = {
   columns: [
     {
@@ -445,12 +457,12 @@ export class ImportCandidateListStepComponent implements OnInit {
 
           parsed.forEach((row, idx) => {
             const lineNum = idx + 2; // Line 1 is headers
-            const rawName = row['Candidate Name'] || row['name'] || row['Full Name'] || row['Fullname'] || '';
-            const name = rawName.trim();
-            const email = (row['Email Id'] || row['Email address'] || row['email'] || row['Email ID'] || row['emailId'] || '').trim();
-            const phone = (row['Mobile number'] || row['phoneNumber'] || row['phone'] || row['Mobile Number'] || row['Contact Number'] || '').trim().replace(/\s/g, '');
-            const dob = (row['Date of Birth'] || row['dob'] || row['Date Of Birth'] || row['dateOfBirth'] || row['DOB'] || '').trim();
-            const gender = (row['Gender'] || row['gender'] || '').trim().toLowerCase();
+            const name = getRowValue(row, ['Candidate Name', 'name', 'Full Name', 'Fullname']);
+            const email = getRowValue(row, ['Email Id', 'Email address', 'email', 'Email ID', 'emailId']);
+            const phone = getRowValue(row, ['Mobile number', 'phoneNumber', 'phone', 'Mobile Number', 'Contact Number']).replace(/\s/g, '');
+            const dob = getRowValue(row, ['Date of Birth', 'dob', 'Date Of Birth', 'dateOfBirth', 'DOB']);
+            const gender = getRowValue(row, ['Gender', 'gender']).toLowerCase();
+            const currentLocation = getRowValue(row, ['Current Location', 'Location', 'location', 'currentLocation', 'CurrentLocation']);
 
             const displayName = name || `Candidate on Line ${lineNum}`;
             const errors: string[] = [];
@@ -505,8 +517,13 @@ export class ImportCandidateListStepComponent implements OnInit {
               errors.push('Gender must be Male, Female, or Other');
             }
 
+            // 6. Current Location validation
+            if (!currentLocation) {
+              errors.push('Current Location is required');
+            }
+
             if (errors.length > 0) {
-              validationIssues.push(`${displayName} (Line ${lineNum}): ${errors.join(', ')}`);
+              validationIssues.push(`${displayName}: ${errors.join(', ')}`);
             }
           });
 
@@ -542,9 +559,57 @@ export class ImportCandidateListStepComponent implements OnInit {
         }
       }
 
+      // Open loading dialog right before upload
+      const loadingData: DialogData = {
+        title: 'Importing Candidates',
+        message: 'Please wait while we validate and import the candidate list from the CSV file...',
+        isChoice: false,
+        isLoading: true
+      };
+      try {
+        this.ref = this.dialog.open(DialogComponent, {
+          data: loadingData,
+          header: 'CSV Import In Progress',
+          maximizable: false,
+          width: '35vw',
+          modal: true,
+          closable: false,
+          focusOnShow: false,
+          breakpoints: {
+            '960px': '50vw',
+            '640px': '90vw',
+          }
+        });
+      } catch (err: any) {
+        console.error('Error opening loading dialog:', err);
+      }
+
       this.uploadFile(file);
     };
     reader.onerror = () => {
+      const loadingData: DialogData = {
+        title: 'Importing Candidates',
+        message: 'Please wait while we validate and import the candidate list from the CSV file...',
+        isChoice: false,
+        isLoading: true
+      };
+      try {
+        this.ref = this.dialog.open(DialogComponent, {
+          data: loadingData,
+          header: 'CSV Import In Progress',
+          maximizable: false,
+          width: '35vw',
+          modal: true,
+          closable: false,
+          focusOnShow: false,
+          breakpoints: {
+            '960px': '50vw',
+            '640px': '90vw',
+          }
+        });
+      } catch (err: any) {
+        console.error('Error opening loading dialog:', err);
+      }
       this.uploadFile(file);
     };
     reader.readAsText(file);
@@ -558,6 +623,9 @@ export class ImportCandidateListStepComponent implements OnInit {
       )
       .subscribe({
         next: (response: CandidateImportResponseDto) => {
+          if (this.ref) {
+            this.ref.close();
+          }
           let allFailedRecords: unknown[] = [];
 
           // 1. Handle Duplicates
@@ -786,6 +854,9 @@ export class ImportCandidateListStepComponent implements OnInit {
           this.isUploading = false;
         },
         error: (err) => {
+          if (this.ref) {
+            this.ref.close();
+          }
           this.isLoading = false;
           this.errorMessage(err);
           this.isUploading = false;
@@ -1124,13 +1195,12 @@ export class ImportCandidateListStepComponent implements OnInit {
           disabledButtonIndices.push(1); // Delete button
         }
       }
-
       return {
         ...candidate,
         currentLocation: candidate.currentLocation || 'N/A',
         visibleButtonIndices,
         disabledButtonIndices,
-        isDisabled: isEnrolledOrActive ? true : undefined
+        isSelectionDisabled: isEnrolledOrActive ? true : undefined
       };
     });
   }
