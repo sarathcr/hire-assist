@@ -255,15 +255,8 @@
         padding-top: 1rem;
         border-top: 1px solid #f1f5f9;
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
-
-        .recruitment-id {
-          font-size: 0.7rem;
-          font-weight: 600;
-          color: #94a3b8;
-          font-family: monospace;
-        }
 
         .view-details {
           font-size: 0.8rem;
