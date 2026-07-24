@@ -57,6 +57,15 @@ const panelTableColumns: TableColumnsData = {
       hasTextFilter: true,
       filterAlias: 'statusFilter',
       hasMultiStatus: true,
+      filterOptions: [
+        { label: 'Scheduled', value: 'Scheduled' },
+        { label: 'Pending', value: 'Pending' },
+        { label: 'Completed', value: 'Completed' },
+        { label: 'On Review', value: 'On Review' },
+        { label: 'Selected', value: 'Selected' },
+        { label: 'Rejected', value: 'Rejected' },
+        { label: 'Not Attended', value: 'Not Attended' },
+      ],
     },
     {
       field: 'reportedAt',
