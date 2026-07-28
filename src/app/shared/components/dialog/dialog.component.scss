@@ -91,6 +91,10 @@
     flex-shrink: 0;
   }
 
+  &__error-icon {
+    color: #ef4444 !important;
+  }
+
   &__candidate-name {
     font-weight: 500;
     color: var(--text-color, #212529);

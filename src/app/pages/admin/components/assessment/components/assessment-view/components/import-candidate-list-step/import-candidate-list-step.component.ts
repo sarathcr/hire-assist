@@ -454,6 +454,7 @@ export class ImportCandidateListStepComponent implements OnInit {
           const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
           const phonePattern = /^\+?[0-9]{10,12}$/;
           const validationIssues: string[] = [];
+          const uniqueFailedFields = new Set<string>();
 
           parsed.forEach((row, idx) => {
             const lineNum = idx + 2; // Line 1 is headers
@@ -470,33 +471,42 @@ export class ImportCandidateListStepComponent implements OnInit {
             // 1. Name validation
             if (!name) {
               errors.push('Name is required');
+              uniqueFailedFields.add('Name');
             } else if (name.length < 3) {
               errors.push('Name must be at least 3 characters');
+              uniqueFailedFields.add('Name');
             } else if (!namePattern.test(name)) {
               errors.push('Name cannot contain numbers or special characters');
+              uniqueFailedFields.add('Name');
             }
 
             // 2. Email validation
             if (!email) {
               errors.push('Email address is required');
+              uniqueFailedFields.add('Email address');
             } else if (!emailPattern.test(email)) {
               errors.push('Invalid email address format');
+              uniqueFailedFields.add('Email address');
             }
 
             // 3. Phone validation
             if (!phone) {
               errors.push('Phone number is required');
+              uniqueFailedFields.add('Phone number');
             } else if (!phonePattern.test(phone)) {
               errors.push('Phone number must be 10-12 digits');
+              uniqueFailedFields.add('Phone number');
             }
 
             // 4. DOB validation
             if (!dob) {
               errors.push('Date of Birth is required');
+              uniqueFailedFields.add('Date of Birth');
             } else {
               const dobDate = new Date(dob);
               if (isNaN(dobDate.getTime())) {
                 errors.push('Invalid Date of Birth format (use YYYY-MM-DD or MM/DD/YYYY)');
+                uniqueFailedFields.add('Date of Birth');
               } else {
                 const today = new Date();
                 let age = today.getFullYear() - dobDate.getFullYear();
@@ -506,6 +516,7 @@ export class ImportCandidateListStepComponent implements OnInit {
                 }
                 if (age < 18) {
                   errors.push('Candidate must be at least 18 years old');
+                  uniqueFailedFields.add('Date of Birth');
                 }
               }
             }
@@ -513,13 +524,16 @@ export class ImportCandidateListStepComponent implements OnInit {
             // 5. Gender validation
             if (!gender) {
               errors.push('Gender is required');
+              uniqueFailedFields.add('Gender');
             } else if (!['male', 'female', 'other'].includes(gender)) {
               errors.push('Gender must be Male, Female, or Other');
+              uniqueFailedFields.add('Gender');
             }
 
             // 6. Current Location validation
             if (!currentLocation) {
               errors.push('Current Location is required');
+              uniqueFailedFields.add('Current Location');
             }
 
             if (errors.length > 0) {
@@ -528,12 +542,15 @@ export class ImportCandidateListStepComponent implements OnInit {
           });
 
           if (validationIssues.length > 0) {
+            const fieldsList = Array.from(uniqueFailedFields).join(', ');
             const modalData: DialogData = {
               title: 'Validation Error',
-              message: 'The following CSV records contain invalid fields. Please correct the CSV file and reupload it.',
+              message: `The following CSV records contain invalid or missing fields (${fieldsList}). Please correct the CSV file and reupload it.`,
               candidateNames: validationIssues,
               isChoice: false,
-              acceptButtonText: 'OK'
+              acceptButtonText: 'OK',
+              listTitle: 'Validation Issues',
+              listIconClass: 'pi-exclamation-circle dialog__candidate-icon dialog__error-icon'
             };
             this.ref = this.dialog.open(DialogComponent, {
               data: modalData,

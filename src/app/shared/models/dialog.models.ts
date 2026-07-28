@@ -17,5 +17,7 @@ export interface DialogData {
   disableClose?: boolean;
   closeOnNavigation?: boolean;
   candidateNames?: string[];
+  listTitle?: string;
+  listIconClass?: string;
   isLoading?: boolean;
 }
