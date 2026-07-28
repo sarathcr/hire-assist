@@ -38,7 +38,11 @@ export class CandidateDataModel extends FormEntity {
         Validators.pattern(/^\d{12}$/),
         CandidateDataModel.verhoeffValidator,
       ],
-      currentLocation: [Validators.required],
+      currentLocation: [
+        Validators.required,
+        Validators.minLength(3),
+        Validators.maxLength(30),
+      ],
       // startDate: [Validators.required],
       // endDate: [Validators.required],
       // batch: [Validators.required],

@@ -534,6 +534,12 @@ export class ImportCandidateListStepComponent implements OnInit {
             if (!currentLocation) {
               errors.push('Current Location is required');
               uniqueFailedFields.add('Current Location');
+            } else if (currentLocation.length < 3) {
+              errors.push('Current Location must be at least 3 characters');
+              uniqueFailedFields.add('Current Location');
+            } else if (currentLocation.length > 30) {
+              errors.push('Current Location must not exceed 30 characters');
+              uniqueFailedFields.add('Current Location');
             }
 
             if (errors.length > 0) {
