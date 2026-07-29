@@ -21,23 +21,23 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th style="width: 80px">Type</th>
-            <th>Activity Details</th>
-            <th style="width: 200px">Time</th>
+            <th class="col-type">Type</th>
+            <th class="col-details">Activity Details</th>
+            <th class="col-time">Time</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body">
           <tr class="activity-logs-skeleton__row">
-            <td class="text-center">
+            <td class="text-center col-type">
               <p-skeleton width="32px" height="32px" borderRadius="8px" styleClass="activity-logs-skeleton__icon" />
             </td>
-            <td>
+            <td class="col-details">
               <div class="activity-logs-skeleton__message">
                 <p-skeleton width="75%" height="14px" borderRadius="6px" />
                 <p-skeleton width="40%" height="10px" borderRadius="6px" />
               </div>
             </td>
-            <td>
+            <td class="col-time">
               <p-skeleton width="110px" height="14px" borderRadius="6px" />
             </td>
           </tr>
@@ -67,22 +67,22 @@
       >
         <ng-template pTemplate="header">
           <tr>
-            <th style="width: 80px">Type</th>
-            <th>Activity Details</th>
-            <th style="width: 200px">Time</th>
+            <th class="col-type">Type</th>
+            <th class="col-details">Activity Details</th>
+            <th class="col-time">Time</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-activity>
           <tr>
-            <td class="text-center">
+            <td class="text-center col-type">
               <div class="activity-icon" [ngClass]="'icon-' + activity.type">
                 <i [class]="activity.icon"></i>
               </div>
             </td>
-            <td>
+            <td class="col-details">
               <span [innerHTML]="activity.message"></span>
             </td>
-            <td>
+            <td class="col-time">
               <span class="time-text">{{ activity.time }}</span>
             </td>
           </tr>
