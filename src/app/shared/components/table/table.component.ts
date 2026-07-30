@@ -54,6 +54,7 @@ export const uniqueStatuses = [
   { label: 'Scheduled', value: 'Scheduled' },
   { label: 'Pending', value: 'Pending' },
   { label: 'Assigned to Panel', value: 'Assigned to Panel' },
+  { label: 'Assigned to Batch', value: 'Assigned to Batch' },
   { label: 'Selected', value: 'Selected' },
   { label: 'Completed', value: 'Completed' },
   { label: 'Rejected', value: 'Rejected' },
