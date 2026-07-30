@@ -54,6 +54,4 @@ export class InputTextCalenderComponent
       Date | string | null
     >;
   }
-
-
 }

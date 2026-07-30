@@ -18,7 +18,7 @@
       ></p-datepicker>
 
       <label [for]="inputTextCalendarConfig.id">
-        {{ inputTextCalendarConfig.labelKey }}
+        {{ inputTextCalendarConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}
       </label>
     </p-floatlabel>
   }
@@ -30,7 +30,7 @@
         class="input-text-calender__label"
         [for]="inputTextCalendarConfig.id"
       >
-        {{ inputTextCalendarConfig.labelKey }}
+        {{ inputTextCalendarConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}
       </label>
 
       <p-datepicker

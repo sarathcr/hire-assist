@@ -10,7 +10,7 @@
       [maxlength]="inputTextAreaConfig.maxlength ?? null"
       (input)="onInputChange($event)"
     ></textarea>
-    <label for="over_label">{{ inputTextAreaConfig.labelKey }}</label>
+    <label for="over_label">{{ inputTextAreaConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}</label>
   </p-floatlabel>
 
   @if (inputTextAreaConfig.matSuffix) {

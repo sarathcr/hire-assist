@@ -1,12 +1,19 @@
-import { FormGroup } from '@angular/forms';
+import { FormGroup, Validators } from '@angular/forms';
 import { CustomFormControlConfig } from '../../../utilities/form.utility';
 
 export abstract class BaseFormComponent {
   abstract formGroup: FormGroup;
   abstract config: CustomFormControlConfig;
 
-  get errorMsg(): string {
+  get isRequired(): boolean {
+    if (!this.formGroup || !this.config) return false;
     const fc = this.formGroup.get(this.config.id);
+    if (!fc) return false;
+    return fc.hasValidator(Validators.required);
+  }
+
+  get errorMsg(): string {
+    const fc = this.formGroup?.get(this.config?.id);
 
     if (!fc || (!fc.touched && !fc.dirty) || !fc.errors) {
       return '';

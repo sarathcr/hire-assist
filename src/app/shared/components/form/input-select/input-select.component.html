@@ -16,12 +16,12 @@
         class="w-full md:w-56"
         [formControlName]="selectConfig.id"
       />
-      <label for="over_label">{{ selectConfig.labelKey }}</label>
+      <label for="over_label">{{ selectConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}</label>
     </p-floatlabel>
   } @else {
     <div class="input-select__basic">
       <label class="input-select__label" [for]="selectConfig.id">
-        {{ selectConfig.labelKey }}
+        {{ selectConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}
       </label>
 
       <p-select

@@ -17,7 +17,7 @@
           [ngClass]="{ 'input-text__input--masked': isMasked && inputTextConfig.isMaskable && formControl.value }"
         />
         <label [for]="inputTextConfig.id">
-          {{ inputTextConfig.labelKey }}
+          {{ inputTextConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}
         </label>
       </p-floatlabel>
       @if (isMasked && inputTextConfig.isMaskable && formControl.value) {
@@ -39,7 +39,7 @@
   @else {
     <div class="input-text__basic">
       <label class="input-text__label" [for]="inputTextConfig.id">
-        {{ inputTextConfig.labelKey }}
+        {{ inputTextConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}
       </label>
 
       <div class="input-text__wrapper">

@@ -1,5 +1,5 @@
 <div class="toggle-switch" [formGroup]="formGroup">
-  <label [for]="toggleId">{{ customToggleSwitchConfig.labelKey }}</label>
+  <label [for]="toggleId">{{ customToggleSwitchConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}</label>
   <p-floatlabel variant="on">
     <p-toggleswitch
       [id]="toggleId"

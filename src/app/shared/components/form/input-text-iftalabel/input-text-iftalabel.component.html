@@ -9,7 +9,7 @@
         [maxlength]="inputTextConfig.maxlength ?? null"
         (input)="onInputChange($event)"
       />
-      <label for="conditional_label">{{ inputTextConfig.labelKey }}</label>
+      <label for="conditional_label">{{ inputTextConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}</label>
     </p-iftalabel>
   </ng-container>
 

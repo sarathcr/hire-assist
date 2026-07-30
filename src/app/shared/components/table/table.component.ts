@@ -857,7 +857,12 @@ export class TableComponent<
     | 'contrast'
     | undefined {
     const lowerStatus = status?.toLowerCase() || '';
-    if (lowerStatus.includes('unassigned') || lowerStatus.includes('not scheduled') || lowerStatus.includes('not reported') || lowerStatus.includes('not enrolled')) {
+    if (
+      lowerStatus.includes('unassigned') ||
+      lowerStatus.includes('not scheduled') ||
+      lowerStatus.includes('not reported') ||
+      lowerStatus.includes('not enrolled')
+    ) {
       return 'warn';
     }
 
@@ -1266,7 +1271,7 @@ export class TableComponent<
 
   public getUtcDateString(dateValue: any): any {
     if (!dateValue || typeof dateValue !== 'string') return dateValue;
-    
+
     // Check if it's already an ISO-like date
     if (dateValue.includes('T')) {
       return dateValue;
@@ -1278,24 +1283,24 @@ export class TableComponent<
       if (parts.length === 2) {
         const datePart = parts[0].trim();
         const timePart = parts[1].trim();
-        
+
         const dateParts = datePart.split('/');
         if (dateParts.length === 3) {
           // Assume DD/MM/YYYY
           const day = dateParts[0].padStart(2, '0');
           const month = dateParts[1].padStart(2, '0');
           const year = dateParts[2];
-          
+
           const timeParts = timePart.split(' ');
           if (timeParts.length === 2) {
             const hm = timeParts[0].split(':');
             let hours = parseInt(hm[0], 10);
             const minutes = hm[1].padStart(2, '0');
             const ampm = timeParts[1].toUpperCase();
-            
+
             if (ampm === 'PM' && hours < 12) hours += 12;
             if (ampm === 'AM' && hours === 12) hours = 0;
-            
+
             const hoursStr = hours.toString().padStart(2, '0');
             // Construct ISO string as local time
             return `${year}-${month}-${day}T${hoursStr}:${minutes}:00`;
@@ -1411,4 +1416,3 @@ export class TableComponent<
     }
   }
 }
-
