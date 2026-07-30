@@ -145,8 +145,14 @@ html {
 // Global Dialog Overrides for DynamicDialog
 // ============================================
 .reassign-dialog-wrapper {
-  .p-dialog-header { display: none !important; }
-  .p-dialog-content { padding: 0 !important; border-radius: 20px !important; overflow: hidden; }
+  .p-dialog-header {
+    display: none !important;
+  }
+  .p-dialog-content {
+    padding: 0 !important;
+    border-radius: 20px !important;
+    overflow: hidden;
+  }
 }
 
 .standard-dialog-wrapper {
@@ -157,7 +163,7 @@ html {
     display: flex !important;
     flex-direction: column !important;
   }
-  
+
   .p-dialog-content {
     padding: 0 !important;
     display: flex !important;

@@ -1305,4 +1305,109 @@ export class TableComponent<
 
     return dateValue;
   }
+
+  public onScoreFilterKeydown(
+    event: KeyboardEvent,
+    filterCallback: (val: any) => void,
+    currentValue: any,
+  ): void {
+    if (event.key === 'Enter') {
+      filterCallback(currentValue);
+      return;
+    }
+
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'Tab',
+      'Escape',
+      'Enter',
+      'Home',
+      'End',
+    ];
+    if (
+      allowedKeys.includes(event.key) ||
+      ((event.ctrlKey || event.metaKey) &&
+        ['a', 'c', 'v', 'x', 'z'].includes(event.key.toLowerCase()))
+    ) {
+      return;
+    }
+
+    const allowedCharsRegex = /^[0-9.nNaA/]$/;
+    if (!allowedCharsRegex.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  public onScoreFilterChange(
+    value: any,
+    filterConstraint: any,
+    inputElement: HTMLInputElement,
+  ): void {
+    if (value === null || value === undefined) {
+      filterConstraint.value = value;
+      return;
+    }
+
+    const strVal = String(value);
+    let sanitized = strVal.replace(/[^0-9.nNaA/]/g, '');
+
+    const pattern = /^(?:[0-9]*\.?[0-9]*|[nN]|[nN]\/|[nN]\/[aA])$/;
+    if (!pattern.test(sanitized)) {
+      let temp = '';
+      for (const char of sanitized) {
+        if (pattern.test(temp + char)) {
+          temp += char;
+        }
+      }
+      sanitized = temp;
+    }
+
+    if (sanitized.toLowerCase() === 'n/a') {
+      sanitized = 'N/A';
+    }
+
+    filterConstraint.value = sanitized;
+    if (sanitized !== strVal) {
+      inputElement.value = sanitized;
+    }
+  }
+
+  public onScoreFilterPaste(event: ClipboardEvent): void {
+    const pastedData = event.clipboardData?.getData('text');
+    if (pastedData) {
+      const pattern = /^(?:[0-9]*\.?[0-9]*|[nN]|[nN]\/|[nN]\/[aA])$/;
+      if (!pattern.test(pastedData)) {
+        event.preventDefault();
+        const sanitized = pastedData.replace(/[^0-9.nNaA/]/g, '');
+        let temp = '';
+        for (const char of sanitized) {
+          if (pattern.test(temp + char)) {
+            temp += char;
+          }
+        }
+        if (temp) {
+          const input = event.target as HTMLInputElement;
+          const start = input.selectionStart ?? 0;
+          const end = input.selectionEnd ?? 0;
+          const currentValue = input.value;
+          const newValue =
+            currentValue.substring(0, start) +
+            temp +
+            currentValue.substring(end);
+          if (pattern.test(newValue)) {
+            let finalValue = newValue;
+            if (finalValue.toLowerCase() === 'n/a') {
+              finalValue = 'N/A';
+            }
+            input.value = finalValue;
+            input.dispatchEvent(new Event('input'));
+          }
+        }
+      }
+    }
+  }
 }
+

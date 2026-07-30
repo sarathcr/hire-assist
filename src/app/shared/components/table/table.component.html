@@ -271,7 +271,6 @@
               }
               @if (headerColumn.filterAlias === "scoreFilter") {
                 <p-columnFilter
-                  type="numeric"
                   field="{{ headerColumn.field }}"
                   display="menu"
                   hideOnClear="true"
@@ -282,6 +281,19 @@
                     } @else {
                       <i class="pi pi-filter"></i>
                     }
+                  </ng-template>
+                  <ng-template pTemplate="filter" let-filterConstraint="filterConstraint" let-filter="filterCallback">
+                    <input
+                      #scoreInput
+                      type="text"
+                      pInputText
+                      [ngModel]="filterConstraint.value"
+                      (ngModelChange)="onScoreFilterChange($event, filterConstraint, scoreInput)"
+                      (keydown)="onScoreFilterKeydown($event, filter, filterConstraint.value)"
+                      (paste)="onScoreFilterPaste($event)"
+                      placeholder="Search score"
+                      class="p-inputtext w-full"
+                    />
                   </ng-template>
                 </p-columnFilter>
               }
