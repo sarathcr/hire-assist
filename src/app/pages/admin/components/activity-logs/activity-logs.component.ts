@@ -7,7 +7,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DashboardService } from '../../services/dashboard.service';
 import { StoreService } from '../../../../shared/services/store.service';
-import { DashboardData } from '../../models/dashboard.model';
+import { DashboardData, RecentActivity } from '../../models/dashboard.model';
 
 @Component({
   selector: 'app-activity-logs',
@@ -17,7 +17,7 @@ import { DashboardData } from '../../models/dashboard.model';
   styleUrl: './activity-logs.component.scss'
 })
 export class ActivityLogsComponent implements OnInit {
-  public activities = signal<any[]>([]);
+  public activities = signal<RecentActivity[]>([]);
   public isLoading = signal<boolean>(true);
   public isInitialLoading = signal<boolean>(true);
   public readonly activityLogSkeletonRows = [1, 2, 3, 4, 5];
@@ -60,7 +60,7 @@ export class ActivityLogsComponent implements OnInit {
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (res: any) => {
-            this.activities.set(res.data || []);
+            this.activities.set(this.dashboardService.processRecentActivities(res.data || []));
             this.totalRecords.set(res.totalRecords || 0);
             this.isLoading.set(false);
             this.isInitialLoading.set(false);
