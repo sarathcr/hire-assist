@@ -175,11 +175,19 @@ export class CreateBatchDialogComponent implements OnInit {
     this.fGroup.markAllAsTouched();
     if (this.fGroup.valid && this.fGroup.get('batch')?.value && this.fGroup.get('questionSet')?.value) {
       const val = this.fGroup.value;
+      let endDate = val.endDate;
+      if (endDate) {
+        const end = new Date(endDate);
+        if (end.getHours() === 0 && end.getMinutes() === 0 && end.getSeconds() === 0) {
+          end.setHours(23, 59, 59, 999);
+          endDate = end;
+        }
+      }
       const payload = {
         batchId: Number(val.batch),
         questionSetId: Number(val.questionSet),
         startDate: val.startDate,
-        endDate: val.endDate,
+        endDate: endDate,
       };
       this.ref.close(payload);
     }

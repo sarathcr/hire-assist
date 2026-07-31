@@ -36,7 +36,7 @@ export class frontDeskModal extends FormEntity {
       users: [Validators.required],
     },
     configMap: {
-      users: { id: 'users', labelKey: '' },
+      users: { id: 'users', labelKey: 'Select Coordinators' },
     },
   };
 }
