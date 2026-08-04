@@ -138,7 +138,7 @@ $spacing: (
 
 .dashboard-container {
   width: 100%;
-  min-height: 100%;
+  height: auto;
   // padding: 0 0 clamp(1rem, 2vw, 2rem) 0;
   display: flex;
   flex-direction: column;
@@ -153,6 +153,7 @@ $spacing: (
     -apple-system,
     sans-serif;
   color: map.get(map.get($colors, "text"), "main");
+  // padding-bottom: calc(var(--spacing-30) + env(safe-area-inset-bottom));
 
   // Header
   .dashboard-header {
@@ -457,13 +458,32 @@ $spacing: (
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: clamp(1rem, 2vw, 1.5rem);
+    align-content: start;
+
     @include media("xl") {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include media("md") {
       grid-template-columns: 1fr;
-    } // Stack earlier to prevent squishing
+    }
 
     .chart-panel {
       height: 100%;
       display: flex;
+
+      @include media("md") {
+        height: auto;
+      }
+    }
+
+    .activity-feed-section {
+      @include media("xl") {
+        grid-column: span 2;
+      }
+      @include media("md") {
+        grid-column: span 1;
+      }
     }
 
     .chart-card {
@@ -514,13 +534,20 @@ $spacing: (
     .chart-wrapper {
       position: relative;
       width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding-bottom: 20px;
 
       ::ng-deep p-chart {
         z-index: 2;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+
+        > .p-chart {
+          width: 100%;
+          height: 100%;
+          display: block;
+        }
       }
 
       &.chart-wrapper-bar {
@@ -679,16 +706,22 @@ $spacing: (
     }
 
     .activity-list {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      overflow-y: auto;
       padding: map.get($spacing, "lg");
-      display: flex;
-      flex-direction: column;
-      gap: map.get($spacing, "lg");
+      max-height: 406px;
+      overflow: auto;
+      @media (max-width: 1024px) {
+        max-height: unset;
+      }
+      // position: absolute;
+      // top: 0;
+      // left: 0;
+      // right: 0;
+      // bottom: 0;
+      // overflow-y: auto;
+      // padding: map.get($spacing, "lg");
+      // display: flex;
+      // flex-direction: column;
+      // gap: map.get($spacing, "lg");
 
       // Removed fixed max-height to let it dynamically match chart height!
 
@@ -1557,4 +1590,9 @@ $spacing: (
       border-radius: 50%;
     }
   }
+}
+
+:host {
+  display: block;
+  width: 100%;
 }

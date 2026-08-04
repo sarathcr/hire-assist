@@ -20,13 +20,25 @@
       flex-grow: 1;
       padding: var(--spacing-20) var(--spacing-20);
       height: auto;
+      display: flex;
+      flex-direction: column;
+
+      &::after {
+        // content: "";
+        // display: block;
+        // height: calc(var(--spacing-30) + env(safe-area-inset-bottom));
+        // min-height: calc(var(--spacing-30) + env(safe-area-inset-bottom));
+        // width: 100%;
+        // pointer-events: none;
+      }
     }
   }
   @media (max-width: 1024px) {
     &__body {
-      display: block;
+      display: flex;
       padding-top: 66px; // smaller header on mobile
       height: 100%;
+      box-sizing: border-box;
     }
     .main {
       height: 100%;
