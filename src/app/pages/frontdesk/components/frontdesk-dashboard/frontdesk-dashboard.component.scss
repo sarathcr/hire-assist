@@ -1,10 +1,15 @@
 .frontdesk-assessments {
   margin-top: var(--spacing-20);
-  height: 100%;
+  height: auto;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
+  padding-bottom: 100px;
+
+  @media screen and (max-width: 768px) {
+    padding-bottom: 100px;
+  }
   &__header {
     display: flex;
     justify-content: space-between;
@@ -49,13 +54,22 @@
   }
   &__wrapper {
     flex: 1;
-    // overflow-y: auto;
     min-height: 0;
     width: 100%;
-    padding-bottom: 80px;
+  }
 
-    @media screen and (max-width: 768px) {
-      padding-bottom: 150px;
+  &__footer {
+    position: fixed;
+    bottom: 0;
+    left: 225px;
+    right: 0;
+    background: var(--color-white);
+    padding: 15px 30px;
+    z-index: 100;
+    transition: left 0.25s ease-in-out;
+
+    @media screen and (max-width: 1024px) {
+      left: 0 !important;
     }
   }
   &__list {
@@ -317,5 +331,11 @@
       font-size: 0.75rem;
       transition: transform 0.2s ease;
     }
+  }
+}
+
+:host-context(.sidebar-collapsed) {
+  .frontdesk-assessments__footer {
+    left: 80px;
   }
 }

@@ -10,9 +10,9 @@
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
-    background: var(--color-white);
+    background: transparent;
     color: var(--p-paginator-color);
-    padding: 1rem;
+    padding: 0.5rem;
     border-radius: var(--p-paginator-border-radius);
     gap: var(--p-paginator-gap);
   }

@@ -20,10 +20,10 @@ import { AccordionModule } from 'primeng/accordion';
       <!-- Header Card Skeleton -->
       <p-card class="interview-feedback-skeleton__header-card">
         <div class="interview-feedback-skeleton__header">
-          <p-skeleton shape="circle" width="72px" height="72px" />
+          <p-skeleton shape="circle" styleClass="interview-feedback-skeleton__avatar" />
           <div class="interview-feedback-skeleton__header-text">
-            <p-skeleton width="300px" height="36px" styleClass="mb-2" />
-            <p-skeleton width="200px" height="18px" />
+            <p-skeleton width="80%" height="32px" styleClass="mb-2" />
+            <p-skeleton width="50%" height="18px" />
           </div>
         </div>
       </p-card>
@@ -36,8 +36,8 @@ import { AccordionModule } from 'primeng/accordion';
               <div class="interview-feedback-skeleton__candidate-item">
                 <p-skeleton shape="circle" width="48px" height="48px" />
                 <div class="interview-feedback-skeleton__candidate-details">
-                  <p-skeleton width="120px" height="14px" styleClass="mb-1" />
-                  <p-skeleton width="200px" height="16px" />
+                  <p-skeleton width="40%" height="14px" styleClass="mb-1" />
+                  <p-skeleton width="70%" height="16px" />
                 </div>
               </div>
             }
@@ -54,21 +54,21 @@ import { AccordionModule } from 'primeng/accordion';
       <p-card class="interview-feedback-skeleton__section-card">
         <div class="interview-feedback-skeleton__section-header">
           <p-skeleton shape="circle" width="48px" height="48px" />
-          <p-skeleton width="250px" height="24px" />
+          <p-skeleton width="60%" height="24px" />
         </div>
         <p-divider />
         <div class="interview-feedback-skeleton__accordion-wrapper">
           @for (round of skeletonRounds; track round) {
             <div class="interview-feedback-skeleton__accordion-item">
               <div class="interview-feedback-skeleton__accordion-header">
-                <p-skeleton width="150px" height="32px" />
+                <p-skeleton width="50%" height="32px" />
               </div>
               <div class="interview-feedback-skeleton__accordion-content">
                 <div class="interview-feedback-skeleton__detail-grid">
                   @for (detail of [1, 2, 3, 4, 5, 6]; track detail) {
                     <div class="interview-feedback-skeleton__detail-item">
-                      <p-skeleton width="100px" height="14px" styleClass="mb-1" />
-                      <p-skeleton width="80px" height="16px" />
+                      <p-skeleton width="80%" height="14px" styleClass="mb-1" />
+                      <p-skeleton width="50%" height="16px" />
                     </div>
                   }
                 </div>
@@ -82,25 +82,25 @@ import { AccordionModule } from 'primeng/accordion';
       <p-card class="interview-feedback-skeleton__section-card">
         <div class="interview-feedback-skeleton__section-header">
           <p-skeleton shape="circle" width="48px" height="48px" />
-          <p-skeleton width="200px" height="24px" />
+          <p-skeleton width="60%" height="24px" />
         </div>
         <p-divider />
         <div class="interview-feedback-skeleton__accordion-wrapper">
           @for (feedback of [1, 2, 3, 4, 5, 6]; track feedback) {
             <div class="interview-feedback-skeleton__accordion-item">
               <div class="interview-feedback-skeleton__accordion-header">
-                <p-skeleton width="120px" height="32px" />
-                <p-skeleton width="60px" height="24px" />
+                <p-skeleton width="50%" height="32px" />
+                <p-skeleton width="20%" height="24px" />
               </div>
               <div class="interview-feedback-skeleton__accordion-content">
                 <p-skeleton width="100%" height="200px" styleClass="mb-3" />
-                <p-skeleton width="250px" height="56px" />
+                <p-skeleton width="60%" height="56px" />
               </div>
             </div>
           }
         </div>
         <div class="interview-feedback-skeleton__submit-section">
-          <p-skeleton width="200px" height="48px" />
+          <p-skeleton width="150px" height="48px" />
         </div>
       </p-card>
     </div>
@@ -141,8 +141,20 @@ import { AccordionModule } from 'primeng/accordion';
         gap: 24px;
       }
 
+      &__avatar {
+        width: 72px !important;
+        height: 72px !important;
+        flex-shrink: 0;
+
+        @media screen and (max-width: 480px) {
+          width: 48px !important;
+          height: 48px !important;
+        }
+      }
+
       &__header-text {
         flex: 1;
+        min-width: 0;
       }
 
       &__candidate-card {
@@ -167,7 +179,7 @@ import { AccordionModule } from 'primeng/accordion';
         display: flex;
         flex-direction: column;
         gap: 20px;
-        min-width: 300px;
+        min-width: 250px;
       }
 
       &__candidate-item {
@@ -181,6 +193,7 @@ import { AccordionModule } from 'primeng/accordion';
         display: flex;
         flex-direction: column;
         gap: 8px;
+        min-width: 0;
       }
 
       &__score-section {

@@ -85,10 +85,13 @@
       }
     }
   </div>
-  <app-pagination
-    [dataSource]="dataSource"
-    [totalRecords]="totalRecords"
-    [filterMap]="filterMap"
-  >
-  </app-pagination>
+  <div class="frontdesk-assessments__footer">
+    <app-pagination
+      [dataSource]="dataSource"
+      [totalRecords]="totalRecords"
+      [filterMap]="filterMap"
+      [isLoading]="isLoading"
+    >
+    </app-pagination>
+  </div>
 </div>

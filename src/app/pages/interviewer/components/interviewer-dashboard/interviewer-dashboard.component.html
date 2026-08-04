@@ -93,10 +93,13 @@
       }
     }
   </div>
-  <app-pagination
-    [dataSource]="dataSource"
-    [filterMap]="filterMap"
-    [totalRecords]="totalRecords"
-  >
-  </app-pagination>
+  <div class="coordinator-assessment__footer">
+    <app-pagination
+      [dataSource]="dataSource"
+      [filterMap]="filterMap"
+      [totalRecords]="totalRecords"
+      [isLoading]="(dataSource.loading$ | async) || !hasLoaded"
+    >
+    </app-pagination>
+  </div>
 </div>

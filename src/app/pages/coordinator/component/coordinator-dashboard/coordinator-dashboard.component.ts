@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SkeletonComponent } from '../../../../shared/components/assessment-card/assessment-card-skeleton';
-import { DatePipe } from '@angular/common';
+import { DatePipe, CommonModule } from '@angular/common';
 import { BaseComponent } from '../../../../shared/components/base/base.component';
 import { GenericDataSource } from '../../../../shared/components/pagination/generic-data-source';
 
@@ -16,7 +16,7 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 
 @Component({
   selector: 'app-coordinator-dashboard',
-  imports: [SkeletonComponent, PaginationComponent, DatePipe, SearchBarComponent, EmptyStateComponent],
+  imports: [SkeletonComponent, PaginationComponent, DatePipe, CommonModule, SearchBarComponent, EmptyStateComponent],
   providers: [GenericDataSource],
   templateUrl: './coordinator-dashboard.component.html',
   styleUrl: './coordinator-dashboard.component.scss',
