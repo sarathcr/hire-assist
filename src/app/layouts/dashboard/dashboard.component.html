@@ -1,4 +1,4 @@
-<div class="dashboard">
+<div class="dashboard" [class.sidebar-collapsed]="collapsed()">
   <app-header></app-header>
   <div class="dashboard__body">
     <app-side-nav [navLinks]="links"> </app-side-nav>

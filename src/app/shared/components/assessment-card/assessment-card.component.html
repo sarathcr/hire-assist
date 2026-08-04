@@ -71,19 +71,22 @@
             <i class="pi pi-sitemap"></i>
             <span>{{ data()?.rounds?.length ?? 0 }} Rounds</span>
           </div>
-          <p-popover #opr>
+          <p-popover [styleClass]="'assessment-card__popover'" #opr>
             @if (data()?.rounds?.length) {
               <ul class="assessment-card__footer_rounds__list">
                 @for (rounds of data()?.rounds; track rounds) {
                   <li class="assessment-card__footer_rounds__item">
                     <span
                       class="assessment-card__footer_rounds__status"
-                      tooltipStyleClass="assessment-card__footer_rounds__status"
-                      pTooltip="{{ rounds.roundStatus }}"
-                      tooltipPosition="top"
                       [ngClass]=" rounds.roundStatus ? 'assessment-card__footer_rounds__status_' + rounds.roundStatus.toLowerCase() : ''"
                     ></span>
-                    <span>{{ rounds.roundName }}</span>
+                    <span class="assessment-card__footer_rounds__name">{{ rounds.roundName }}</span>
+                    <span
+                      class="assessment-card__footer_rounds__status-tag"
+                      [ngClass]=" rounds.roundStatus ? 'assessment-card__footer_rounds__status-tag_' + rounds.roundStatus.toLowerCase() : ''"
+                    >
+                      {{ rounds.roundStatus }}
+                    </span>
                   </li>
                 }
               </ul>
