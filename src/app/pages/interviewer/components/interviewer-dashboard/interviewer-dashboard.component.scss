@@ -1,5 +1,5 @@
 .coordinator-assessment {
-  padding: 0 0 100px;
+  padding: 0 0 80px;
   display: flex;
   flex-direction: column;
   height: auto;
@@ -8,7 +8,6 @@
   box-sizing: border-box;
 
   @media (max-width: 768px) {
-    padding: 0 0 100px;
     gap: 1rem;
   }
 
@@ -18,9 +17,10 @@
     align-items: center;
     gap: 1rem;
 
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       flex-direction: column;
       align-items: stretch;
+      gap: 0.75rem;
     }
   }
 
@@ -28,6 +28,15 @@
     display: flex;
     gap: 1rem;
     align-items: center;
+
+    @media screen and (max-width: 768px) {
+      width: 100%;
+      ::ng-deep .search-bar-wrapper,
+      ::ng-deep .p-iconfield,
+      ::ng-deep .p-inputtext {
+        width: 100%;
+      }
+    }
   }
 
   &__title {
@@ -48,6 +57,14 @@
       background: #e2e8f0;
       margin-left: 1rem;
     }
+
+    @media screen and (max-width: 768px) {
+      font-size: 1.25rem;
+
+      &::after {
+        display: none;
+      }
+    }
   }
   &__wrapper {
     height: auto;
@@ -62,7 +79,7 @@
     left: 225px;
     right: 0;
     background: var(--color-white);
-    padding: 15px 30px;
+    // padding: 15px 30px;
     z-index: 100;
     transition: left 0.25s ease-in-out;
 

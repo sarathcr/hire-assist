@@ -8,9 +8,9 @@
   &__header {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 1rem;
     flex-shrink: 0;
-    margin-bottom: 20px;
+    // margin-bottom: 20px;
   }
 
   &__title {
@@ -30,7 +30,7 @@
 
   &__actions {
     display: flex;
-    gap: 15px;
+    gap: 0.5rem;
     align-items: center;
 
     ::ng-deep {
@@ -65,7 +65,7 @@
 
   &__footer {
     position: fixed;
-    bottom: 0;
+    bottom: -1px;
     left: 225px;
     right: 0;
     height: 70px;
@@ -79,7 +79,7 @@
 
     @media screen and (max-width: 1024px) {
       left: 0 !important;
-      padding: 0 var(--spacing-15);
+      // padding: 0 var(--spacing-15);
     }
   }
   &__list {
@@ -102,24 +102,57 @@
   }
   @media screen and (max-width: 768px) {
     &__header {
-      flex-direction: column;
-      gap: 15px;
-      align-items: stretch;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      row-gap: 12px;
+      column-gap: 8px;
+      align-items: center;
+      padding-bottom: 12px;
+      margin-bottom: 0;
     }
     &__divider {
       display: none;
     }
+    &__title {
+      grid-column: 1;
+      grid-row: 1;
+      font-size: 1.5rem;
+      margin: 0;
+    }
+    &__button {
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: end;
+      display: inline-flex;
+    }
     &__actions {
-      width: 100%;
+      grid-column: 1 / span 2;
+      grid-row: 2;
+      display: flex;
       gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+      width: 100%;
+      align-items: center;
+      justify-content: stretch;
+
+      ::ng-deep {
+        .p-button {
+          height: 38px;
+        }
+        .p-button.p-button-icon-only {
+          width: 38px;
+          min-width: 38px;
+        }
+        .p-iconfield,
+        .p-inputtext {
+          height: 38px;
+        }
+      }
     }
     &__search-bar {
-      flex: 1 1 100%;
-      order: 3;
-      margin-top: 5px;
-      ::ng-deep .p-input-icon-left,
+      flex: 1;
+      width: 100%;
+      ::ng-deep .search-bar-wrapper,
+      ::ng-deep .p-iconfield,
       ::ng-deep .p-inputtext {
         width: 100%;
       }
@@ -127,10 +160,6 @@
     &__list {
       grid-template-columns: 1fr;
       width: auto;
-    }
-    &__title {
-      margin: 0;
-      font-size: 1.5rem;
     }
     &__wrapper {
       height: calc(100vh - 220px);

@@ -4,7 +4,7 @@
 }
 .pagination {
   width: 100%;
-  
+
   &__custom {
     display: flex;
     align-items: center;
@@ -22,7 +22,7 @@
   .p-paginator {
     background: transparent !important;
     border: none !important;
-    padding: 0.5rem !important;
+    padding: 1rem !important;
     flex-wrap: nowrap !important;
     justify-content: center !important;
     align-items: center !important;
@@ -40,7 +40,7 @@
     }
 
     .p-paginator {
-      padding: 0.25rem !important;
+      padding: 1rem !important;
       gap: 4px !important;
 
       .p-paginator-first,
