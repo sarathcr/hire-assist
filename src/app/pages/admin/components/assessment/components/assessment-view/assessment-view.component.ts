@@ -13,6 +13,7 @@ import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import type { Option } from '../../../../../../shared/models/option';
 import { CordinatorData } from '../../../../models/assessment-schedule.model';
 import { Assessment, RoundModel, CoordinatorDto } from '../../../../models/assessment.model';
+import { frontDeskResponse } from '../../../../models/frontDesk-model';
 import {
   StepStatus,
   StepsStatusService,
@@ -108,6 +109,7 @@ export class AssessmentViewComponent
     'schedule',
   ];
   public isQuestionSetIncomplete = false;
+  public isFrontDeskIncomplete = false;
 
   public stepConfig = [
     {
@@ -271,6 +273,16 @@ export class AssessmentViewComponent
       return;
     }
 
+    // Block if front desk coordinator assignment is incomplete and navigating past step 3
+    if (this.isFrontDeskIncomplete && step > 3) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Please assign front desk coordinators before proceeding.',
+      });
+      return;
+    }
+
     // Block ANY navigation away from the Question Set step (step 1)
     // when there are question sets created but not all have been submitted.
     if (this.activeStep === 1 && step !== 1) {
@@ -388,6 +400,11 @@ export class AssessmentViewComponent
 
     // If coordinator assignment is incomplete, block any step beyond index 2
     if (this.isCoordinatorIncomplete && stepIndex > 2) {
+      return false;
+    }
+
+    // If front desk assignment is incomplete, block any step beyond index 3
+    if (this.isFrontDeskIncomplete && stepIndex > 3) {
       return false;
     }
 
@@ -515,14 +532,24 @@ export class AssessmentViewComponent
               coordinatorVal$ = of(false);
             }
 
-            // Combine both validations in parallel
+            // 3. Front Desk Validation Observable
+            const frontDeskVal$ = this.assessmentService.getFrontDeskUserByAssessment(this.assessmentId).pipe(
+              map((res: frontDeskResponse[]) => {
+                return !res || res.length === 0;
+              }),
+              catchError(() => of(true))
+            );
+
+            // Combine all validations in parallel
             return forkJoin({
               isQuestionSetIncomplete: questionSetVal$,
-              isCoordinatorIncomplete: coordinatorVal$
+              isCoordinatorIncomplete: coordinatorVal$,
+              isFrontDeskIncomplete: frontDeskVal$
             }).pipe(
-              map(({ isQuestionSetIncomplete, isCoordinatorIncomplete }) => {
+              map(({ isQuestionSetIncomplete, isCoordinatorIncomplete, isFrontDeskIncomplete }) => {
                 this.isQuestionSetIncomplete = isQuestionSetIncomplete;
                 this.isCoordinatorIncomplete = isCoordinatorIncomplete;
+                this.isFrontDeskIncomplete = isFrontDeskIncomplete;
 
                 if ((this.isQuestionSetIncomplete || this.hasModifiedQuestionSetAfterComplete) && this.stepsStatus.questionSets === 'Completed') {
                   this.stepsStatus.questionSets = 'Active';
@@ -530,6 +557,14 @@ export class AssessmentViewComponent
 
                 if (this.isCoordinatorIncomplete && this.stepsStatus.coordinators === 'Completed') {
                   this.stepsStatus.coordinators = 'Active';
+                }
+
+                if (this.isFrontDeskIncomplete) {
+                  if (this.stepsStatus.frontDesk === 'Completed') {
+                    this.stepsStatus.frontDesk = 'Active';
+                  }
+                } else {
+                  this.stepsStatus.frontDesk = 'Completed';
                 }
 
                 this.updateCompletedStepsFromStatus();
@@ -627,6 +662,11 @@ export class AssessmentViewComponent
 
     // If coordinator assignment is incomplete, block all steps after index 2
     if (this.isCoordinatorIncomplete && stepIndex > 2) {
+      return false;
+    }
+
+    // If front desk assignment is incomplete, block all steps after index 3
+    if (this.isFrontDeskIncomplete && stepIndex > 3) {
       return false;
     }
 
