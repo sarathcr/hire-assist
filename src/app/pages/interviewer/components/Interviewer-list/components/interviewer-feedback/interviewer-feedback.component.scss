@@ -1046,6 +1046,18 @@ $white: #ffffff;
     border-top: 1px solid $slate-100;
 
     ::ng-deep {
+      // Clear unwanted background colors from pasted rich text
+      span,
+      p,
+      strong,
+      b,
+      em,
+      i,
+      u,
+      s {
+        background-color: transparent !important;
+      }
+
       em,
       i {
         font-style: italic !important;
@@ -1063,7 +1075,6 @@ $white: #ffffff;
       strong,
       b {
         font-weight: bold !important;
-        color: $slate-800 !important;
         &,
         & * {
           font-weight: bold !important;
@@ -1137,6 +1148,18 @@ $white: #ffffff;
     word-wrap: break-word;
     word-break: break-word;
     ::ng-deep {
+      // Clear unwanted background colors from pasted rich text
+      span,
+      p,
+      strong,
+      b,
+      em,
+      i,
+      u,
+      s {
+        background-color: transparent !important;
+      }
+
       em,
       i {
         font-style: italic !important;
@@ -1153,7 +1176,6 @@ $white: #ffffff;
       // Explicitly handle combinations
       strong,
       b {
-        color: $slate-800 !important;
         font-weight: bold !important;
         &,
         & * {
@@ -1235,6 +1257,62 @@ $white: #ffffff;
     margin-bottom: 0.5rem;
 
     ::ng-deep {
+      // Clear unwanted background colors from pasted rich text
+      span,
+      p,
+      strong,
+      b,
+      em,
+      i,
+      u,
+      s {
+        background-color: transparent !important;
+      }
+
+      strong,
+      b {
+        font-weight: 700 !important;
+        &,
+        & * {
+          font-weight: 700 !important;
+          font-family: inherit !important;
+        }
+      }
+
+      em,
+      i {
+        font-style: italic !important;
+        &,
+        & * {
+          font-style: italic !important;
+        }
+      }
+
+      u {
+        text-decoration: underline !important;
+      }
+
+      s {
+        text-decoration: line-through !important;
+      }
+
+      p {
+        margin: 0 0 6px 0;
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      ul,
+      ol {
+        margin: 6px 0;
+        padding-left: 18px;
+      }
+
+      li {
+        margin: 3px 0;
+      }
+
       img {
         max-width: 100% !important;
         max-height: 300px !important;

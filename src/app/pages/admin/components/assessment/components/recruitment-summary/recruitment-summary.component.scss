@@ -128,7 +128,11 @@
       line-height: 1.1;
 
       @media (max-width: 768px) {
-        font-size: 1.75rem;
+        font-size: 1.6rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 1.3rem;
       }
     }
 
@@ -1192,6 +1196,56 @@
       background: white;
       border: 1px solid #f1f5f9;
       border-radius: var(--radius-sm);
+
+      @media (max-width: 640px) {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        position: relative !important;
+        padding-top: 2.75rem !important;
+
+        .q-number {
+          position: absolute !important;
+          top: 1rem !important;
+          left: 1rem !important;
+        }
+
+        .q-main {
+          width: 100% !important;
+
+          .q-answers {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+
+            .ans-box {
+              width: 100% !important;
+              min-width: 0 !important;
+            }
+          }
+        }
+
+        .q-status {
+          position: absolute !important;
+          top: 1rem !important;
+          right: 1rem !important;
+          text-align: right !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 0.5rem !important;
+
+          .q-result {
+            margin-bottom: 0 !important;
+            display: inline-block !important;
+          }
+
+          .q-marks {
+            display: inline-block !important;
+            font-size: 0.7rem !important;
+            background: #f1f5f9 !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+          }
+        }
+      }
 
       .q-number {
         width: 24px;

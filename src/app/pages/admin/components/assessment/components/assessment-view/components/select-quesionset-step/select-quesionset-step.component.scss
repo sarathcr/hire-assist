@@ -22,9 +22,11 @@
   // Top-level section card — matches .assessment-round__section
   // ==========================================
   &__accordion-section {
-    background: linear-gradient(135deg,
-        rgba(33, 150, 243, 0.05) 0%,
-        rgba(21, 101, 192, 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(33, 150, 243, 0.05) 0%,
+      rgba(21, 101, 192, 0.05) 100%
+    );
     border-radius: 16px;
     margin-bottom: 20px;
     overflow: hidden;
@@ -35,6 +37,14 @@
       0 1px 2px 0 rgba(0, 0, 0, 0.06);
     transition: box-shadow 0.3s ease;
     animation: fadeIn 0.3s ease;
+
+    @media screen and (max-width: 640px) {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      margin-bottom: 12px;
+    }
 
     &:hover {
       box-shadow:
@@ -55,7 +65,7 @@
     color: white;
 
     @media screen and (max-width: 640px) {
-      padding: 16px;
+      display: none !important; /* Hide redundant header on mobile */
     }
   }
 
@@ -73,6 +83,15 @@
     i {
       font-size: 1.5rem;
       color: white;
+    }
+
+    @media screen and (max-width: 640px) {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      i {
+        font-size: 1.25rem;
+      }
     }
   }
 
@@ -96,13 +115,16 @@
   // Body below header — blue-tinted background
   // ==========================================
   &__accordion-container {
-    background: linear-gradient(135deg,
-        rgba(33, 150, 243, 0.05) 0%,
-        rgba(21, 101, 192, 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(33, 150, 243, 0.05) 0%,
+      rgba(21, 101, 192, 0.05) 100%
+    );
     padding: 24px;
 
     @media screen and (max-width: 640px) {
-      padding: 12px;
+      padding: 0;
+      background: transparent !important;
     }
 
     ::ng-deep .p-accordion {
@@ -112,6 +134,11 @@
       background: transparent;
       border: none;
 
+      @media screen and (max-width: 640px) {
+        gap: 8px;
+      }
+
+      .p-accordionpanel,
       .p-accordion-panel {
         border: 1px solid rgba(33, 150, 243, 0.2) !important;
         border-radius: 12px !important;
@@ -119,45 +146,76 @@
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+        @media screen and (max-width: 640px) {
+          border: none !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+        }
+
         &:hover {
           border-color: #2196f3 !important;
           box-shadow: 0 4px 12px rgba(33, 150, 243, 0.12);
         }
 
-        &[ng-reflect-active="true"] {
+        &[ng-reflect-active="true"],
+        &.p-accordionpanel-active {
           border-color: #2196f3 !important;
           box-shadow: 0 10px 25px -5px rgba(33, 150, 243, 0.15);
+
+          @media screen and (max-width: 640px) {
+            border-color: transparent !important;
+            box-shadow: none !important;
+          }
         }
       }
 
+      .p-accordionheader,
       .p-accordion-header {
-        .p-accordion-header-link {
-          padding: 16px 20px !important;
-          background: #f8fafc !important;
+        padding: 16px 20px !important;
+        background: #f8fafc !important;
+        border: none !important;
+        box-shadow: none !important;
+        transition: background 0.2s ease;
+
+        @media screen and (max-width: 640px) {
+          padding: 14px 10px !important;
+        }
+
+        .p-accordion-header-link,
+        .p-accordionheader-action {
+          background: transparent !important;
           border: none !important;
-          box-shadow: none !important;
-          transition: background 0.2s ease;
+          padding: 0 !important;
 
-          &:focus {
+          &:focus,
+          &:focus-visible,
+          &:focus-within {
+            outline: none !important;
             box-shadow: none !important;
-          }
-
-          &[aria-expanded="true"] {
-            background: #eff6ff !important;
-            border-bottom: 1px solid rgba(33, 150, 243, 0.15) !important;
           }
         }
 
-        .p-accordion-header-icon {
+        &[aria-expanded="true"] {
+          background: #eff6ff !important;
+          border-bottom: 1px solid rgba(33, 150, 243, 0.15) !important;
+        }
+
+        .p-accordion-header-icon,
+        .p-accordionheader-toggle-icon {
           display: none !important;
         }
       }
 
-      .p-accordion-content,
-      .p-accordion-content-content {
+      .p-accordioncontent-content,
+      .p-accordion-content-content,
+      .p-accordion-content {
         padding: 20px !important;
         background: white !important;
         border: none !important;
+
+        @media screen and (max-width: 640px) {
+          padding: 12px 0 !important;
+        }
       }
     }
   }
@@ -172,6 +230,12 @@
     flex: 1;
     width: 100%;
     min-width: 0;
+
+    @media screen and (max-width: 640px) {
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-start;
+    }
   }
 
   &__accordion-item-icon {
@@ -191,7 +255,9 @@
     i {
       font-size: 1.125rem;
       position: absolute;
-      transition: opacity 0.2s ease, transform 0.2s ease;
+      transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
     }
 
     .QuestionSet__accordion-icon--expanded {
@@ -200,6 +266,8 @@
     }
   }
 
+  ::ng-deep .p-accordionpanel[ng-reflect-active="true"],
+  ::ng-deep .p-accordionpanel-active,
   ::ng-deep .p-accordion-panel[ng-reflect-active="true"] {
     .QuestionSet__accordion-item-icon {
       background: rgba(33, 150, 243, 0.15);
@@ -284,6 +352,58 @@
     margin-left: auto;
     margin-right: 16px;
     flex-shrink: 0;
+
+    @media screen and (max-width: 640px) {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      width: 100% !important;
+      margin-top: 8px;
+      justify-content: center !important;
+
+      ::ng-deep {
+        .p-button-icon-only,
+        .p-button.p-button-icon-only {
+          padding: 0 !important;
+          min-width: 32px !important;
+          width: 32px !important;
+          height: 32px !important;
+          display: inline-flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          overflow: visible !important;
+          background: transparent !important;
+          border: none !important;
+
+          .p-button-icon,
+          .pi {
+            font-size: 15px !important;
+            color: inherit !important;
+          }
+        }
+
+        .p-button:not(.p-button-icon-only) {
+          width: auto !important;
+          min-width: 0 !important;
+          height: auto !important;
+          padding: 6px 12px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          white-space: nowrap !important;
+
+          .p-button-label {
+            white-space: nowrap !important;
+            display: inline-block !important;
+          }
+          
+          .p-button-icon,
+          .pi {
+            font-size: 13px !important;
+            margin-right: 6px !important;
+          }
+        }
+      }
+    }
   }
 
   // ==========================================
@@ -297,6 +417,13 @@
     padding: 16px;
     margin-top: 0;
 
+    @media screen and (max-width: 640px) {
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      margin-top: 8px;
+    }
+
     ::ng-deep .p-accordion {
       display: flex;
       flex-direction: column;
@@ -304,6 +431,7 @@
       background: transparent;
       border: none;
 
+      .p-accordionpanel,
       .p-accordion-panel {
         border: 1px solid #e2e8f0 !important;
         border-radius: 10px !important;
@@ -311,48 +439,79 @@
         overflow: hidden;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+        @media screen and (max-width: 640px) {
+          border: none !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+        }
+
         &:hover {
           border-color: #3b82f6 !important;
           box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
         }
 
-        &[ng-reflect-active="true"] {
+        &[ng-reflect-active="true"],
+        &.p-accordionpanel-active {
           border-color: #3b82f6 !important;
           box-shadow: 0 8px 20px -4px rgba(59, 130, 246, 0.12);
+
+          @media screen and (max-width: 640px) {
+            border-color: transparent !important;
+            box-shadow: none !important;
+          }
         }
       }
 
+      .p-accordionheader,
       .p-accordion-header {
-        .p-accordion-header-link {
-          padding: 14px 18px !important;
-          background: #f8fafc !important;
+        padding: 14px 18px !important;
+        background: #f8fafc !important;
+        border: none !important;
+        box-shadow: none !important;
+        font-size: 15px;
+        color: #1e293b !important;
+        font-weight: 600 !important;
+        transition: background 0.2s ease;
+
+        @media screen and (max-width: 640px) {
+          padding: 12px 10px !important;
+        }
+
+        .p-accordion-header-link,
+        .p-accordionheader-action {
+          background: transparent !important;
           border: none !important;
-          box-shadow: none !important;
-          font-size: 15px;
-          color: #1e293b !important;
-          font-weight: 600 !important;
-          transition: background 0.2s ease;
+          padding: 0 !important;
 
-          &:focus {
+          &:focus,
+          &:focus-visible,
+          &:focus-within {
+            outline: none !important;
             box-shadow: none !important;
-          }
-
-          &[aria-expanded="true"] {
-            background: #eff6ff !important;
-            border-bottom: 1px solid #dbeafe !important;
           }
         }
 
-        .p-accordion-header-icon {
+        &[aria-expanded="true"] {
+          background: #eff6ff !important;
+          border-bottom: 1px solid #dbeafe !important;
+        }
+
+        .p-accordion-header-icon,
+        .p-accordionheader-toggle-icon {
           display: none !important;
         }
       }
 
-      .p-accordion-content,
-      .p-accordion-content-content {
+      .p-accordioncontent-content,
+      .p-accordion-content-content,
+      .p-accordion-content {
         padding: 18px !important;
         background: white !important;
         border: none !important;
+
+        @media screen and (max-width: 640px) {
+          padding: 12px 0 !important;
+        }
       }
     }
   }
@@ -368,6 +527,14 @@
     margin-bottom: 16px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     animation: fadeIn 0.3s ease;
+
+    @media screen and (max-width: 640px) {
+      padding: 10px 0 !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      margin-bottom: 12px;
+    }
   }
 
   &__summary-header {
@@ -377,6 +544,14 @@
     margin-bottom: 16px;
     padding-bottom: 14px;
     border-bottom: 1px solid #f1f5f9;
+
+    @media screen and (max-width: 640px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+    }
   }
 
   &__summary-icon {
@@ -434,7 +609,7 @@
     overflow: hidden;
 
     ::ng-deep .p-datatable {
-      .p-datatable-thead>tr>th {
+      .p-datatable-thead > tr > th {
         background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
         padding: 10px 14px;
         font-size: 11px;
@@ -443,20 +618,29 @@
         color: #6b7280;
         font-weight: 700;
         border-bottom: 1px solid #e9ecef;
+
+        @media screen and (max-width: 640px) {
+          padding: 8px 4px !important;
+        }
       }
 
-      .p-datatable-tbody>tr>td {
+      .p-datatable-tbody > tr > td {
         padding: 12px 14px;
         font-size: 14px;
         color: #374151;
         border-bottom: 1px solid #f3f4f6;
+
+        @media screen and (max-width: 640px) {
+          padding: 10px 4px !important;
+          font-size: 13px !important;
+        }
       }
 
-      .p-datatable-tbody>tr:last-child>td {
+      .p-datatable-tbody > tr:last-child > td {
         border-bottom: none;
       }
 
-      .p-datatable-tbody>tr:hover>td {
+      .p-datatable-tbody > tr:hover > td {
         background: rgba(33, 150, 243, 0.03);
       }
     }
@@ -494,11 +678,23 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
-    background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(21, 101, 192, 0.05) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(33, 150, 243, 0.05) 0%,
+      rgba(21, 101, 192, 0.05) 100%
+    );
     border-radius: 12px;
     min-width: 200px;
     border: 1px solid rgba(33, 150, 243, 0.15);
     gap: 4px;
+
+    @media screen and (max-width: 640px) {
+      min-width: 100%;
+      padding: 12px;
+      border-left: none !important;
+      border-right: none !important;
+      border-radius: 0 !important;
+    }
   }
 
   &__knob-label {
@@ -551,6 +747,15 @@
     background: white;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 
+    @media screen and (max-width: 640px) {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 0 !important;
+      border-left: none !important;
+      border-right: none !important;
+      margin-bottom: 12px;
+    }
+
     ::ng-deep {
       .p-datatable-tbody > tr > td:nth-child(3) {
         white-space: normal !important;
@@ -570,6 +775,26 @@
     margin-top: 20px;
     padding-top: 16px;
     border-top: 1px solid #f1f5f9;
+
+    @media screen and (max-width: 640px) {
+      width: 100%;
+      justify-content: center;
+      padding-top: 12px;
+      margin-top: 16px;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+  }
+
+  &__action-button {
+    @media screen and (max-width: 640px) {
+      width: 100%;
+      ::ng-deep .p-button {
+        width: 100%;
+        justify-content: center;
+        font-size: 14px;
+      }
+    }
   }
 
   // ==========================================
@@ -628,6 +853,22 @@
     padding: 32px 0 16px;
     margin-top: 20px;
     border-top: 1px solid rgba(33, 150, 243, 0.15);
+
+    @media screen and (max-width: 640px) {
+      padding: 20px 12px;
+      width: 100%;
+    }
+  }
+
+  &__complete-button {
+    @media screen and (max-width: 640px) {
+      width: 100%;
+      ::ng-deep .p-button {
+        width: 100%;
+        justify-content: center;
+        font-size: 14px;
+      }
+    }
   }
 
   &__validation-message {
@@ -642,9 +883,19 @@
     font-size: 14px;
     animation: fadeIn 0.3s ease;
 
+    @media screen and (max-width: 640px) {
+      padding: 8px 12px;
+      font-size: 12px;
+      gap: 6px;
+    }
+
     i {
       font-size: 1.25rem;
       color: #f59e0b;
+
+      @media screen and (max-width: 640px) {
+        font-size: 1rem;
+      }
     }
 
     strong {
@@ -666,9 +917,20 @@
     margin-bottom: 16px;
     animation: fadeIn 0.3s ease;
 
+    @media screen and (max-width: 640px) {
+      padding: 8px 12px;
+      font-size: 12px;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
     i {
       font-size: 1.25rem;
       color: #f59e0b;
+
+      @media screen and (max-width: 640px) {
+        font-size: 1rem;
+      }
     }
 
     strong {
@@ -692,6 +954,10 @@
     border: 1px dashed rgba(33, 150, 243, 0.3);
     // margin: 8px 0;
     animation: fadeIn 0.4s ease;
+
+    ::ng-deep .p-button {
+      font-size: 14px !important;
+    }
 
     &-content {
       display: flex;
@@ -742,5 +1008,75 @@
   // ==========================================
   &__hero {
     display: none;
+  }
+
+  // ==========================================
+  // Mobile Button Optimization
+  // ==========================================
+  @media screen and (max-width: 640px) {
+    ::ng-deep {
+      .p-button-sm {
+        font-size: 11px !important;
+        padding: 4px 8px !important;
+        height: 28px !important;
+
+        .p-button-icon {
+          font-size: 10px !important;
+        }
+      }
+
+      .p-button {
+        font-size: 12px !important;
+        padding: 6px 12px !important;
+
+        .p-button-icon {
+          font-size: 11px !important;
+        }
+      }
+
+      // Compact paginator and tables
+      .p-paginator {
+        padding: 0.5rem 0.25rem !important;
+        gap: 0.25rem !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+      }
+
+      .p-paginator-first,
+      .p-paginator-prev,
+      .p-paginator-next,
+      .p-paginator-last,
+      .p-paginator-page {
+        min-width: 26px !important;
+        height: 26px !important;
+        width: 26px !important;
+        margin: 0 1px !important;
+        font-size: 11px !important;
+        padding: 0 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+
+      .p-paginator-rpp-options {
+        margin-left: 0.5rem !important;
+        height: 28px !important;
+        font-size: 11px !important;
+
+        .p-select-label {
+          padding: 0.25rem 0.5rem !important;
+        }
+      }
+
+      // Make checkboxes and expander columns narrower on mobile
+      .p-datatable-tbody > tr > td:first-child,
+      .p-datatable-thead > tr > th:first-child,
+      .p-datatable-tbody > tr > td:nth-child(2),
+      .p-datatable-thead > tr > th:nth-child(2) {
+        width: 3rem !important;
+        min-width: 3rem !important;
+        max-width: 3rem !important;
+      }
+    }
   }
 }

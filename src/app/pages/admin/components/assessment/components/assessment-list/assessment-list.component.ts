@@ -239,7 +239,10 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       closable: true,
       dismissableMask: true,
       showHeader: false, // We have a custom header in the template
-      styleClass: 'choice-dialog'
+      styleClass: 'choice-dialog',
+      breakpoints: {
+        '640px': '90vw',
+      }
     });
 
     this.ref.onClose.subscribe((choice: 'schedule' | 'detail') => {
