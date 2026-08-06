@@ -3,24 +3,14 @@
     <button
       class="header__nav header__nav--mobile"
       type="button"
-      (click)="onMenuClick()"
-      aria-label="Open menu"
+      (click)="toggleMobileMenu()"
+      [attr.aria-label]="isMenuOpen() ? 'Close menu' : 'Open menu'"
     >
-      <span class="pi pi-bars"></span>
+      <span [ngClass]="isMenuOpen() ? 'pi pi-times' : 'pi pi-bars'"></span>
     </button>
     <figure class="header__logo"><img src="logo.png" alt="logo" /></figure>
   </div>
   <div class="header__right">
-    <button
-      *ngIf="isMobile && isMenuOpen()"
-      class="header__close-btn pi pi-times-circle"
-      type="button"
-      tabindex="0"
-      (click)="closeMenu()"
-      (keydown.enter)="closeMenu()"
-      (keydown.space)="closeMenu()"
-      aria-label="Close menu"
-    ></button>
     <div class="header__avatar">
       @if (isLoadingProfileImage) {
         <p-skeleton shape="circle" [width]="isMobile ? '30px' : '50px'" [height]="isMobile ? '30px' : '50px'" />

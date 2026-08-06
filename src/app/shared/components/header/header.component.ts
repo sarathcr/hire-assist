@@ -73,6 +73,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.toggleMenu.setToggleMenu(false);
   }
 
+  public toggleMobileMenu() {
+    this.toggleMenu.setToggleMenu(!this.isMenuOpen());
+  }
+
   public isMenuOpen(): boolean {
     return this.toggleMenu.getToggleMenu();
   }

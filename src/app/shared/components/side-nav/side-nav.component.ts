@@ -30,6 +30,9 @@ import { SidebarCollapseService } from '../../services/sidebar-collapse.service'
   ],
   templateUrl: './side-nav.component.html',
   styleUrl: './side-nav.component.scss',
+  host: {
+    '[class.sidebar-host-mobile-open]': 'showMenu() && isMobileView()'
+  }
 })
 export class SideNavComponent implements OnChanges, OnInit {
   public items: MenuItem[] | undefined;
