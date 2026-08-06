@@ -286,3 +286,15 @@ app-input-text-iftalabel {
     list-style-type: decimal !important;
   }
 }
+
+// Fix for iOS Safari datepicker horizontal scrollbar issue
+.p-datepicker-panel,
+.p-datepicker,
+.p-calendar {
+  .p-datepicker-calendar-container,
+  .p-datepicker-calendar,
+  table {
+    overflow-x: hidden !important;
+  }
+}
+

@@ -629,7 +629,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       },
       modal: true,
       focusOnShow: false,
-      contentStyle: { overflow: 'visible', padding: '0' }
+      contentStyle: { overflow: 'hidden', padding: '0', maxHeight: '90vh' }
     });
 
     this.ref.onClose.subscribe((experience: ExperienceDto) => {
@@ -656,7 +656,7 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       },
       modal: true,
       focusOnShow: false,
-      contentStyle: { overflow: 'visible', padding: '0' }
+      contentStyle: { overflow: 'hidden', padding: '0', maxHeight: '90vh' }
     });
 
     this.ref.onClose.subscribe((updatedExp: ExperienceDto) => {
