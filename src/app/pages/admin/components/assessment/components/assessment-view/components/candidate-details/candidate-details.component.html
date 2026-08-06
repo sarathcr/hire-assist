@@ -39,13 +39,13 @@
                   @if (entry.label === 'Aadhaar Number' && data()?.['isInvalidRecord']) {
                     <i [class]="isAadhaarVisible() ? 'pi pi-eye-slash' : 'pi pi-eye'" 
                        class="candidate-details__action-icon" 
-                       (click)="toggleAadhaarVisibility()" 
+                       (click)="toggleAadhaarVisibility(); $event.stopPropagation();" 
                        [pTooltip]="isAadhaarVisible() ? 'Hide Aadhaar' : 'Show Aadhaar'"></i>
-                    <i class="pi pi-pencil candidate-details__edit-icon" (click)="startEdit(entry.key, entry.value)" pTooltip="Edit field"></i>
+                    <i class="pi pi-pencil candidate-details__edit-icon" (click)="startEdit(entry.key, entry.value); $event.stopPropagation();" pTooltip="Edit field"></i>
                   } @else if (entry.label === 'Aadhaar Number') {
                     <i [class]="isAadhaarVisible() ? 'pi pi-eye-slash' : 'pi pi-eye'" 
                        class="candidate-details__action-icon" 
-                       (click)="toggleAadhaarVisibility()" 
+                       (click)="toggleAadhaarVisibility(); $event.stopPropagation();" 
                        [pTooltip]="isAadhaarVisible() ? 'Hide Aadhaar' : 'Show Aadhaar'"></i>
                   }
                 </div>
@@ -60,7 +60,7 @@
   <!-- Dynamic Fields Section (Expandable) -->
   @if (dynamicEntries().length > 0) {
     <div class="candidate-details__expander">
-      <button class="candidate-details__expand-btn" (click)="toggleExpand()">
+      <button class="candidate-details__expand-btn" (click)="toggleExpand(); $event.stopPropagation();">
         <span>{{ isExpanded() ? 'Hide Additional Information' : 'Show Additional Information' }}</span>
         <i [class]="isExpanded() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
       </button>

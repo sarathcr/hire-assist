@@ -226,13 +226,13 @@
   @if (data().length > 0) {
     <div class="validation-footer">
       <button class="btn btn--outlined" (click)="onClose()">
-        Discard & Exit Importer
+        Discard & Exit<span class="hide-mobile"> Importer</span>
       </button>
       
       @if (activeCategory() === 'duplicate' && selectedClusterId() && splitPanelList().length > 0) {
         <div class="validation-footer__actions">
           <button class="btn btn--outlined" (click)="onRejectRecord(splitPanelList()[0], activeGroupId()!)">
-            <i class="pi pi-trash"></i> Discard Entire Cluster
+            <i class="pi pi-trash hide-mobile"></i> Discard <span class="hide-mobile">Entire</span> Cluster
           </button>
           <button 
             class="btn btn--primary" 
