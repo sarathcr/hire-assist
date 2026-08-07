@@ -15,6 +15,8 @@ import { ImageComponent } from '../../../../../../shared/components/image/image.
 import { SafePipe } from '../../../../../../shared/pipes/safepipe';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { AssessmentService } from '../../../../services/assessment.service';
+import { MessageService } from 'primeng/api';
+import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 
 @Component({
   selector: 'app-recruitment-summary',
@@ -29,6 +31,7 @@ import { AssessmentService } from '../../../../services/assessment.service';
     ImageComponent,
     SafePipe,
     ButtonComponent,
+    NgxExtendedPdfViewerModule,
   ],
   templateUrl: './recruitment-summary.component.html',
   styleUrl: './recruitment-summary.component.scss',
@@ -43,6 +46,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
 
   public showPdfModal = false;
   public safePdfUrl: SafeResourceUrl | null = null;
+  public pdfUrlString: string | null = null;
   public showImageModal = false;
   public selectedImageUrl: string | null = null;
 
@@ -51,6 +55,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   public imageLoadingStates: Record<string, boolean> = {};
   public displayFileViewer = false;
   public fileViewerUrl: SafeResourceUrl | null = null;
+  public rawFileViewerUrl: string | null = null;
   public fileViewerTitle = '';
   public isFileViewerPdf = false;
   public isFileViewerImage = false;
@@ -66,6 +71,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
     private interviewService: InterviewService,
     private sanitizer: DomSanitizer,
     private assessmentService: AssessmentService,
+    private messageService: MessageService,
   ) {}
 
   ngOnInit(): void {
@@ -79,6 +85,9 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     Object.values(this.reportImages).forEach((url) => URL.revokeObjectURL(url));
+    if (this.pdfUrlString) {
+      URL.revokeObjectURL(this.pdfUrlString);
+    }
   }
 
   private fetchSummaryData(): void {
@@ -352,6 +361,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
         this.fileViewerTitle = file.attachmentName || filename;
         this.isFileViewerImage = false;
         this.isFileViewerPdf = true;
+        this.rawFileViewerUrl = blobUrl;
         this.fileViewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
         this.displayFileViewer = true;
       }
@@ -381,6 +391,16 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
         this.isFileViewerPdf = true;
         this.displayFileViewer = true;
         this.fileViewerUrl = null; // Clear to trigger loading state
+        this.rawFileViewerUrl = null;
+        
+        const checkInterval = setInterval(() => {
+          if (this.reportImages[key]) {
+            this.rawFileViewerUrl = this.reportImages[key];
+            this.fileViewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.reportImages[key]);
+            clearInterval(checkInterval);
+          }
+        }, 100);
+        setTimeout(() => clearInterval(checkInterval), 5000);
       }
     }
   }
@@ -447,6 +467,21 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
     }
   }
 
+  public get isMobile(): boolean {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }
+
+  public downloadPdf(): void {
+    if (this.pdfUrlString) {
+      const link = document.createElement('a');
+      link.href = this.pdfUrlString;
+      link.download = `Audit_Report_${this.summaryData?.recruitmentName || 'Summary'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  }
+
   public exportPdf(): void {
     this.isExporting = true;
     this.interviewService
@@ -455,9 +490,10 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (blob) => {
           const safeBlob = new Blob([blob], { type: 'application/pdf' });
-          const blobURL = URL.createObjectURL(safeBlob);
-          this.safePdfUrl =
-            this.sanitizer.bypassSecurityTrustResourceUrl(blobURL);
+          if (this.pdfUrlString) {
+            URL.revokeObjectURL(this.pdfUrlString);
+          }
+          this.pdfUrlString = URL.createObjectURL(safeBlob);
           this.showPdfModal = true;
         },
         error: (error) => {

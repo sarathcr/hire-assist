@@ -3,17 +3,21 @@
   <header class="summary-header no-print">
     <div class="header-left">
       <p-button 
+        *ngIf="!isLoading; else backButtonSkeleton"
         icon="pi pi-arrow-left" 
         label="Recruitments" 
         [text]="true"
         class="back-btn"
         (onClick)="goBack()">
       </p-button>
+      <ng-template #backButtonSkeleton>
+        <p-skeleton width="120px" height="2.2rem" styleClass="back-btn-skeleton"></p-skeleton>
+      </ng-template>
     </div>
     
     <div class="header-right">
       <p-button 
-        *ngIf="summaryData"
+        *ngIf="!isLoading && summaryData"
         icon="pi pi-download" 
         label="Export Audit Report" 
         [raised]="true"
@@ -21,6 +25,7 @@
         [loading]="isExporting"
         (onClick)="exportPdf()">
       </p-button>
+      <p-skeleton *ngIf="isLoading" width="160px" height="2.2rem" styleClass="export-btn-skeleton"></p-skeleton>
     </div>
   </header>
 
@@ -33,14 +38,31 @@
     header="Audit Report Preview"
   >
     
-    <div *ngIf="safePdfUrl" class="pdf-viewer-container" style="height: 100%; width: 100%;">
-      <iframe 
-        [src]="safePdfUrl" 
-        width="100%" 
+    <div *ngIf="pdfUrlString" class="pdf-viewer-container" style="height: 100%; width: 100%;">
+      <ngx-extended-pdf-viewer 
+        [src]="pdfUrlString" 
         height="100%" 
-        style="border: none;">
-      </iframe>
+        [textLayer]="true"
+        [showSidebarButton]="false"
+        [showOpenFileButton]="false"
+        [showPrintButton]="true"
+        [showDownloadButton]="true"
+      >
+      </ngx-extended-pdf-viewer>
     </div>
+
+    <ng-template pTemplate="footer">
+      <app-button 
+        buttonLabel="Close" 
+        buttonVariant="outlined" 
+        (btnClick)="showPdfModal = false">
+      </app-button>
+      <app-button 
+        buttonLabel="Download" 
+        icon="pi pi-download" 
+        (btnClick)="downloadPdf()">
+      </app-button>
+    </ng-template>
   </p-dialog>
 
   <!-- Image Viewer Modal -->
@@ -93,13 +115,17 @@
           <span style="font-size: 0.875rem; font-weight: 600;">Loading attachment...</span>
         </div>
       } @else {
-        <iframe 
-          *ngIf="isFileViewerPdf"
-          [src]="fileViewerUrl" 
-          width="100%" 
+        <ngx-extended-pdf-viewer 
+          *ngIf="isFileViewerPdf && rawFileViewerUrl"
+          [src]="rawFileViewerUrl" 
           height="100%" 
-          style="border: none;">
-        </iframe>
+          [textLayer]="true"
+          [showSidebarButton]="false"
+          [showOpenFileButton]="false"
+          [showPrintButton]="true"
+          [showDownloadButton]="true"
+        >
+        </ngx-extended-pdf-viewer>
         <div *ngIf="isFileViewerImage" class="image-preview-modal-container" style="padding: 1.5rem; text-align: center; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
           <img 
             [src]="fileViewerUrl" 
@@ -125,22 +151,118 @@
 
   <!-- Content Skeleton -->
   <div *ngIf="isLoading" class="skeleton-container">
-    <div class="skeleton-insights">
-      <div class="skeleton-hero">
+    <!-- Hero Section Skeleton -->
+    <section class="hero-section">
+      <div class="hero-main">
         <p-skeleton width="40%" height="2.5rem" styleClass="mb-2"></p-skeleton>
-        <p-skeleton width="20%" height="1.2rem"></p-skeleton>
+        <div class="hero-meta" style="display: flex; gap: 1rem; align-items: center; margin-top: 0.5rem;">
+          <p-skeleton width="80px" height="1.2rem" borderRadius="12px"></p-skeleton>
+          <p-skeleton width="150px" height="1.2rem"></p-skeleton>
+        </div>
       </div>
-      <div class="skeleton-stats">
-        @for (i of [1,2,3,4]; track i) {
-          <p-skeleton width="150px" height="50px" borderRadius="12px"></p-skeleton>
+
+      <!-- Quick Metrics Skeleton -->
+      <div class="metrics-row">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="metric-card">
+            <p-skeleton shape="circle" size="48px" styleClass="flex-shrink-0"></p-skeleton>
+            <div class="metric-info" style="width: 100%;">
+              <p-skeleton width="60px" height="1.5rem" styleClass="mb-2"></p-skeleton>
+              <p-skeleton width="100px" height="0.75rem"></p-skeleton>
+            </div>
+          </div>
         }
       </div>
-      <div class="skeleton-grid">
-        @for (i of [1,2,3,4,5]; track i) {
-          <p-skeleton height="70px" borderRadius="16px"></p-skeleton>
+    </section>
+
+    <!-- Details Section Skeleton -->
+    <section class="details-section">
+      <div class="details-grid">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="detail-item">
+            <p-skeleton shape="circle" size="24px" styleClass="flex-shrink-0"></p-skeleton>
+            <div class="detail-content" style="width: 100%;">
+              <p-skeleton width="80px" height="0.75rem" styleClass="mb-2"></p-skeleton>
+              <p-skeleton width="120px" height="1.05rem"></p-skeleton>
+            </div>
+          </div>
         }
       </div>
-    </div>
+    </section>
+
+    <!-- Pipeline Section Skeleton -->
+    <section class="pipeline-section">
+      <div class="section-header">
+        <p-skeleton width="200px" height="2rem" styleClass="mb-2"></p-skeleton>
+        <p-skeleton width="300px" height="1rem"></p-skeleton>
+      </div>
+
+      <div class="pipeline-journey" style="margin-top: 2rem;">
+        @for (i of [1, 2, 3]; track i; let last = $last) {
+          <div class="journey-step" [class.is-last]="last">
+            <div class="step-line">
+              <p-skeleton shape="circle" size="32px" styleClass="flex-shrink-0"></p-skeleton>
+              <div class="line-connector" *ngIf="!last"></div>
+            </div>
+
+            <div class="step-card">
+              <div class="step-header">
+                <div class="step-info" style="width: 100%;">
+                  <p-skeleton width="150px" height="1.5rem" styleClass="mb-2"></p-skeleton>
+                  <p-skeleton width="80px" height="1rem"></p-skeleton>
+                </div>
+              </div>
+
+              <div class="step-body">
+                <div class="step-metrics">
+                  @for (j of [1, 2, 3]; track j) {
+                    <div class="step-metric">
+                      <p-skeleton width="40px" height="1.5rem" styleClass="mb-1"></p-skeleton>
+                      <p-skeleton width="60px" height="0.75rem"></p-skeleton>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Comprehensive Audit Report Skeleton -->
+    <section class="audit-section">
+      <div class="section-header">
+        <p-skeleton width="250px" height="2rem" styleClass="mb-2"></p-skeleton>
+        <p-skeleton width="350px" height="1rem"></p-skeleton>
+      </div>
+
+      <div class="audit-accordions" style="margin-top: 2rem;">
+        <p-accordion [multiple]="true">
+          @for (i of [1, 2, 3]; track i) {
+            <p-accordion-panel class="candidate-panel">
+              <p-accordion-header>
+                <div class="candidate-summary">
+                  <div class="candidate-identity">
+                    <p-skeleton shape="circle" size="40px" styleClass="flex-shrink-0"></p-skeleton>
+                    <div class="candidate-details">
+                      <p-skeleton width="120px" height="1rem" styleClass="mb-2"></p-skeleton>
+                      <p-skeleton width="180px" height="0.75rem"></p-skeleton>
+                    </div>
+                  </div>
+                  <div class="candidate-outcomes">
+                    <div class="score-display">
+                      <p-skeleton width="80px" height="0.75rem" styleClass="mb-1"></p-skeleton>
+                      <p-skeleton width="50px" height="1rem"></p-skeleton>
+                    </div>
+                    <p-skeleton width="100px" height="2rem" borderRadius="20px"></p-skeleton>
+                  </div>
+                </div>
+              </p-accordion-header>
+            </p-accordion-panel>
+          }
+        </p-accordion>
+      </div>
+    </section>
   </div>
 
   <!-- Main Content -->
