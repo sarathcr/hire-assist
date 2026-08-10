@@ -498,6 +498,8 @@
     margin-bottom: 0.75rem;
     border-bottom: 1px dashed #e2e8f0;
     padding-bottom: 0.5rem;
+    min-width: 0;
+    width: 100%;
 
     @media (max-width: 1024px) {
       flex-direction: column;
@@ -511,6 +513,8 @@
     font-size: 1.1rem;
     font-weight: 700;
     color: #1e293b;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   &__company-duration {
@@ -569,10 +573,13 @@
     flex: 1;
     position: relative;
     min-height: 2.25rem;
+    min-width: 0;
   }
 
   &__timeline-card {
     padding: 0.25rem 0 1rem 0;
+    min-width: 0;
+    width: 100%;
 
     &-inner {
       background: #f8fafc;
@@ -582,6 +589,7 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
+      min-width: 0;
 
       &:hover {
         background: #fff;
@@ -596,6 +604,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    min-width: 0;
   }
 
   &__timeline-metadata-group {
@@ -636,6 +645,8 @@
     font-weight: 700;
     color: #1e293b;
     margin: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   &__timeline-role-row {
@@ -643,6 +654,7 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    min-width: 0;
 
     @media (max-width: 1024px) {
       flex-direction: column;
@@ -655,6 +667,8 @@
     font-size: 0.85rem;
     font-weight: 600;
     color: #4f46e5;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   &__timeline-date {
@@ -669,6 +683,8 @@
     line-height: 1.6;
     margin: 0;
     opacity: 0.85;
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 
   &__timeline-btn {
@@ -703,6 +719,7 @@
 
   .p-timeline-event-content {
     padding-left: 1.5rem !important;
+    min-width: 0 !important;
   }
 
   .p-timeline-event-separator {
