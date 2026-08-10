@@ -143,11 +143,31 @@ export class CreateBatchDialogComponent implements OnInit {
     };
   }
 
+  public hasPrefilledDates = false;
+
   private updateDatesFromBatch(batchId: string) {
     const selectedBatch = this.batches.find((b) => b.id.toString() === batchId);
     if (selectedBatch) {
       const start = selectedBatch.startDate ? new Date(selectedBatch.startDate) : null;
       const end = selectedBatch.endDate ? new Date(selectedBatch.endDate) : null;
+      
+      this.hasPrefilledDates = !!(start || end);
+
+      // Adjust minDate if the prefilled start date is in the past, so the calendar input won't clear it
+      if (start) {
+        const recStart = this.config.data?.recruitmentStartDate ? new Date(this.config.data.recruitmentStartDate) : null;
+        this.minDate = recStart && recStart < start ? recStart : start;
+      } else {
+        // Fallback to default minDate calculation
+        if (this.config.data?.recruitmentStartDate) {
+          const recStart = new Date(this.config.data.recruitmentStartDate);
+          const today = new Date();
+          this.minDate = recStart > today ? recStart : today;
+        } else {
+          this.minDate = new Date();
+        }
+      }
+
       this.fGroup.patchValue({
         startDate: start,
         endDate: end,
@@ -157,6 +177,8 @@ export class CreateBatchDialogComponent implements OnInit {
         endDate: end || new Date(),
       };
       this.cdr.detectChanges();
+    } else {
+      this.hasPrefilledDates = false;
     }
   }
 

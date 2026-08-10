@@ -15,6 +15,14 @@
     <app-input-select [formGroup]="fGroup" [config]="configMap['batch']" />
 
     @if (fGroup.get("batch")?.value) {
+      @if (hasPrefilledDates) {
+        <div class="batch-alert">
+          <i class="pi pi-exclamation-triangle batch-alert__icon"></i>
+          <span class="batch-alert__text">
+            The prefilled date and time apply to all candidates in this batch. Changing them will update the schedule for every candidate already assigned to this batch.
+          </span>
+        </div>
+      }
       <app-input-text-calender
         class="batch-form_field-col_one"
         [formGroup]="fGroup"

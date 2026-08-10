@@ -1,5 +1,4 @@
 <div class="input-text-calender" [formGroup]="formGroup">
-
   <!-- FLOAT LABEL (DEFAULT) -->
   @if (floatLabel) {
     <p-floatlabel variant="on">
@@ -19,7 +18,10 @@
       ></p-datepicker>
 
       <label [for]="inputTextCalendarConfig.id">
-        {{ inputTextCalendarConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}
+        {{ inputTextCalendarConfig.labelKey }}
+        @if (isRequired) {
+          <span style="color: var(--color-danger); margin-left: 2px">*</span>
+        }
       </label>
     </p-floatlabel>
   }
@@ -31,7 +33,10 @@
         class="input-text-calender__label"
         [for]="inputTextCalendarConfig.id"
       >
-        {{ inputTextCalendarConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}
+        {{ inputTextCalendarConfig.labelKey }}
+        @if (isRequired) {
+          <span style="color: var(--color-danger); margin-left: 2px">*</span>
+        }
       </label>
 
       <p-datepicker
@@ -67,8 +72,7 @@
     </span>
   } @else if (hasDateError) {
     <span
-      class="input-text-calender__validation-label
-             input-text-calender__validation-label_warning"
+      class="input-text-calender__validation-label input-text-calender__validation-label_warning"
     >
       {{ hasDateError }}
     </span>

@@ -14,3 +14,31 @@
     overflow-y: visible;
   }
 }
+
+.batch-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-10);
+  background-color: var(--color-warning-secondary, rgba(249, 115, 22, 0.1));
+  border: 1px solid var(--color-warn, #f97316);
+  padding: var(--spacing-12) var(--spacing-15);
+  border-radius: 8px;
+  margin-bottom: var(--spacing-20);
+  font-size: var(--font-size-base, 13px);
+  color: #7c2d12;
+
+  &__icon {
+    color: var(--color-warn, #f97316);
+    font-size: 16px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    line-height: 1.4;
+    
+    strong {
+      font-weight: 600;
+    }
+  }
+}
