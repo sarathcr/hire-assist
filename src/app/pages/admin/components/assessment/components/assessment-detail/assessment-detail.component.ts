@@ -562,6 +562,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       if (result) {
         this.selectedCandidateIds = [];
         this.getPaginatedCandidateData(this.filterMap);
+        this.getAssessmentSummaryData(this.assessmentId);
       }
     });
   }
@@ -695,6 +696,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           });
           this.selectedCandidateIds = [];
           this.getPaginatedCandidateData(this.filterMap);
+          this.getAssessmentSummaryData(this.assessmentId);
         },
         error: (err) => {
           console.error('Batch assignment failed:', err);
@@ -823,6 +825,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           });
           this.selectedCandidateIds = [];
           this.getPaginatedCandidateData(this.filterMap);
+          this.getAssessmentSummaryData(this.assessmentId);
           this.ref?.close();
         },
         error: (err) => {
@@ -926,6 +929,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         detail: 'Candidate unlocked successfully',
       });
       this.getPaginatedCandidateData(this.filterMap);
+      this.getAssessmentSummaryData(this.assessmentId);
     };
     const error = () => (this.isLoading = false);
     this.candidateService
