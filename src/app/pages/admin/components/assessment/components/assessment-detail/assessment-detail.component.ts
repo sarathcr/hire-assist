@@ -20,7 +20,7 @@ import { Menu, MenuModule } from 'primeng/menu';
 import { SkeletonModule } from 'primeng/skeleton';
 import { StepperModule } from 'primeng/stepper';
 import { TooltipModule } from 'primeng/tooltip';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { finalize, map } from 'rxjs/operators';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
@@ -567,6 +567,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   private onAssignToBatch(candidate: any): void {
+    this.isLoading = true;
     const batchesPayload = new PaginatedPayload();
     batchesPayload.pagination.pageSize = -1;
     batchesPayload.filterMap = {
@@ -590,7 +591,37 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       questionSetsPayload,
     );
 
-    this.openAssignToBatchDialog(candidate, batches$, questionSets$);
+    forkJoin({
+      batchesRes: batches$,
+      questionSetsRes: questionSets$,
+    })
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: ({ batchesRes, questionSetsRes }: any) => {
+          const batches = batchesRes?.data || batchesRes || [];
+          if (batches.length === 0) {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'No Batches Available',
+              detail: 'All active batches are assigned to other recruitments. No batches are currently available to assign.',
+            });
+            return;
+          }
+          this.openAssignToBatchDialog(candidate, of(batchesRes), of(questionSetsRes));
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load batches or question sets.',
+          });
+        },
+      });
   }
 
   private openAssignToBatchDialog(
