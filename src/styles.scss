@@ -84,8 +84,12 @@ body,
 html {
   margin: 0;
   height: 100%;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
   font-weight: 300;
   overflow: hidden;
+  overflow-x: hidden !important;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -312,5 +316,20 @@ app-input-text-iftalabel {
     font-size: 16px !important;
   }
 }
+
+// Center date picker panel as a modal dialog on mobile screens to prevent overflow and horizontal scroll
+@media (max-width: 768px) {
+  .p-datepicker-panel {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    max-width: 95vw !important;
+    width: 320px !important;
+    height: auto !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
+  }
+}
+
 
 
