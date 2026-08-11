@@ -243,6 +243,8 @@
     background: var(--dashboard-main-background-color);
     border-radius: var(--spacing-6);
     border-left: 3px solid var(--primary-color);
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   // Assessment Cards

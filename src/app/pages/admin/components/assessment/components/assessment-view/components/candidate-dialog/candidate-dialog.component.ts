@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputSelectComponent } from '../../../../../../../../shared/components/form/input-select/input-select.component';
@@ -268,7 +268,7 @@ export class CandidateDialogComponent implements OnInit {
   private setOptions() {
     this.applicationQuestions = this.candidateData.applicationQuestions || [];
     this.applicationQuestions.forEach((q) => {
-      this.fGroup.addControl(q.id.toString(), new FormControl(''));
+      this.fGroup.addControl(q.id.toString(), new FormControl('', [Validators.maxLength(1000)]));
     });
     // const batches = this.candidateData?.batches || [];
     // const questionSets = this.candidateData?.questionSets || [];
