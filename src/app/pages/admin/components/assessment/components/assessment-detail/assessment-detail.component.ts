@@ -206,6 +206,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public filterMap!: FilterMap;
   public roundStatus: boolean = false;
   public isLoading: boolean = true;
+  public isOverviewLoading: boolean = true;
   public isCompletingRound: boolean = false;
   public isAllRoundsCompleted: boolean = false;
   public hasSelectedCandidates: boolean = false;
@@ -2015,8 +2016,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             };
           });
         }
+        this.isOverviewLoading = false;
         this.cdr.detectChanges();
       },
+      error: () => {
+        this.isOverviewLoading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
