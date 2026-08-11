@@ -17,6 +17,15 @@
     border: none;
     border-bottom: 1px solid #e2e8f0;
     transition: all 0.2s ease;
+    text-align: left;
+
+    @media screen and (max-width: 768px) {
+      padding: 0.75rem 1rem;
+    }
+
+    @media screen and (max-width: 480px) {
+      padding: 0.5rem 0.75rem;
+    }
 
     &:first-child {
       border-top-left-radius: 12px;
