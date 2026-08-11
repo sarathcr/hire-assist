@@ -71,6 +71,32 @@
     color: #64748b !important;
     font-weight: 500 !important;
   }
+
+  @media screen and (max-width: 500px) {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+
+    .p-paginator-page,
+    .p-paginator-first,
+    .p-paginator-prev,
+    .p-paginator-next,
+    .p-paginator-last {
+      min-width: 1.85rem !important;
+      max-width: 1.85rem !important;
+      height: 1.85rem !important;
+      font-size: var(--font-size-small) !important;
+      margin: 0 1px !important;
+    }
+
+    .p-paginator-rpp-options,
+    p-select,
+    .p-select {
+      flex-basis: 100% !important;
+      display: flex !important;
+      justify-content: center !important;
+      margin: 0.5rem auto 0 auto !important;
+    }
+  }
 }
 
 // Global styles for PrimeNG select/dropdown panels (e.g., page size dropdown)
