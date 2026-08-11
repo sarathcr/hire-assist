@@ -1,3 +1,8 @@
+.p-dialog {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+}
+
 .dialog-footer {
   display: flex;
   align-items: center;
@@ -14,8 +19,21 @@
   border-bottom-right-radius: 16px;
 }
 
+.p-dialog-title {
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+
+  @media screen and (max-width: 768px) {
+    font-size: 1.1rem !important;
+  }
+}
+
 .p-dialog-header {
   box-shadow: 0px 15px 10px -20px #000;
+  
+  @media screen and (max-width: 768px) {
+    padding: var(--spacing-15) !important;
+  }
 }
 
 .manage-duplicate-records-dialog {

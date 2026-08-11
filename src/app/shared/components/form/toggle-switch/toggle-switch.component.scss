@@ -2,8 +2,22 @@
   //margin-bottom: 25px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   position: relative;
+  width: 100%;
+
+  label {
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  p-floatlabel {
+    flex-shrink: 0;
+  }
+
   .p-Toggleswitch {
     width: 100%;
     height: 50px;
