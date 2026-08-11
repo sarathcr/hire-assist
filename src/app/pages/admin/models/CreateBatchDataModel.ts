@@ -16,7 +16,10 @@ export class CreateBatchDataModel extends FormEntity {
     validatorsMap: {
       batch: [Validators.required],
       questionSet: [Validators.required],
-      startDate: [Validators.required],
+      startDate: [
+        Validators.required,
+        CreateBatchDataModel.validateStartDateTime(),
+      ],
       endDate: [
         Validators.required,
         CreateBatchDataModel.validateEndDateTime(),
@@ -29,6 +32,26 @@ export class CreateBatchDataModel extends FormEntity {
       endDate: { id: 'endDate', labelKey: 'End Date' },
     },
   };
+
+  private static validateStartDateTime(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control?.value) {
+        return null;
+      }
+
+      const selectedDate = new Date(control.value);
+      const now = new Date();
+
+      // We allow a small tolerance of 5 seconds (5000ms) for millisecond mismatch on immediate submissions.
+      if (selectedDate.getTime() + 5000 < now.getTime()) {
+        return {
+          errorMessage: 'Start date cannot be in the past.',
+        };
+      }
+
+      return null;
+    };
+  }
 
   private static validateEndDateTime(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {

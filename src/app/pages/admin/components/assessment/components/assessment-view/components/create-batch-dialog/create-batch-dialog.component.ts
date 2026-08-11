@@ -148,8 +148,15 @@ export class CreateBatchDialogComponent implements OnInit {
   private updateDatesFromBatch(batchId: string) {
     const selectedBatch = this.batches.find((b) => b.id.toString() === batchId);
     if (selectedBatch) {
-      const start = selectedBatch.startDate ? new Date(selectedBatch.startDate) : null;
-      const end = selectedBatch.endDate ? new Date(selectedBatch.endDate) : null;
+      const getValidDate = (dateVal: any): Date | null => {
+        if (!dateVal) return null;
+        if (typeof dateVal === 'string' && dateVal.startsWith('0001-01-01')) return null;
+        const d = new Date(dateVal);
+        return isNaN(d.getTime()) ? null : d;
+      };
+
+      const start = getValidDate(selectedBatch.startDate) || getValidDate(selectedBatch.startDateTime);
+      const end = getValidDate(selectedBatch.endDate) || getValidDate(selectedBatch.endDateTime);
       
       this.hasPrefilledDates = !!(start || end);
 
@@ -194,6 +201,8 @@ export class CreateBatchDialogComponent implements OnInit {
   }
 
   public onSubmit() {
+    this.fGroup.get('startDate')?.updateValueAndValidity();
+    this.fGroup.get('endDate')?.updateValueAndValidity();
     this.fGroup.markAllAsTouched();
     if (this.fGroup.valid && this.fGroup.get('batch')?.value && this.fGroup.get('questionSet')?.value) {
       const val = this.fGroup.value;
