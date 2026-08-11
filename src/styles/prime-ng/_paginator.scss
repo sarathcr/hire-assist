@@ -76,7 +76,31 @@
     flex-wrap: wrap !important;
     justify-content: center !important;
 
-    .p-paginator-page,
+    .p-paginator-pages {
+      display: flex !important;
+      align-items: center !important;
+      
+      .p-paginator-page {
+        display: none !important;
+        
+        &.p-highlight,
+        &.p-paginator-page-selected {
+          display: flex !important;
+          min-width: 4.25rem !important;
+          padding: 0 8px !important;
+          border-radius: 8px !important;
+          
+          &::before {
+            content: "Page " !important;
+            font-size: 0.75rem !important;
+            font-weight: 500 !important;
+            margin-right: 2px !important;
+            opacity: 0.9 !important;
+          }
+        }
+      }
+    }
+
     .p-paginator-first,
     .p-paginator-prev,
     .p-paginator-next,
