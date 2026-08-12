@@ -23,7 +23,11 @@ export class PanelForm extends FormEntity {
         labelKey: 'Name',
       },
       description: { id: 'description', labelKey: 'Description' },
-      isActive: { id: 'isActive', labelKey: 'Active' },
+      isActive: {
+        id: 'isActive',
+        labelKey: 'Active',
+        description: 'Mark this panel as active to enable it in interview assignments.',
+      },
     },
   };
   private static noExtraSpacesValidator(

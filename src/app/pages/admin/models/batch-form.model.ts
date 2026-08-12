@@ -20,7 +20,11 @@ export class BatchForm extends FormEntity {
     configMap: {
       title: { id: 'title', labelKey: 'Title' },
       description: { id: 'description', labelKey: 'Description' },
-      isActive: { id: 'isActive', labelKey: 'Active' },
+      isActive: {
+        id: 'isActive',
+        labelKey: 'Active',
+        description: 'Mark this batch as active to use it in assessments.',
+      },
     },
   };
 

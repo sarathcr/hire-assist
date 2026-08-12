@@ -31,7 +31,9 @@
     [resizableColumns]="true"
     [scrollable]="true"
     [scrollDirection]="'both'"
-    [scrollHeight]="scrollHeight() || (fillHeight ? 'flex' : 'calc(100vh - 310px)')"
+    [scrollHeight]="
+      scrollHeight() || (fillHeight ? 'flex' : 'calc(100vh - 310px)')
+    "
     [autoLayout]="false"
     paginatorPosition="bottom"
     [globalFilterFields]=""
@@ -282,14 +284,30 @@
                       <i class="pi pi-filter"></i>
                     }
                   </ng-template>
-                  <ng-template pTemplate="filter" let-filterConstraint="filterConstraint" let-filter="filterCallback">
+                  <ng-template
+                    pTemplate="filter"
+                    let-filterConstraint="filterConstraint"
+                    let-filter="filterCallback"
+                  >
                     <input
                       #scoreInput
                       type="text"
                       pInputText
                       [ngModel]="filterConstraint.value"
-                      (ngModelChange)="onScoreFilterChange($event, filterConstraint, scoreInput)"
-                      (keydown)="onScoreFilterKeydown($event, filter, filterConstraint.value)"
+                      (ngModelChange)="
+                        onScoreFilterChange(
+                          $event,
+                          filterConstraint,
+                          scoreInput
+                        )
+                      "
+                      (keydown)="
+                        onScoreFilterKeydown(
+                          $event,
+                          filter,
+                          filterConstraint.value
+                        )
+                      "
                       (paste)="onScoreFilterPaste($event)"
                       placeholder="Search score"
                       class="p-inputtext w-full"
@@ -834,7 +852,10 @@
               [style.width]="getColumnWidth(headerColumn)"
               (click)="$event.stopPropagation()"
             >
-              <div class="flex align-items-center gap-2" style="width: fit-content;">
+              <div
+                class="flex align-items-center gap-2"
+                style="width: fit-content"
+              >
                 <span>{{
                   unmaskedRows[product.id + headerColumn.field]
                     ? product[headerColumn.field]

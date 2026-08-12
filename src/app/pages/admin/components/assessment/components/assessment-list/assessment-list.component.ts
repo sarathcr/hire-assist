@@ -276,6 +276,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       width: '50vw',
       modal: true,
       focusOnShow: false,
+      styleClass: 'standard-dialog-wrapper',
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',
@@ -300,10 +301,11 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
 
     this.ref = this.dialog.open(CreateUpdateAssessmentModalComponent, {
       data,
-      header: 'Update Assessment',
+      header: 'Update Recruitment',
       width: '50vw',
       modal: true,
       focusOnShow: false,
+      styleClass: 'standard-dialog-wrapper',
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',

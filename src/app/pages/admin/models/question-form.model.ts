@@ -46,15 +46,22 @@ export class QuestionForm extends FormEntity {
       hasAttachments: {
         id: 'hasAttachments',
         labelKey: 'Enable Question Attachments',
+        description: 'Allow adding files, images, or documents to the question text.',
       },
-      active: { id: 'active', labelKey: 'Active' },
+      active: {
+        id: 'active',
+        labelKey: 'Active',
+        description: 'Mark this question as active to make it available in assessments.',
+      },
       optionHasAttachments: {
         id: 'optionHasAttachments',
         labelKey: 'Enable Option Attachments',
+        description: 'Allow adding files or media to each answer option.',
       },
       isMultipleChoice: {
         id: 'isMultipleChoice',
         labelKey: 'Allow Multiple Answers',
+        description: 'Enable candidates to select more than one correct answer choice.',
       },
       attachmentType: { id: 'attachmentType', labelKey: 'Attachment Type' },
       optionAttachmentType: {

@@ -32,7 +32,11 @@ export class AssessmentForm extends FormEntity {
       panel: { id: 'panel', labelKey: 'Panel' },
       startDateTime: { id: 'startDateTime', labelKey: 'Start Date' },
       endDateTime: { id: 'endDateTime', labelKey: 'End Date' },
-      isActive: { id: 'isActive', labelKey: 'Active' },
+      isActive: {
+        id: 'isActive',
+        labelKey: 'Active',
+        description: 'Mark this recruitment/assessment as active to make it visible to candidates and interviewers.',
+      },
     },
   };
 

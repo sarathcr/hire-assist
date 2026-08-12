@@ -1,40 +1,66 @@
 .toggle-switch {
-  //margin-bottom: 25px;
+  // margin-bottom: 25px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   position: relative;
   width: 100%;
+  max-width: 350px;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
 
-  label {
-    flex: 1;
-    min-width: 0;
-    word-break: break-word;
-    overflow-wrap: break-word;
+  &--has-description {
+    max-width: 100% !important;
   }
 
-  p-floatlabel {
+  &:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  label {
+    min-width: 0;
+    font-weight: 500;
+    font-size: var(--font-size-base);
+    color: #1e293b;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    cursor: pointer;
+  }
+
+  &__description {
+    margin: 0;
+    font-size: var(--font-size-small);
+    color: var(--color-grey, #64748b);
+    line-height: 1.4;
+    font-weight: 300;
+  }
+
+  ::ng-deep .p-toggleswitch {
     flex-shrink: 0;
   }
 
-  .p-Toggleswitch {
-    width: 100%;
-    height: 50px;
-  }
-  .p-floatlabel-on:not(input.p-filled) label {
-    font-weight: 300;
-    font-size: var(--font-size-base);
-  }
-  .p-floatlabel-on:has(input.p-filled, input:focus) label {
-    font-size: smaller;
-  }
   &__validation-label {
     position: absolute;
-    left: 0;
+    left: 16px;
+    bottom: -18px;
     font-size: var(--font-size-small);
-    margin-top: 2px;
     color: var(--p-form-field-invalid-placeholder-color);
-    padding: 0 var(--spacing-10);
   }
 }

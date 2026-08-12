@@ -29,7 +29,11 @@ export class CoordinatorsAssessmentRoundForm extends FormEntity {
       },
       startDateTime: { id: 'startDateTime', labelKey: 'StartDate' },
       endDateTime: { id: 'endDateTime', labelKey: 'EndDate' },
-      isActive: { id: 'isActive', labelKey: 'Active' },
+      isActive: {
+        id: 'isActive',
+        labelKey: 'Active',
+        description: 'Mark this round coordinator assignment as active.',
+      },
       createdAt: { id: 'createdAt', labelKey: 'CreatedAt' },
     },
   };

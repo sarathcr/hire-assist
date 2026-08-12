@@ -23,7 +23,11 @@ export class DepartmentForm extends FormEntity {
         labelKey: 'Name',
       },
       description: { id: 'description', labelKey: 'Description' },
-      isActive: { id: 'isActive', labelKey: 'Active' },
+      isActive: {
+        id: 'isActive',
+        labelKey: 'Active',
+        description: 'Mark this department as active to enable it inside panels.',
+      },
     },
   };
   private static noExtraSpacesValidator(

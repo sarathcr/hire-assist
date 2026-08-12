@@ -1,18 +1,24 @@
-<div class="toggle-switch" [formGroup]="formGroup">
-  <label [for]="toggleId">{{ customToggleSwitchConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}</label>
-  <p-floatlabel variant="on">
-    <p-toggleswitch
-      [id]="toggleId"
-      pToggleswitch
-      [formControlName]="customToggleSwitchConfig.id"
-      [trueValue]="true"
-      [falseValue]="false"
-    >
-      <ng-template #handle let-checked="checked">
-        <i ngClass="['!text-xs', 'pi', checked ? 'pi-check' : 'pi-times']"></i>
-      </ng-template>
-    </p-toggleswitch>
-  </p-floatlabel>
+<div
+  class="toggle-switch"
+  [class.toggle-switch--has-description]="!!customToggleSwitchConfig.description"
+  [formGroup]="formGroup"
+>
+  <div class="toggle-switch__content">
+    <label [for]="toggleId">{{ customToggleSwitchConfig.labelKey }}@if (isRequired) {<span style="color: var(--color-danger); margin-left: 2px;">*</span>}</label>
+    @if (customToggleSwitchConfig.description) {
+      <p class="toggle-switch__description">{{ customToggleSwitchConfig.description }}</p>
+    }
+  </div>
+  <p-toggleswitch
+    [id]="toggleId"
+    [formControlName]="customToggleSwitchConfig.id"
+    [trueValue]="true"
+    [falseValue]="false"
+  >
+    <ng-template #handle let-checked="checked">
+      <i ngClass="['!text-xs', 'pi', checked ? 'pi-check' : 'pi-times']"></i>
+    </ng-template>
+  </p-toggleswitch>
 
   @if (customToggleSwitchConfig.matSuffix) {
     <span class="input-suffix">{{ customToggleSwitchConfig.matSuffix }}</span>

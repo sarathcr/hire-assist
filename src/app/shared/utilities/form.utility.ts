@@ -46,6 +46,7 @@ export interface CustomToggleSwitchConfig extends BaseCustomConfig {
   matPrefix?: string;
   matSuffix?: string;
   readonly?: boolean;
+  description?: string;
 }
 
 //INPUT TEXT CALENDER

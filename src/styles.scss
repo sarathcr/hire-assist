@@ -340,15 +340,55 @@ app-input-text-iftalabel {
   }
 
   body.p-overflow-hidden,
-  html:has(body.p-overflow-hidden) {
+  html:has(body.p-overflow-hidden),
+  body:has(.p-dialog-mask),
+  body:has(.p-dynamicdialog-mask),
+  html:has(body:has(.p-dialog-mask)),
+  html:has(body:has(.p-dynamicdialog-mask)) {
     overflow: hidden !important;
-    height: 100% !important;
+    height: 100vh !important;
+    height: 100svh !important;
+    touch-action: none !important;
+  }
+
+  // Constrain the background dashboard wrapper to screen size when modal is open
+  body.p-overflow-hidden .dashboard,
+  body:has(.p-dialog-mask) .dashboard,
+  body:has(.p-dynamicdialog-mask) .dashboard {
+    height: 100vh !important;
+    height: 100svh !important;
+    overflow: hidden !important;
   }
 }
 
 // Lock scrolling on desktop scroll container when modal is open
-body.p-overflow-hidden .main {
+body.p-overflow-hidden .main,
+body:has(.p-dialog-mask) .main,
+body:has(.p-dynamicdialog-mask) .main {
   overflow: hidden !important;
+}
+
+// Disable background events and scrolling on mobile devices when modal is open
+body.p-overflow-hidden app-root,
+body:has(.p-dialog-mask) app-root,
+body:has(.p-dynamicdialog-mask) app-root {
+  pointer-events: none !important;
+  touch-action: none !important;
+}
+
+// Disable drag gestures on dialog masks to block mobile scrolling
+.p-dialog-mask,
+.p-dynamicdialog-mask {
+  touch-action: none !important;
+}
+
+// Explicitly allow vertical touch scrolling inside active modal dialogs and sidebars
+.p-dialog,
+.p-dynamicdialog,
+.p-dialog-content,
+.p-sidebar,
+.p-sidebar-content {
+  touch-action: pan-y !important;
 }
 
 
