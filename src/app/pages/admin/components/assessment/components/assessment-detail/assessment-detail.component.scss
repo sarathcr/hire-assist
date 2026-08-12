@@ -1475,6 +1475,19 @@
 // ============================================
 @media screen and (max-width: 1024px) {
   .assessment-detail {
+    min-height: auto;
+
+    &__table-container {
+      max-height: none !important;
+      min-height: auto !important;
+
+      ::ng-deep {
+        .p-datatable-wrapper {
+          min-height: auto !important;
+        }
+      }
+    }
+
     &__hero {
       padding: var(--spacing-25) var(--spacing-30);
     }
@@ -1590,8 +1603,15 @@
     }
 
     &__table-container {
-      min-height: 350px;
-      max-height: calc(100vh - 350px);
+      width: 100%;
+      min-height: auto !important;
+      max-height: none !important;
+
+      ::ng-deep {
+        .p-datatable-wrapper {
+          min-height: auto !important;
+        }
+      }
     }
 
     &__rounds-footer {
@@ -1737,8 +1757,14 @@
 
     &__table-container {
       width: 100%;
-      min-height: 350px;
-      max-height: 60vh;
+      min-height: auto !important;
+      max-height: none !important;
+
+      ::ng-deep {
+        .p-datatable-wrapper {
+          min-height: auto !important;
+        }
+      }
     }
 
     &__actions {

@@ -13,9 +13,10 @@
     justify-content: space-between;
     overflow-y: scroll;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     flex-grow: 1;
     background-color: #f8fafc;
-    height: 100%;
+    height: calc(100vh - 92px);
     &__content {
       flex-grow: 1;
       padding: var(--spacing-20) var(--spacing-20);
@@ -37,14 +38,15 @@
     &__body {
       display: flex;
       padding-top: 66px; // smaller header on mobile
-      height: 100%;
+      height: auto !important;
       box-sizing: border-box;
     }
     .main {
-      height: 100%;
+      height: auto !important;
+      overflow-y: visible !important;
       &__content {
         flex-grow: 1;
-        padding: var(--spacing-15) var(--spacing-12);
+        padding: var(--spacing-15) var(--spacing-12) calc(var(--spacing-40) + env(safe-area-inset-bottom));
         height: auto;
       }
     }

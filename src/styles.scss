@@ -331,5 +331,25 @@ app-input-text-iftalabel {
   }
 }
 
+// Native scrolling on mobile/tablet viewports
+@media screen and (max-width: 1024px) {
+  body,
+  html {
+    overflow-y: auto;
+    height: auto;
+  }
+
+  body.p-overflow-hidden,
+  html:has(body.p-overflow-hidden) {
+    overflow: hidden !important;
+    height: 100% !important;
+  }
+}
+
+// Lock scrolling on desktop scroll container when modal is open
+body.p-overflow-hidden .main {
+  overflow: hidden !important;
+}
+
 
 

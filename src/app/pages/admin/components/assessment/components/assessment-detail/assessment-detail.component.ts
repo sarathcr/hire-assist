@@ -552,7 +552,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       maximizable: false,
       width: '65vw',
       modal: true,
-      styleClass: 'standard-dialog-wrapper',
+      focusOnShow: false,
+      styleClass: 'standard-dialog-wrapper select-panel-dialog-modal',
       breakpoints: {
         '960px': '75vw',
         '640px': '90vw',

@@ -31,7 +31,7 @@
     [resizableColumns]="true"
     [scrollable]="true"
     [scrollDirection]="'both'"
-    [scrollHeight]="scrollHeight() || 'calc(100vh - 310px)'"
+    [scrollHeight]="scrollHeight() || (fillHeight ? 'flex' : 'calc(100vh - 310px)')"
     [autoLayout]="false"
     paginatorPosition="bottom"
     [globalFilterFields]=""
