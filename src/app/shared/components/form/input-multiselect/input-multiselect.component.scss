@@ -7,6 +7,7 @@
       width: 100%;
       max-width: 100%;
       min-width: 0;
+      min-height: 2.5rem !important;
 
       .p-multiselect-label-container {
         max-width: 100%;
@@ -21,8 +22,6 @@
         display: flex !important;
         align-items: center !important;
         gap: 4px !important;
-        padding: 4px 8px !important; // Add slightly more vertical padding for wrapped rows
-        min-height: 36px !important;
         flex-wrap: wrap !important;
         overflow-y: auto !important;
         overflow-x: hidden !important;
@@ -38,7 +37,17 @@
         -ms-overflow-style: none;
         scrollbar-width: none;
 
-        &:not(:has(.p-multiselect-chip-item)) {
+        // Default empty/collapsed state padding (matches other form controls)
+        padding: 0.5rem 0.75rem !important;
+
+        // When chips are present, reduce vertical padding to fit chips
+        &:has(.p-multiselect-chip-item),
+        &:has(.p-chip) {
+          padding: 4px 8px !important;
+          min-height: 36px !important;
+        }
+
+        &:not(:has(.p-multiselect-chip-item)):not(:has(.p-chip)) {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
