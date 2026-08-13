@@ -1936,6 +1936,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               panel: item.panel || item.Panel || 'Unassigned to Panel',
               questionSet:
                 item.questionSetName || item.questionSet || 'Unassigned',
+              startDateTime: item.startDateTime || item.startDate,
+              endDateTime: item.endDateTime || item.endDate,
               visibleButtonIndices: this.getVisibleButtonIndices(item),
               disabledButtonIndices:
                 this.data && !this.data.isActive ? [1] : [],

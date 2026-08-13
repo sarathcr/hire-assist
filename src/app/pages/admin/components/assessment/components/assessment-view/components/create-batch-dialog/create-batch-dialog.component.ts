@@ -69,7 +69,9 @@ export class CreateBatchDialogComponent implements OnInit {
       this.minDate = recStart > today ? recStart : today;
     }
     if (this.config.data?.recruitmentEndDate) {
-      this.maxDate = new Date(this.config.data.recruitmentEndDate);
+      const max = new Date(this.config.data.recruitmentEndDate);
+      max.setMinutes(max.getMinutes() + 1);
+      this.maxDate = max;
     }
 
     this.createConfigMap();
@@ -155,8 +157,30 @@ export class CreateBatchDialogComponent implements OnInit {
         return isNaN(d.getTime()) ? null : d;
       };
 
-      const start = getValidDate(selectedBatch.startDate) || getValidDate(selectedBatch.startDateTime);
-      const end = getValidDate(selectedBatch.endDate) || getValidDate(selectedBatch.endDateTime);
+      let start = getValidDate(selectedBatch.startDate) || getValidDate(selectedBatch.startDateTime);
+      let end = getValidDate(selectedBatch.endDate) || getValidDate(selectedBatch.endDateTime);
+
+      // Extract previously chosen dates from other candidates in the same batch if available in the table
+      const candidates = this.config.data?.candidateData?.data || [];
+      const batchCandidates = candidates.filter(
+        (c: any) => c.batchId != null && String(c.batchId) === String(batchId)
+      );
+
+      const candidateWithStart = batchCandidates.find(
+        (c: any) => c.startDateTime && !String(c.startDateTime).startsWith('0001-01-01')
+      );
+      if (candidateWithStart) {
+        const existingStart = getValidDate(candidateWithStart.startDateTime);
+        if (existingStart) start = existingStart;
+      }
+
+      const candidateWithEnd = batchCandidates.find(
+        (c: any) => c.endDateTime && !String(c.endDateTime).startsWith('0001-01-01')
+      );
+      if (candidateWithEnd) {
+        const existingEnd = getValidDate(candidateWithEnd.endDateTime);
+        if (existingEnd) end = existingEnd;
+      }
       
       this.hasPrefilledDates = !!(start || end);
 

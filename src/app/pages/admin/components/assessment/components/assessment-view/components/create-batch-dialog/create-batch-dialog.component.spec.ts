@@ -1,4 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 
 import { CreateBatchDialogComponent } from './create-batch-dialog.component';
 
@@ -8,7 +11,13 @@ describe('CreateBatchDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CreateBatchDialogComponent]
+      imports: [CreateBatchDialogComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: DynamicDialogRef, useValue: {} },
+        { provide: DynamicDialogConfig, useValue: { data: {} } },
+      ]
     })
     .compileComponents();
 
@@ -21,3 +30,4 @@ describe('CreateBatchDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
