@@ -8,6 +8,7 @@ import { MenuItem, MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
 import { Observable } from 'rxjs';
 import { AssessmentCardComponent } from '../../../../../../shared/components/assessment-card/assessment-card.component';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
@@ -49,6 +50,7 @@ import { SearchBarComponent } from '../../../../../../shared/components/search-b
     MenuModule,
     ButtonModule,
     FormsModule,
+    TooltipModule,
   ],
   providers: [GenericDataSource],
   templateUrl: './assessment-list.component.html',
@@ -70,8 +72,11 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   
   @ViewChild(SearchBarComponent) searchBar!: SearchBarComponent;
   
-  public filterMenuItems: MenuItem[] = [];
-  public selectedStatus: string | null = null;
+  public displayMenuItems: MenuItem[] = [];
+  public selectedStatus: string = 'All';
+  public selectedSortField: string | null = null;
+  public selectedSortOrder: 'asc' | 'desc' | '' = '';
+  public sortRef: { active: string; direction: 'asc' | 'desc' | '' } = { active: '', direction: '' };
 
   constructor(
     public dataSource: GenericDataSource<AssessmentForm>,
@@ -104,20 +109,73 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
 
     this.subscriptionList.push(sub);
 
-    this.updateFilterMenuItems();
+    this.updateDisplayMenuItems();
   }
 
-  private updateFilterMenuItems(): void {
-    const getStyleClass = (status: string | null) => this.selectedStatus === status ? 'active-filter-item' : '';
+  private updateDisplayMenuItems(): void {
+    const getFilterStyleClass = (status: string | null) => {
+      const current = this.selectedStatus || 'All';
+      const target = status || 'All';
+      return current === target ? 'active-filter-item' : '';
+    };
+    const getSortStyleClass = (field: string, direction: 'asc' | 'desc') => 
+      (this.selectedSortField === field && this.selectedSortOrder === direction) ? 'active-filter-item' : '';
 
-    this.filterMenuItems = [
-      { label: 'All', icon: 'pi pi-list', styleClass: getStyleClass(null), command: () => this.onStatusFilter(null) },
-      { label: 'Active', icon: 'pi pi-play', styleClass: getStyleClass('Active'), command: () => this.onStatusFilter('Active') },
-      { label: 'Inactive', icon: 'pi pi-pause', styleClass: getStyleClass('Inactive'), command: () => this.onStatusFilter('Inactive') },
-      { label: 'Completed', icon: 'pi pi-check-circle', styleClass: getStyleClass('Completed'), command: () => this.onStatusFilter('Completed') },
-      { separator: true },
-      { label: 'Clear Filters', icon: 'pi pi-filter-slash', command: () => this.onClearFilters() }
+    this.displayMenuItems = [
+      {
+        label: 'Sort By',
+        items: [
+          { label: 'Default (Unsorted)', icon: 'pi pi-sort-alt', styleClass: this.selectedSortField === null ? 'active-filter-item' : '', command: () => this.onClearSort() },
+          { label: 'Name (A-Z)', icon: 'pi pi-sort-alpha-down', styleClass: getSortStyleClass('name', 'asc'), command: () => this.onSort('name', 'asc') },
+          { label: 'Name (Z-A)', icon: 'pi pi-sort-alpha-up', styleClass: getSortStyleClass('name', 'desc'), command: () => this.onSort('name', 'desc') },
+          { label: 'Start Date (Newest)', icon: 'pi pi-calendar-minus', styleClass: getSortStyleClass('startDateTime', 'desc'), command: () => this.onSort('startDateTime', 'desc') },
+          { label: 'Start Date (Oldest)', icon: 'pi pi-calendar-plus', styleClass: getSortStyleClass('startDateTime', 'asc'), command: () => this.onSort('startDateTime', 'asc') },
+          { label: 'End Date (Newest)', icon: 'pi pi-calendar-minus', styleClass: getSortStyleClass('endDateTime', 'desc'), command: () => this.onSort('endDateTime', 'desc') },
+          { label: 'End Date (Oldest)', icon: 'pi pi-calendar-plus', styleClass: getSortStyleClass('endDateTime', 'asc'), command: () => this.onSort('endDateTime', 'asc') }
+        ]
+      },
+      {
+        label: 'Filter Status',
+        items: [
+          { label: 'Default (All)', icon: 'pi pi-list', styleClass: getFilterStyleClass(null), command: () => this.onStatusFilter(null) },
+          { label: 'Active', icon: 'pi pi-play', styleClass: getFilterStyleClass('Active'), command: () => this.onStatusFilter('Active') },
+          { label: 'Inactive', icon: 'pi pi-pause', styleClass: getFilterStyleClass('Inactive'), command: () => this.onStatusFilter('Inactive') },
+          { label: 'Completed', icon: 'pi pi-check-circle', styleClass: getFilterStyleClass('Completed'), command: () => this.onStatusFilter('Completed') }
+        ]
+      },
+      {
+        label: 'Actions',
+        items: [
+          { label: 'Reset All', icon: 'pi pi-refresh', disabled: !this.hasActiveDisplayModifiers(), command: () => this.onResetAll() }
+        ]
+      }
     ];
+  }
+
+  public onSort(field: string, direction: 'asc' | 'desc'): void {
+    this.selectedSortField = field;
+    this.selectedSortOrder = direction;
+    this.sortRef = { active: field, direction: direction };
+    this.paginationFirst = 0;
+    this.updateDisplayMenuItems();
+
+    const payload = this.dataSource.getPayloadData();
+    payload.pagination.pageNumber = 1;
+    payload.sortedColumn = this.sortRef;
+    this.dataSource.loadPaginatedData(payload);
+  }
+
+  public onClearSort(): void {
+    this.selectedSortField = null;
+    this.selectedSortOrder = '';
+    this.sortRef = { active: '', direction: '' };
+    this.paginationFirst = 0;
+    this.updateDisplayMenuItems();
+
+    const payload = this.dataSource.getPayloadData();
+    payload.pagination.pageNumber = 1;
+    payload.sortedColumn = this.sortRef;
+    this.dataSource.loadPaginatedData(payload);
   }
 
   public openMenu(event: Event, menu: any): void {
@@ -137,10 +195,10 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     this.openUpdateAssessmentDialog(assessment);
   }
 
-
   public onDeleteAssessment(assessmentId: number): void {
     this.openConfirmDeleteDialog(assessmentId);
   }
+
   public onSearch(searchTerm: string): void {
     const newFilterMap = { ...this.filterMap };
 
@@ -152,6 +210,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
 
     this.filterMap = newFilterMap;
     this.paginationFirst = 0;
+    this.updateDisplayMenuItems();
 
     const payload = this.dataSource.getPayloadData();
     payload.pagination.pageNumber = 1;
@@ -160,18 +219,19 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   }
 
   public onStatusFilter(status: string | null): void {
-    this.selectedStatus = status;
+    const finalStatus = status || 'All';
+    this.selectedStatus = finalStatus;
     const newFilterMap = { ...(this.filterMap || {}) };
 
-    if (status) {
-      newFilterMap['status'] = status;
+    if (finalStatus !== 'All') {
+      newFilterMap['status'] = finalStatus;
     } else {
       delete newFilterMap['status'];
     }
 
     this.filterMap = newFilterMap;
     this.paginationFirst = 0;
-    this.updateFilterMenuItems();
+    this.updateDisplayMenuItems();
 
     const payload = this.dataSource.getPayloadData();
     payload.pagination.pageNumber = 1;
@@ -179,19 +239,65 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     this.dataSource.loadPaginatedData(payload);
   }
 
-  public onClearFilters(): void {
-    this.selectedStatus = null;
-    this.filterMap = {};
-    this.paginationFirst = 0;
-    this.updateFilterMenuItems();
-    
+  public hasActiveDisplayModifiers(): boolean {
+    return !!(this.hasSearchKey() || (this.selectedStatus && this.selectedStatus !== 'All') || this.selectedSortField);
+  }
+
+  public hasSearchKey(): boolean {
+    return !!(this.filterMap['searchKey'] && this.filterMap['searchKey'].trim().length > 0);
+  }
+
+  public getSortLabel(): string {
+    if (!this.selectedSortField) return '';
+    const direction = this.selectedSortOrder === 'asc' ? 'A-Z' : 'Z-A';
+    const dateDir = this.selectedSortOrder === 'asc' ? 'Oldest' : 'Newest';
+    if (this.selectedSortField === 'name') return `Name (${direction})`;
+    if (this.selectedSortField === 'startDateTime') return `Start Date (${dateDir})`;
+    if (this.selectedSortField === 'endDateTime') return `End Date (${dateDir})`;
+    return `${this.selectedSortField}`;
+  }
+
+  public clearSearch(): void {
     if (this.searchBar) {
       this.searchBar.clear();
     }
-    
+    const newFilterMap = { ...this.filterMap };
+    delete newFilterMap['searchKey'];
+    this.filterMap = newFilterMap;
+    this.paginationFirst = 0;
+    this.updateDisplayMenuItems();
+
     const payload = this.dataSource.getPayloadData();
     payload.pagination.pageNumber = 1;
     payload.filterMap = this.filterMap;
+    this.dataSource.loadPaginatedData(payload);
+  }
+
+  public clearStatusFilter(): void {
+    this.onStatusFilter(null);
+  }
+
+  public clearSort(): void {
+    this.onClearSort();
+  }
+
+  public onResetAll(): void {
+    this.selectedStatus = 'All';
+    this.selectedSortField = null;
+    this.selectedSortOrder = '';
+    this.sortRef = { active: '', direction: '' };
+    this.filterMap = {};
+    this.paginationFirst = 0;
+
+    if (this.searchBar) {
+      this.searchBar.clear();
+    }
+    this.updateDisplayMenuItems();
+
+    const payload = this.dataSource.getPayloadData();
+    payload.pagination.pageNumber = 1;
+    payload.filterMap = this.filterMap;
+    payload.sortedColumn = this.sortRef;
     this.dataSource.loadPaginatedData(payload);
   }
 

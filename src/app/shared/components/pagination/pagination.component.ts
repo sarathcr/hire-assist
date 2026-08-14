@@ -70,6 +70,12 @@ export class PaginationComponent
       }
     }
 
+    if (changes && changes['sortRef']) {
+      if (!changes['sortRef'].firstChange) {
+        this.first = 0;
+      }
+    }
+
     if (changes && changes['forceUpdate']) {
       this.search.next();
     }

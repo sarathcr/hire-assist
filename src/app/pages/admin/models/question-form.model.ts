@@ -33,7 +33,7 @@ export class QuestionForm extends FormEntity {
       maxmark: [
         Validators.required,
         Validators.min(1),
-        Validators.max(9),
+        Validators.max(25),
         QuestionForm.onlyNumbersValidator,
       ],
     },

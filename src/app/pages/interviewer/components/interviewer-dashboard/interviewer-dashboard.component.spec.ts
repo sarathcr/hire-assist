@@ -1,4 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 
 import { InterviewerDashboardComponent } from './interviewer-dashboard.component';
 
@@ -8,7 +11,12 @@ describe('InterviewerDashboardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InterviewerDashboardComponent]
+      imports: [InterviewerDashboardComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+      ]
     })
     .compileComponents();
 
@@ -21,3 +29,4 @@ describe('InterviewerDashboardComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+

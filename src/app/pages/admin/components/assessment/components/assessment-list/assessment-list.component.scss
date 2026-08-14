@@ -53,6 +53,64 @@
     min-width: 0;
   }
 
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0 1rem 0;
+    flex-shrink: 0;
+
+    .display-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      background-color: var(--background-secondary);
+      border: 1px solid rgba(21, 101, 192, 0.15);
+      border-radius: 9999px;
+      font-size: 0.825rem;
+      color: var(--primary-color);
+      font-weight: 500;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: rgba(33, 150, 243, 0.25);
+        color: var(--primary-color);
+      }
+
+      .pi-times-circle {
+        font-size: 0.875rem;
+        color: var(--primary-color);
+        opacity: 0.8;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          color: #ef4444;
+          opacity: 1;
+        }
+      }
+    }
+
+    .clear-all-btn {
+      background: none;
+      border: none;
+      color: var(--primary-color, #4f46e5);
+      font-size: 0.825rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: var(--background-secondary, #eef2ff);
+        text-decoration: underline;
+      }
+    }
+  }
+
   &__wrapper {
     flex: 1;
     overflow-y: auto;
@@ -177,19 +235,43 @@
 }
 
 ::ng-deep {
-  .p-menu .p-menu-item.active-filter-item {
-    .p-menu-item-content,
-    .p-menu-item-link {
-      background: var(--background-secondary) !important;
-      border-radius: 10px !important;
+  .p-menu {
+    @media screen and (max-width: 768px) {
+      max-height: 280px;
+      overflow-y: auto;
 
-      .p-menu-item-icon {
-        color: var(--primary-color) !important;
-      }
-
+      .p-menuitem-text,
       .p-menu-item-label {
-        font-weight: 500 !important;
-        color: var(--primary-color) !important;
+        font-size: 0.85rem !important;
+      }
+      .p-menuitem-icon,
+      .p-menu-item-icon {
+        font-size: 0.85rem !important;
+      }
+      .p-submenu-header {
+        font-size: 0.75rem !important;
+      }
+    }
+
+    .p-menuitem.active-filter-item,
+    .p-menu-item.active-filter-item {
+      .p-menuitem-content,
+      .p-menuitem-link,
+      .p-menu-item-content,
+      .p-menu-item-link {
+        background: var(--background-secondary) !important;
+        border-radius: 10px !important;
+
+        .p-menuitem-icon,
+        .p-menu-item-icon {
+          color: var(--primary-color) !important;
+        }
+
+        .p-menuitem-text,
+        .p-menu-item-label {
+          font-weight: 500 !important;
+          color: var(--primary-color) !important;
+        }
       }
     }
   }

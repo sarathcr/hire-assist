@@ -7,8 +7,45 @@
         (search)="onSearch($event)"
       >
       </app-search-bar>
+      <p-menu #displayMenu [model]="displayMenuItems" [popup]="true" appendTo="body"></p-menu>
+      <p-button
+        [icon]="'pi pi-sliders-h'"
+        [outlined]="!hasActiveDisplayModifiers()"
+        (onClick)="openMenu($event, displayMenu)"
+        size="small"
+        class="coordinator-assessment__settings-btn"
+        pTooltip="Filter & Sort"
+        tooltipPosition="bottom"
+      ></p-button>
     </div>
   </div>
+
+  @if (hasActiveDisplayModifiers()) {
+    <div class="coordinator-assessment__chips">
+      @if (hasSearchKey()) {
+        <span class="display-chip">
+          Search: "{{ filterMap['searchKey'] }}"
+          <i class="pi pi-times-circle cursor-pointer ml-1" (click)="clearSearch()"></i>
+        </span>
+      }
+      @if (selectedStatus && selectedStatus !== 'All') {
+        <span class="display-chip">
+          Status: {{ selectedStatus }}
+          <i class="pi pi-times-circle cursor-pointer ml-1" (click)="clearStatusFilter()"></i>
+        </span>
+      }
+      @if (selectedSortField) {
+        <span class="display-chip">
+          Sort: {{ getSortLabel() }}
+          <i class="pi pi-times-circle cursor-pointer ml-1" (click)="clearSort()"></i>
+        </span>
+      }
+      <button class="clear-all-btn ml-2" (click)="onResetAll()">
+        Clear All
+      </button>
+    </div>
+  }
+
   <div class="coordinator-assessment__wrapper">
     @if ((dataSource.loading$ | async) || !hasLoaded) {
       <div class="coordinator-assessment__list">
@@ -98,6 +135,8 @@
       [dataSource]="dataSource"
       [filterMap]="filterMap"
       [totalRecords]="totalRecords"
+      [sortRef]="sortRef"
+      [first]="paginationFirst"
       [isLoading]="(dataSource.loading$ | async) || !hasLoaded"
     >
     </app-pagination>

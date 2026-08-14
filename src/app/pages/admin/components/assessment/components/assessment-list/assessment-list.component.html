@@ -9,13 +9,15 @@
         class="assessment-list__search-bar"
       >
       </app-search-bar>
-      <p-menu #filterMenu [model]="filterMenuItems" [popup]="true" appendTo="body"></p-menu>
+      <p-menu #displayMenu [model]="displayMenuItems" [popup]="true" appendTo="body"></p-menu>
       <p-button
-        [icon]="(selectedStatus || filterMap['searchKey']) ? 'pi pi-filter-fill' : 'pi pi-filter'"
-        [outlined]="!(selectedStatus || filterMap['searchKey'])"
-        (onClick)="openMenu($event, filterMenu)"
+        [icon]="'pi pi-sliders-h'"
+        [outlined]="!hasActiveDisplayModifiers()"
+        (onClick)="openMenu($event, displayMenu)"
         size="small"
-        class="assessment-list__filter-btn"
+        class="assessment-list__settings-btn"
+        pTooltip="Filter & Sort"
+        tooltipPosition="bottom"
       ></p-button>
     </div>
     <app-button
@@ -26,6 +28,32 @@
       buttonSize="small"
     ></app-button>
   </div>
+
+  @if (hasActiveDisplayModifiers()) {
+    <div class="assessment-list__chips">
+      @if (hasSearchKey()) {
+        <span class="display-chip">
+          Search: "{{ filterMap['searchKey'] }}"
+          <i class="pi pi-times-circle cursor-pointer ml-1" (click)="clearSearch()"></i>
+        </span>
+      }
+      @if (selectedStatus && selectedStatus !== 'All') {
+        <span class="display-chip">
+          Status: {{ selectedStatus }}
+          <i class="pi pi-times-circle cursor-pointer ml-1" (click)="clearStatusFilter()"></i>
+        </span>
+      }
+      @if (selectedSortField) {
+        <span class="display-chip">
+          Sort: {{ getSortLabel() }}
+          <i class="pi pi-times-circle cursor-pointer ml-1" (click)="clearSort()"></i>
+        </span>
+      }
+      <button class="clear-all-btn ml-2" (click)="onResetAll()">
+        Clear All
+      </button>
+    </div>
+  }
 
   <div class="assessment-list__wrapper">
     @if (isInitialLoad || isLoading || (isLoading$ | async)) {
@@ -66,6 +94,7 @@
       [dataSource]="dataSource"
       [filterMap]="filterMap"
       [totalRecords]="totalRecords"
+      [sortRef]="sortRef"
       [isLoading]="isInitialLoad || isLoading || ((isLoading$ | async) ?? false)"
     >
     </app-pagination>
