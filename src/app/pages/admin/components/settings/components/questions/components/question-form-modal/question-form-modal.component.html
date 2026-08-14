@@ -123,6 +123,7 @@
                 ) {
                   <div class="question-form__attachment-actions">
                     <p-button
+                      id="question-attachment-btn"
                       icon="pi pi-paperclip"
                       [label]="
                         data.fGroup.get('fileDto')?.value
@@ -244,6 +245,7 @@
                     @if (data.fGroup.get("optionHasAttachments")?.value) {
                       <div class="question-form__option-actions">
                         <p-button
+                          [id]="'option-attachment-btn-' + i"
                           icon="pi pi-paperclip"
                           [label]="
                             optionCtrl.get('fileDto')?.value?.length > 0

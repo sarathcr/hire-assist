@@ -149,23 +149,52 @@ export class CandidateComponent extends BaseComponent implements OnInit {
       if (canProceed) {
         const modalData: DialogData = {
           message: `
-            <div class="assessment-instructions">
-              <p>Please read the following instructions carefully before starting the assessment:</p>
-              <ul>
-                <li><strong>Full-Screen Mode:</strong> Upon starting, the assessment will enter full-screen mode. You must remain in this mode throughout the session.</li>
-                <li><strong>Proctoring Rules:</strong> Exiting full-screen mode or switching to other browser tabs or applications will <strong>immediately terminate</strong> your assessment.</li>
-                <li><strong>Locked Assessment:</strong> If your session is terminated unintentionally due to technical issues, please contact the HR manager to unlock it.</li>
-                <li><strong>Navigation:</strong>
-                  <ul>
-                    <li>Select an answer and click <strong>'Next'</strong> to move forward.</li>
-                    <li>Use <strong>'Mark for Review'</strong> if you are unsure and want to revisit the question later.</li>
-                    <li>Click <strong>'Skip'</strong> if you wish to bypass a question.</li>
+            <div class="instruction-modal">
+              <div class="instruction-modal__intro">
+                <i class="pi pi-info-circle instruction-modal__intro-icon"></i>
+                <p>Please read the following instructions carefully before starting your assessment session.</p>
+              </div>
+
+              <div class="instruction-modal__grid">
+                <!-- Section 1: Critical Proctoring Rules -->
+                <div class="instruction-card instruction-card--danger">
+                  <div class="instruction-card__header">
+                    <i class="pi pi-exclamation-triangle instruction-card__icon"></i>
+                    <h4 class="instruction-card__title">Critical Proctoring Rules</h4>
+                  </div>
+                  <ul class="instruction-card__list">
+                    <li><strong>Full-Screen Mode:</strong> Upon starting, the assessment will enter full-screen mode. You must remain in this mode throughout the session.</li>
+                    <li><strong>Strict Proctoring:</strong> Exiting full-screen mode or switching to other browser tabs/applications will <strong>immediately terminate</strong> your test.</li>
+                    <li><strong>Locked Assessment:</strong> If your session is terminated due to technical issues, please contact the HR manager to unlock it.</li>
                   </ul>
-                </li>
-                <li><strong>Flexibility:</strong> You can return to any question and update your answers at any time until the timer expires.</li>
-                <li><strong>Auto-Submission:</strong> Once the timer runs out, all your attempted answers will be automatically saved and submitted.</li>
-                <li><strong>Assistance:</strong> For any confusion or technical issues, please contact the volunteers present in the room.</li>
-              </ul>
+                </div>
+
+                <!-- Section 2: Test Navigation & Rules -->
+                <div class="instruction-card instruction-card--info">
+                  <div class="instruction-card__header">
+                    <i class="pi pi-compass instruction-card__icon"></i>
+                    <h4 class="instruction-card__title">Test Navigation</h4>
+                  </div>
+                  <ul class="instruction-card__list">
+                    <li>Select an answer and click <strong>'Next'</strong> to save and move forward.</li>
+                    <li>Use <strong>'Mark for Review'</strong> to revisit a question later.</li>
+                    <li>Click <strong>'Skip'</strong> if you wish to bypass a question.</li>
+                    <li><strong>Flexibility:</strong> You can return and update your answers at any time until the timer expires.</li>
+                  </ul>
+                </div>
+
+                <!-- Section 3: Submission & Support -->
+                <div class="instruction-card instruction-card--success">
+                  <div class="instruction-card__header">
+                    <i class="pi pi-check-circle instruction-card__icon"></i>
+                    <h4 class="instruction-card__title">Submission & Support</h4>
+                  </div>
+                  <ul class="instruction-card__list">
+                    <li><strong>Auto-Submission:</strong> Once the timer expires, all attempted answers are automatically saved and submitted.</li>
+                    <li><strong>Assistance:</strong> For any confusion or technical difficulties, please contact the volunteers present in the room.</li>
+                  </ul>
+                </div>
+              </div>
             </div>
           `,
           isChoice: true,

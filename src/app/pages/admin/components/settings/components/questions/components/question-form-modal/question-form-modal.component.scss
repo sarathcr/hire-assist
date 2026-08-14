@@ -280,6 +280,14 @@
     ::ng-deep .input-text {
       margin-bottom: 0 !important;
     }
+
+    ::ng-deep .input-text__validation-label {
+      position: static !important;
+      display: block;
+      margin-top: var(--spacing-5);
+      margin-bottom: var(--spacing-5);
+      padding: 0 !important;
+    }
   }
 
   &__option-input {

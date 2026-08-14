@@ -941,6 +941,12 @@
       align-items: stretch;
     }
 
+    > app-button {
+      ::ng-deep .p-button {
+        height: 42px !important;
+      }
+    }
+
     .import-existing-wrapper {
       display: flex;
       align-items: stretch;

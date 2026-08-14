@@ -612,4 +612,159 @@
   }
 }
 
+// ─── Instruction Modal Layout ──────────────────────────────────────────────
+::ng-deep .instruction-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; /* Spacious card layout spacing */
+  font-family: 'Poppins', sans-serif;
+  color: #1e293b; /* Dark slate for maximum text readability */
+  padding: 12px 4px;
+
+  &__intro {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    &-icon {
+      font-size: 22px;
+      color: var(--primary-color);
+      flex-shrink: 0;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: #334155;
+      line-height: 1.5;
+    }
+  }
+
+  &__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px; /* Extra breathing space between card sections */
+  }
+
+  .instruction-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px; /* Spacious internal padding */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+    }
+
+    &__header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 12px;
+    }
+
+    &__icon {
+      font-size: 20px;
+    }
+
+    &__title {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+
+    &__list {
+      list-style-type: none;
+      padding-left: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px; /* Increased item gap for quick scanning */
+
+      li {
+        position: relative;
+        padding-left: 24px;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #334155;
+
+        &::before {
+          content: "•";
+          position: absolute;
+          left: 6px;
+          top: -2px;
+          font-size: 18px;
+          font-weight: bold;
+        }
+
+        strong {
+          color: #0f172a; /* Near-black for key highlights */
+          font-weight: 600;
+        }
+      }
+    }
+
+    // Themes with higher contrast ratios
+    &--danger {
+      border-left: 6px solid #ef4444;
+      background: #fffcfc;
+
+      .instruction-card__header {
+        border-color: #fee2e2;
+      }
+      .instruction-card__icon,
+      .instruction-card__title {
+        color: #b91c1c; /* High contrast red */
+      }
+      .instruction-card__list li::before {
+        color: #ef4444;
+      }
+    }
+
+    &--info {
+      border-left: 6px solid var(--primary-color);
+      background: #fafcfe;
+
+      .instruction-card__header {
+        border-color: #e0f2fe;
+      }
+      .instruction-card__icon,
+      .instruction-card__title {
+        color: #0369a1; /* High contrast blue */
+      }
+      .instruction-card__list li::before {
+        color: var(--primary-color);
+      }
+    }
+
+    &--success {
+      border-left: 6px solid #22c55e;
+      background: #f9fdfa;
+
+      .instruction-card__header {
+        border-color: #dcfce7;
+      }
+      .instruction-card__icon,
+      .instruction-card__title {
+        color: #15803d; /* High contrast green */
+      }
+      .instruction-card__list li::before {
+        color: #22c55e;
+      }
+    }
+  }
+}
+
 

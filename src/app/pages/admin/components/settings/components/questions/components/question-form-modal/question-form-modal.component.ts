@@ -808,6 +808,10 @@ export class QuestionFormModalComponent
     });
 
     uploadRef.onClose.subscribe((result: FileDto) => {
+      // Store scroll position before changes
+      const scrollContainer = document.querySelector('.question-form__container');
+      const scrollPosition = scrollContainer?.scrollTop || 0;
+
       document.body.style.overflow = 'auto';
       if (document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
@@ -818,6 +822,36 @@ export class QuestionFormModalComponent
         this.handleAttachmentUploadResult(result, index);
       }
       this.selectedOptionIndex = null;
+      this.cdr.detectChanges();
+
+      // Restore scroll position and explicitly restore focus to the button that opened it
+      let focusAttempts = 0;
+      const focusInterval = setInterval(() => {
+        if (scrollContainer) {
+          scrollContainer.scrollTop = scrollPosition;
+        }
+
+        const buttonId = index === 'question' 
+          ? 'question-attachment-btn' 
+          : `option-attachment-btn-${index}`;
+        
+        const btnElement = document.getElementById(buttonId);
+        if (btnElement) {
+          const nativeButton = btnElement.querySelector('button') || btnElement;
+          nativeButton.focus();
+          
+          // Clear interval if focus is successfully held on the button
+          const activeEl = document.activeElement;
+          if (activeEl === nativeButton || activeEl?.contains(nativeButton) || focusAttempts > 10) {
+            clearInterval(focusInterval);
+          }
+        }
+        
+        focusAttempts++;
+        if (focusAttempts > 10) {
+          clearInterval(focusInterval);
+        }
+      }, 100);
     });
   }
 
