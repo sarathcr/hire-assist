@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, APP_INITIALIZER } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import {
@@ -19,11 +19,18 @@ import { MyPreset } from './app.theme.preset';
 import { authInterceptor } from './shared/interceptors/auth.interceptor';
 import { errorInterceptor } from './shared/interceptors/error.interceptor';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import { CollectionService } from './shared/services/collection.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (collectionService: CollectionService) => () => collectionService.loadCollectionsPromise(),
+      deps: [CollectionService],
+      multi: true,
+    },
     provideClientHydration(withEventReplay()),
     provideAnimationsAsync(),
     providePrimeNG({

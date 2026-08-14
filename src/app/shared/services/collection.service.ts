@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { Subscription, interval, filter, Observable, shareReplay } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { StoreService } from './store.service';
@@ -23,9 +24,12 @@ export class CollectionService implements OnDestroy {
     private readonly http: HttpClient,
     private readonly storeService: StoreService,
     private readonly router: Router,
+    @Inject(PLATFORM_ID) private readonly platformId: object,
   ) {
-    this.setupAutoRefresh();
-    this.setupVisibilityRefresh();
+    if (isPlatformBrowser(this.platformId)) {
+      this.setupAutoRefresh();
+      this.setupVisibilityRefresh();
+    }
   }
 
   ngOnDestroy(): void {
@@ -56,7 +60,7 @@ export class CollectionService implements OnDestroy {
                            url.includes('auth/forgot-password') || 
                            url.includes('auth/reset-password');
         
-        if (!isAuthRoute && this.storeService.isAuthenticated()) {
+        if (!isAuthRoute && this.storeService.isAuthenticated() && this.shouldRefreshCollections()) {
           this.getCollection(true);
         }
       });
@@ -136,6 +140,28 @@ export class CollectionService implements OnDestroy {
       error: () => {
         this.currentRequest$ = null;
       },
+    });
+  }
+
+  public loadCollectionsPromise(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId) || !this.shouldRefreshCollections()) {
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve) => {
+      const url = `${this.collectionUrl}/api/collection`;
+      this.http.get<OptionsMap>(url).subscribe({
+        next: (collection) => {
+          if (collection) {
+            this.storeService.setCollection(collection);
+            this.setLastFetchedTimestamp();
+          }
+          resolve();
+        },
+        error: () => {
+          resolve(); // Resolve anyway to allow boot
+        }
+      });
     });
   }
 
