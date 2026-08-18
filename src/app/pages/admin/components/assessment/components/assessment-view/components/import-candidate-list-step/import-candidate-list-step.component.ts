@@ -1122,16 +1122,35 @@ export class ImportCandidateListStepComponent implements OnInit {
         if (result) {
           this.isLoading = true;
           this.assessmentService.createEntity(payload, 'schedule').subscribe({
-            next: () => {
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: 'Scheduled the Recruitment Successfully',
-              });
-              this.alreadySelectedCandidates = [];
-              this.selectedUsers = [];
-              this.getAllCandidates(new PaginatedPayload(), true);
-              this.checkStepStatusAndMoveNext();
+            next: (res: any) => {
+              if (res && res.isSuccess === false) {
+                this.isLoading = false;
+                if (res.mismatchedCandidates && res.mismatchedCandidates.length > 0) {
+                  const names = res.mismatchedCandidates.map((c: any) => c.candidateName).join(', ');
+                  this.messageService.add({
+                    severity: 'warn',
+                    summary: 'Scheduling Mismatch',
+                    detail: `Some candidates could not be scheduled because their date falls outside their batch window: ${names}`,
+                    life: 8000
+                  });
+                } else {
+                  this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Scheduling failed.',
+                  });
+                }
+              } else {
+                this.messageService.add({
+                  severity: 'success',
+                  summary: 'Success',
+                  detail: 'Scheduled the Recruitment Successfully',
+                });
+                this.alreadySelectedCandidates = [];
+                this.selectedUsers = [];
+                this.getAllCandidates(new PaginatedPayload(), true);
+                this.checkStepStatusAndMoveNext();
+              }
             },
             error: (error: CustomErrorResponse) => {
               this.isLoading = false;
@@ -1337,6 +1356,8 @@ export class ImportCandidateListStepComponent implements OnInit {
              status === 'rejected' || 
              status === 'enrolled' || 
              status === 'active' || 
+             status === 'terminated' || 
+             status === 'quit' || 
              (candidate.batchId && candidate.batchId > 0);
     });
 

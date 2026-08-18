@@ -11,8 +11,8 @@ const {
   intreviewUrl,
 } = environment;
 export const apiUrl = `${baseUrl}`;
-export const BASE_IMAGE_URL = environment;
-export const BASE_DOCUMENTS_URL = environment;
+export const BASE_IMAGE_URL = assessmentUrl;
+export const BASE_DOCUMENTS_URL = assessmentUrl;
 // AUTH
 export const LOGIN_URL = `${authorizationUrl}/api/authorization/login`;
 export const REFRESH_TOKEN_URL = `${authorizationUrl}/api/authorization/refresh-token`;

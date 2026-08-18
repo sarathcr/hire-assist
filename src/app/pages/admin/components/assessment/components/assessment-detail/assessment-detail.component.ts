@@ -1428,6 +1428,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const anyQuit = selectedCandidates.some(
       (c: any) => c.status?.toLowerCase() === 'quit',
     );
+    const anyTerminated = selectedCandidates.some(
+      (c: any) => c.status?.toLowerCase() === 'terminated',
+    );
     const anyScheduled = selectedCandidates.some((c: any) => c.isScheduled);
     const anyOnReview = selectedCandidates.some((c: any) => {
       const status = c.status?.toLowerCase() || '';
@@ -1471,7 +1474,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           anySelected ||
           anyRejected ||
           anyOnReview ||
-          anyQuit,
+          anyQuit ||
+          anyTerminated,
         command: () => this.onAssignToBatch({ id: '' }), // Passing empty id as it's bulk/header action
       });
     }
@@ -1487,6 +1491,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           anyRejected ||
           anyOnReview ||
           anyQuit ||
+          anyTerminated ||
           this.selectedCandidateIds.length > 1,
         command: () => this.onAssignToPanel(),
       });
@@ -1503,6 +1508,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         anyRejected ||
         anyOnReview ||
         anyQuit ||
+        anyTerminated ||
         anyMissingBatch ||
         anyMissingPanel,
       command: () =>

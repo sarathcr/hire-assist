@@ -16,6 +16,7 @@ import { takeUntil } from 'rxjs/operators';
 import { BASE_IMAGE_URL } from '../../constants/api';
 import { ApiService } from '../../services/api.service';
 import { ImageSkeletonComponent } from './image-skeleton';
+import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-image',
   standalone: true,
@@ -66,7 +67,7 @@ export class ImageComponent implements OnInit, OnChanges {
   private cancelRequestSubject = new Subject<void>();
 
   @ViewChild(Image) imageComponent!: Image;
-  constructor(private api: ApiService<any>) {}
+  constructor(private api: ApiService<any>, private http: HttpClient) {}
   ngOnInit() {
     this.loadImage();
   }
@@ -99,6 +100,23 @@ export class ImageComponent implements OnInit, OnChanges {
     }
 
     const endpoint = `${BASE_IMAGE_URL}/${this.imageUrl}`;
+
+    if (this.imageUrl.includes('files?')) {
+      const url = `${endpoint}&redirect=false`;
+      this.http.get<{ url: string }>(url)
+        .pipe(takeUntil(this.cancelRequestSubject))
+        .subscribe({
+          next: (res) => {
+            this.blobURL = res.url;
+            this.loaded = true;
+          },
+          error: () => {
+            this.loaded = true;
+          }
+        });
+      return;
+    }
+
     this.api
       .getBlob(endpoint)
       .pipe(takeUntil(this.cancelRequestSubject))

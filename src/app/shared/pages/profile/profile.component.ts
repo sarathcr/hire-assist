@@ -542,9 +542,9 @@ export class ProfileComponent extends BaseComponent implements OnInit {
       }
     }
     
-    this.profileServices.GetPhoto(blob, attachmentType).subscribe({
-      next: (blob: Blob) => {
-        const url = URL.createObjectURL(blob);
+    this.profileServices.GetPhotoUrl(blob, attachmentType).subscribe({
+      next: (res) => {
+        const url = res.url;
         this.profileImageUrl = url;
         if (url != undefined) {
           this.profileDataSource.profileUrl = url;
@@ -572,9 +572,9 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     });
   }
   private getCoverPhoto(blob: string, attachmentType: number): void {
-    this.profileServices.GetPhoto(blob, attachmentType).subscribe({
-      next: (blob: Blob) => {
-        const url = URL.createObjectURL(blob);
+    this.profileServices.GetPhotoUrl(blob, attachmentType).subscribe({
+      next: (res) => {
+        const url = res.url;
         this.coverImageUrl = url;
         this.isLoadingCoverImage = false;
       },

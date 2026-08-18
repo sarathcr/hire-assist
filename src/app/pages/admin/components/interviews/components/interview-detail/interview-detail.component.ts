@@ -404,14 +404,14 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
   }
   public previewImage(file: FileDto): void {
     this.interviewService
-      .GetFiles({
+      .GetFilesUrl({
         blobId: file.blobId || file.id,
         attachmentType: file.attachmentType,
       })
       .subscribe({
-        next: (blob: Blob) => {
+        next: (res) => {
           this.isImageLoading = false;
-          const imageUrl = URL.createObjectURL(blob);
+          const imageUrl = res.url;
           this.previewImageUrls.push(imageUrl);
         },
         error: () => {

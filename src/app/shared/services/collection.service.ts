@@ -14,7 +14,7 @@ export class CollectionService implements OnDestroy {
   private readonly COLLECTION_REFRESH_INTERVAL = 5 * 60 * 1000;
   private readonly COLLECTION_STALE_THRESHOLD = 10 * 60 * 1000;
   private readonly COLLECTION_TIMESTAMP_KEY = 'collectionLastFetched';
-  
+
   private refreshSubscription?: Subscription;
   private routerSubscription?: Subscription;
   private visibilitySubscription?: Subscription;
@@ -46,7 +46,9 @@ export class CollectionService implements OnDestroy {
 
   private setupAutoRefresh(): void {
     // Refresh collections periodically
-    this.refreshSubscription = interval(this.COLLECTION_REFRESH_INTERVAL).subscribe(() => {
+    this.refreshSubscription = interval(
+      this.COLLECTION_REFRESH_INTERVAL,
+    ).subscribe(() => {
       if (this.shouldRefreshCollections()) {
         this.getCollection(true);
       }
@@ -56,11 +58,16 @@ export class CollectionService implements OnDestroy {
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event) => {
         const url = (event as NavigationEnd).url;
-        const isAuthRoute = url.includes('auth/login') || 
-                           url.includes('auth/forgot-password') || 
-                           url.includes('auth/reset-password');
-        
-        if (!isAuthRoute && this.storeService.isAuthenticated() && this.shouldRefreshCollections()) {
+        const isAuthRoute =
+          url.includes('auth/login') ||
+          url.includes('auth/forgot-password') ||
+          url.includes('auth/reset-password');
+
+        if (
+          !isAuthRoute &&
+          this.storeService.isAuthenticated() &&
+          this.shouldRefreshCollections()
+        ) {
           this.getCollection(true);
         }
       });
@@ -101,7 +108,10 @@ export class CollectionService implements OnDestroy {
 
   private setLastFetchedTimestamp(): void {
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(this.COLLECTION_TIMESTAMP_KEY, Date.now().toString());
+      localStorage.setItem(
+        this.COLLECTION_TIMESTAMP_KEY,
+        Date.now().toString(),
+      );
     }
   }
 
@@ -122,9 +132,7 @@ export class CollectionService implements OnDestroy {
 
     const url = `${this.collectionUrl}/api/collection`;
 
-    this.currentRequest$ = this.http.get<OptionsMap>(url).pipe(
-      shareReplay(1),
-    );
+    this.currentRequest$ = this.http.get<OptionsMap>(url).pipe(shareReplay(1));
 
     this.currentRequest$.subscribe({
       next: (collection) => {
@@ -144,7 +152,10 @@ export class CollectionService implements OnDestroy {
   }
 
   public loadCollectionsPromise(): Promise<void> {
-    if (!isPlatformBrowser(this.platformId) || !this.shouldRefreshCollections()) {
+    if (
+      !isPlatformBrowser(this.platformId) ||
+      !this.shouldRefreshCollections()
+    ) {
       return Promise.resolve();
     }
 
@@ -160,7 +171,7 @@ export class CollectionService implements OnDestroy {
         },
         error: () => {
           resolve(); // Resolve anyway to allow boot
-        }
+        },
       });
     });
   }
@@ -198,7 +209,7 @@ export class CollectionService implements OnDestroy {
   public deleteItemFromCollection(key: string, id: number | string) {
     const currentCollection: OptionsMap =
       this.storeService.getCollection() || {};
-      
+
     const existingItems = currentCollection[key] || [];
     const updatedItems = existingItems.filter(
       (item) => item.value !== id.toString(),

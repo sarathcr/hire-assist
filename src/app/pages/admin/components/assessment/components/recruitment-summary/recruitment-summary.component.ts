@@ -310,28 +310,9 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
     const fileAny = file as any;
     const type = file.attachmentType || fileAny.AttachmentType || fileAny.attachmentTypeId || fileAny.AttachmentTypeId || 9;
 
-    this.interviewService.GetFiles({ blobId: blobId, attachmentType: type }).subscribe({
-      next: (blob: Blob) => {
-        let mimeType = blob.type;
-        const filename = blobId.toLowerCase();
-        
-        if (filename.endsWith('.pdf')) {
-          mimeType = 'application/pdf';
-        } else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
-          mimeType = 'image/jpeg';
-        } else if (filename.endsWith('.png')) {
-          mimeType = 'image/png';
-        } else if (filename.endsWith('.gif')) {
-          mimeType = 'image/gif';
-        } else if (filename.endsWith('.bmp')) {
-          mimeType = 'image/bmp';
-        } else if (filename.endsWith('.webp')) {
-          mimeType = 'image/webp';
-        }
-
-        const safeBlob = new Blob([blob], { type: mimeType });
-        const url = URL.createObjectURL(safeBlob);
-        
+    this.interviewService.GetFilesUrl({ blobId: blobId, attachmentType: type }).subscribe({
+      next: (res) => {
+        const url = res.url;
         this.reportImages[id] = url;
         this.imageLoadingStates[id] = false;
         this.reportImages = { ...this.reportImages };

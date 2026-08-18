@@ -56,6 +56,11 @@ export class QuestionService extends ApiService<any> {
     return this.httpClient.get(url, { responseType: 'blob' });
   }
 
+  public GetFilesUrl(payload: FileDto): Observable<{ url: string }> {
+    const url = `${this.getResourceUrl()}/files?blobId=${payload.blobId}&attachmentId=${payload.attachmentType}&redirect=false`;
+    return this.httpClient.get<{ url: string }>(url);
+  }
+
   public uploadFiles(payload: FileRequest) {
     const formData = new FormData();
     formData.append('Type', payload.attachmentType.toString());

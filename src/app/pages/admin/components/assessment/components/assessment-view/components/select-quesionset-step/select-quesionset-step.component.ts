@@ -1414,12 +1414,12 @@ export class SelectQuesionsetStepComponent
     this.questionSetAccordionData.set(questionSetId, { ...accordionData });
 
     this.questionService
-      .GetFiles({
+      .GetFilesUrl({
         blobId: file.blobId || file.id,
         attachmentType: file.attachmentType,
       })
       .subscribe({
-        next: (blob: Blob) => {
+        next: (res) => {
           const latestAccordionData = this.questionSetAccordionData.get(questionSetId);
           if (!latestAccordionData) return;
 
@@ -1427,7 +1427,7 @@ export class SelectQuesionsetStepComponent
             latestAccordionData.previewImageUrls = {};
           }
 
-          const imageUrl = URL.createObjectURL(blob);
+          const imageUrl = res.url;
           const currentUrls = latestAccordionData.previewImageUrls[id]
             ? [...latestAccordionData.previewImageUrls[id]]
             : [];

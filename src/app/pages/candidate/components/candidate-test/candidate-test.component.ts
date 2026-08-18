@@ -522,13 +522,13 @@ export class CandidateTestComponent
       this.isImageLoading = true;
       this.isImageLoadings = { ...this.isImageLoadings, [id]: true };
       this.interviewService
-        .GetFiles({
+        .GetFilesUrl({
           blobId: file.blobId || file.id,
           attachmentType: file.attachmentType,
         })
         .subscribe({
-          next: (blob: Blob) => {
-            const imageUrl = URL.createObjectURL(blob);
+          next: (res) => {
+            const imageUrl = res.url;
             const currentUrls = this.previewImageUrls[id] ? [...this.previewImageUrls[id]] : [];
             currentUrls.push(imageUrl);
             this.previewImageUrls = { ...this.previewImageUrls, [id]: currentUrls };

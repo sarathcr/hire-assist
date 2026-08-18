@@ -442,14 +442,14 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       }
 
       this.assessmentService
-        .GetIdProofById({
+        .GetIdProofUrl({
           blobId: blobId,
           attachmentTypeId: attachmentTypeId,
           candidateId: this.candidateId,
         })
         .subscribe({
-          next: (blob: Blob) => {
-            const url = URL.createObjectURL(blob);
+          next: (res) => {
+            const url = res.url;
             this.imageUrl[idx] = url;
             // Force a new array reference for Angular change detection
             this.imageUrl = [...this.imageUrl];

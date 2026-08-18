@@ -67,12 +67,11 @@ export class DashboardComponent implements OnInit {
       this.profileServices.GetProfileDetails().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (res) => {
           if (res.profilePhoto?.id && res.profilePhoto?.attachmentType) {
-            this.profileServices.GetPhoto(res.profilePhoto.id, res.profilePhoto.attachmentType)
+            this.profileServices.GetPhotoUrl(res.profilePhoto.id, res.profilePhoto.attachmentType)
               .pipe(takeUntilDestroyed(this.destroyRef))
               .subscribe({
-                next: (blob: Blob) => {
-                  const url = URL.createObjectURL(blob);
-                  this.storeService.setProfileImageUrl(url);
+                next: (urlRes) => {
+                  this.storeService.setProfileImageUrl(urlRes.url);
                   this.storeService.setIsLoadingProfileImage(false);
                 },
                 error: () => this.storeService.setIsLoadingProfileImage(false)

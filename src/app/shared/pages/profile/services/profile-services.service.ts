@@ -52,6 +52,11 @@ export class ProfileServicesService extends ApiService<any> {
     return this.httpClient.get(url, { responseType: 'blob' });
   }
 
+  public GetPhotoUrl(blobId: string, attachmentTypeId: number): Observable<{ url: string }> {
+    const url = `${ASSESSMENT_URL}/files?blobId=${blobId}&attachmentId=${attachmentTypeId}&redirect=false`;
+    return this.httpClient.get<{ url: string }>(url);
+  }
+
   public DeleteImage(
     blobId: string,
     attachmentTypeId: number,

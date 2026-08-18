@@ -42,9 +42,9 @@ export class FileComponent implements OnInit {
   private fetchImage() {
     const { blobId, attachmentType } = this.data;
 
-    this.questionService.GetFiles({ blobId, attachmentType }).subscribe({
-      next: (blob: Blob) => {
-        this.imageUrl = URL.createObjectURL(blob);
+    this.questionService.GetFilesUrl({ blobId, attachmentType }).subscribe({
+      next: (res) => {
+        this.imageUrl = res.url;
         this.isLoading = false;
       },
       error: () => {

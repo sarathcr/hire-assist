@@ -135,6 +135,22 @@ export class InterviewService extends ApiService<any> {
     return this.httpClient.get(url, { responseType: 'blob' });
   }
 
+  public GetFilesUrl(payload: FileDto): Observable<{ url: string }> {
+    let id = payload.id || payload.blobId || '';
+    let blobId = id.includes('/') ? id.split('/').pop()! : id;
+    if (payload.name && !blobId.includes('.')) {
+      const extMatch = payload.name.match(/\.[^.]+$/);
+      if (extMatch) {
+        blobId += extMatch[0];
+      }
+    }
+    let url = `${this.getResourceUrl()}/files?blobId=${blobId}&attachmentId=${payload.attachmentType}&redirect=false`;
+    if (payload.name) {
+      url += `&fileName=${encodeURIComponent(payload.name)}`;
+    }
+    return this.httpClient.get<{ url: string }>(url);
+  }
+
   public uploadFiles(payload: FileRequest) {
     const formData = new FormData();
     formData.append('Type', payload.attachmentType.toString());

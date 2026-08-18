@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NgIf } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -57,6 +57,7 @@ export class ModalPdfComponent implements OnInit {
     private api: ApiService<any>,
     private config: DynamicDialogConfig,
     private ref: DynamicDialogRef,
+    private http: HttpClient,
   ) {}
 
   // LIFE CYCLE
@@ -81,6 +82,25 @@ export class ModalPdfComponent implements OnInit {
   // PRIVATE
   private renderPdf(url: string) {
     const endpoint = `${BASE_DOCUMENTS_URL}/${url}`;
+
+    if (url.includes('files?')) {
+      const fetchUrl = `${endpoint}&redirect=false`;
+      this.http.get<{ url: string }>(fetchUrl)
+        .pipe(takeUntil(this.cancelRequestSubject))
+        .subscribe({
+          next: (res) => {
+            this.loaded = true;
+            this.blobURL = res.url;
+          },
+          error: (err) => {
+            this.loaded = true;
+            this.ref.close();
+            console.error('Error fetching pdf url', err);
+          }
+        });
+      return;
+    }
+
     const next = (res: Blob) => {
       this.loaded = true;
       const blob = new Blob([res], { type: 'application/pdf' });

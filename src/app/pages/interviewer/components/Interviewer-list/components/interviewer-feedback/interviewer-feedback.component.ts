@@ -583,27 +583,12 @@ export class InterviewerFeedbackComponent
     const blobId = key.includes('/') ? key.split('/').pop()! : key;
     const type = file.attachmentType || 9;
 
-    this.interviewService.GetFiles({ blobId: blobId, attachmentType: type }).subscribe({
-      next: (blob: Blob) => {
-        // Enforce correct MIME type based on extension to prevent auto-download
-        let mimeType = blob.type;
-        const filename = blobId.toLowerCase();
-        
-        if (filename.endsWith('.pdf')) {
-          mimeType = 'application/pdf';
-        } else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) {
-          mimeType = 'image/jpeg';
-        } else if (filename.endsWith('.png')) {
-          mimeType = 'image/png';
-        }
-
-        const safeBlob = new Blob([blob], { type: mimeType });
-        const url = URL.createObjectURL(safeBlob);
-        
+    this.interviewService.GetFilesUrl({ blobId: blobId, attachmentType: type }).subscribe({
+      next: (res) => {
+        const url = res.url;
         this.previewImageUrls.set(key, url);
         // Force a new Map reference to ensure Angular change detection
         this.previewImageUrls = new Map(this.previewImageUrls);
-        
         this.imageLoadingStates[key] = false;
         
         // If this file is currently being viewed, update the viewerUrl
@@ -1533,18 +1518,9 @@ export class InterviewerFeedbackComponent
     this.imageLoadingStates[id] = true;
     const blobId = id.includes('/') ? id.split('/').pop()! : id;
 
-    this.interviewService.GetFiles({ blobId: blobId, attachmentType: type }).subscribe({
-      next: (blob: Blob) => {
-        // Enforce MIME type for aptitude report images too
-        let mimeType = blob.type;
-        const filename = blobId.toLowerCase();
-        if (filename.endsWith('.pdf')) mimeType = 'application/pdf';
-        else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) mimeType = 'image/jpeg';
-        else if (filename.endsWith('.png')) mimeType = 'image/png';
-
-        const safeBlob = new Blob([blob], { type: mimeType });
-        const url = URL.createObjectURL(safeBlob);
-        
+    this.interviewService.GetFilesUrl({ blobId: blobId, attachmentType: type }).subscribe({
+      next: (res) => {
+        const url = res.url;
         this.reportImages[id] = url;
         this.imageLoadingStates[id] = false;
       },

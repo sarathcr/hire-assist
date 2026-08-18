@@ -90,6 +90,11 @@ export class AssessmentService extends ApiService<any> {
     return this.httpClient.get(url, { responseType: 'blob' });
   }
 
+  public GetIdProofUrl(payload: IdProofRequest): Observable<{ url: string }> {
+    const url = `${this.getResourceUrl()}/files?blobId=${payload.blobId}&attachmentId=${payload.attachmentTypeId}&candidateId=${payload.candidateId}&redirect=false`;
+    return this.httpClient.get<{ url: string }>(url);
+  }
+
   public getIdProofsByCandidateId(candidateId: string) {
     return this.httpClient.get<FileDto[]>(
       `${this.getResourceUrl()}/getById?candidateId=${candidateId}`,
