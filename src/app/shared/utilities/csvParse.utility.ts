@@ -1,13 +1,40 @@
 import { validateVerhoeff } from './verhoeff.utility';
 
+function parseCsvLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        current += '"';
+        i++; // skip next quote
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
 export const parseCsvToJson = (csv: string): Record<string, string>[] => {
-  const lines = csv.trim().split('\n');
+  const lines = csv.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(',').map((h) => h.trim());
+  const headers = parseCsvLine(lines[0]);
 
   return lines.slice(1).map((line) => {
-    const values = line.split(',').map((v) => v.trim());
+    const values = parseCsvLine(line);
     const obj: Record<string, string> = {};
 
     headers.forEach((header, index) => {
