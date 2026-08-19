@@ -131,6 +131,7 @@ export class CoordinatorDashboardComponent
   }
 
   public openMenu(event: MouseEvent, menu: any): void {
+    event.stopPropagation();
     menu.toggle(event);
   }
 
@@ -317,5 +318,9 @@ export class CoordinatorDashboardComponent
       }
     });
     this.subscriptionList.push(sub);
+  }
+
+  public get isMobileOrTablet(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth <= 1024;
   }
 }

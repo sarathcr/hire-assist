@@ -167,6 +167,7 @@ export class FrontdeskDashboardComponent
   }
 
   public openMenu(event: MouseEvent, menu: any): void {
+    event.stopPropagation();
     menu.toggle(event);
   }
 
@@ -276,5 +277,9 @@ export class FrontdeskDashboardComponent
 
   public clearSort(): void {
     this.onClearSort();
+  }
+
+  public get isMobileOrTablet(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth <= 1024;
   }
 }

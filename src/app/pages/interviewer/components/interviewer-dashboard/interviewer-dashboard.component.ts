@@ -170,6 +170,7 @@ export class InterviewerDashboardComponent
   }
 
   public openMenu(event: Event, menu: any): void {
+    event.stopPropagation();
     menu.toggle(event);
   }
 
@@ -296,6 +297,10 @@ export class InterviewerDashboardComponent
     }
 
     return 'recruitment-card__round-chip--pending';
+  }
+
+  public get isMobileOrTablet(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth <= 1024;
   }
 
   private subscribeToPaginatedData(): void {

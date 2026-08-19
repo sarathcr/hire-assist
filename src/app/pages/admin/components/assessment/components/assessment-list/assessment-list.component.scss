@@ -1,9 +1,20 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
 .assessment-list {
   display: flex;
   flex-direction: column;
   height: 100%;
   position: relative;
   overflow: hidden;
+  flex-grow: 1;
+
+  @media screen and (max-width: 1024px) {
+    overflow: visible;
+  }
 
   &__header {
     display: flex;
@@ -119,6 +130,11 @@
     margin-right: -20px;
     padding-right: 20px;
     padding-bottom: 90px;
+
+    @media screen and (max-width: 1024px) {
+      margin-right: 0;
+      padding-right: 0;
+    }
   }
 
   &__footer {
@@ -126,7 +142,6 @@
     bottom: -1px;
     left: 225px;
     right: 0;
-    height: 70px;
     z-index: 100;
     background-color: #ffffff;
     // border-top: 1px solid #e2e8f0;
@@ -134,10 +149,12 @@
     align-items: center;
     // padding: 0 var(--spacing-20);
     transition: left 0.25s ease-in-out;
+    padding: 12px 0;
 
     @media screen and (max-width: 1024px) {
       left: 0 !important;
-      // padding: 0 var(--spacing-15);
+      padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)) 0;
+      justify-content: center;
     }
   }
   &__list {

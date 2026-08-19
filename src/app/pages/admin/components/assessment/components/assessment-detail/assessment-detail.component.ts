@@ -1332,6 +1332,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   public openMenu(event: Event, menu: Menu): void {
+    event.stopPropagation();
     const selectedCandidates =
       this.tableData?.data?.filter((c: any) =>
         this.selectedCandidateIds.includes(c.id),

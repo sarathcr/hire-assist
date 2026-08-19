@@ -179,6 +179,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
   }
 
   public openMenu(event: Event, menu: any): void {
+    event.stopPropagation();
     menu.toggle(event);
   }
 
@@ -582,5 +583,9 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       acceptButtonText: 'Yes',
       cancelButtonText: 'Cancel',
     };
+  }
+
+  public get isMobileOrTablet(): boolean {
+    return typeof window !== 'undefined' && window.innerWidth <= 1024;
   }
 }

@@ -1,3 +1,9 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
 .frontdesk-assessments {
   // margin-top: var(--spacing-20);
   height: auto;
@@ -6,10 +12,9 @@
   flex-direction: column;
   position: relative;
   padding-bottom: 80px;
+  flex-grow: 1;
 
-  @media screen and (max-width: 768px) {
-    padding-bottom: 80px;
-  }
+
   &__header {
     display: flex;
     justify-content: space-between;
@@ -167,12 +172,16 @@
     left: 225px;
     right: 0;
     background: var(--color-white);
-    // padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 100;
     transition: left 0.25s ease-in-out;
+    padding: 12px 0;
 
     @media screen and (max-width: 1024px) {
       left: 0 !important;
+      padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)) 0;
     }
   }
   &__list {

@@ -42,12 +42,18 @@
       box-sizing: border-box;
     }
     .main {
+      display: flex;
+      flex-direction: column;
       height: auto !important;
       overflow-y: visible !important;
       &__content {
+        display: flex;
+        flex-direction: column;
         flex-grow: 1;
         padding: var(--spacing-15) var(--spacing-12) calc(var(--spacing-40) + env(safe-area-inset-bottom));
         height: auto;
+        min-height: calc(100vh - 66px);
+        box-sizing: border-box;
       }
     }
   }
