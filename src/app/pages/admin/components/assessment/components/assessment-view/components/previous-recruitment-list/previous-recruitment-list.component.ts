@@ -5,7 +5,8 @@ import { AssessmentService } from '../../../../../../services/assessment.service
 import { GenericDataSource } from '../../../../../../../../shared/components/pagination/generic-data-source';
 import { PaginatedData, PaginatedPayload } from '../../../../../../../../shared/models/pagination.models';
 import { PaginatedDataPayload } from '../../../../../../../../shared/components/pagination/pagination.model';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ASSESSMENT_URL } from '../../../../../../../../shared/constants/api';
 import { CommonModule, AsyncPipe } from '@angular/common';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
@@ -20,6 +21,9 @@ import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
 import { initialPaginatedData } from '../../../../../../../../shared/models/pagination.models';
 
 @Component({
@@ -37,7 +41,10 @@ import { initialPaginatedData } from '../../../../../../../../shared/models/pagi
     TagModule,
     ButtonModule,
     TooltipModule,
-    SkeletonModule
+    SkeletonModule,
+    IconFieldModule,
+    InputIconModule,
+    InputTextModule
   ],
   providers: [GenericDataSource],
   templateUrl: './previous-recruitment-list.component.html',
@@ -47,6 +54,8 @@ export class PreviousRecruitmentListComponent extends BaseComponent implements O
   public candidateId!: string;
   public recruitmentId!: number;
   public viewMode: 'cards' | 'table' = 'cards';
+  public searchKey = '';
+  private searchSubject = new Subject<string>();
   public viewOptions = [
     { label: '', value: 'cards', icon: 'pi pi-th-large' },
     { label: '', value: 'table', icon: 'pi pi-list' }
@@ -65,17 +74,7 @@ export class PreviousRecruitmentListComponent extends BaseComponent implements O
     ]
   };
 
-  public get tableData(): PaginatedData<any> {
-    const payload = this.dataSource.getPayloadData();
-    return {
-      ...initialPaginatedData,
-      data: this.recruitmentDataSource,
-      totalRecords: this.totalRecords,
-      pageNumber: payload.pagination.pageNumber,
-      pageSize: payload.pagination.pageSize,
-      succeeded: true
-    };
-  }
+  public tableData: PaginatedData<any> = { ...initialPaginatedData };
 
   constructor(
     private route: ActivatedRoute,
@@ -93,14 +92,13 @@ export class PreviousRecruitmentListComponent extends BaseComponent implements O
     this.recruitmentId = Number(params.get('recruitmentId') || 0);
     
     if (this.candidateId) {
-      this.dataSource.init(`${ASSESSMENT_URL}/candidates/previous/${this.candidateId}`);
+      this.dataSource.init(`${ASSESSMENT_URL}/candidates/previous`);
       this.subscribeToPaginatedData();
       
-      // Trigger initial load explicitly to show skeleton
       this.dataSource.loadPaginatedData({
         sortedColumn: { active: '', direction: '' },
-        filterMap: {},
-        pagination: { pageNumber: 1, pageSize: 8 }
+        filterMap: { candidateId: this.candidateId },
+        pagination: { pageNumber: 1, pageSize: 5 }
       });
     }
 
@@ -110,27 +108,52 @@ export class PreviousRecruitmentListComponent extends BaseComponent implements O
       if (newId && newId !== this.candidateId) {
         this.candidateId = newId;
         this.recruitmentId = Number(params.get('recruitmentId') || 0);
-        this.dataSource.init(`${ASSESSMENT_URL}/candidates/previous/${this.candidateId}`);
+        this.dataSource.init(`${ASSESSMENT_URL}/candidates/previous`);
         // Only trigger manual load if the component is already initialized and the ID changed
         this.dataSource.loadPaginatedData({
           sortedColumn: { active: '', direction: '' },
-          filterMap: {},
+          filterMap: { candidateId: this.candidateId },
           pagination: { pageNumber: 1, pageSize: 5 }
         });
       }
     });
+
+    this.subscriptionList.push(
+      this.searchSubject.pipe(
+        debounceTime(400),
+        distinctUntilChanged()
+      ).subscribe(searchTerm => {
+        if (searchTerm === this.searchKey) {
+          this.applyFilters();
+        }
+      })
+    );
   }
 
   private subscribeToPaginatedData(): void {
     const sub = this.dataSource.connect().subscribe(data => {
       this.recruitmentDataSource = data || [];
+      this.updateTableDataObject();
     });
     this.subscriptionList.push(sub);
 
     const totalSub = this.dataSource.totalRecords.subscribe(total => {
       this.totalRecords = total;
+      this.updateTableDataObject();
     });
     this.subscriptionList.push(totalSub);
+  }
+
+  private updateTableDataObject(): void {
+    const payload = this.dataSource.getPayloadData();
+    this.tableData = {
+      ...initialPaginatedData,
+      data: this.recruitmentDataSource,
+      totalRecords: this.totalRecords,
+      pageNumber: payload.pagination?.pageNumber || 1,
+      pageSize: payload.pagination?.pageSize || 5,
+      succeeded: true
+    };
   }
 
   public onCardClick(recruitment: any): void {
@@ -145,7 +168,7 @@ export class PreviousRecruitmentListComponent extends BaseComponent implements O
   public onTablePayloadChange(payload: PaginatedPayload): void {
     const dataPayload: PaginatedDataPayload = {
       sortedColumn: payload.multiSortedColumns[0] || { active: '', direction: '' },
-      filterMap: payload.filterMap as any,
+      filterMap: { ...payload.filterMap as any, candidateId: this.candidateId },
       pagination: payload.pagination
     };
     this.dataSource.loadPaginatedData(dataPayload);
@@ -163,5 +186,39 @@ export class PreviousRecruitmentListComponent extends BaseComponent implements O
       case 'completed': return 'success';
       default: return 'warn';
     }
+  }
+
+  public onSearch(event: any): void {
+    this.searchKey = event.target.value ?? '';
+    this.searchSubject.next(this.searchKey);
+  }
+
+  public clearSearch(): void {
+    this.searchKey = '';
+    this.searchSubject.next('');
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    const currentPayload = this.dataSource.getPayloadData();
+    const filterMap = { 
+      ...currentPayload.filterMap, 
+      candidateId: this.candidateId,
+      searchKey: this.searchKey 
+    };
+    
+    if (!this.searchKey) {
+      delete (filterMap as any).searchKey;
+    }
+
+    const dataPayload: PaginatedDataPayload = {
+      sortedColumn: currentPayload.sortedColumn,
+      filterMap: filterMap as any,
+      pagination: {
+        pageNumber: 1,
+        pageSize: currentPayload.pagination.pageSize
+      }
+    };
+    this.dataSource.loadPaginatedData(dataPayload);
   }
 }

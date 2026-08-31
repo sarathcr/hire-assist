@@ -256,6 +256,8 @@ export class TableComponent<
           ? 'This panel has no interviewers assigned and cannot be selected.'
           : `This candidate is already ${status} and cannot be selected.`,
       });
+    } else {
+      this.view.emit(product);
     }
   }
 

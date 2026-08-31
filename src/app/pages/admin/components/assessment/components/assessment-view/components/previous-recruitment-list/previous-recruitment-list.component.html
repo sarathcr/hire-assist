@@ -23,7 +23,8 @@
                 [options]="viewOptions" 
                 [(ngModel)]="viewMode" 
                 optionLabel="label" 
-                optionValue="value">
+                optionValue="value"
+                [allowEmpty]="false">
                 <ng-template let-item pTemplate="item">
                     <i [class]="item.icon"></i>
                 </ng-template>
@@ -34,9 +35,27 @@
     <!-- Content Section -->
     @if (candidateId) {
         <div class="content-area">
-            @if (isLoading$ | async) {
-                <!-- Skeleton State -->
-                @if (viewMode === 'cards') {
+            <!-- Cards View Container -->
+            <div [hidden]="viewMode !== 'cards'">
+                <div class="filters-row">
+                    <div class="search-and-clear">
+                        <p-iconfield iconPosition="right">
+                            <p-inputicon>
+                                <i class="pi pi-search"></i>
+                            </p-inputicon>
+                            <input
+                                pInputText
+                                type="text"
+                                [(ngModel)]="searchKey"
+                                (input)="onSearch($event)"
+                                placeholder="Search keyword"
+                            />
+                        </p-iconfield>
+                    </div>
+                </div>
+
+                @if (isLoading$ | async) {
+                    <!-- Skeleton State -->
                     <div class="recruitment-grid">
                         @for (i of [1,2,3,4,5,6,7,8]; track i) {
                             <div class="recruitment-card skeleton">
@@ -69,21 +88,7 @@
                         }
                     </div>
                 } @else {
-                    <div class="table-skeleton-container">
-                        <p-skeleton width="100%" height="3.5rem" styleClass="mb-4"></p-skeleton>
-                        @for (i of [1,2,3,4,5,6,7,8]; track i) {
-                            <div class="table-row-skeleton">
-                                <p-skeleton width="35%" height="1.5rem"></p-skeleton>
-                                <p-skeleton width="20%" height="1.5rem"></p-skeleton>
-                                <p-skeleton width="20%" height="1.5rem"></p-skeleton>
-                                <p-skeleton width="20%" height="1.5rem"></p-skeleton>
-                            </div>
-                        }
-                    </div>
-                }
-            } @else {
-                @if (recruitmentDataSource.length > 0) {
-                    @if (viewMode === 'cards') {
+                    @if (recruitmentDataSource.length > 0) {
                         <div class="recruitment-grid">
                             @for (recruitment of recruitmentDataSource; track (recruitment.assessmentId || recruitment.id)) {
                                 <div class="recruitment-card" (click)="onCardClick(recruitment)">
@@ -130,32 +135,37 @@
                             }
                         </div>
                     } @else {
-                        <div class="table-container">
-                            <app-table
-                                [tableData]="tableData"
-                                [columnsData]="tableColumns"
-                                [hasCheckbox]="false"
-                                (pageChangeAndSort)="onTablePayloadChange($event)"
-                                (buttonClick)="onCardClick($event)"
-                            ></app-table>
-                        </div>
+                        <app-empty-state
+                            icon="pi pi-history"
+                            message="No previous recruitments found for this candidate."
+                        ></app-empty-state>
                     }
-                } @else {
-                    <app-empty-state
-                        icon="pi pi-history"
-                        message="No previous recruitments found for this candidate."
-                    ></app-empty-state>
                 }
-            }
+            </div>
 
-            @if (candidateId && viewMode === 'cards') {
-                <div class="pagination-footer" [hidden]="recruitmentDataSource.length === 0 || (isLoading$ | async)">
-                    <app-pagination
-                        [dataSource]="dataSource"
-                        [totalRecords]="totalRecords"
-                    ></app-pagination>
+            <!-- Table View Container -->
+            <div [hidden]="viewMode !== 'table'">
+                <div class="table-container">
+                    <app-table
+                        [tableData]="tableData"
+                        [columnsData]="tableColumns"
+                        [hasCheckbox]="false"
+                        [hasSearch]="true"
+                        [parentLoader]="(isLoading$ | async) ?? false"
+                        (pageChangeAndSort)="onTablePayloadChange($event)"
+                        (view)="onCardClick($event)"
+                    ></app-table>
                 </div>
-            }
+            </div>
+
+            <!-- Pagination Footer (Only active/visible when in cards mode, hidden otherwise) -->
+            <div class="pagination-footer" [style.display]="(viewMode === 'cards' && recruitmentDataSource.length > 0 && !(isLoading$ | async)) ? 'flex' : 'none'">
+                <app-pagination
+                    [dataSource]="dataSource"
+                    [totalRecords]="totalRecords"
+                    [filterMap]="{ candidateId: candidateId, searchKey: searchKey }"
+                ></app-pagination>
+            </div>
         </div>
     }
 </div>
