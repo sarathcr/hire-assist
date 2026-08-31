@@ -1144,7 +1144,7 @@ export class ImportCandidateListStepComponent implements OnInit {
                 this.messageService.add({
                   severity: 'success',
                   summary: 'Success',
-                  detail: 'Scheduled the Recruitment Successfully',
+                  detail: 'Candidate enrolled to the recruitment cycle successfully',
                 });
                 this.alreadySelectedCandidates = [];
                 this.selectedUsers = [];
