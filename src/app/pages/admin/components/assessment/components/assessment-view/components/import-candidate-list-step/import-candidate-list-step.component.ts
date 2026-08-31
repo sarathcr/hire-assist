@@ -304,6 +304,7 @@ export class ImportCandidateListStepComponent implements OnInit {
       .subscribe({ next, error });
   }
   public getSelectedItems(selectedUsersIds: AssessmentViewModel[]): void {
+    this.selectedCandidates = selectedUsersIds as any[];
     this.selectedUsers = selectedUsersIds.map((item) => item.id);
     this.updateScheduleButtonState();
   }
@@ -1096,17 +1097,30 @@ export class ImportCandidateListStepComponent implements OnInit {
         candidateIds: this.selectedUsers,
         assessmentId: this.assessmentId(),
       };
+
+      const candidateNames = this.selectedUsers
+        .map((id) => this.data?.data?.find((c) => String(c.id) === String(id))?.name)
+        .filter((name): name is string => !!name);
+
       const modalData: DialogData = {
-        message: 'Are you sure you want to schedule the recruitment?',
+        title: 'Confirm Enrollment',
+        message: 'Are you sure you want to enroll the selected candidate(s) to the recruitment cycle?',
         isChoice: true,
         cancelButtonText: 'Cancel',
         acceptButtonText: 'Yes',
       };
+
+      if (candidateNames.length > 0) {
+        modalData.candidateNames = candidateNames;
+        modalData.listTitle = 'Candidates to Enroll';
+      }
+
       this.ref = this.dialog.open(DialogComponent, {
         data: modalData,
-        header: 'Warning',
+        showHeader: false,
+        styleClass: 'standard-dialog-wrapper',
         maximizable: false,
-        width: '50vw',
+        width: '450px',
         modal: true,
         focusOnShow: false,
         breakpoints: {
