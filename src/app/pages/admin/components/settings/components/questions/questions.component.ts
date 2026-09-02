@@ -17,7 +17,11 @@ import { OptionsMap } from '../../../../../../shared/models/app-state.models';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { Option } from '../../../../../../shared/models/option';
-import { getDefaultPayload, PaginatedPayload, setSavedPayload } from '../../../../../../shared/models/pagination.models';
+import {
+  getDefaultPayload,
+  PaginatedPayload,
+  setSavedPayload,
+} from '../../../../../../shared/models/pagination.models';
 import {
   FieldType,
   PaginatedData,
@@ -244,9 +248,14 @@ export class QuestionsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           const imageUrl = res.url;
-          const currentUrls = this.previewImageUrls[id] ? [...this.previewImageUrls[id]] : [];
+          const currentUrls = this.previewImageUrls[id]
+            ? [...this.previewImageUrls[id]]
+            : [];
           currentUrls.push(imageUrl);
-          this.previewImageUrls = { ...this.previewImageUrls, [id]: currentUrls };
+          this.previewImageUrls = {
+            ...this.previewImageUrls,
+            [id]: currentUrls,
+          };
           this.isImageLoadings = { ...this.isImageLoadings, [id]: false };
           this.cdr.detectChanges();
         },
@@ -371,7 +380,11 @@ export class QuestionsComponent implements OnInit, OnDestroy {
           const events = res.data.map((item: any) => ({
             status: item.action,
             user: item.changedByName,
-            date: new Date(item.changedAt ? item.changedAt + (item.changedAt.endsWith('Z') ? '' : 'Z') : new Date()),
+            date: new Date(
+              item.changedAt
+                ? item.changedAt + (item.changedAt.endsWith('Z') ? '' : 'Z')
+                : new Date(),
+            ),
             icon: this.getHistoryIcon(item.action),
             description: this.getHistoryDescription(item),
           }));
@@ -540,7 +553,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
   public previewFile(blobId: string, attachmentType: number) {
     this.dialog.open(FileComponent, {
       header: 'Image Preview',
-      width: '80vw',
+      width: '75vw',
+      // height: 'auto',
       modal: true,
       focusOnShow: false,
       closable: true,

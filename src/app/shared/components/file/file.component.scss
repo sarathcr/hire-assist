@@ -1,138 +1,127 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 1 1 0%;
   width: 100%;
   height: 100%;
-}
-
-::ng-deep {
-  .p-dialog-content {
-    padding: 0 !important;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    max-height: 90vh;
-  }
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 .file-dialog {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  flex: 1 1 0%;
   width: 100%;
   height: 100%;
   min-height: 0;
+  box-sizing: border-box;
 
   &__body {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: var(--spacing-20);
-    overflow: auto;
+    flex: 1 1 0%;
+    width: 100%;
+    height: 100%;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--spacing-20);
+    overflow: hidden;
     background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
     position: relative;
+    box-sizing: border-box;
   }
 
-  &__image-container {
+  &__content-wrapper {
+    flex: 1 1 0%;
     width: 100%;
-    max-width: 100%;
-    max-height: 100%;
+    height: 100%;
+    min-height: calc(85vh - 160px);
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
     position: relative;
     border-radius: var(--spacing-10);
     overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     background: var(--color-white);
     padding: var(--spacing-20);
+    box-sizing: border-box;
+
+    app-file-skeleton {
+      flex: 1 1 0%;
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
 
     app-image {
       width: 100%;
-      height: auto;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      max-width: 100%;
-      max-height: calc(90vh - 160px);
-      max-height: calc(90svh - 160px);
     }
   }
-}
 
-// Loading skeleton styling
-::ng-deep {
-  app-file-skeleton {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-}
-
-// Image component styling
-::ng-deep {
-  .image-container {
+  &__error-container {
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
-    position: relative;
-    background: transparent;
+    align-items: center;
+    gap: var(--spacing-15);
+    padding: var(--spacing-30);
+    text-align: center;
+  }
 
-    &__header {
-      position: absolute;
-      top: var(--spacing-15);
-      right: var(--spacing-15);
-      z-index: 100;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
+  &__error-icon {
+    font-size: var(--font-size-36, 36px);
+    color: var(--color-gray-400, #adb5bd);
+  }
+
+  &__error-text {
+    font-size: var(--font-size-16, 16px);
+    color: var(--color-gray-600, #6c757d);
+    margin: 0;
+  }
+}
+
+// Deep styling for image inside content-wrapper
+::ng-deep {
+  .file-dialog__content-wrapper {
+    .image-container {
+      width: 100%;
+      height: 100%;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-
-      i {
-        font-size: var(--font-size-20);
-        color: var(--color-dune);
-        transition: all 0.2s ease;
-      }
-
-      &:hover {
-        background: rgba(255, 255, 255, 1);
-        transform: scale(1.1);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-
-        i {
-          color: var(--primary-color);
-        }
-      }
+      position: relative;
+      background: transparent;
     }
 
     p-image {
       width: 100%;
-      height: auto;
-      max-width: 100%;
-      max-height: calc(90vh - 160px);
-      max-height: calc(90svh - 160px);
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
 
       img {
         max-width: 100%;
-        max-height: calc(90vh - 160px);
-        max-height: calc(90svh - 160px);
+        max-height: calc(85vh - 120px);
         object-fit: contain;
-        border-radius: var(--spacing-10);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        border-radius: var(--spacing-8, 8px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
       }
     }
   }
@@ -142,11 +131,15 @@
 @media screen and (max-width: 768px) {
   .file-dialog {
     &__body {
-      padding: var(--spacing-15);
+      padding: var(--spacing-10);
     }
 
-    &__image-container {
-      padding: var(--spacing-15);
+    &__content-wrapper {
+      padding: var(--spacing-10);
+
+      p-image img {
+        max-height: calc(90vh - 80px);
+      }
     }
   }
 }

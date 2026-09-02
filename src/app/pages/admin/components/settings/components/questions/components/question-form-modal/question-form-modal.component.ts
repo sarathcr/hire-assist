@@ -927,8 +927,9 @@ export class QuestionFormModalComponent
   public previewAttachment(optionCtrl: FormGroup | null): void {
     const fileDto = this.getFileDtoForPreview(optionCtrl);
 
-    if (fileDto?.id && fileDto?.attachmentType) {
-      this.previewCallback?.(fileDto.id, fileDto.attachmentType);
+    const blobId = (fileDto as any)?.blobId || fileDto?.id;
+    if (blobId && fileDto?.attachmentType) {
+      this.previewCallback?.(blobId, fileDto.attachmentType);
     } else {
       this.showInfoMessage('Info', 'No image is uploaded for preview');
     }

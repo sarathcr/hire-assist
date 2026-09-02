@@ -1,9 +1,14 @@
 <div class="file-dialog">
   <div class="file-dialog__body" (contextmenu)="onRightClick($event)">
-    @if (isLoading) {
-      <app-file-skeleton></app-file-skeleton>
-    } @else {
-      <div class="file-dialog__image-container">
+    <div class="file-dialog__content-wrapper">
+      @if (isLoading) {
+        <app-file-skeleton></app-file-skeleton>
+      } @else if (hasError || !imageUrl) {
+        <div class="file-dialog__error-container">
+          <i class="pi pi-image file-dialog__error-icon"></i>
+          <p class="file-dialog__error-text">Failed to load image preview</p>
+        </div>
+      } @else {
         <app-image
           [imageUrl]="imageUrl"
           [paddingTop]="'0'"
@@ -11,7 +16,7 @@
           [removeIcon]="true"
           (closeImage)="onClose()"
         ></app-image>
-      </div>
-    }
+      }
+    </div>
   </div>
 </div>

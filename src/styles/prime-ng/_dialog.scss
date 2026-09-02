@@ -30,7 +30,7 @@
 
 .p-dialog-header {
   box-shadow: 0px 15px 10px -20px #000;
-  
+
   @media screen and (max-width: 768px) {
     padding: var(--spacing-15) !important;
   }
@@ -117,17 +117,58 @@
 }
 
 .image-preview-dialog {
+  &.p-dialog {
+    width: 75vw !important;
+    height: auto !important;
+    max-width: 1000px !important;
+    // max-height: 85vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
   .p-dialog-content {
     padding: 0 !important;
     background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+    flex: 1 1 auto !important;
+    height: calc(85vh - 65px) !important;
+    min-height: calc(85vh - 65px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+
+    app-file {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      flex: 1 1 auto !important;
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 100% !important;
+    }
   }
 
   .p-dialog-header {
+    flex-shrink: 0 !important;
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     border-bottom: 1px solid var(--color-seperator);
     padding: var(--spacing-20);
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
+  }
+
+  @media (max-width: 960px) {
+    &.p-dialog {
+      width: 90vw !important;
+      // height: 85vh !important;
+    }
+  }
+
+  @media (max-width: 640px) {
+    &.p-dialog {
+      width: 95vw !important;
+      // height: 90vh !important;
+    }
   }
 }
 

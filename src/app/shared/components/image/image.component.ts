@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NgIf, NgStyle } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
@@ -24,7 +26,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './image.component.html',
   styleUrls: ['./image.component.scss'],
 })
-export class ImageComponent implements OnInit, OnChanges {
+export class ImageComponent implements OnInit, OnChanges, OnDestroy {
   @Input() imageUrl!: string | null;
   @Input() paddingTop!: string;
   @Input() forceCancelRequest: string[] = [];
@@ -67,9 +69,18 @@ export class ImageComponent implements OnInit, OnChanges {
   private cancelRequestSubject = new Subject<void>();
 
   @ViewChild(Image) imageComponent!: Image;
-  constructor(private api: ApiService<any>, private http: HttpClient) {}
+  constructor(
+    private api: ApiService<any>,
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+  ) {}
   ngOnInit() {
     this.loadImage();
+  }
+
+  ngOnDestroy(): void {
+    this.cancelRequestSubject.next();
+    this.cancelRequestSubject.complete();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -95,7 +106,23 @@ export class ImageComponent implements OnInit, OnChanges {
     }
     if (this.imageUrl.startsWith('blob:') || this.imageUrl.startsWith('http')) {
       this.blobURL = this.imageUrl;
-      this.loaded = true;
+      if (this.imageUrl.startsWith('blob:') || typeof window === 'undefined') {
+        this.loaded = true;
+        return;
+      }
+      const img = new window.Image();
+      img.onload = () => {
+        this.loaded = true;
+        this.cdr.markForCheck();
+      };
+      img.onerror = () => {
+        this.loaded = true;
+        this.cdr.markForCheck();
+      };
+      img.src = this.imageUrl;
+      if (img.complete) {
+        this.loaded = true;
+      }
       return;
     }
 
