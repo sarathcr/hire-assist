@@ -20,20 +20,31 @@
 
       <div class="experience-dialog__row-wrapper">
         <div class="experience-dialog__row">
-          <div class="experience-dialog__field">
+          <div 
+            class="experience-dialog__field"
+            (click)="onDatePickerClick($event, startDatePicker)"
+            (touchstart)="onTouchStart()"
+            (touchmove)="onTouchMove()"
+            (touchend)="onTouchEnd($event, startDatePicker)"
+          >
             <p-floatlabel variant="on">
               <p-datepicker 
-                id="startDate" 
+                #startDatePicker
+                [inputId]="'startDate'"
+                size="small"
                 formControlName="startDate" 
                 [showIcon]="true" 
                 dateFormat="M yy" 
                 view="month" 
                 [maxDate]="maxDate"
                 appendTo="body"
+                [readonlyInput]="true"
                 class="w-full"
                 [ngClass]="{'ng-invalid ng-dirty': experienceForm.get('startDate')?.touched && experienceForm.get('startDate')?.invalid}"
               ></p-datepicker>
-              <label for="startDate">Start Date</label>
+              <label for="startDate">
+                Start Date<span style="color: var(--color-danger); margin-left: 2px">*</span>
+              </label>
             </p-floatlabel>
             @if ((experienceForm.get('startDate')?.touched && experienceForm.get('startDate')?.errors) || experienceForm.errors?.['duplicateDate']) {
               <span class="experience-dialog__error">
@@ -45,20 +56,31 @@
           </div>
 
           @if (!experienceForm.get('isCurrent')?.value) {
-            <div class="experience-dialog__field">
+            <div 
+              class="experience-dialog__field"
+              (click)="onDatePickerClick($event, endDatePicker)"
+              (touchstart)="onTouchStart()"
+              (touchmove)="onTouchMove()"
+              (touchend)="onTouchEnd($event, endDatePicker)"
+            >
               <p-floatlabel variant="on">
                 <p-datepicker 
-                  id="endDate" 
+                  #endDatePicker
+                  [inputId]="'endDate'"
+                  size="small"
                   formControlName="endDate" 
                   [showIcon]="true" 
                   dateFormat="M yy" 
                   view="month" 
                   [maxDate]="maxDate"
                   appendTo="body"
+                  [readonlyInput]="true"
                   class="w-full"
                   [ngClass]="{'ng-invalid ng-dirty': experienceForm.get('endDate')?.touched && experienceForm.get('endDate')?.invalid}"
                 ></p-datepicker>
-                <label for="endDate">End Date</label>
+                <label for="endDate">
+                  End Date<span style="color: var(--color-danger); margin-left: 2px">*</span>
+                </label>
               </p-floatlabel>
               @if (experienceForm.get('endDate')?.touched && experienceForm.get('endDate')?.errors) {
                 <span class="experience-dialog__error">

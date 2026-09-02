@@ -37,22 +37,21 @@
       width: 100%;
       display: flex;
       align-items: stretch;
-      // gap: 0.5rem;
+      cursor: pointer;
 
+      .p-datepicker-input,
       .p-inputtext {
         flex: 1;
         min-width: 0;
         min-height: 42px;
+        cursor: pointer;
       }
 
+      .p-datepicker-dropdown,
       .p-datepicker-trigger {
         flex-shrink: 0;
+        cursor: pointer;
       }
-    }
-
-    // Ensure calendar popup is visible above modal
-    .p-datepicker-panel {
-      z-index: 10000 !important;
     }
 
     // Time picker styling

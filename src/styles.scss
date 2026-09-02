@@ -202,6 +202,16 @@ app-input-text-iftalabel {
   width: 100%;
 }
 
+// Global FloatLabel consistency across all form controls
+.p-floatlabel-on:not(input.p-filled) label {
+  font-weight: 300;
+  font-size: var(--font-size-base);
+}
+
+.p-floatlabel-on:has(input.p-filled, input:focus, .p-inputwrapper-filled, .p-inputwrapper-focus) label {
+  font-size: smaller;
+}
+
 // Fix for PrimeNG Select Clear Icon alignment
 .p-select-clear-icon,
 .p-multiselect-clear-icon {
@@ -305,6 +315,22 @@ app-input-text-iftalabel {
   }
 }
 
+// Ensure date picker panel is always displayed, fully visible, above modals and masks
+.p-datepicker-panel {
+  display: block !important;
+  visibility: visible !important;
+  z-index: 11000 !important;
+  pointer-events: auto !important;
+  background: #ffffff !important;
+}
+
+// Make date picker inputs show a pointer cursor and be responsive to taps on mobile
+.p-datepicker,
+.p-datepicker-input {
+  cursor: pointer !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
 // Prevent iOS Safari from auto-zooming on focus of form input fields
 @media (max-width: 1024px) {
   input,
@@ -318,16 +344,13 @@ app-input-text-iftalabel {
   }
 }
 
-// Center date picker panel as a modal dialog on mobile screens to prevent overflow and horizontal scroll
-@media (max-width: 768px) {
+// Ensure date picker panel does not overflow horizontally or vertically on mobile screens
+@media (max-width: 1024px) {
   .p-datepicker-panel {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    max-width: 95vw !important;
-    width: 320px !important;
-    height: auto !important;
+    max-width: calc(100vw - 20px) !important;
+    box-sizing: border-box !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25) !important;
   }
 }
@@ -383,12 +406,13 @@ body:has(.p-dynamicdialog-mask) app-root {
   touch-action: none !important;
 }
 
-// Explicitly allow vertical touch scrolling inside active modal dialogs and sidebars
+// Explicitly allow vertical touch scrolling inside active modal dialogs, sidebars, and datepicker panel
 .p-dialog,
 .p-dynamicdialog,
 .p-dialog-content,
 .p-sidebar,
-.p-sidebar-content {
+.p-sidebar-content,
+.p-datepicker-panel {
   touch-action: pan-y !important;
 }
 

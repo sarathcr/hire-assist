@@ -524,7 +524,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
   private getAllBatches(): void {
     this.isLoading = true;
     const next = (res: Batch[]) => {
-      this.batchList = res.map(batch => {
+      this.batchList = res.map((batch) => {
         if (batch.scheduledTime && batch.scheduledTime.includes(' - ')) {
           const parts = batch.scheduledTime.split(' - ');
           if (parts.length === 2) {
@@ -533,8 +533,10 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
             batch.startDate = new Date(startStr);
             const datePipe = new DatePipe('en-US');
             const format = 'dd/MM/yyyy, hh:mm a';
-            const formattedStart = datePipe.transform(startStr, format) || parts[0].trim();
-            const formattedEnd = datePipe.transform(endStr, format) || parts[1].trim();
+            const formattedStart =
+              datePipe.transform(startStr, format) || parts[0].trim();
+            const formattedEnd =
+              datePipe.transform(endStr, format) || parts[1].trim();
             batch.scheduledTime = `${formattedStart} - ${formattedEnd}`;
           }
         }
@@ -625,7 +627,9 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     const next = (res: PaginatedData<Candidate>) => {
       const updatedRes: PaginatedData<Candidate> = {
         ...res,
-        data: res.data.map((candidate) => this.mapCandidateData(candidate, batchId)),
+        data: res.data.map((candidate) =>
+          this.mapCandidateData(candidate, batchId),
+        ),
       };
       this.candidatesByBatch[batchId] = updatedRes;
       this.loadingBatches[batchId] = false;
@@ -695,7 +699,12 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     const statusLower = candidate.status?.toLowerCase() || '';
 
     // Button indices: 0: Mark as Present, 1: Mark as Absent, 2: Assign to Batch, 3: Upload ID Proof
-    if (statusLower === 'completed' || statusLower === 'selected' || statusLower === 'rejected' || statusLower === 'quit') {
+    if (
+      statusLower === 'completed' ||
+      statusLower === 'selected' ||
+      statusLower === 'rejected' ||
+      statusLower === 'quit'
+    ) {
       // Cannot change status anymore for completed/selected/rejected assessments
       return {
         ...candidate,
@@ -705,9 +714,14 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     }
 
     // Check if the candidate is assigned to a panel or a batch, and is not scheduled yet
-    const hasPanelOrBatch = !!((candidate as any).panel || candidate.batchQuestionSetsId || batchId);
+    const hasPanelOrBatch = !!(
+      (candidate as any).panel ||
+      candidate.batchQuestionSetsId ||
+      batchId
+    );
     const rawScheduled = (candidate as any).isScheduled;
-    const isScheduled = rawScheduled === true ||
+    const isScheduled =
+      rawScheduled === true ||
       (typeof rawScheduled === 'string' &&
         rawScheduled.toLowerCase() !== 'false' &&
         rawScheduled.toLowerCase() !== 'not scheduled' &&
@@ -726,14 +740,14 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
         ...candidate,
         isActionsDisabled: true,
         disabledReason: 'Candidate interview is not scheduled yet',
-        disabledButtonIndices: [0, 1, 2, 3]
+        disabledButtonIndices: [0, 1, 2, 3],
       };
     }
 
     // Check if the batch is scheduled in the future
     let isFutureBatch = false;
     if (this.isAptitudeRound && batchId && this.batchList) {
-      const batch = this.batchList.find(b => b.id === batchId);
+      const batch = this.batchList.find((b) => b.id === batchId);
       if (batch && batch.startDate) {
         isFutureBatch = batch.startDate > new Date();
       }
@@ -743,17 +757,23 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       return {
         ...candidate,
         isActionsDisabled: true,
-        disabledReason: 'Check-in and batch actions will be enabled once the scheduled start time is reached.',
-        disabledButtonIndices: [0, 1, 2, 3]
+        disabledReason:
+          'Check-in and batch actions will be enabled once the scheduled start time is reached.',
+        disabledButtonIndices: [0, 1, 2, 3],
       };
     }
 
     // Check if the candidate's interview is scheduled on a future date
-    const rawScheduledDate = (candidate as any).scheduledDate || (candidate as any).date || (candidate as any).interviewDate;
+    const rawScheduledDate =
+      (candidate as any).scheduledDate ||
+      (candidate as any).date ||
+      (candidate as any).interviewDate;
     if (rawScheduledDate) {
       let scheduledDate: Date | null = null;
       if (rawScheduledDate instanceof Date) {
-        scheduledDate = isNaN(rawScheduledDate.getTime()) ? null : rawScheduledDate;
+        scheduledDate = isNaN(rawScheduledDate.getTime())
+          ? null
+          : rawScheduledDate;
       } else {
         const dateStr = String(rawScheduledDate).trim();
         if (
@@ -763,7 +783,9 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
           dateStr.toLowerCase() !== 'not scheduled'
         ) {
           // Check if DD/MM/YYYY or DD-MM-YYYY format
-          const ddmmyyyyMatch = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+          const ddmmyyyyMatch = dateStr.match(
+            /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/,
+          );
           if (ddmmyyyyMatch) {
             const day = parseInt(ddmmyyyyMatch[1], 10);
             const month = parseInt(ddmmyyyyMatch[2], 10) - 1;
@@ -778,8 +800,16 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
 
       if (scheduledDate) {
         const now = new Date();
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const startOfScheduledDay = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate());
+        const startOfToday = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        );
+        const startOfScheduledDay = new Date(
+          scheduledDate.getFullYear(),
+          scheduledDate.getMonth(),
+          scheduledDate.getDate(),
+        );
 
         if (startOfScheduledDay > startOfToday) {
           return {
@@ -798,7 +828,10 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       !candidate.reportingTime.startsWith('0001-01-01');
 
     // A candidate is "Reported" if they have a non-zero reporting time OR their status is explicitly present/reported
-    const isNotReported = !hasReportedTime && statusLower !== 'reported' && statusLower !== 'present';
+    const isNotReported =
+      !hasReportedTime &&
+      statusLower !== 'reported' &&
+      statusLower !== 'present';
 
     const hasNoOtherBatches = !this.batchList || this.batchList.length <= 1;
     let disabledButtonIndices: number[] = [];

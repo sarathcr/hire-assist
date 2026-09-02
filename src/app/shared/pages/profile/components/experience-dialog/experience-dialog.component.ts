@@ -1,11 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { FloatLabelModule } from 'primeng/floatlabel';
-import { DatePickerModule } from 'primeng/datepicker';
+import { DatePicker, DatePickerModule } from 'primeng/datepicker';
 import { InputTextComponent } from '../../../../components/form/input-text/input-text.component';
 import { InputTextareaComponent } from '../../../../components/form/input-textarea/input-textarea.component';
 import { ExperienceDto } from '../../models/basic-information.model';
@@ -31,6 +31,7 @@ import { Subject, takeUntil } from 'rxjs';
 export class ExperienceDialogComponent implements OnInit, OnDestroy {
   experienceForm: FormGroup;
   isEdit = false;
+  today = new Date();
   maxDate = new Date();
   initialFormValue: any;
   private destroy$ = new Subject<void>();
@@ -56,7 +57,8 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private ref: DynamicDialogRef,
-    private config: DynamicDialogConfig
+    private config: DynamicDialogConfig,
+    private cd: ChangeDetectorRef
   ) {
     this.experienceForm = this.fb.group({
       id: [0],
@@ -292,5 +294,74 @@ export class ExperienceDialogComponent implements OnInit, OnDestroy {
 
   onCancel(): void {
     this.ref.close();
+  }
+
+  private isScrolling = false;
+
+  onTouchStart(): void {
+    this.isScrolling = false;
+  }
+
+  onTouchMove(): void {
+    this.isScrolling = true;
+  }
+
+  onTouchEnd(event: TouchEvent, datePicker: DatePicker): void {
+    if (this.isScrolling) {
+      return;
+    }
+    const target = event.target as HTMLElement;
+    if (
+      target?.closest('.p-datepicker-clear-icon') ||
+      target?.closest('.p-datepicker-dropdown') ||
+      target?.closest('.p-datepicker-trigger')
+    ) {
+      return;
+    }
+    this.showDatePicker(datePicker);
+  }
+
+  onDatePickerClick(event: MouseEvent | Event, datePicker: DatePicker): void {
+    const target = event.target as HTMLElement;
+    if (
+      target?.closest('.p-datepicker-clear-icon') ||
+      target?.closest('.p-datepicker-dropdown') ||
+      target?.closest('.p-datepicker-trigger')
+    ) {
+      return;
+    }
+    this.showDatePicker(datePicker);
+  }
+
+  private showDatePicker(datePicker: DatePicker): void {
+    if (!datePicker) {
+      return;
+    }
+
+    if (!(datePicker as any)['_outsideClickPatched']) {
+      (datePicker as any)['_outsideClickPatched'] = true;
+      const originalIsOutsideClicked = datePicker.isOutsideClicked.bind(datePicker);
+      datePicker.isOutsideClicked = (event: any) => {
+        const target = event?.target as HTMLElement;
+        if (target) {
+          if (
+            target.closest('.p-floatlabel') ||
+            target.closest('.experience-dialog__field')
+          ) {
+            return false;
+          }
+        }
+        return originalIsOutsideClicked(event);
+      };
+    }
+
+    if (!datePicker.overlayVisible) {
+      datePicker.showOverlay();
+      if (datePicker.overlay) {
+        datePicker.overlay.style.display = 'block';
+        datePicker.overlay.style.visibility = 'visible';
+      }
+      this.cd?.markForCheck();
+    }
   }
 }

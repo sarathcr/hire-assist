@@ -151,4 +151,76 @@ describe('InputTextCalenderComponent', () => {
 
     expect(() => component.ngOnInit()).not.toThrow();
   });
+
+  it('should call showOverlay on datePicker when clicked outside dropdown/clear triggers', () => {
+    const mockDatePicker: any = {
+      overlayVisible: false,
+      showOverlay: jasmine.createSpy('showOverlay'),
+      isOutsideClicked: jasmine.createSpy('isOutsideClicked'),
+      inputfieldViewChild: { nativeElement: { focus: jasmine.createSpy('focus') } }
+    };
+    const inputElement = document.createElement('input');
+    const mockEvent = {
+      target: inputElement,
+      stopPropagation: jasmine.createSpy('stopPropagation'),
+    } as unknown as Event;
+
+    component.onDatePickerClick(mockEvent, mockDatePicker);
+    expect(mockDatePicker.showOverlay).toHaveBeenCalled();
+  });
+
+  it('should not call showOverlay on datePicker when clicked inside dropdown trigger button', () => {
+    const mockDatePicker: any = {
+      overlayVisible: false,
+      showOverlay: jasmine.createSpy('showOverlay'),
+      isOutsideClicked: jasmine.createSpy('isOutsideClicked'),
+    };
+    const buttonElement = document.createElement('button');
+    buttonElement.classList.add('p-datepicker-dropdown');
+    const mockEvent = {
+      target: buttonElement,
+      stopPropagation: jasmine.createSpy('stopPropagation'),
+    } as unknown as Event;
+
+    component.onDatePickerClick(mockEvent, mockDatePicker);
+    expect(mockDatePicker.showOverlay).not.toHaveBeenCalled();
+  });
+
+  it('should handle touch events and open overlay on tap without move', () => {
+    const mockDatePicker: any = {
+      overlayVisible: false,
+      showOverlay: jasmine.createSpy('showOverlay'),
+      isOutsideClicked: jasmine.createSpy('isOutsideClicked'),
+      inputfieldViewChild: { nativeElement: { focus: jasmine.createSpy('focus') } }
+    };
+    const inputElement = document.createElement('input');
+    const mockTouchEvent = {
+      target: inputElement,
+      preventDefault: jasmine.createSpy('preventDefault'),
+      stopPropagation: jasmine.createSpy('stopPropagation'),
+    } as unknown as TouchEvent;
+
+    component.onTouchStart();
+    component.onTouchEnd(mockTouchEvent, mockDatePicker);
+    expect(mockDatePicker.showOverlay).toHaveBeenCalled();
+  });
+
+  it('should not open overlay on touchEnd if touchMoved was true (scrolling)', () => {
+    const mockDatePicker: any = {
+      overlayVisible: false,
+      showOverlay: jasmine.createSpy('showOverlay'),
+      isOutsideClicked: jasmine.createSpy('isOutsideClicked'),
+    };
+    const inputElement = document.createElement('input');
+    const mockTouchEvent = {
+      target: inputElement,
+      preventDefault: jasmine.createSpy('preventDefault'),
+      stopPropagation: jasmine.createSpy('stopPropagation'),
+    } as unknown as TouchEvent;
+
+    component.onTouchStart();
+    component.onTouchMove();
+    component.onTouchEnd(mockTouchEvent, mockDatePicker);
+    expect(mockDatePicker.showOverlay).not.toHaveBeenCalled();
+  });
 });

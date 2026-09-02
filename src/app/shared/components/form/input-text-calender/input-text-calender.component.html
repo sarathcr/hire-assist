@@ -1,9 +1,16 @@
 <div class="input-text-calender" [formGroup]="formGroup">
   <!-- FLOAT LABEL (DEFAULT) -->
   @if (floatLabel) {
-    <p-floatlabel variant="on">
+    <p-floatlabel 
+      variant="on"
+      (click)="onDatePickerClick($event, datePicker)"
+      (touchstart)="onTouchStart()"
+      (touchmove)="onTouchMove()"
+      (touchend)="onTouchEnd($event, datePicker)"
+    >
       <p-datepicker
-        [id]="inputTextCalendarConfig.id"
+        #datePicker
+        [inputId]="inputTextCalendarConfig.id"
         size="small"
         [showIcon]="true"
         dateFormat="dd-mm-yy"
@@ -28,7 +35,13 @@
 
   <!-- BASIC VARIANT -->
   @else {
-    <div class="input-text-calender__basic">
+    <div 
+      class="input-text-calender__basic"
+      (click)="onDatePickerClick($event, datePickerBasic)"
+      (touchstart)="onTouchStart()"
+      (touchmove)="onTouchMove()"
+      (touchend)="onTouchEnd($event, datePickerBasic)"
+    >
       <label
         class="input-text-calender__label"
         [for]="inputTextCalendarConfig.id"
@@ -40,7 +53,8 @@
       </label>
 
       <p-datepicker
-        [id]="inputTextCalendarConfig.id"
+        #datePickerBasic
+        [inputId]="inputTextCalendarConfig.id"
         size="small"
         [showIcon]="true"
         dateFormat="dd-mm-yy"

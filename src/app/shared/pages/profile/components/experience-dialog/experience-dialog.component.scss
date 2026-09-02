@@ -35,18 +35,45 @@
     position: relative;
     /* Space for absolute error */
 
-    ::ng-deep .p-floatlabel {
-      width: 100%;
-
-      label {
-        font-weight: 300;
+    ::ng-deep {
+      .p-floatlabel {
+        width: 100%;
       }
-    }
 
-    ::ng-deep input,
-    ::ng-deep .p-datepicker,
-    ::ng-deep textarea {
-      width: 100%;
+      .p-floatlabel-on:not(input.p-filled) label {
+        font-weight: 300;
+        font-size: var(--font-size-base) !important;
+      }
+
+      .p-floatlabel-on:has(input.p-filled, input:focus, .p-inputwrapper-filled, .p-inputwrapper-focus) label {
+        font-size: smaller !important;
+      }
+
+      .p-datepicker {
+        width: 100%;
+        display: flex;
+        align-items: stretch;
+        cursor: pointer;
+
+        .p-datepicker-input,
+        .p-inputtext {
+          flex: 1;
+          min-width: 0;
+          min-height: 42px;
+          cursor: pointer;
+        }
+
+        .p-datepicker-dropdown,
+        .p-datepicker-trigger {
+          flex-shrink: 0;
+          cursor: pointer;
+        }
+      }
+
+      input,
+      textarea {
+        width: 100%;
+      }
     }
   }
 
