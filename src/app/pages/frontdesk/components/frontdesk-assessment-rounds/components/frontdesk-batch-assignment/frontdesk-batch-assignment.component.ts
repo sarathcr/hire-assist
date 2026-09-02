@@ -47,6 +47,13 @@ const aptitudeTableColumns: TableColumnsData = {
       fieldType: FieldType.inputtext,
     },
     {
+      field: 'scheduledDate',
+      displayName: 'Scheduled Date',
+      sortedColumn: true,
+      hasChip: false,
+      fieldType: FieldType.StringToDateTime,
+    },
+    {
       field: 'reportingTime',
       displayName: 'Reported Time',
       sortedColumn: true,
@@ -121,6 +128,13 @@ const nonAptitudeTableColumns: TableColumnsData = {
       hasChip: false,
       hasTextFilter: true,
       fieldType: FieldType.inputtext,
+    },
+    {
+      field: 'scheduledDate',
+      displayName: 'Scheduled Date',
+      sortedColumn: true,
+      hasChip: false,
+      fieldType: FieldType.StringToDateTime,
     },
     {
       field: 'reportingTime',
@@ -732,6 +746,50 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
         disabledReason: 'Check-in and batch actions will be enabled once the scheduled start time is reached.',
         disabledButtonIndices: [0, 1, 2, 3]
       };
+    }
+
+    // Check if the candidate's interview is scheduled on a future date
+    const rawScheduledDate = (candidate as any).scheduledDate || (candidate as any).date || (candidate as any).interviewDate;
+    if (rawScheduledDate) {
+      let scheduledDate: Date | null = null;
+      if (rawScheduledDate instanceof Date) {
+        scheduledDate = isNaN(rawScheduledDate.getTime()) ? null : rawScheduledDate;
+      } else {
+        const dateStr = String(rawScheduledDate).trim();
+        if (
+          dateStr !== '' &&
+          dateStr !== '0001-01-01T00:00:00' &&
+          !dateStr.startsWith('0001-01-01') &&
+          dateStr.toLowerCase() !== 'not scheduled'
+        ) {
+          // Check if DD/MM/YYYY or DD-MM-YYYY format
+          const ddmmyyyyMatch = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+          if (ddmmyyyyMatch) {
+            const day = parseInt(ddmmyyyyMatch[1], 10);
+            const month = parseInt(ddmmyyyyMatch[2], 10) - 1;
+            const year = parseInt(ddmmyyyyMatch[3], 10);
+            scheduledDate = new Date(year, month, day);
+          } else {
+            const parsed = new Date(dateStr);
+            scheduledDate = isNaN(parsed.getTime()) ? null : parsed;
+          }
+        }
+      }
+
+      if (scheduledDate) {
+        const now = new Date();
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfScheduledDay = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate());
+
+        if (startOfScheduledDay > startOfToday) {
+          return {
+            ...candidate,
+            isActionsDisabled: true,
+            disabledReason: `Interview is scheduled for ${scheduledDate.toLocaleDateString()}. Check-in will be enabled on that day.`,
+            disabledButtonIndices: [0, 1, 2, 3],
+          };
+        }
+      }
     }
 
     const hasReportedTime =

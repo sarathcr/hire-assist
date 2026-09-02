@@ -720,7 +720,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
     const candidatesToCheck =
       this.tableData?.data?.filter((c: any) =>
-        candidateIds.includes(String(c.id)),
+        candidateIds.includes(String(c.id)) ||
+        candidateIds.includes(String(c.candidateId)) ||
+        candidateIds.includes(String(c.interviewId)),
       ) || [];
 
     if (this.isAptitudeRound()) {
@@ -759,6 +761,65 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       }
     }
 
+    const reportedCandidates = candidatesToCheck.filter(
+      (c: any) =>
+        c.isPresent === true ||
+        c.IsPresent === true ||
+        (c.reportingTime &&
+          c.reportingTime !== '0001-01-01T00:00:00' &&
+          !String(c.reportingTime).startsWith('0001-01-01')) ||
+        c.status?.toLowerCase() === 'reported' ||
+        c.status?.toLowerCase() === 'present',
+    );
+
+    if (reportedCandidates.length > 0) {
+      const candidateNamesArray = reportedCandidates.map(
+        (c: any) =>
+          c.name || c.candidateName || c.fullName || 'Unknown Candidate',
+      );
+
+      const modalData = {
+        title: 'Candidate Already Checked-In',
+        message:
+          'The following candidate(s) have already marked attendance (Present) for today. Rescheduling to a different date will reset their attendance status and require Frontdesk to check them in again on the new date. Do you want to proceed?',
+        candidateNames: candidateNamesArray,
+        isChoice: true,
+        cancelButtonText: 'Cancel',
+        acceptButtonText: 'Proceed to Schedule',
+      };
+
+      this.ref = this.dialog.open(DialogComponent, {
+        data: modalData,
+        showHeader: false,
+        styleClass: 'standard-dialog-wrapper',
+        maximizable: false,
+        width: '450px',
+        modal: true,
+        focusOnShow: false,
+        breakpoints: {
+          '960px': '75vw',
+          '640px': '90vw',
+        },
+        templates: {
+          footer: DialogFooterComponent,
+        },
+      });
+
+      this.ref.onClose.subscribe((confirmed) => {
+        if (confirmed) {
+          this.openScheduleDialog(candidateIds, candidatesToCheck);
+        }
+      });
+      return;
+    }
+
+    this.openScheduleDialog(candidateIds, candidatesToCheck);
+  }
+
+  private openScheduleDialog(
+    candidateIds: string[],
+    candidatesToCheck: any[],
+  ): void {
     this.pendingScheduleCandidateIds = candidateIds;
 
     this.ref = this.dialog.open(ScheduleInterviewComponent, {
@@ -1945,6 +2006,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                 item.questionSetName || item.questionSet || 'Unassigned',
               startDateTime: item.startDateTime || item.startDate,
               endDateTime: item.endDateTime || item.endDate,
+              isPresent: item.isPresent ?? item.IsPresent ?? false,
+              reportingTime: item.reportingTime || item.ReportingTime || null,
               visibleButtonIndices: this.getVisibleButtonIndices(item),
               disabledButtonIndices:
                 this.data && !this.data.isActive ? [1] : [],

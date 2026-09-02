@@ -754,7 +754,6 @@
         <app-table
           [tableData]="tableData"
           [columnsData]="columns"
-          [hasView]="true"
           [hasRowEdit]="false"
           [hasSearch]="true"
           [parentLoader]="isLoading"
@@ -762,7 +761,6 @@
           [selectionDisabled]="data && !data.isActive"
           (selectedIds)="getSelectedCandidatesOnTable($event)"
           (delete)="deleteCandidate($event)"
-          (view)="onView($event)"
           (pageChangeAndSort)="onTablePayloadChange($event)"
           (unlock)="unlockCandidate($event)"
           (history)="viewHistory($event)"
