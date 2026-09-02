@@ -194,6 +194,8 @@
       height: calc(100% - 66px);
       padding: 0;
       overflow: hidden;
+      touch-action: pan-y !important;
+      overscroll-behavior: contain !important;
     }
 
     &__header {
@@ -205,6 +207,9 @@
       min-height: 0;
       overflow-y: auto;
       padding: var(--spacing-15);
+      touch-action: pan-y !important;
+      overscroll-behavior: contain !important;
+      -webkit-overflow-scrolling: touch !important;
     }
 
     .sidebar__nav-main {

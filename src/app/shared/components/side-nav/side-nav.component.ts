@@ -8,6 +8,7 @@ import {
   inject,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   SimpleChanges,
 } from '@angular/core';
@@ -34,7 +35,7 @@ import { SidebarCollapseService } from '../../services/sidebar-collapse.service'
     '[class.sidebar-host-mobile-open]': 'showMenu() && isMobileView()'
   }
 })
-export class SideNavComponent implements OnChanges, OnInit {
+export class SideNavComponent implements OnChanges, OnInit, OnDestroy {
   public items: MenuItem[] | undefined;
   public toggleMenu = inject(ToggleMenuService);
   public showMenu = computed(() => this.toggleMenu.getToggleMenu());
@@ -64,10 +65,28 @@ export class SideNavComponent implements OnChanges, OnInit {
         this.cdr.detectChanges();
       }, 0);
     });
+
+    // Ensure mobile-sidebar-open class is in sync on body
+    effect(() => {
+      const isOpen = this.showMenu() && this.isMobileView();
+      if (typeof document !== 'undefined') {
+        if (isOpen) {
+          document.body.classList.add('mobile-sidebar-open');
+        } else {
+          document.body.classList.remove('mobile-sidebar-open');
+        }
+      }
+    });
   }
 
   ngOnInit(): void {
     this.checkMobileView();
+  }
+
+  ngOnDestroy(): void {
+    if (typeof document !== 'undefined') {
+      document.body.classList.remove('mobile-sidebar-open');
+    }
   }
 
   public isMobileView(): boolean {
