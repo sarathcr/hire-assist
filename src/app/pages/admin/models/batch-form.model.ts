@@ -12,7 +12,7 @@ export class BatchForm extends FormEntity {
         Validators.required,
         Validators.pattern('^[a-zA-Z].*'),
         Validators.minLength(3),
-        Validators.maxLength(50),
+        Validators.maxLength(25),
         BatchForm.noExtraSpacesValidator,
       ],
       description: [Validators.maxLength(150)],
