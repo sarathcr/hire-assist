@@ -28,6 +28,7 @@ import { TableComponent } from '../../../../../../../../shared/components/table/
 import { HistoryDrawerComponent } from '../../../../../../../../shared/components/history-drawer/history-drawer.component';
 import { ASSESSMENT_URL } from '../../../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
+import { extractErrorMessage } from '../../../../../../../../shared/utilities/error.utility';
 import { DialogData } from '../../../../../../../../shared/models/dialog.models';
 import {
   PaginatedData,
@@ -1326,12 +1327,12 @@ export class SelectQuesionsetStepComponent
           });
           this.cdr.markForCheck();
         },
-        error: () => {
+        error: (err: any) => {
           this.isAssigningInstruction.set(roundId, false);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: 'Failed to assign test instructions to round.',
+            detail: extractErrorMessage(err, 'Failed to assign test instructions to round.'),
           });
           this.cdr.markForCheck();
         },
@@ -1343,7 +1344,7 @@ export class SelectQuesionsetStepComponent
     if (!instructionId) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Warning',
+        summary: 'No Instructions',
         detail: 'No instruction selected for this round.',
       });
       return;
@@ -1405,11 +1406,11 @@ export class SelectQuesionsetStepComponent
               this.onRoundInstructionChange(roundId, created.id);
             });
           },
-          error: () => {
+          error: (err: any) => {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Failed to save new instruction version.',
+              detail: extractErrorMessage(err, 'Failed to save new instruction version.'),
             });
           },
         });
@@ -1425,11 +1426,11 @@ export class SelectQuesionsetStepComponent
               this.onRoundInstructionChange(roundId, created.id);
             });
           },
-          error: () => {
+          error: (err: any) => {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Failed to create instruction.',
+              detail: extractErrorMessage(err, 'Failed to create instruction.'),
             });
           },
         });
@@ -1443,11 +1444,11 @@ export class SelectQuesionsetStepComponent
             });
             this.loadInstructions();
           },
-          error: () => {
+          error: (err: any) => {
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
-              detail: 'Failed to update instruction.',
+              detail: extractErrorMessage(err, 'Failed to update instruction.'),
             });
           },
         });

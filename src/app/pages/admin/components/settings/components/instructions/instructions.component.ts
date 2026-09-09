@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, OnInit, inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  ChangeDetectorRef,
+  OnDestroy,
+} from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -30,6 +36,7 @@ import {
   InstructionDialogComponent,
   InstructionDialogData,
 } from './instruction-dialog/instruction-dialog.component';
+import { extractErrorMessage } from '../../../../../../shared/utilities/error.utility';
 
 export interface InstructionTableRow {
   id: string;
@@ -106,7 +113,13 @@ const tableColumns: TableColumnsData = {
       field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      buttonIcons: ['pi pi-eye', 'pi pi-copy', 'pi pi-pencil', 'pi pi-trash', 'pi pi-history'],
+      buttonIcons: [
+        'pi pi-eye',
+        'pi pi-copy',
+        'pi pi-pencil',
+        'pi pi-trash',
+        'pi pi-history',
+      ],
       buttonLabels: ['Preview', 'New Version', 'Edit', 'Delete', 'History'],
       buttonTooltips: ['Preview', 'New Version', 'Edit', 'Delete', 'History'],
       sortedColumn: false,
@@ -114,7 +127,15 @@ const tableColumns: TableColumnsData = {
       width: 1,
     },
   ],
-  displayedColumns: ['title', 'description', 'version', 'isDefault', 'status', 'createdAt', 'actions'],
+  displayedColumns: [
+    'title',
+    'description',
+    'version',
+    'isDefault',
+    'status',
+    'createdAt',
+    'actions',
+  ],
 };
 
 @Component({
@@ -191,7 +212,7 @@ export class InstructionsComponent implements OnInit, OnDestroy {
         finalize(() => {
           this.isLoading = false;
           this.cdr.markForCheck();
-        })
+        }),
       )
       .subscribe({
         next: (res: PaginatedData<AptitudeInstructionSummary>) => {
@@ -209,7 +230,9 @@ export class InstructionsComponent implements OnInit, OnDestroy {
       });
   }
 
-  private formatData(res: PaginatedData<AptitudeInstructionSummary>): PaginatedData<InstructionTableRow> {
+  private formatData(
+    res: PaginatedData<AptitudeInstructionSummary>,
+  ): PaginatedData<InstructionTableRow> {
     if (!res || !res.data) {
       return {
         pageNumber: res?.pageNumber || 1,
@@ -229,7 +252,9 @@ export class InstructionsComponent implements OnInit, OnDestroy {
         rawId: item.id,
         title: item.title,
         description: item.description || '',
-        version: item.version?.startsWith('v') ? item.version : `v${item.version}`,
+        version: item.version?.startsWith('v')
+          ? item.version
+          : `v${item.version}`,
         isDefault: item.isDefault ? 'Default' : '-',
         status: (item as any).status || (item.isActive ? 'Active' : 'Inactive'),
         createdAt: item.createdAt,
@@ -265,7 +290,9 @@ export class InstructionsComponent implements OnInit, OnDestroy {
   public onDelete(itemOrRow: any): void {
     const rawItem = itemOrRow?.rawItem || itemOrRow;
     const id = rawItem.id || Number(itemOrRow);
-    const title = rawItem.title ? `"${rawItem.title}"` : 'this instruction template';
+    const title = rawItem.title
+      ? `"${rawItem.title}"`
+      : 'this instruction template';
 
     const modalData: DialogData = {
       message: `Are you sure you want to delete ${title}?`,
@@ -306,13 +333,13 @@ export class InstructionsComponent implements OnInit, OnDestroy {
           error: (err: any) => {
             this.isLoading = false;
             const backendMsg =
+              err?.error?.errorValue ||
+              err?.error?.type ||
               err?.error?.message ||
-              err?.error?.detail ||
-              err?.error?.title ||
-              'Failed to delete instruction.';
+              extractErrorMessage(err, 'Failed to delete instruction.');
             this.messageService.add({
               severity: 'error',
-              summary: 'Delete Blocked',
+              summary: 'Error',
               detail: backendMsg,
             });
             this.cdr.markForCheck();
@@ -329,11 +356,17 @@ export class InstructionsComponent implements OnInit, OnDestroy {
     } else if (typeof itemOrId === 'string') {
       id = parseInt(itemOrId, 10);
     } else if (itemOrId && typeof itemOrId === 'object') {
-      id = itemOrId.rawItem?.id || itemOrId.rawId || (itemOrId.id ? Number(itemOrId.id) : null);
+      id =
+        itemOrId.rawItem?.id ||
+        itemOrId.rawId ||
+        (itemOrId.id ? Number(itemOrId.id) : null);
     }
 
     if (!id || isNaN(id)) {
-      console.warn('Could not determine instruction ID for history drawer:', itemOrId);
+      console.warn(
+        'Could not determine instruction ID for history drawer:',
+        itemOrId,
+      );
       return;
     }
 
@@ -349,7 +382,12 @@ export class InstructionsComponent implements OnInit, OnDestroy {
   }
 
   public loadHistory(): void {
-    if (this.historyLoading || !this.hasMoreHistory || !this.selectedInstructionId) return;
+    if (
+      this.historyLoading ||
+      !this.hasMoreHistory ||
+      !this.selectedInstructionId
+    )
+      return;
 
     this.historyLoading = true;
     this.cdr.detectChanges();
@@ -428,7 +466,8 @@ export class InstructionsComponent implements OnInit, OnDestroy {
       return item.details || '';
     }
     if (item.field) {
-      const formatVal = (v: any) => (v === '' || v === null || v === undefined ? 'null' : v);
+      const formatVal = (v: any) =>
+        v === '' || v === null || v === undefined ? 'null' : v;
       return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
     }
     return item.details || 'Instruction was modified';
@@ -462,7 +501,10 @@ export class InstructionsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private openDialog(mode: 'create' | 'edit' | 'clone' | 'preview', instructionId?: number): void {
+  private openDialog(
+    mode: 'create' | 'edit' | 'clone' | 'preview',
+    instructionId?: number,
+  ): void {
     const dialogData: InstructionDialogData = {
       mode,
       instructionId,
@@ -485,7 +527,13 @@ export class InstructionsComponent implements OnInit, OnDestroy {
       modal: true,
       focusOnShow: false,
       styleClass: 'instruction-builder-dialog',
-      contentStyle: { height: '100%', overflow: 'hidden', padding: '0', display: 'flex', 'flex-direction': 'column' },
+      contentStyle: {
+        height: '100%',
+        overflow: 'hidden',
+        padding: '0',
+        display: 'flex',
+        'flex-direction': 'column',
+      },
       breakpoints: {
         '1400px': '95vw',
         '960px': '98vw',
@@ -520,17 +568,25 @@ export class InstructionsComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isLoading = false;
-        const backendMsg = err?.error?.message || err?.error?.detail || 'Failed to create aptitude test instruction.';
+        const backendMsg =
+          err?.error?.errorValue ||
+          err?.error?.type ||
+          err?.error?.message ||
+          extractErrorMessage(err, 'Failed to create aptitude test instruction.');
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
           detail: backendMsg,
         });
+        this.cdr.markForCheck();
       },
     });
   }
 
-  private updateInstruction(id: number, payload: UpdateAptitudeInstructionRequest): void {
+  private updateInstruction(
+    id: number,
+    payload: UpdateAptitudeInstructionRequest,
+  ): void {
     this.isLoading = true;
     this.instructionService.updateInstruction(id, payload).subscribe({
       next: () => {
@@ -543,12 +599,17 @@ export class InstructionsComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isLoading = false;
-        const backendMsg = err?.error?.message || err?.error?.detail || 'Failed to update aptitude test instruction.';
+        const backendMsg =
+          err?.error?.errorValue ||
+          err?.error?.type ||
+          err?.error?.message ||
+          extractErrorMessage(err, 'Failed to update aptitude test instruction.');
         this.messageService.add({
           severity: 'error',
-          summary: 'Update Failed',
+          summary: 'Error',
           detail: backendMsg,
         });
+        this.cdr.markForCheck();
       },
     });
   }
@@ -566,13 +627,22 @@ export class InstructionsComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isLoading = false;
-        const backendMsg = err?.error?.message || err?.error?.detail || 'Failed to save new version.';
+        const backendMsg =
+          err?.error?.errorValue ||
+          err?.error?.type ||
+          err?.error?.message ||
+          extractErrorMessage(err, 'Failed to save new version.');
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
           detail: backendMsg,
         });
+        this.cdr.markForCheck();
       },
     });
+  }
+
+  private extractErrorMessage(err: any, fallback: string): string {
+    return extractErrorMessage(err, fallback);
   }
 }

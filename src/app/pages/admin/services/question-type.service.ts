@@ -39,4 +39,8 @@ export class QuestionTypeService extends ApiService<any> {
   public getQuestionTypeById(id: number): Observable<any> {
     return this.httpClient.get(`${this.getResourceUrl()}/QuestionType/${id}`);
   }
+
+  public getQuestionTypeHistory(payload: any): Observable<any> {
+    return this.httpClient.post(`${this.getResourceUrl()}/QuestionType/history`, payload);
+  }
 }

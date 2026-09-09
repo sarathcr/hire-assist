@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { DynamicDialogRef, DialogService } from 'primeng/dynamicdialog';
@@ -29,6 +29,7 @@ import {
 import { ASSESSMENT_URL } from '../../../../../../shared/constants/api';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
+import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 
 import { QuestionTypeForm } from '../../../../models/question-type-form.model';
 import { QuestionType } from '../../../../models/question-type.model';
@@ -57,9 +58,9 @@ const tableColumns: TableColumnsData = {
       field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      buttonIcons: ['pi pi-pencil', 'pi pi-trash'],
-      buttonLabels: ['Edit', 'Delete'],
-      buttonTooltips: ['Edit', 'Delete'],
+      buttonIcons: ['pi pi-pencil', 'pi pi-trash', 'pi pi-history'],
+      buttonLabels: ['Edit', 'Delete', 'History'],
+      buttonTooltips: ['Edit', 'Delete', 'History'],
       sortedColumn: false,
       hasChip: false,
     },
@@ -69,7 +70,7 @@ const tableColumns: TableColumnsData = {
 
 @Component({
   selector: 'app-question-types',
-  imports: [TableComponent, ButtonComponent],
+  imports: [TableComponent, ButtonComponent, HistoryDrawerComponent],
   providers: [TableDataSourceService],
   templateUrl: './question-types.component.html',
   styleUrl: './question-types.component.scss',
@@ -82,6 +83,13 @@ export class QuestionTypesComponent implements OnInit, OnDestroy {
   public questionTypeFormData = new QuestionTypeForm();
   public configMap!: ConfigMap;
   public isLoading = true;
+  public visible = false;
+  public events: any[] = [];
+  public historyLoading = false;
+  public hasMoreHistory = true;
+  public historyPageNumber = 1;
+  public totalHistoryRecords = 0;
+  public selectedQuestionTypeId: number | null = null;
   private currentPayload: PaginatedPayload = new PaginatedPayload();
   private previousFilterMap: any = {};
   private ref: DynamicDialogRef | undefined;
@@ -93,6 +101,7 @@ export class QuestionTypesComponent implements OnInit, OnDestroy {
     private storeService: StoreService,
     private dataSourceService: TableDataSourceService<any>,
     private readonly collectionService: CollectionService,
+    private cdr: ChangeDetectorRef,
   ) {
     this.fGroup = buildFormGroup(this.questionTypeFormData);
   }
@@ -227,6 +236,10 @@ export class QuestionTypesComponent implements OnInit, OnDestroy {
         break;
       case 'Delete':
         this.deleteQuestionType(event.id);
+        break;
+      case 'History':
+      case 'View History':
+        this.viewHistory(event);
         break;
       default:
         break;
@@ -390,5 +403,120 @@ export class QuestionTypesComponent implements OnInit, OnDestroy {
     };
 
     this.questionTypeService.deleteQuestionType(id).subscribe({ next, error });
+  }
+
+  public viewHistory(itemOrId: any): void {
+    let id: number | null = null;
+    if (typeof itemOrId === 'number') {
+      id = itemOrId;
+    } else if (typeof itemOrId === 'string') {
+      id = parseInt(itemOrId, 10);
+    } else if (itemOrId && typeof itemOrId === 'object') {
+      id = itemOrId.id ? Number(itemOrId.id) : null;
+    }
+
+    if (!id || isNaN(id)) {
+      console.warn('Could not determine question type ID for history drawer:', itemOrId);
+      return;
+    }
+
+    this.selectedQuestionTypeId = id;
+    this.events = [];
+    this.historyPageNumber = 1;
+    this.hasMoreHistory = true;
+    setTimeout(() => {
+      this.visible = true;
+      this.cdr.detectChanges();
+      this.loadHistory();
+    }, 0);
+  }
+
+  public loadHistory(): void {
+    if (this.historyLoading || !this.hasMoreHistory || !this.selectedQuestionTypeId) {
+      return;
+    }
+
+    this.historyLoading = true;
+    this.cdr.detectChanges();
+
+    const payload = {
+      pagination: {
+        pageNumber: this.historyPageNumber,
+        pageSize: 10,
+      },
+      filterMap: {
+        questionTypeId: `${this.selectedQuestionTypeId}`,
+      },
+      multiSortedColumns: [
+        {
+          active: 'ChangedAt',
+          direction: 'desc',
+        },
+      ],
+    };
+
+    this.questionTypeService.getQuestionTypeHistory(payload).subscribe({
+      next: (res: any) => {
+        const list = res?.data || [];
+        const newEvents = list.map((item: any) => {
+          let dateVal: Date | string = '--';
+          if (item.changedAt) {
+            const rawDate = String(item.changedAt);
+            const isoString = rawDate.endsWith('Z') ? rawDate : `${rawDate}Z`;
+            const parsed = new Date(isoString);
+            dateVal = isNaN(parsed.getTime()) ? rawDate : parsed;
+          }
+
+          return {
+            status: item.action || 'Updated',
+            user: item.changedByName || 'System',
+            date: dateVal,
+            icon: this.getHistoryIcon(item.action),
+            description: this.getHistoryDescription(item),
+          };
+        });
+
+        this.events = [...this.events, ...newEvents];
+        this.totalHistoryRecords = res?.totalRecords ?? this.events.length;
+        this.hasMoreHistory = this.events.length < this.totalHistoryRecords;
+        this.historyPageNumber++;
+        this.historyLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.historyLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Failed to load question type history.',
+        });
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private getHistoryIcon(action: string): string {
+    switch (action) {
+      case 'Created':
+        return 'pi pi-plus';
+      case 'Updated':
+        return 'pi pi-pencil';
+      case 'Deleted':
+        return 'pi pi-trash';
+      default:
+        return 'pi pi-info-circle';
+    }
+  }
+
+  private getHistoryDescription(item: any): string {
+    if (item.action === 'Created' || item.action === 'Deleted') {
+      return item.details || '';
+    }
+    if (item.field) {
+      const formatVal = (v: any) =>
+        v === '' || v === null || v === undefined ? 'null' : v;
+      return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
+    }
+    return item.details || 'Question type was modified';
   }
 }

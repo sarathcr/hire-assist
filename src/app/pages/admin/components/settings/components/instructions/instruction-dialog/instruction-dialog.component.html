@@ -8,19 +8,29 @@
   } @else {
     <!-- TOP META HEADER (Sticky at Top) -->
     <div class="instruction-dialog__top-bar">
-      <div class="top-bar-row top-bar-row--meta">
+      <!-- Row 1: Primary Controls (Title + Studio Layout) -->
+      <div class="top-bar-row top-bar-row--primary">
         <!-- Title -->
         <div class="meta-field meta-field--title">
-          <label for="inst-title">Instruction Title <span class="text-red-500">*</span></label>
+          <div class="desc-header-row">
+            <label for="inst-title">Instruction Title <span class="text-red-500">*</span></label>
+            <span
+              class="char-counter"
+              [class.limit-near]="(title || '').length >= 140 && (title || '').length <= 150"
+              [class.limit-reached]="(title || '').length > 150"
+            >
+              {{ (title || '').length }} / 150
+            </span>
+          </div>
           <input
             id="inst-title"
             type="text"
             pInputText
             [(ngModel)]="title"
             (blur)="titleTouched = true"
+            (input)="onTitleInput()"
             [class.ng-invalid]="titleTouched && !isTitleValid"
             [class.ng-dirty]="titleTouched"
-            maxlength="150"
             placeholder="e.g. Standard Aptitude Proctoring Rules"
             class="w-full"
           />
@@ -29,51 +39,16 @@
           }
         </div>
 
-        <!-- Version -->
-        <div class="meta-field meta-field--version">
-          <label for="inst-version">Version Tag <span class="text-red-500">*</span></label>
-          <input
-            id="inst-version"
-            type="text"
-            pInputText
-            [(ngModel)]="version"
-            placeholder="e.g. 1.0"
-            class="w-full"
-          />
-        </div>
-
-        <!-- Default Checkbox -->
-        <div class="meta-field meta-field--checkbox">
-          <label class="checkbox-container">
-            <p-checkbox
-              [(ngModel)]="isDefault"
-              [binary]="true"
-              inputId="inst-default"
-            ></p-checkbox>
-            <span>Set as Default for Rounds</span>
-          </label>
-        </div>
-
-        <!-- Active Checkbox -->
-        <div class="meta-field meta-field--checkbox">
-          <label class="checkbox-container">
-            <p-checkbox
-              [(ngModel)]="isActive"
-              [binary]="true"
-              inputId="inst-active"
-            ></p-checkbox>
-            <span>Active Template</span>
-          </label>
-        </div>
-
         <!-- View Mode Switcher -->
         @if (mode !== 'preview') {
           <div class="meta-field meta-field--viewmode">
-            <label>Studio Layout</label>
+            <div class="desc-header-row">
+              <label>Studio Layout</label>
+            </div>
             <div class="viewmode-toggle">
               <button
                 type="button"
-                class="viewmode-btn"
+                class="viewmode-btn viewmode-btn--split"
                 [class.active]="viewMode === 'split'"
                 (click)="setViewMode('split')"
                 pTooltip="Split Studio: Canvas + Live Preview"
@@ -109,28 +84,106 @@
         }
       </div>
 
-      <!-- Description -->
-      <div class="top-bar-row top-bar-row--desc">
-        <div class="meta-field w-full">
-          <div class="flex justify-content-between align-items-center mb-1">
-            <label for="inst-desc">Candidate Overview / Intro Note</label>
-            <span class="text-xs text-500">{{ (description || '').length }}/500</span>
+      <!-- Mobile Settings Disclosure Toggle Button (Only on Mobile) -->
+      <div class="mobile-settings-bar">
+        <button
+          type="button"
+          class="mobile-settings-toggle-btn"
+          (click)="mobileSettingsOpen = !mobileSettingsOpen"
+        >
+          <span class="toggle-text">
+            <i class="pi pi-sliders-h"></i>
+            <span>Template Settings</span>
+            <span class="settings-pill">v{{ version || '1.0' }}</span>
+            <span class="settings-pill" [class.active]="isActive">{{ isActive ? 'Active' : 'Inactive' }}</span>
+            @if (isDefault) {
+              <span class="settings-pill settings-pill--default">Default</span>
+            }
+          </span>
+          <i [class]="mobileSettingsOpen ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
+        </button>
+      </div>
+
+      <!-- Secondary Metadata (Version + Checkboxes + Intro Note) -->
+      <div class="top-bar-collapsible" [class.open-mobile]="mobileSettingsOpen">
+        <div class="top-bar-row top-bar-row--meta">
+          <!-- Version -->
+          <div class="meta-field meta-field--version">
+            <div class="desc-header-row">
+              <label for="inst-version">Version Tag <span class="text-red-500">*</span></label>
+            </div>
+            <input
+              id="inst-version"
+              type="text"
+              pInputText
+              [(ngModel)]="version"
+              (blur)="versionTouched = true"
+              (input)="onVersionInput()"
+              [class.ng-invalid]="versionTouched && !isVersionValid"
+              [class.ng-dirty]="versionTouched"
+              placeholder="e.g. 1.0"
+              class="w-full"
+            />
+            @if (versionTouched && !isVersionValid) {
+              <small class="p-error text-red-500 block mt-1">{{ versionErrorMessage }}</small>
+            }
           </div>
-          <input
-            id="inst-desc"
-            type="text"
-            pInputText
-            [(ngModel)]="description"
-            (blur)="descriptionTouched = true"
-            [class.ng-invalid]="descriptionTouched && !isDescriptionValid"
-            [class.ng-dirty]="descriptionTouched"
-            maxlength="500"
-            placeholder="e.g. Please read the following proctoring rules carefully before starting your assessment."
-            class="w-full"
-          />
-          @if (descriptionTouched && !isDescriptionValid) {
-            <small class="p-error text-red-500 block mt-1">{{ descriptionErrorMessage }}</small>
-          }
+
+          <!-- Checkboxes Group -->
+          <div class="meta-field meta-field--checkboxes">
+            <div class="desc-header-row desc-header-row--spacer">
+              <span>&nbsp;</span>
+            </div>
+            <div class="checkboxes-row">
+              <label class="checkbox-container">
+                <p-checkbox
+                  [(ngModel)]="isDefault"
+                  [binary]="true"
+                  inputId="inst-default"
+                ></p-checkbox>
+                <span>Set as Default for Rounds</span>
+              </label>
+              <label class="checkbox-container">
+                <p-checkbox
+                  [(ngModel)]="isActive"
+                  [binary]="true"
+                  inputId="inst-active"
+                ></p-checkbox>
+                <span>Active Template</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="top-bar-row top-bar-row--desc">
+          <div class="meta-field w-full">
+            <div class="desc-header-row">
+              <label for="inst-desc">Candidate Overview / Intro Note</label>
+              <span
+                class="char-counter"
+                [class.limit-near]="(description || '').length >= 450 && (description || '').length <= 500"
+                [class.limit-reached]="(description || '').length > 500"
+              >
+                {{ (description || '').length }} / 500
+              </span>
+            </div>
+            <input
+              id="inst-desc"
+              type="text"
+              pInputText
+              [(ngModel)]="description"
+              (blur)="descriptionTouched = true"
+              [class.ng-invalid]="descriptionTouched && !isDescriptionValid"
+              [class.ng-dirty]="descriptionTouched"
+              maxlength="500"
+              placeholder="e.g. Please read the following proctoring rules carefully before starting your assessment."
+              class="w-full"
+            />
+            @if (descriptionTouched && !isDescriptionValid) {
+              <small class="p-error text-red-500 block mt-1">{{ descriptionErrorMessage }}</small>
+            }
+          </div>
         </div>
       </div>
     </div>
@@ -233,8 +286,38 @@
                         optionLabel="label"
                         optionValue="value"
                         appendTo="body"
+                        panelStyleClass="instruction-theme-select-panel"
                         class="w-full"
-                      ></p-select>
+                      >
+                        <ng-template #selectedItem let-selectedOption>
+                          <div class="theme-select-value">
+                            <span
+                              class="theme-color-dot"
+                              [style.backgroundColor]="getSeverityOption(selectedOption || section.severity).color"
+                            ></span>
+                            <span class="theme-label-text">
+                              {{ getSeverityOption(selectedOption || section.severity).label }}
+                            </span>
+                          </div>
+                        </ng-template>
+                        <ng-template #item let-itemOption>
+                          <div class="theme-option-row">
+                            <span
+                              class="theme-color-dot"
+                              [style.backgroundColor]="itemOption.color"
+                            ></span>
+                            <span class="theme-option-name">{{ itemOption.label }}</span>
+                            <span
+                              class="theme-option-tag"
+                              [style.color]="itemOption.color"
+                              [style.backgroundColor]="itemOption.bg"
+                              [style.borderColor]="itemOption.border"
+                            >
+                              {{ itemOption.colorName }}
+                            </span>
+                          </div>
+                        </ng-template>
+                      </p-select>
                     </div>
 
                     <!-- Icon -->
@@ -246,18 +329,25 @@
                         optionLabel="label"
                         optionValue="value"
                         appendTo="body"
+                        panelStyleClass="instruction-icon-select-panel"
                         class="w-full"
                       >
                         <ng-template #selectedItem let-selectedOption>
-                          <div class="flex align-items-center gap-2">
-                            <i [class]="selectedOption.value"></i>
-                            <span class="text-xs">{{ selectedOption.label }}</span>
+                          <div class="icon-select-value">
+                            <div class="icon-preview-glyph">
+                              <i [class]="getIconOption(selectedOption || section.icon).value"></i>
+                            </div>
+                            <span class="icon-label-text">
+                              {{ getIconOption(selectedOption || section.icon).shortLabel }}
+                            </span>
                           </div>
                         </ng-template>
                         <ng-template #item let-itemOption>
-                          <div class="flex align-items-center gap-2">
-                            <i [class]="itemOption.value"></i>
-                            <span class="text-xs">{{ itemOption.label }}</span>
+                          <div class="icon-option-row">
+                            <div class="icon-glyph-badge">
+                              <i [class]="itemOption.value"></i>
+                            </div>
+                            <span class="icon-option-name">{{ itemOption.label }}</span>
                           </div>
                         </ng-template>
                       </p-select>
@@ -449,23 +539,28 @@
     <footer class="instruction-dialog__footer">
       <div class="footer-left">
         @if (mode !== 'preview') {
-          <app-button
-            [buttonLabel]="'Cancel'"
-            [buttonVariant]="'outlined'"
-            (btnClick)="onClose()"
-          ></app-button>
+          <div class="dialog-footer__btn-wrapper">
+            <app-button
+              buttonLabel="Cancel"
+              [buttonVariant]="'outlined'"
+              (btnClick)="onClose()"
+            ></app-button>
+          </div>
         }
       </div>
 
       <div class="footer-right">
         @if (mode === 'preview') {
-          <app-button
-            [buttonLabel]="'Close Preview'"
-            (btnClick)="onClose()"
-          ></app-button>
+          <div class="dialog-footer__btn-wrapper">
+            <app-button
+              buttonLabel="Close Preview"
+              [buttonVariant]="'outlined'"
+              (btnClick)="onClose()"
+            ></app-button>
+          </div>
         } @else if (mode === 'clone') {
           <p-button
-            label="Save as New Version"
+            [label]="isMobileView ? 'New Version' : 'Save as New Version'"
             icon="pi pi-copy"
             severity="help"
             [outlined]="true"
@@ -478,7 +573,7 @@
           @if (hasCompletedRecruitmentReferences) {
             @if (hasContentOrTitleChanges()) {
               <p-button
-                label="Save as New Version"
+                [label]="isMobileView ? 'New Version' : 'Save as New Version'"
                 icon="pi pi-copy"
                 severity="primary"
                 [disabled]="!isFormValid || isSubmitting"
@@ -488,7 +583,7 @@
               ></p-button>
             } @else {
               <p-button
-                label="Save Changes"
+                [label]="isMobileView ? 'Save' : 'Save Changes'"
                 icon="pi pi-check"
                 severity="primary"
                 [disabled]="!hasChanges() || isSubmitting"
@@ -500,7 +595,7 @@
           } @else {
             @if (hasChanges()) {
               <p-button
-                label="Save as New Version"
+                [label]="isMobileView ? 'New Version' : 'Save as New Version'"
                 icon="pi pi-copy"
                 severity="help"
                 [outlined]="true"
@@ -512,7 +607,7 @@
             }
 
             <p-button
-              label="Save Changes"
+              [label]="isMobileView ? 'Save' : 'Save Changes'"
               icon="pi pi-check"
               severity="primary"
               [disabled]="!isFormValid || isSubmitting"
@@ -521,7 +616,7 @@
           }
         } @else {
           <p-button
-            label="Create Instruction"
+            [label]="isMobileView ? 'Create' : 'Create Instruction'"
             icon="pi pi-check"
             severity="primary"
             [disabled]="!isFormValid || isSubmitting"

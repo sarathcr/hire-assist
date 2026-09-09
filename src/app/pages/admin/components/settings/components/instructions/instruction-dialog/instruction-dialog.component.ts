@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, HostListener, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   CdkDragDrop,
@@ -74,7 +74,10 @@ export class InstructionDialogComponent implements OnInit {
 
   // Validation flags
   public titleTouched = false;
+  public versionTouched = false;
   public descriptionTouched = false;
+  public mobileSettingsOpen = false;
+  public isMobileView = false;
   public hasCompletedRecruitmentReferences = false;
 
   private initialSnapshot = '';
@@ -140,30 +143,57 @@ export class InstructionDialogComponent implements OnInit {
 
   // Options
   public severityOptions = [
-    { label: 'Critical / Danger (Red)', value: 'danger' },
-    { label: 'Info / Navigation (Blue)', value: 'info' },
-    { label: 'Success / Support (Green)', value: 'success' },
-    { label: 'Warning / Attention (Orange)', value: 'warn' },
+    { label: 'Critical', colorName: 'Red', value: 'danger', color: '#ef4444', bg: '#fef2f2', border: '#fca5a5' },
+    { label: 'Info', colorName: 'Blue', value: 'info', color: '#3b82f6', bg: '#eff6ff', border: '#93c5fd' },
+    { label: 'Success', colorName: 'Green', value: 'success', color: '#10b981', bg: '#ecfdf5', border: '#6ee7b7' },
+    { label: 'Warning', colorName: 'Orange', value: 'warn', color: '#f59e0b', bg: '#fffbeb', border: '#fcd34d' },
   ];
 
   public iconOptions = [
-    { label: 'Warning / Alert', value: 'pi pi-exclamation-triangle' },
-    { label: 'Compass / Navigation', value: 'pi pi-compass' },
-    { label: 'Check Circle / Success', value: 'pi pi-check-circle' },
-    { label: 'Info Circle', value: 'pi pi-info-circle' },
-    { label: 'Shield / Proctoring', value: 'pi pi-shield' },
-    { label: 'Clock / Time', value: 'pi pi-clock' },
-    { label: 'Book / Rules', value: 'pi pi-book' },
-    { label: 'Flag / Notice', value: 'pi pi-flag' },
-    { label: 'Question Circle', value: 'pi pi-question-circle' },
+    { label: 'Warning / Alert', shortLabel: 'Warning', value: 'pi pi-exclamation-triangle' },
+    { label: 'Compass / Nav', shortLabel: 'Compass', value: 'pi pi-compass' },
+    { label: 'Check / Success', shortLabel: 'Success', value: 'pi pi-check-circle' },
+    { label: 'Info Circle', shortLabel: 'Info', value: 'pi pi-info-circle' },
+    { label: 'Shield / Proctor', shortLabel: 'Shield', value: 'pi pi-shield' },
+    { label: 'Clock / Time', shortLabel: 'Clock', value: 'pi pi-clock' },
+    { label: 'Book / Rules', shortLabel: 'Rules', value: 'pi pi-book' },
+    { label: 'Flag / Notice', shortLabel: 'Notice', value: 'pi pi-flag' },
+    { label: 'Help / Question', shortLabel: 'Help', value: 'pi pi-question-circle' },
   ];
 
+  public getSeverityOption(itemOrVal?: any) {
+    const val = typeof itemOrVal === 'string' ? itemOrVal : itemOrVal?.value;
+    return this.severityOptions.find((o) => o.value === val) || this.severityOptions[1];
+  }
+
+  public getIconOption(itemOrVal?: any) {
+    const val = typeof itemOrVal === 'string' ? itemOrVal : itemOrVal?.value;
+    return this.iconOptions.find((o) => o.value === val) || this.iconOptions[3];
+  }
+
+  @HostListener('window:resize')
+  public onWindowResize(): void {
+    if (typeof window !== 'undefined') {
+      const mobile = window.innerWidth <= 768;
+      if (mobile && !this.isMobileView && this.viewMode === 'split') {
+        this.viewMode = 'builder';
+      }
+      this.isMobileView = mobile;
+    }
+  }
+
   ngOnInit(): void {
+    if (typeof window !== 'undefined') {
+      this.isMobileView = window.innerWidth <= 768;
+    }
+
     const data = this.config.data as InstructionDialogData;
     if (data) {
       this.mode = data.mode || 'create';
       if (this.mode === 'preview') {
         this.viewMode = 'preview';
+      } else if (this.isMobileView) {
+        this.viewMode = 'builder';
       } else {
         this.viewMode = 'split';
       }
@@ -271,13 +301,16 @@ export class InstructionDialogComponent implements OnInit {
   }
 
   private computeNextVersion(v: string): string {
-    const parts = (v || '1.0').split('.');
-    if (parts.length === 2 && !isNaN(Number(parts[1]))) {
-      return `${parts[0]}.${Number(parts[1]) + 1}`;
-    } else if (parts.length === 1 && !isNaN(Number(parts[0]))) {
+    const clean = (v || '1.0').trim();
+    const parts = clean.split('.');
+    if (parts.length >= 2 && !isNaN(Number(parts[parts.length - 1]))) {
+      const last = Number(parts[parts.length - 1]);
+      parts[parts.length - 1] = String(last + 1);
+      return parts.join('.');
+    } else if (parts.length === 1 && !isNaN(Number(parts[0].replace(/^v/i, '')))) {
       return `${parts[0]}.1`;
     }
-    return `${v || '1.0'}_new`;
+    return '1.1';
   }
 
   private takeSnapshot(): void {
@@ -317,16 +350,46 @@ export class InstructionDialogComponent implements OnInit {
     return current !== this.initialContentSnapshot;
   }
 
+  public onTitleInput(): void {
+    if ((this.title || '').length > 150 || (this.title || '').length >= 3) {
+      this.titleTouched = true;
+    }
+  }
+
   public get isTitleValid(): boolean {
-    const t = (this.title || '').trim();
-    return t.length >= 3 && t.length <= 150;
+    const raw = this.title || '';
+    const t = raw.trim();
+    return t.length >= 3 && raw.length <= 150;
   }
 
   public get titleErrorMessage(): string {
-    const t = (this.title || '').trim();
+    const raw = this.title || '';
+    const t = raw.trim();
     if (!t) return 'Instruction Title is required.';
     if (t.length < 3) return 'Title must be at least 3 characters.';
-    if (t.length > 150) return 'Title cannot exceed 150 characters.';
+    if (raw.length > 150) return `Title cannot exceed 150 characters (currently ${raw.length}).`;
+    return '';
+  }
+
+  public onVersionInput(): void {
+    this.versionTouched = true;
+  }
+
+  public get isVersionValid(): boolean {
+    const v = (this.version || '').trim();
+    if (!v) return false;
+    const versionRegex = /^v?[0-9]+(\.[0-9]+){0,3}$/i;
+    return versionRegex.test(v) && v.length <= 15;
+  }
+
+  public get versionErrorMessage(): string {
+    const v = (this.version || '').trim();
+    if (!v) return 'Version tag is required.';
+    if (v.length > 15) return 'Version tag cannot exceed 15 characters.';
+    const versionRegex = /^v?[0-9]+(\.[0-9]+){0,3}$/i;
+    if (!versionRegex.test(v)) {
+      return 'Must be numeric format (e.g. 1.0 or v2.0).';
+    }
     return '';
   }
 
@@ -342,7 +405,7 @@ export class InstructionDialogComponent implements OnInit {
   }
 
   public get isFormValid(): boolean {
-    return this.isTitleValid && this.isDescriptionValid && this.sections.length > 0;
+    return this.isTitleValid && this.isVersionValid && this.isDescriptionValid && this.sections.length > 0;
   }
 
   // Drag & Drop Reordering for Sections
@@ -426,6 +489,7 @@ export class InstructionDialogComponent implements OnInit {
     }
 
     this.titleTouched = true;
+    this.versionTouched = true;
     this.descriptionTouched = true;
     if (!this.isFormValid) return;
 
@@ -449,6 +513,7 @@ export class InstructionDialogComponent implements OnInit {
 
   public onSaveAsNewVersion(): void {
     this.titleTouched = true;
+    this.versionTouched = true;
     this.descriptionTouched = true;
     if (!this.isFormValid) return;
 
