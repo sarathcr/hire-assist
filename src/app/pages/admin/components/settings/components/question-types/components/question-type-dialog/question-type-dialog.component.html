@@ -1,4 +1,26 @@
 <div class="question-type-form">
+  @if (isEdit && activeRecruitmentCount > 0) {
+    <div class="reference-alert reference-alert--warning">
+      <i class="pi pi-shield"></i>
+      <div class="reference-alert__content">
+        <div class="reference-alert__title">Active Recruitment Protection</div>
+        <div class="reference-alert__desc">
+          This Question Type is actively used in questions within {{ activeRecruitmentCount }} ongoing recruitment assessment(s). Renaming is blocked to prevent test disruption.
+        </div>
+      </div>
+    </div>
+  } @else if (isEdit && questionCount > 0) {
+    <div class="reference-alert reference-alert--info">
+      <i class="pi pi-info-circle"></i>
+      <div class="reference-alert__content">
+        <div class="reference-alert__title">Reference Notice</div>
+        <div class="reference-alert__desc">
+          This Question Type is currently referenced by {{ questionCount }} question(s). Renaming it will update the classification across all associated questions.
+        </div>
+      </div>
+    </div>
+  }
+
   <form [formGroup]="data.fGroup">
     <div class="question-type-form__field-container">
       <app-input-text
@@ -19,7 +41,7 @@
       <div class="dialog-footer__btn-wrapper">
         <app-button
           buttonLabel="Submit"
-          [disabled]="!data.fGroup.valid || isUnchanged"
+          [disabled]="!data.fGroup.valid || isUnchanged || isRenamedInActiveRecruitment"
           (btnClick)="onSubmit()"
         ></app-button>
       </div>

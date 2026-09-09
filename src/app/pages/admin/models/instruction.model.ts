@@ -25,6 +25,7 @@ export interface AptitudeInstruction {
   updatedBy?: string;
   updatedAt?: string;
   hasCompletedRecruitmentReferences?: boolean;
+  hasRecruitmentReferences?: boolean;
 }
 
 export interface AptitudeInstructionSummary {
@@ -37,6 +38,7 @@ export interface AptitudeInstructionSummary {
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
+  hasRecruitmentReferences?: boolean;
 }
 
 export interface CreateAptitudeInstructionRequest {

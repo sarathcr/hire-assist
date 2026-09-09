@@ -14,7 +14,8 @@ import { CardSkeletonComponent } from './components/card/card-skeleton.component
 import { CandidateAssessment } from './models/candidate.model';
 import { CandidateService } from './services/candidate.service';
 import { DeviceWarningService } from '../../shared/services/device-width.service';
-import { InstructionSection } from '../admin/models/instruction.model';
+import { AptitudeInstruction, InstructionSection } from '../admin/models/instruction.model';
+import { InstructionService } from '../admin/services/instruction.service';
 
 @Component({
   selector: 'app-candidate',
@@ -29,6 +30,9 @@ export class CandidateComponent extends BaseComponent implements OnInit {
   public statusEnum = StatusEnum;
   public isLoading = true;
   public skeletonCards = [1, 2, 3]; // For rendering skeleton cards
+  private instructionCache = new Map<number, AptitudeInstruction>();
+  private defaultInstructionCache: AptitudeInstruction | null = null;
+  private isOpeningInstruction = false;
 
   constructor(
     public dialog: DialogService,
@@ -36,6 +40,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     private route: ActivatedRoute,
     private candidateService: CandidateService,
     private deviceWarningService: DeviceWarningService,
+    private instructionService: InstructionService,
   ) {
     super();
   }
@@ -137,6 +142,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
           return comparisonDate < today;
         });
         this.isLoading = false;
+        this.prefetchInstructions();
       },
       error: () => {
         this.isLoading = false;
@@ -144,38 +150,185 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     });
   }
 
+  private prefetchInstructions(): void {
+    const uniqueInstructionIds = Array.from(
+      new Set(
+        this.activeAssessments
+          .map((a) => a.instructionId)
+          .filter((id): id is number => typeof id === 'number' && id > 0),
+      ),
+    );
+
+    for (const instId of uniqueInstructionIds) {
+      if (!this.instructionCache.has(instId)) {
+        this.instructionService.getInstructionById(instId).subscribe({
+          next: (inst) => {
+            if (inst) {
+              this.instructionCache.set(instId, inst);
+            }
+          },
+          error: () => {},
+        });
+      }
+    }
+
+    if (
+      this.activeAssessments.some((a) => !a.instructionId) &&
+      !this.defaultInstructionCache
+    ) {
+      this.instructionService.getDefaultInstruction().subscribe({
+        next: (inst) => {
+          this.defaultInstructionCache = inst;
+        },
+        error: () => {},
+      });
+    }
+  }
+
   // Public Methods
   public onAssessmentStart(assessment: CandidateAssessment) {
     this.deviceWarningService.checkDeviceWidth().subscribe((canProceed) => {
       if (canProceed) {
-        const modalData: DialogData = {
-          message: this.buildInstructionsHtml(assessment.instructionContent),
-          isChoice: true,
-          isHtml: true,
-          acceptButtonText: 'Start Assessment',
-          cancelButtonText: 'Cancel',
-        };
-        this.ref = this.dialog.open(DialogComponent, {
-          data: modalData,
-          header: 'Assessment instructions',
-          maximizable: true,
-          width: '50vw',
-          modal: true,
-          focusOnShow: false,
-          breakpoints: {
-            '960px': '75vw',
-            '640px': '90vw',
-          },
-          templates: {
-            footer: DialogFooterComponent,
-          },
-        });
-        this.ref.onClose.subscribe((result) => {
-          if (result) {
-            this.router.navigate(['/candidate/test'], {
-              state: { assessment: assessment },
-            });
+        this.openInstructionModal(assessment);
+      }
+    });
+  }
+
+  private openInstructionModal(assessment: CandidateAssessment): void {
+    if (this.isOpeningInstruction) return;
+
+    // 1. If assessment already has title and description (e.g. from backend response)
+    if (assessment.instructionTitle && assessment.instructionDescription !== undefined) {
+      this.showInstructionDialog(
+        assessment,
+        assessment.instructionTitle,
+        assessment.instructionDescription,
+        assessment.instructionContent,
+      );
+      return;
+    }
+
+    const instructionId = assessment.instructionId;
+
+    // 2. Check in-memory cache for specific instructionId
+    if (instructionId && this.instructionCache.has(instructionId)) {
+      const cached = this.instructionCache.get(instructionId)!;
+      this.showInstructionDialog(
+        assessment,
+        cached.title,
+        cached.description,
+        cached.content || assessment.instructionContent,
+      );
+      return;
+    }
+
+    // 3. Check in-memory cache for default instruction if no specific instructionId
+    if (!instructionId && this.defaultInstructionCache) {
+      this.showInstructionDialog(
+        assessment,
+        this.defaultInstructionCache.title,
+        this.defaultInstructionCache.description,
+        this.defaultInstructionCache.content || assessment.instructionContent,
+      );
+      return;
+    }
+
+    // 4. Otherwise fetch instruction template dynamically
+    this.isOpeningInstruction = true;
+    const fetch$ = instructionId
+      ? this.instructionService.getInstructionById(instructionId)
+      : this.instructionService.getDefaultInstruction();
+
+    fetch$.subscribe({
+      next: (inst: AptitudeInstruction) => {
+        this.isOpeningInstruction = false;
+        if (inst) {
+          if (instructionId) {
+            this.instructionCache.set(instructionId, inst);
+          } else {
+            this.defaultInstructionCache = inst;
           }
+          this.showInstructionDialog(
+            assessment,
+            inst.title,
+            inst.description,
+            inst.content || assessment.instructionContent,
+          );
+        } else {
+          this.showInstructionDialog(
+            assessment,
+            assessment.instructionTitle,
+            assessment.instructionDescription,
+            assessment.instructionContent,
+          );
+        }
+      },
+      error: () => {
+        this.isOpeningInstruction = false;
+        this.showInstructionDialog(
+          assessment,
+          assessment.instructionTitle,
+          assessment.instructionDescription,
+          assessment.instructionContent,
+        );
+      },
+    });
+  }
+
+  private showInstructionDialog(
+    assessment: CandidateAssessment,
+    instructionTitle?: string,
+    introNote?: string,
+    instructionContent?: string,
+  ): void {
+    const title = instructionTitle?.trim() || 'Aptitude Assessment Instructions';
+    const note =
+      introNote?.trim() ||
+      'Please read the following instructions carefully before starting your assessment session.';
+    const content = instructionContent || assessment.instructionContent;
+
+    // Enrich assessment object so route state maintains full instruction metadata
+    assessment.instructionTitle = title;
+    assessment.instructionDescription = note;
+    if (content) {
+      assessment.instructionContent = content;
+    }
+
+    const modalData: DialogData = {
+      message: this.buildInstructionsHtml(content, note),
+      isChoice: true,
+      isHtml: true,
+      acceptButtonText: 'Start Assessment',
+      cancelButtonText: 'Cancel',
+    };
+
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: title,
+      maximizable: true,
+      width: '58vw',
+      styleClass: 'candidate-instruction-dialog',
+      contentStyle: {
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+      },
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '1400px': '70vw',
+        '960px': '85vw',
+        '640px': '95vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        this.router.navigate(['/candidate/test'], {
+          state: { assessment: assessment },
         });
       }
     });
@@ -277,7 +430,20 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     return d;
   }
 
-  private buildInstructionsHtml(instructionContent?: string): string {
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  private buildInstructionsHtml(instructionContent?: string, introNote?: string): string {
+    const defaultIntro =
+      'Please read the following instructions carefully before starting your assessment session.';
+    const sanitizedIntro = introNote?.trim() ? this.escapeHtml(introNote.trim()) : defaultIntro;
+
     let sections: InstructionSection[] = [];
     if (instructionContent) {
       try {
@@ -292,7 +458,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
         <div class="instruction-modal">
           <div class="instruction-modal__intro">
             <i class="pi pi-info-circle instruction-modal__intro-icon"></i>
-            <p>Please read the following instructions carefully before starting your assessment session.</p>
+            <p>${sanitizedIntro}</p>
           </div>
           <div class="instruction-modal__grid">
             <div class="instruction-card instruction-card--danger">
@@ -375,7 +541,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
       <div class="instruction-modal">
         <div class="instruction-modal__intro">
           <i class="pi pi-info-circle instruction-modal__intro-icon"></i>
-          <p>Please read the following instructions carefully before starting your assessment session.</p>
+          <p>${sanitizedIntro}</p>
         </div>
         <div class="instruction-modal__grid">
           ${cardsHtml}

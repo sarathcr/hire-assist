@@ -188,13 +188,13 @@
       </div>
     </div>
 
-    <!-- HISTORICAL PROTECTION BANNER -->
+    <!-- RECRUITMENT REFERENCE PROTECTION BANNER -->
     @if (hasCompletedRecruitmentReferences && mode !== 'preview') {
       <div class="completed-reference-banner">
         <i class="pi pi-shield"></i>
         <div class="banner-text">
-          <span class="banner-title">Historical Record Protection Active</span>
-          <span class="banner-desc">This template was used in completed recruitments. To protect past candidate records, edits must be saved as a new version.</span>
+          <span class="banner-title">Recruitment Reference Protection Active</span>
+          <span class="banner-desc">This template is referenced in one or more recruitments. To protect test integrity and candidate records, edits must be saved as a new version.</span>
         </div>
       </div>
     }
@@ -496,7 +496,7 @@
                   <span class="mock-dot mock-dot--yellow"></span>
                   <span class="mock-dot mock-dot--green"></span>
                 </div>
-                <span class="mock-title">Aptitude Assessment Instructions</span>
+                <span class="mock-title">{{ title || 'Aptitude Assessment Instructions' }}</span>
               </div>
 
               <!-- Candidate Modal Content -->

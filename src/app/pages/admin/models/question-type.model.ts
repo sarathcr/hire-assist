@@ -8,6 +8,8 @@ export interface QuestionType {
   createdAt?: string | Date;
   updatedBy?: string;
   updatedAt?: string | Date;
+  questionCount?: number;
+  activeRecruitmentCount?: number;
 }
 
 export interface QuestionTypeFormGroup {

@@ -18,6 +18,8 @@ export interface CandidateAssessment {
   questionSetId?: number;
   buttonLabel?: string; // Button label from backend
   instructionId?: number;
+  instructionTitle?: string;
+  instructionDescription?: string;
   instructionContent?: string;
 }
 

@@ -292,7 +292,7 @@ export class InstructionDialogComponent implements OnInit {
       this.initDefaultSections();
     }
 
-    this.hasCompletedRecruitmentReferences = !!inst.hasCompletedRecruitmentReferences;
+    this.hasCompletedRecruitmentReferences = !!(inst.hasRecruitmentReferences ?? inst.hasCompletedRecruitmentReferences);
 
     if (this.mode === 'clone' || this.hasCompletedRecruitmentReferences) {
       this.version = this.computeNextVersion(this.version);

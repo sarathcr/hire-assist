@@ -1,8 +1,22 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
 .dialog {
   display: flex;
   flex-direction: column;
   max-height: 55vh;
   padding: 0;
+
+  :host-context(.p-dialog-maximized) & {
+    max-height: none !important;
+    height: 100% !important;
+    flex: 1 1 auto;
+  }
 
   &__header {
     padding: var(--spacing-24, 1.5rem) var(--spacing-24, 1.5rem) var(--spacing-16, 1rem) var(--spacing-24, 1.5rem);

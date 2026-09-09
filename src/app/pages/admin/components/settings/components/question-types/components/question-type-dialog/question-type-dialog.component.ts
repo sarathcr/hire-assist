@@ -41,6 +41,18 @@ export class QuestionTypeDialogComponent implements OnInit, OnDestroy {
     return isFormUnchanged(this.data.fGroup.value, this.initialValue);
   }
 
+  public get questionCount(): number {
+    return this.data?.formData?.questionCount ?? 0;
+  }
+
+  public get activeRecruitmentCount(): number {
+    return this.data?.formData?.activeRecruitmentCount ?? 0;
+  }
+
+  public get isRenamedInActiveRecruitment(): boolean {
+    return this.isEdit && this.activeRecruitmentCount > 0 && !this.isUnchanged;
+  }
+
   public ngOnDestroy(): void {
     this.data?.fGroup?.reset();
   }

@@ -47,6 +47,13 @@ const tableColumns: TableColumnsData = {
       filterAlias: 'textFilter',
     },
     {
+      field: 'questionCount',
+      displayName: 'Questions',
+      sortedColumn: true,
+      hasChip: false,
+      hasTextFilter: false,
+    },
+    {
       field: 'createdAt',
       displayName: 'Created At',
       fieldType: FieldType.StringToDate,
@@ -65,7 +72,7 @@ const tableColumns: TableColumnsData = {
       hasChip: false,
     },
   ],
-  displayedColumns: ['questionType', 'createdAt', 'actions'],
+  displayedColumns: ['questionType', 'questionCount', 'createdAt', 'actions'],
 };
 
 @Component({
@@ -184,6 +191,45 @@ export class QuestionTypesComponent implements OnInit, OnDestroy {
     this.ref.onClose.subscribe((res: QuestionType) => {
       document.body.style.overflow = 'auto';
       if (res) {
+        const isRenamed =
+          res.questionType?.trim().toLowerCase() !==
+          questionTypeData.questionType?.trim().toLowerCase();
+
+        if (
+          isRenamed &&
+          questionTypeData.questionCount &&
+          questionTypeData.questionCount > 0
+        ) {
+          const confirmData: DialogData = {
+            message: `This Question Type is currently referenced by ${questionTypeData.questionCount} question(s). Renaming it will update the classification for all existing questions. Do you want to proceed?`,
+            isChoice: true,
+            cancelButtonText: 'Cancel',
+            acceptButtonText: 'Proceed',
+          };
+          this.ref = this.dialog.open(DialogComponent, {
+            data: confirmData,
+            header: 'Confirm Rename',
+            maximizable: false,
+            width: '30vw',
+            modal: true,
+            focusOnShow: false,
+            breakpoints: {
+              '960px': '75vw',
+              '640px': '90vw',
+            },
+            templates: {
+              footer: DialogFooterComponent,
+            },
+          });
+          this.ref.onClose.subscribe((confirmed) => {
+            if (confirmed) {
+              this.updateQuestionType(res);
+            }
+            this.fGroup.reset();
+          });
+          return;
+        }
+
         this.updateQuestionType(res);
       }
       this.fGroup.reset();
