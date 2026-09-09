@@ -12,6 +12,12 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { Knob } from 'primeng/knob';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
+import { SelectModule } from 'primeng/select';
+import { TooltipModule } from 'primeng/tooltip';
+
+import { InstructionService } from '../../../../../../services/instruction.service';
+import { InstructionDialogComponent } from '../../../../../settings/components/instructions/instruction-dialog/instruction-dialog.component';
+import { AptitudeInstruction, AptitudeInstructionSummary } from '../../../../../../models/instruction.model';
 
 import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
@@ -128,6 +134,7 @@ interface QuestionSetAccordionData {
 }
 @Component({
   selector: 'app-select-quesionset-step',
+  standalone: true,
   imports: [
     ButtonComponent,
     ReactiveFormsModule,
@@ -140,6 +147,8 @@ interface QuestionSetAccordionData {
     AccordionModule,
     SkeletonModule,
     HistoryDrawerComponent,
+    SelectModule,
+    TooltipModule,
   ],
   templateUrl: './select-quesionset-step.component.html',
   styleUrl: './select-quesionset-step.component.scss',
@@ -191,6 +200,13 @@ export class SelectQuesionsetStepComponent
   public questionSetAccordionData = new Map<string, QuestionSetAccordionData>();
   public currentSelectedQuestionSetId: string | null = null;
   public visible: boolean = false;
+
+  // Instructions State
+  public instructionOptions: { label: string; value: number; isDefault?: boolean }[] = [];
+  public defaultInstructionId: number | null = null;
+  public roundInstructionMap = new Map<number, number | null>();
+  public isAssigningInstruction = new Map<number, boolean>();
+
   events = [
     {
       status: 'Created',
@@ -228,6 +244,7 @@ export class SelectQuesionsetStepComponent
     private readonly stepsStatusService: StepsStatusService,
     private readonly cdr: ChangeDetectorRef,
     private readonly interviewService: InterviewService,
+    private readonly instructionService: InstructionService,
   ) {
     super();
     this.fGroup = buildFormGroup(this.questionSetModal);
@@ -236,6 +253,7 @@ export class SelectQuesionsetStepComponent
   ngOnInit(): void {
     this.setPaginationEndpoint();
     this.setConfigMaps();
+    this.loadInstructions();
     this.getAllQuestionSets(new PaginatedPayload());
   }
 
@@ -265,8 +283,8 @@ export class SelectQuesionsetStepComponent
 
     childRef.onClose.subscribe(
       (result: { isCreateSuccess?: boolean } | undefined) => {
-        if (result?.isCreateSuccess !== false) {
-          this.getAllQuestionSets(new PaginatedPayload());
+        if (result?.isCreateSuccess) {
+          this.getAllQuestionSets(new PaginatedPayload(), false);
         }
       },
     );
@@ -619,9 +637,9 @@ export class SelectQuesionsetStepComponent
 
     childRef.onClose.subscribe(
       (result: { isCreateSuccess?: boolean } | undefined) => {
-        if (result?.isCreateSuccess !== false) {
+        if (result?.isCreateSuccess) {
           this.hasLocalModifications = true;
-          this.getAllQuestionSets(new PaginatedPayload());
+          this.getAllQuestionSets(new PaginatedPayload(), false);
           this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
         }
       },
@@ -648,8 +666,10 @@ export class SelectQuesionsetStepComponent
       },
     };
   }
-  private getAllQuestionSets(payload: PaginatedPayload): void {
-    this.isLoading = true;
+  private getAllQuestionSets(payload: PaginatedPayload, showSkeleton: boolean = true): void {
+    if (showSkeleton) {
+      this.isLoading = true;
+    }
     payload.filterMap = {
       assessmentId: Number(this.assessmentId()),
     };
@@ -664,9 +684,20 @@ export class SelectQuesionsetStepComponent
         if (!roundsMap.has(roundId)) {
           roundsMap.set(roundId, qs);
         }
+        if (roundId > 0 && qs.instructionId) {
+          this.roundInstructionMap.set(roundId, qs.instructionId);
+        }
       });
       this.assessmentRounds = Array.from(roundsMap.values()).sort((a, b) => {
         return (a.assessmentRoundId || 0) - (b.assessmentRoundId || 0);
+      });
+
+      // Ensure defaults for any rounds without an instruction assigned yet
+      this.assessmentRounds.forEach((round) => {
+        const rId = round.assessmentRoundId ?? 0;
+        if (rId > 0 && !this.roundInstructionMap.has(rId) && this.defaultInstructionId) {
+          this.roundInstructionMap.set(rId, round.instructionId ?? this.defaultInstructionId);
+        }
       });
 
       const activeIds = new Set(res.data.map((qs) => qs.id.toString()));
@@ -1237,6 +1268,193 @@ export class SelectQuesionsetStepComponent
     }
     return emptyNames;
   }
+
+  public loadInstructions(callback?: () => void): void {
+    this.instructionService.getInstructions(true).subscribe({
+      next: (instructions: AptitudeInstructionSummary[]) => {
+        this.instructionOptions = instructions.map((inst: AptitudeInstructionSummary) => ({
+          label: `${inst.title} (v${inst.version})${inst.isDefault ? ' - Default' : ''}`,
+          value: inst.id,
+          isDefault: inst.isDefault,
+        }));
+        const defaultInst = instructions.find((i: AptitudeInstructionSummary) => i.isDefault);
+        if (defaultInst) {
+          this.defaultInstructionId = defaultInst.id;
+        } else if (instructions.length > 0) {
+          this.defaultInstructionId = instructions[0].id;
+        }
+
+        // Initialize any rounds that don't have an instruction set yet
+        for (const round of this.assessmentRounds) {
+          const roundId = round.assessmentRoundId ?? 0;
+          if (roundId > 0 && !this.roundInstructionMap.has(roundId)) {
+            const initialId = round.instructionId ?? this.defaultInstructionId;
+            if (initialId) {
+              this.roundInstructionMap.set(roundId, initialId);
+            }
+          }
+        }
+
+        if (callback) callback();
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        // Handled gracefully
+      },
+    });
+  }
+
+  public getRoundInstructionId(roundId: number): number | null {
+    return this.roundInstructionMap.get(roundId) ?? this.defaultInstructionId ?? null;
+  }
+
+  public onRoundInstructionChange(roundId: number, instructionId: number): void {
+    if (!roundId || !instructionId) return;
+    this.roundInstructionMap.set(roundId, instructionId);
+    this.isAssigningInstruction.set(roundId, true);
+    this.hasLocalModifications = true;
+
+    this.instructionService
+      .assignInstructionToRound({ assessmentRoundId: roundId, instructionId })
+      .subscribe({
+        next: () => {
+          this.isAssigningInstruction.set(roundId, false);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Instructions Updated',
+            detail: 'Test instructions assigned to this round successfully.',
+          });
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.isAssigningInstruction.set(roundId, false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to assign test instructions to round.',
+          });
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  public onPreviewRoundInstruction(roundId: number): void {
+    const instructionId = this.getRoundInstructionId(roundId);
+    if (!instructionId) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'No instruction selected for this round.',
+      });
+      return;
+    }
+
+    this.dialog.open(InstructionDialogComponent, {
+      data: {
+        mode: 'preview',
+        instructionId: instructionId,
+      },
+      header: 'Preview Aptitude Test Instructions',
+      width: '92vw',
+      height: '90vh',
+      maximizable: true,
+      modal: true,
+      styleClass: 'instruction-builder-dialog',
+      contentStyle: { height: '100%', overflow: 'hidden', padding: '0', display: 'flex', 'flex-direction': 'column' },
+      breakpoints: {
+        '1400px': '95vw',
+        '960px': '98vw',
+        '640px': '100vw',
+      },
+    });
+  }
+
+  public onCustomizeRoundInstruction(roundId: number): void {
+    const instructionId = this.getRoundInstructionId(roundId);
+    const dialogRef = this.dialog.open(InstructionDialogComponent, {
+      data: {
+        mode: 'edit',
+        instructionId: instructionId ?? undefined,
+      },
+      header: 'Customize Aptitude Test Instructions',
+      width: '92vw',
+      height: '90vh',
+      maximizable: true,
+      modal: true,
+      styleClass: 'instruction-builder-dialog',
+      contentStyle: { height: '100%', overflow: 'hidden', padding: '0', display: 'flex', 'flex-direction': 'column' },
+      breakpoints: {
+        '1400px': '95vw',
+        '960px': '98vw',
+        '640px': '100vw',
+      },
+    });
+
+    dialogRef.onClose.subscribe((result: any) => {
+      if (!result) return;
+
+      if (result.action === 'saveAsNewVersion') {
+        this.instructionService.saveAsNewVersion(result.data).subscribe({
+          next: (created: AptitudeInstruction) => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'New Version Created',
+              detail: `Saved instruction version ${created.version}.`,
+            });
+            this.loadInstructions(() => {
+              this.onRoundInstructionChange(roundId, created.id);
+            });
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to save new instruction version.',
+            });
+          },
+        });
+      } else if (result.action === 'create') {
+        this.instructionService.createInstruction(result.data).subscribe({
+          next: (created: AptitudeInstruction) => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Instruction template created.',
+            });
+            this.loadInstructions(() => {
+              this.onRoundInstructionChange(roundId, created.id);
+            });
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to create instruction.',
+            });
+          },
+        });
+      } else if (result.action === 'update') {
+        this.instructionService.updateInstruction(result.data.id, result.data).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Instruction template updated.',
+            });
+            this.loadInstructions();
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Failed to update instruction.',
+            });
+          },
+        });
+      }
+    });
+  }
+
 
   public get emptyQuestionSets(): string[] {
     const emptyNames: string[] = [];

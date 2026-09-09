@@ -14,505 +14,362 @@
   box-sizing: border-box;
 
   // ============================================
-  // Hero Section
+  // Modern Minimal Header Card
   // ============================================
-  &__hero {
-    background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
-    border-radius: 20px;
-    padding: var(--spacing-30) var(--spacing-40);
-    // box-shadow:
-    //   0 10px 40px rgba(33, 150, 243, 0.3),
-    //   0 4px 12px rgba(0, 0, 0, 0.1);
-    position: relative;
-    // overflow: hidden;
-
-    &::before {
-      content: none;
-      position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle,
-          rgba(255, 255, 255, 0.1) 0%,
-          transparent 70%);
-      animation: pulse 8s ease-in-out infinite;
-    }
-
-    &-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: var(--spacing-25);
-      position: relative;
-      // z-index: 1;
-    }
-
-    &-title-section {
-      flex: 1;
-    }
-
-    &-title {
-      margin: 0 0 var(--spacing-8) 0;
-      font-size: clamp(24px, 4vw + 0.5rem, 32px);
-      font-weight: 700;
-      color: white;
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-15);
-      letter-spacing: -0.5px;
-      line-height: 1.2;
-
-      i {
-        font-size: clamp(28px, 4.5vw + 0.5rem, 36px);
-        opacity: 0.9;
-      }
-    }
-
-    &-subtitle {
-      margin: 0;
-      font-size: clamp(16px, 2vw + 0.5rem, 18px);
-      color: rgba(255, 255, 255, 0.9);
-      font-weight: 400;
-      line-height: 1.4;
-    }
-
-    &-badge {
-      display: flex;
-      align-items: center;
-      gap: var(--spacing-8);
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      padding: var(--spacing-10) var(--spacing-20);
-      border-radius: 12px;
-      color: white;
-      font-size: clamp(12px, 1.5vw + 0.25rem, 14px);
-      font-weight: 500;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      white-space: nowrap;
-
-      i {
-        font-size: clamp(14px, 1.8vw + 0.25rem, 16px);
-      }
-
-      &--active {
-        cursor: pointer;
-        background: rgba(255, 255, 255, 0.25);
-        transition: all 0.3s ease;
-        padding-right: var(--spacing-15);
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.35);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-      }
-    }
-  }
-
-  // ============================================
-  // Info Cards Grid
-  // ============================================
-  &__info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-20);
-
-    @media (max-width: 768px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  &__info-card {
-    background: linear-gradient(135deg,
-        rgba(33, 150, 243, 0.08) 0%,
-        rgba(21, 101, 192, 0.08) 100%);
-    border: 1px solid rgba(33, 150, 243, 0.2);
+  &__header-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 16px;
-    padding: var(--spacing-20);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-15);
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    padding: 16px 22px;
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
+    position: relative;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
 
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(33, 150, 243, 0.15);
-      border-color: rgba(33, 150, 243, 0.4);
-    }
-
-    &--full {
-      grid-column: 1 / -1;
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06);
     }
   }
 
-  &__info-icon {
-    width: clamp(40px, 5vw, 48px);
-    height: clamp(40px, 5vw, 48px);
-    background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
-    border-radius: 12px;
+  &__header-skeleton {
+    .skeleton-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .skeleton-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .skeleton-bottom {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+  }
+
+  &__header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  &__header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    flex: 1;
+
+    @media (max-width: 640px) {
+      align-items: flex-start;
+      gap: 12px;
+    }
+  }
+
+  &__header-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    color: var(--primary-color, #1565c0);
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 17px;
     flex-shrink: 0;
-    color: white;
-    font-size: clamp(18px, 2.5vw + 0.25rem, 20px);
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+
+    @media (max-width: 640px) {
+      margin-top: 2px;
+    }
   }
 
-  &__info-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-4);
-    flex: 1;
+  &__header-title-group {
     min-width: 0;
+    flex: 1;
   }
 
-  &__info-label {
-    font-size: clamp(11px, 1.2vw + 0.25rem, 12px);
-    font-weight: 600;
-    color: #2196f3;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    line-height: 1.3;
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+
+    @media (max-width: 640px) {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
   }
 
-  &__info-value {
-    font-size: clamp(14px, 1.8vw + 0.25rem, 16px);
+  &__badges-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+
+    @media (max-width: 768px) {
+      font-size: 19px;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 18px;
+      line-height: 1.3;
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
     font-weight: 500;
-    color: #1f2937;
-    word-break: break-word;
-    line-height: 1.5;
-  }
-
-  // ============================================
-  // Modern Stepper Navigation
-  // ============================================
-  &__stepper-wrapper {
-    background: white;
+    padding: 3px 10px;
     border-radius: 20px;
-    padding: var(--spacing-25);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(33, 150, 243, 0.1);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: #42a5f5 #f1f5f9;
-
-    // Custom scrollbar for WebKit browsers (Chrome, Safari desktop, Edge, Android)
-    // Note: iOS Safari doesn't support -webkit-scrollbar pseudo-elements
-    // and will automatically use the native scrollbar instead
-    &::-webkit-scrollbar {
-      height: 6px;
-      -webkit-appearance: none;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: #f1f5f9;
-      border-radius: 10px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
-      border-radius: 10px;
-    }
-  }
-
-  &__stepper {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-8);
-    min-width: fit-content;
-    position: relative;
-    flex-wrap: nowrap;
-  }
-
-  &__stepper-item {
-    display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    position: relative;
-
-    &.active {
-      z-index: 2;
-    }
-  }
-
-  &__stepper-button {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-10);
-    padding: var(--spacing-15) var(--spacing-20);
-    background: linear-gradient(135deg,
-        rgba(33, 150, 243, 0.05) 0%,
-        rgba(21, 101, 192, 0.05) 100%);
-    border: 2px solid transparent;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: min-content;
-    max-width: max-content;
-    text-align: left;
-    position: relative;
-    font-family: inherit;
+    line-height: 1.2;
     white-space: nowrap;
 
-    .assessment-schedule__stepper-label {
-      color: #1f2937;
-      font-weight: 600;
-      transition: color 0.3s ease;
-    }
+    &--name {
+      background: #f8fafc;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+      max-width: 100%;
 
-    .assessment-schedule__stepper-description {
-      color: #6b7280;
-      transition: color 0.3s ease;
-    }
+      span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
 
-    &:hover:not(:disabled):not(.active) {
-      background: linear-gradient(135deg,
-          rgba(33, 150, 243, 0.1) 0%,
-          rgba(21, 101, 192, 0.1) 100%);
-      border-color: rgba(33, 150, 243, 0.3);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
-
-      .assessment-schedule__stepper-label {
-        color: #2196f3;
+      i {
+        font-size: 11px;
+        color: #64748b;
       }
     }
 
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-  }
-
-  &__stepper-item.active &__stepper-button {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    border-color: #1565c0;
-    border-width: 2px;
-    box-shadow:
-      0 6px 20px rgba(21, 101, 192, 0.4),
-      0 0 0 3px rgba(21, 101, 192, 0.15);
-    color: #ffffff;
-    transform: scale(1.02);
-    z-index: 3;
-
-    .assessment-schedule__stepper-label {
-      color: #ffffff;
-      font-weight: 700;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    }
-
-    .assessment-schedule__stepper-description {
-      color: rgba(255, 255, 255, 0.98);
-      font-weight: 500;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-    }
-
-    .assessment-schedule__stepper-indicator {
-      background: rgba(255, 255, 255, 0.3);
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      color: #ffffff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-    }
-  }
-
-  &__stepper-item.completed:not(.active) &__stepper-button {
-    background: linear-gradient(135deg,
-        rgba(16, 185, 129, 0.08) 0%,
-        rgba(5, 150, 105, 0.08) 100%);
-    border-color: #10b981;
-    border-width: 2px;
-
-    .assessment-schedule__stepper-label {
+    &--active {
+      background: #ecfdf5;
       color: #059669;
+      border: 1px solid #a7f3d0;
       font-weight: 600;
+
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+      }
     }
 
-    .assessment-schedule__stepper-description {
-      color: #6b7280;
-    }
+    &--inactive {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #cbd5e1;
+      font-weight: 600;
 
-    .assessment-schedule__stepper-indicator {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white;
-      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-      height: 30px;
-      width: 30px;
-    }
-  }
-
-  &__stepper-item.active.completed &__stepper-button {
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    border-color: #1565c0;
-    border-width: 2px;
-    box-shadow:
-      0 6px 20px rgba(21, 101, 192, 0.4),
-      0 0 0 3px rgba(21, 101, 192, 0.15);
-    color: #ffffff;
-    transform: scale(1.02);
-
-    .assessment-schedule__stepper-label {
-      color: #ffffff;
-      font-weight: 700;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    }
-
-    .assessment-schedule__stepper-description {
-      color: rgba(255, 255, 255, 0.98);
-      font-weight: 500;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-    }
-
-    .assessment-schedule__stepper-indicator {
-      background: rgba(255, 255, 255, 0.3);
-      border: 2px solid rgba(255, 255, 255, 0.6);
-      color: #ffffff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #94a3b8;
+      }
     }
   }
 
-  &__stepper-item.pending &__stepper-button {
-    background: #f9fafb;
-    border-color: #e5e7eb;
-    border-width: 2px;
+  &__header-actions {
+    display: flex;
+    align-items: center;
+  }
 
-    .assessment-schedule__stepper-label {
-      color: #6b7280;
-      font-weight: 500;
+  &__detail-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    i {
+      font-size: 11px;
+      transition: transform 0.2s ease;
     }
 
-    .assessment-schedule__stepper-description {
-      color: #9ca3af;
-    }
+    &:hover {
+      background: #f8fafc;
+      border-color: var(--primary-color, #1565c0);
+      color: var(--primary-color, #1565c0);
 
-    .assessment-schedule__stepper-indicator {
-      background: #e5e7eb;
-      color: #9ca3af;
+      i {
+        transform: translateX(2px);
+      }
     }
   }
 
-  &__stepper-indicator {
-    width: clamp(36px, 4vw, 40px);
-    height: clamp(36px, 4vw, 40px);
-    border-radius: 10px;
+  &__header-divider {
+    height: 1px;
+    background: #f1f5f9;
+    margin: 12px 0 14px 0;
+  }
+
+  &__meta-strip {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  &__meta-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+
+    &--desc {
+      flex: 1;
+      min-width: 200px;
+    }
+  }
+
+  &__meta-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    color: var(--primary-color, #1565c0);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg,
-        rgba(33, 150, 243, 0.15) 0%,
-        rgba(21, 101, 192, 0.15) 100%);
-    color: #2196f3;
-    font-size: clamp(16px, 2vw + 0.25rem, 18px);
+    font-size: 13px;
     flex-shrink: 0;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
-  &__stepper-content {
+  &__meta-info {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-2);
-    flex: 1;
+    gap: 1px;
     min-width: 0;
-    overflow: hidden;
   }
 
-  &__stepper-label {
-    font-size: clamp(14px, 1.8vw + 0.25rem, 15px);
+  &__meta-label {
+    font-size: 10px;
     font-weight: 600;
-    color: #1f2937;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
     line-height: 1.2;
   }
 
-  &__stepper-description {
-    font-size: clamp(11px, 1.2vw + 0.25rem, 12px);
-    color: #6b7280;
+  &__meta-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
     line-height: 1.3;
-    white-space: normal;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
-
-  &__stepper-arrow {
-    color: white;
-    font-size: clamp(12px, 1.5vw + 0.25rem, 14px);
-    animation: bounce 2s infinite;
-  }
-
-  &__stepper-connector {
-    width: 40px;
-    height: 2px;
-    background: #e5e7eb;
-    margin: 0 var(--spacing-8);
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-
-    &.completed {
-      background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-    }
-  }
-
-  // ============================================
-  // Progress Bar
-  // ============================================
-  &__progress {
     display: flex;
     align-items: center;
-    gap: var(--spacing-15);
-    background: white;
-    padding: var(--spacing-20);
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    border: 1px solid rgba(33, 150, 243, 0.1);
-  }
+    gap: 6px;
 
-  &__progress-bar {
-    flex: 1;
-    height: 8px;
-    background: #f1f5f9;
-    border-radius: 10px;
-    overflow: hidden;
-    position: relative;
-  }
-
-  &__progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #42a5f5 0%, #1e88e5 100%);
-    border-radius: 10px;
-    transition: width 0.5s ease;
-    position: relative;
-    overflow: hidden;
-
-    &::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(90deg,
-          transparent 0%,
-          rgba(255, 255, 255, 0.3) 50%,
-          transparent 100%);
-      animation: shimmer 2s infinite;
+    &--desc {
+      font-weight: 500;
+      color: #475569;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 550px;
     }
   }
 
-  &__progress-text {
-    font-size: clamp(12px, 1.5vw + 0.25rem, 14px);
-    font-weight: 600;
-    color: #2196f3;
-    white-space: nowrap;
-    min-width: 100px;
-    text-align: right;
-    line-height: 1.4;
+  &__date-arrow {
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 400;
+  }
+
+  &__meta-separator {
+    width: 1px;
+    height: 26px;
+    background: #e2e8f0;
+    flex-shrink: 0;
+
+    @media (max-width: 768px) {
+      display: none;
+    }
+  }
+
+  // ============================================
+  // Scheduling Steps Layout (Inner Sidebar + Content)
+  // ============================================
+  &__layout {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-20, 20px);
+    align-items: flex-start;
+    position: relative;
+    width: 100%;
+  }
+
+  &__sidebar {
+    position: sticky;
+    top: var(--spacing-15, 15px);
+    flex-shrink: 0;
+    z-index: 20;
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__sidebar-skeleton {
+    width: 265px;
+  }
+
+  &__main {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+
+  @media (max-width: 1024px) {
+    &__layout {
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    &__sidebar {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      z-index: 30;
+      background: #f8fafc;
+      padding-bottom: 4px;
+    }
+
+    &__sidebar-skeleton {
+      width: 100%;
+    }
   }
 
   // ============================================
@@ -534,26 +391,26 @@
   }
 
   &__content-title {
-    margin: 0 0 var(--spacing-8) 0;
-    font-size: clamp(20px, 3vw + 0.5rem, 24px);
-    font-weight: 700;
-    color: #1f2937;
+    margin: 0 0 4px 0;
+    font-size: 17px;
+    font-weight: 600;
+    color: #1e293b;
     display: flex;
     align-items: center;
-    gap: var(--spacing-10);
+    gap: 8px;
     line-height: 1.3;
 
     i {
-      color: #2196f3;
-      font-size: clamp(22px, 3.2vw + 0.5rem, 26px);
+      color: var(--primary-color, #1565c0);
+      font-size: 16px;
     }
   }
 
   &__content-description {
     margin: 0;
-    font-size: clamp(14px, 1.8vw + 0.25rem, 15px);
-    color: #6b7280;
-    line-height: 1.5;
+    font-size: 13px;
+    color: #64748b;
+    line-height: 1.4;
   }
 
   &__content {
@@ -806,12 +663,12 @@
     }
 
     &__content-title {
-      font-size: clamp(18px, 4vw, 22px);
+      font-size: 16px;
       flex-wrap: wrap;
-      gap: var(--spacing-8);
+      gap: 6px;
 
       i {
-        font-size: clamp(20px, 4.5vw, 24px);
+        font-size: 15px;
       }
     }
 
@@ -958,11 +815,11 @@
     }
 
     &__content-title {
-      font-size: clamp(16px, 5vw, 20px);
+      font-size: 15px;
       flex-wrap: wrap;
 
       i {
-        font-size: clamp(18px, 5.5vw, 22px);
+        font-size: 14px;
       }
     }
 

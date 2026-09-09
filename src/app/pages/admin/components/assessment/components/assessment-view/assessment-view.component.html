@@ -1,437 +1,186 @@
 <div class="assessment-schedule">
-  <!-- Hero Header Section -->
-  <div class="assessment-schedule__hero">
-    <div class="assessment-schedule__hero-content">
-      <div class="assessment-schedule__hero-title-section">
-        <h1 class="assessment-schedule__hero-title">
-          <i class="pi pi-calendar-plus"></i>
-          Schedule Recruitment
-        </h1>
-        @if (assessment) {
-          <p class="assessment-schedule__hero-subtitle">
-            {{ assessment.name }}
-          </p>
-        }
-      </div>
-      @if (stepsStatus.schedule === "Completed") {
-        <div class="assessment-schedule__hero-actions">
-          <p-button
-            icon="pi pi-arrow-right"
-            iconPos="right"
-            label="Recruitment Detail"
-            [outlined]="true"
-            [style]="{
-              color: 'white',
-              'border-color': 'rgba(255,255,255,0.6)',
-              background: 'rgba(255,255,255,0.2)',
-              'backdrop-filter': 'blur(4px)',
-            }"
-            (onClick)="goToRecruitmentDetail()"
-          >
-          </p-button>
-        </div>
-      }
-    </div>
-  </div>
-
-  <!-- Assessment Info Cards -->
-  @if (assessment) {
-    <div class="assessment-schedule__info-grid">
-      <div class="assessment-schedule__info-card">
-        <div class="assessment-schedule__info-icon">
-          <i class="pi pi-calendar"></i>
-        </div>
-        <div class="assessment-schedule__info-content">
-          <span class="assessment-schedule__info-label">Start Date</span>
-          <span class="assessment-schedule__info-value">
-            {{ assessment.startDateTime | date: "dd MMM yyyy" }}
-          </span>
-        </div>
-      </div>
-      <div class="assessment-schedule__info-card">
-        <div class="assessment-schedule__info-icon">
-          <i class="pi pi-calendar-times"></i>
-        </div>
-        <div class="assessment-schedule__info-content">
-          <span class="assessment-schedule__info-label">End Date</span>
-          <span class="assessment-schedule__info-value">
-            {{ assessment.endDateTime | date: "dd MMM yyyy" }}
-          </span>
-        </div>
-      </div>
-      <div
-        class="assessment-schedule__info-card assessment-schedule__info-card--full"
-      >
-        <div class="assessment-schedule__info-icon">
-          <i class="pi pi-file-edit"></i>
-        </div>
-        <div class="assessment-schedule__info-content">
-          <span class="assessment-schedule__info-label">Description</span>
-          <span class="assessment-schedule__info-value">
-            {{ assessment.description || "No description provided" }}
-          </span>
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Modern Step Navigation & Progress Bar -->
-  @if (!stepsLoaded) {
-    <div class="assessment-schedule__stepper-wrapper">
-      <div class="assessment-schedule__stepper">
-        @for (i of [1, 2, 3, 4, 5]; track i; let last = $last) {
-          <div class="assessment-schedule__stepper-item disabled">
-            <div class="assessment-schedule__stepper-button">
-              <div class="assessment-schedule__stepper-indicator">
-                <p-skeleton shape="circle" size="2.5rem"></p-skeleton>
-              </div>
-              <div class="assessment-schedule__stepper-content">
-                <p-skeleton width="6rem" height="1.2rem"></p-skeleton>
-              </div>
-            </div>
-            @if (!last) {
-              <div class="assessment-schedule__stepper-connector"></div>
-            }
+  <!-- Modern Minimal Header Card -->
+  <div class="assessment-schedule__header-card">
+    @if (!assessment) {
+      <div class="assessment-schedule__header-skeleton">
+        <div class="skeleton-top">
+          <p-skeleton shape="circle" size="38px"></p-skeleton>
+          <div class="skeleton-text">
+            <p-skeleton width="200px" height="20px"></p-skeleton>
+            <p-skeleton width="140px" height="14px" styleClass="mt-2"></p-skeleton>
           </div>
-        }
+        </div>
+        <p-skeleton width="100%" height="1px" styleClass="my-3"></p-skeleton>
+        <div class="skeleton-bottom">
+          <p-skeleton width="220px" height="24px"></p-skeleton>
+          <p-skeleton width="280px" height="24px"></p-skeleton>
+        </div>
       </div>
-    </div>
-
-    <!-- Progress Bar Skeleton -->
-    <div class="assessment-schedule__progress">
-      <div class="assessment-schedule__progress-bar">
-        <p-skeleton width="100%" height="8px" borderRadius="4px"></p-skeleton>
-      </div>
-      <div class="assessment-schedule__progress-text" style="margin-top: 4px">
-        <p-skeleton width="5rem" height="1rem"></p-skeleton>
-      </div>
-    </div>
-  } @else {
-    <!-- Modern Step Navigation -->
-    <div class="assessment-schedule__stepper-wrapper">
-      <div class="assessment-schedule__stepper">
-        @for (step of filteredStepConfig; track step.index; let i = $index) {
-          <div
-            class="assessment-schedule__stepper-item"
-            [ngClass]="{
-              active: activeStep === step.index,
-              completed:
-                stepsLoaded &&
-                stepsStatus[stepKeys[step.index]] === 'Completed',
-              disabled: !stepsLoaded || !isStepEnabled(step.index),
-              pending:
-                stepsLoaded &&
-                stepsStatus[stepKeys[step.index]] === 'Pending' &&
-                activeStep !== step.index,
-            }"
-          >
-            <button
-              type="button"
-              class="assessment-schedule__stepper-button"
-              [disabled]="!stepsLoaded || !isStepEnabled(step.index)"
-              (click)="setActiveStep(step.index)"
-              [attr.aria-label]="step.label"
-            >
-              <div class="assessment-schedule__stepper-indicator">
-                @if (
-                  stepsLoaded &&
-                  stepsStatus[stepKeys[step.index]] === "Completed"
-                ) {
-                  <i class="pi pi-check"></i>
+    } @else {
+      <!-- Top Row: Title, Recruitment Name, Status, and Action -->
+      <div class="assessment-schedule__header-top">
+        <div class="assessment-schedule__header-left">
+          <div class="assessment-schedule__header-icon">
+            <i class="pi pi-sitemap"></i>
+          </div>
+          <div class="assessment-schedule__header-title-group">
+            <div class="assessment-schedule__title-row">
+              <h1 class="assessment-schedule__title">Schedule Recruitment</h1>
+              <div class="assessment-schedule__badges-group">
+                <span class="assessment-schedule__badge assessment-schedule__badge--name">
+                  <i class="pi pi-briefcase"></i>
+                  <span>{{ assessment.name }}</span>
+                </span>
+                @if (assessment.isActive) {
+                  <span class="assessment-schedule__badge assessment-schedule__badge--active">
+                    <span class="status-dot"></span>
+                    Active
+                  </span>
                 } @else {
-                  <i [class]="step.icon"></i>
+                  <span class="assessment-schedule__badge assessment-schedule__badge--inactive">
+                    <span class="status-dot"></span>
+                    Inactive
+                  </span>
                 }
               </div>
-              <div class="assessment-schedule__stepper-content">
-                <span class="assessment-schedule__stepper-label">{{
-                  step.label
-                }}</span>
-              </div>
-              @if (activeStep === step.index) {
-                <div class="assessment-schedule__stepper-arrow">
-                  <i class="pi pi-chevron-down"></i>
-                </div>
-              }
+            </div>
+          </div>
+        </div>
+
+        @if (stepsStatus.schedule === "Completed") {
+          <div class="assessment-schedule__header-actions">
+            <button
+              type="button"
+              class="assessment-schedule__detail-btn"
+              (click)="goToRecruitmentDetail()"
+            >
+              <span>Recruitment Detail</span>
+              <i class="pi pi-arrow-right"></i>
             </button>
-            @if (i < filteredStepConfig.length - 1) {
-              <div
-                class="assessment-schedule__stepper-connector"
-                [ngClass]="{
-                  completed:
-                    stepsLoaded &&
-                    stepsStatus[stepKeys[step.index]] === 'Completed',
-                }"
-              ></div>
-            }
           </div>
         }
       </div>
-    </div>
 
-    <!-- Progress Bar -->
-    <div class="assessment-schedule__progress">
-      <div class="assessment-schedule__progress-bar">
-        <div
-          class="assessment-schedule__progress-fill"
-          [style.width.%]="getProgressPercentage()"
-        ></div>
-      </div>
-      <span class="assessment-schedule__progress-text">
-        {{ getProgressPercentage() }}% Complete
-      </span>
-    </div>
-  }
+      <!-- Subtle Divider -->
+      <div class="assessment-schedule__header-divider"></div>
 
-  <!-- Content Area -->
-  <div class="assessment-schedule__content-wrapper">
-    <div class="assessment-schedule__content-header">
-      <h2 class="assessment-schedule__content-title">
-        @if (stepConfig[activeStep]) {
-          <i [class]="stepConfig[activeStep].icon"></i>
-          {{ stepConfig[activeStep].label }}
-        }
-      </h2>
-      <p class="assessment-schedule__content-description">
-        @if (stepConfig[activeStep]) {
-          {{ stepConfig[activeStep].description }}
-        }
-      </p>
-    </div>
-    <div class="assessment-schedule__content">
-      @if (isStepUpdating) {
-        <div class="assessment-schedule__loading-overlay">
-          <i class="pi pi-spin pi-spinner text-4xl"></i>
-          <span>Validating step status...</span>
+      <!-- Bottom Row: Sleek Metadata Strip -->
+      <div class="assessment-schedule__meta-strip">
+        <!-- Duration / Dates -->
+        <div class="assessment-schedule__meta-item">
+          <div class="assessment-schedule__meta-icon">
+            <i class="pi pi-calendar"></i>
+          </div>
+          <div class="assessment-schedule__meta-info">
+            <span class="assessment-schedule__meta-label">Schedule Period</span>
+            <span class="assessment-schedule__meta-value">
+              {{ (assessment.startDateTime | date: "dd MMM yyyy") || "Not set" }}
+              <span class="assessment-schedule__date-arrow">&rarr;</span>
+              {{ (assessment.endDateTime | date: "dd MMM yyyy") || "Not set" }}
+            </span>
+          </div>
         </div>
-      } @else {
-        @if (this.activeStep === 0) {
-          <app-assessment-round
-            [assessmentId]="assessmentId"
-            [isReadOnly]="isSchedulingConfigReadOnly"
-          ></app-assessment-round>
-        } @else if (this.activeStep === 1) {
-          <app-select-quesionset-step
-            [assessmentId]="assessmentId"
-            [isReadOnly]="isSchedulingConfigReadOnly"
-            [stepStatus]="stepsStatus.questionSets"
-            [isIncomplete]="isQuestionSetIncomplete"
-            [isParentLoading]="!stepsLoaded"
-            [hasModifiedAfterComplete]="hasModifiedQuestionSetAfterComplete"
-          ></app-select-quesionset-step>
-        } @else if (this.activeStep === 2) {
-          <app-coordinator-step
-            [assessmentId]="assessmentId"
-            [isReadOnly]="isSchedulingConfigReadOnly"
-          ></app-coordinator-step>
-        } @else if (this.activeStep === 3) {
-          <app-front-desk
-            [assessmentId]="assessmentId"
-            [isReadOnly]="isSchedulingConfigReadOnly"
-          ></app-front-desk>
-        } @else if (this.activeStep === 4) {
-          <app-import-candidate-list-step
-            [assessmentId]="assessmentId"
-            [isReadOnly]="isCandidateSchedulingReadOnly"
-          ></app-import-candidate-list-step>
-        }
-      }
-    </div>
+
+        <!-- Vertical Separator -->
+        <div class="assessment-schedule__meta-separator"></div>
+
+        <!-- Description -->
+        <div class="assessment-schedule__meta-item assessment-schedule__meta-item--desc">
+          <div class="assessment-schedule__meta-icon">
+            <i class="pi pi-align-left"></i>
+          </div>
+          <div class="assessment-schedule__meta-info">
+            <span class="assessment-schedule__meta-label">Description</span>
+            <span
+              class="assessment-schedule__meta-value assessment-schedule__meta-value--desc"
+              [pTooltip]="assessment.description || 'No description provided'"
+              tooltipPosition="top"
+              tooltipStyleClass="sidebar-tooltip"
+              appendTo="body"
+            >
+              {{ assessment.description || "No description provided" }}
+            </span>
+          </div>
+        </div>
+      </div>
+    }
   </div>
 
-  <!-- <p-stepper [value]="1">
-    <p-step-item [value]="1">
-      <p-step
-        ><div class="assessment-schedule__step-content">
-          ASSESSMENT ROUNDS
-        </div></p-step
-      >
-      <p-step-panel>
-        <ng-template #content let-activateCallback="activateCallback">
-          <div class="assessment-schedule__box">
-            <app-assessment-round
-              [assessmentId]="assessmentId"
-            ></app-assessment-round>
-          </div>
+  <!-- Scheduling Steps Layout (Inner Sidebar + Content) -->
+  <div class="assessment-schedule__layout">
+    <aside class="assessment-schedule__sidebar">
+      @if (!stepsLoaded) {
+        <div class="assessment-schedule__sidebar-skeleton">
+          <p-skeleton width="100%" height="220px" borderRadius="16px"></p-skeleton>
+        </div>
+      } @else {
+        <app-inner-sidebar
+          [items]="stepMenuItems"
+          [activeMenuItem]="activeStep"
+          [title]="'Scheduling Steps'"
+          [icon]="'pi pi-calendar-plus'"
+          (itemClick)="onStepSelect($event)"
+        ></app-inner-sidebar>
+      }
+    </aside>
 
-          <div class="assessment-schedule__footer">
-            <p-button
-              label="Complete"
-              (onClick)="onCompleteStep(1)"
-              [disabled]="isdisableCompleted"
-            />
-            <p-button
-              label="Next"
-              *ngIf="completedSteps.includes(1) || isdisableCompleted"
-              (onClick)="activateCallback(2)"
-            />
-          </div>
-        </ng-template>
-      </p-step-panel>
-    </p-step-item>
-
-    <p-step-item [value]="2">
-      <p-step
-        ><div class="assessment-schedule__step-content">
-          SELECT ASSESSMENT QUESTIONS AND SET QUESTION SET
-        </div></p-step
-      >
-      <p-step-panel>
-        <ng-template #content let-activateCallback="activateCallback">
-          <div class="assessment-schedule__box">
-            <app-select-quesionset-step
-              [assessmentId]="assessmentId"
-            ></app-select-quesionset-step>
-          </div>
-          <div class="assessment-schedule__footer">
-            <app-button
-              [buttonLabel]="'Back'"
-              [buttonVariant]="'outlined'"
-              (btnClick)="activateCallback(1)"
-            ></app-button>
-            <p-button
-              label="Complete"
-              (onClick)="onCompleteStep(2)"
-              [disabled]="completedSteps.includes(2)"
-            />
-            <p-button
-              label="Next"
-              *ngIf="completedSteps.includes(2)"
-              (onClick)="activateCallback(3)"
-            />
-          </div>
-        </ng-template>
-      </p-step-panel>
-    </p-step-item> -->
-
-  <!--FrontDesk-->
-
-  <!-- <p-step-item [value]="3">
-      <p-step
-        ><div class="assessment-schedule__step-content">
-          CHOOSE COORDINATORS
-        </div></p-step
-      >
-      <p-step-panel>
-        <ng-template #content let-activateCallback="activateCallback">
-          <div class="assessment-schedule__box">
-            <app-coordinator-step
-              [assessmentId]="assessmentId"
-            ></app-coordinator-step>
-          </div>
-          <div class="assessment-schedule__footer">
-            <app-button
-              [buttonLabel]="'Back'"
-              [buttonVariant]="'outlined'"
-              (btnClick)="activateCallback(2)"
-            ></app-button>
-            <p-button
-              label="Complete"
-              (onClick)="onCompleteStep(3)"
-              [disabled]="completedSteps.includes(3)"
-            />
-            <p-button
-              label="Next"
-              *ngIf="completedSteps.includes(3)"
-              (onClick)="activateCallback(4)"
-            />
-          </div>
-        </ng-template>
-      </p-step-panel>
-    </p-step-item>
-    <p-step-item [value]="4">
-      <p-step
-        ><div class="assessment-schedule__step-content">
-          CHOOSE FRONTDESK COORDINATORS
-        </div></p-step
-      >
-      <p-step-panel>
-        <ng-template #content let-activateCallback="activateCallback">
-          <div class="assessment-schedule__box">
-            <app-front-desk [assessmentId]="assessmentId"></app-front-desk>
-          </div>
-
-          <div class="assessment-schedule__footer">
-            <app-button
-              [buttonLabel]="'Back'"
-              [buttonVariant]="'outlined'"
-              (btnClick)="activateCallback(3)"
-            ></app-button>
-            <p-button
-              label="Complete"
-              (onClick)="onCompleteStep(4)"
-              [disabled]="completedSteps.includes(4)"
-            />
-            <p-button
-              label="Next"
-              *ngIf="completedSteps.includes(4)"
-              (onClick)="activateCallback(5)"
-            />
-          </div>
-        </ng-template>
-      </p-step-panel>
-    </p-step-item>
-
-    <p-step-item [value]="5">
-      <p-step
-        ><div class="assessment-schedule__step-content">
-          ASSIGN INTERVIEWERS
-        </div></p-step
-      >
-      <p-step-panel>
-        <ng-template #content let-activateCallback="activateCallback">
-          <div class="assessment-schedule__box">
-            <app-assign-panel-interviewer [assessmentId]="assessmentId"></app-assign-panel-interviewer>
-          </div>
-          <div class="assessment-schedule__footer">
-            <app-button
-              [buttonLabel]="'Back'"
-              [buttonVariant]="'outlined'"
-              (btnClick)="activateCallback(4)"
-            ></app-button>
-            <p-button
-              label="Complete"
-              (onClick)="onCompleteStep(5)"
-              [disabled]="completedSteps.includes(5)"
-            />
-            <p-button
-              label="Next"
-              *ngIf="completedSteps.includes(5)"
-              (onClick)="activateCallback(6)"
-            />
-          </div>
-        </ng-template>
-      </p-step-panel>
-    </p-step-item>
-
-    <p-step-item [value]="6">
-      <p-step
-        ><div class="assessment-schedule__step-content">
-          IMPORT CANDIDATE LIST AND SCHEDULE ASSESSMENT
-        </div></p-step
-      >
-      <p-step-panel>
-        <ng-template #content let-activateCallback="activateCallback">
-          <div class="assessment-schedule__box">
-            <app-import-candidate-list-step
-              [assessmentId]="assessmentId"
-            ></app-import-candidate-list-step>
-          </div>
-          <div class="assessment-schedule__footer">
-            <app-button
-              [buttonLabel]="'Back'"
-              [buttonVariant]="'outlined'"
-              (btnClick)="activateCallback(5)"
-            ></app-button>
-            <p-button
-              label="Complete"
-              (onClick)="onCompleteStep(6)"
-              [disabled]="isdisableCompleted"
-            />
-          </div>
-        </ng-template>
-      </p-step-panel>
-    </p-step-item>
-  </p-stepper> -->
+    <main class="assessment-schedule__main">
+      <div class="assessment-schedule__content-wrapper">
+        <div class="assessment-schedule__content-header">
+          <h2 class="assessment-schedule__content-title">
+            @if (stepConfig[activeStep]) {
+              <i [class]="stepConfig[activeStep].icon"></i>
+              {{ stepConfig[activeStep].label }}
+            }
+          </h2>
+          <p class="assessment-schedule__content-description">
+            @if (stepConfig[activeStep]) {
+              {{ stepConfig[activeStep].description }}
+            }
+          </p>
+        </div>
+        <div class="assessment-schedule__content">
+          @if (isStepUpdating) {
+            <div class="assessment-schedule__loading-overlay">
+              <i class="pi pi-spin pi-spinner text-4xl"></i>
+              <span>Validating step status...</span>
+            </div>
+          } @else {
+            @if (this.activeStep === 0) {
+              <app-assessment-round
+                [assessmentId]="assessmentId"
+                [isReadOnly]="isSchedulingConfigReadOnly"
+              ></app-assessment-round>
+            } @else if (this.activeStep === 1) {
+              <app-select-quesionset-step
+                [assessmentId]="assessmentId"
+                [isReadOnly]="isSchedulingConfigReadOnly"
+                [stepStatus]="stepsStatus.questionSets"
+                [isIncomplete]="isQuestionSetIncomplete"
+                [isParentLoading]="!stepsLoaded"
+                [hasModifiedAfterComplete]="hasModifiedQuestionSetAfterComplete"
+              ></app-select-quesionset-step>
+            } @else if (this.activeStep === 2) {
+              <app-coordinator-step
+                [assessmentId]="assessmentId"
+                [isReadOnly]="isSchedulingConfigReadOnly"
+              ></app-coordinator-step>
+            } @else if (this.activeStep === 3) {
+              <app-front-desk
+                [assessmentId]="assessmentId"
+                [isReadOnly]="isSchedulingConfigReadOnly"
+              ></app-front-desk>
+            } @else if (this.activeStep === 4) {
+              <app-import-candidate-list-step
+                [assessmentId]="assessmentId"
+                [isReadOnly]="isCandidateSchedulingReadOnly"
+              ></app-import-candidate-list-step>
+            }
+          }
+        </div>
+      </div>
+    </main>
+  </div>
   <div
     *ngIf="showHoverTooltip"
     [style.left.px]="tooltipX"

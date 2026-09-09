@@ -1,0 +1,30 @@
+<div class="instructions">
+  <app-table
+    [tableData]="data"
+    [columnsData]="columns"
+    [parentLoader]="isLoading"
+    [hasSearch]="true"
+    [hasCheckbox]="false"
+    (edit)="onEdit($event)"
+    (delete)="onDelete($event)"
+    (history)="viewHistory($event)"
+    (pageChangeAndSort)="onTablePayloadChange($event)"
+    (buttonClick)="onButtonClick($event)"
+  >
+    <div class="instructions__button">
+      <app-button
+        [buttonLabel]="'New'"
+        icon="pi pi-plus"
+        (btnClick)="addNewInstruction()"
+      ></app-button>
+    </div>
+  </app-table>
+
+  <app-history-drawer
+    [(visible)]="visible"
+    [events]="events"
+    [loading]="historyLoading"
+    [showLoadMore]="hasMoreHistory"
+    (loadMore)="loadHistory()"
+  ></app-history-drawer>
+</div>

@@ -7,6 +7,7 @@ import { BadgeModule } from 'primeng/badge';
 import { MenuModule } from 'primeng/menu';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { RippleModule } from 'primeng/ripple';
+import { provideRouter } from '@angular/router';
 import { ToggleMenuService } from '../../services/toggle-menu.service';
 import { SideNavComponent } from './side-nav.component';
 
@@ -36,6 +37,7 @@ describe('SideNavComponent', () => {
       ],
       providers: [
         { provide: ToggleMenuService, useValue: mockToggleMenuService },
+        provideRouter([]),
       ],
     }).compileComponents();
 

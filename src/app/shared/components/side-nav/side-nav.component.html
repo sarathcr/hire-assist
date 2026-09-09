@@ -30,10 +30,28 @@
     ></button>
   </div>
 
-  <nav class="sidebar__nav">
+  <nav class="sidebar__nav" [class.sidebar__nav--with-subnav]="isMobileView() && isSettingsActive()">
     <div class="sidebar__nav-main">
       <p-panelmenu [model]="mainNavLinks"></p-panelmenu>
     </div>
+    @if (isMobileView() && isSettingsActive()) {
+      <div class="sidebar__mobile-subnav">
+        <div class="sidebar__mobile-subnav-title">Settings</div>
+        <div class="sidebar__mobile-subnav-links">
+          @for (sub of settingsSublinks; track sub.route) {
+            <a
+              [routerLink]="sub.route"
+              class="sidebar__mobile-subnav-link"
+              [class.active]="isSublinkActive(sub.route)"
+              (click)="closeToggleMenu()"
+            >
+              <i [class]="sub.icon"></i>
+              <span>{{ sub.label }}</span>
+            </a>
+          }
+        </div>
+      </div>
+    }
     <div class="sidebar__nav-footer" *ngIf="bottomNavLinks?.length">
       <p-panelmenu [model]="bottomNavLinks"></p-panelmenu>
     </div>

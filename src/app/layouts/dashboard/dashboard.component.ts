@@ -139,38 +139,9 @@ export class DashboardComponent implements OnInit {
     links.push({
       label: 'Settings',
       icon: 'pi pi-cog',
-      items: [
-        {
-          label: 'Questions',
-          icon: 'pi pi-file-check',
-          routerLink: ['/admin/settings/questions'],
-          routerLinkActiveOptions: { exact: true },
-        },
-        {
-          label: 'Batches',
-          icon: 'pi pi-list',
-          routerLink: ['/admin/settings/batches'],
-          routerLinkActiveOptions: { exact: true },
-        },
-        {
-          label: 'Departments',
-          icon: 'pi pi-database',
-          routerLink: ['/admin/settings/departments'],
-          routerLinkActiveOptions: { exact: true },
-        },
-        {
-          label: 'Panels',
-          icon: 'pi pi-clone',
-          routerLink: ['/admin/settings/panels'],
-          routerLinkActiveOptions: { exact: true },
-        },
-        {
-          label: 'Panel Assignment',
-          icon: 'pi pi-user-plus',
-          routerLink: ['/admin/settings/panel-assignment'],
-          routerLinkActiveOptions: { exact: true },
-        },
-      ],
+      routerLink: ['/admin/settings'],
+      routerLinkActiveOptions: { exact: false },
+      tooltip: 'Settings',
     });
     return links;
   }

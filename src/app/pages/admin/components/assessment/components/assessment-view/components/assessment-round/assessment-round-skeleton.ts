@@ -12,15 +12,15 @@ import { SkeletonModule } from 'primeng/skeleton';
       <div class="assessment-round__section-header">
         <div class="assessment-round__header-content">
           <div class="assessment-round__header-icon">
-            <p-skeleton shape="circle" width="56px" height="56px" />
+            <p-skeleton shape="circle" width="38px" height="38px" />
           </div>
           <div class="assessment-round__header-text">
             <p-skeleton
-              width="280px"
-              height="28px"
+              width="220px"
+              height="20px"
               class="assessment-round__skeleton-title skeleton-mb-10"
             />
-            <p-skeleton width="100%" height="20px" />
+            <p-skeleton width="300px" height="14px" />
           </div>
         </div>
       </div>

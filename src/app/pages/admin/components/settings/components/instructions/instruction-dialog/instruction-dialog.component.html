@@ -1,0 +1,534 @@
+<div class="instruction-dialog">
+  <!-- Loading state -->
+  @if (isLoading) {
+    <div class="instruction-dialog__loading">
+      <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+      <p class="font-medium text-lg mt-3">Loading instruction details...</p>
+    </div>
+  } @else {
+    <!-- TOP META HEADER (Sticky at Top) -->
+    <div class="instruction-dialog__top-bar">
+      <div class="top-bar-row top-bar-row--meta">
+        <!-- Title -->
+        <div class="meta-field meta-field--title">
+          <label for="inst-title">Instruction Title <span class="text-red-500">*</span></label>
+          <input
+            id="inst-title"
+            type="text"
+            pInputText
+            [(ngModel)]="title"
+            (blur)="titleTouched = true"
+            [class.ng-invalid]="titleTouched && !isTitleValid"
+            [class.ng-dirty]="titleTouched"
+            maxlength="150"
+            placeholder="e.g. Standard Aptitude Proctoring Rules"
+            class="w-full"
+          />
+          @if (titleTouched && !isTitleValid) {
+            <small class="p-error text-red-500 block mt-1">{{ titleErrorMessage }}</small>
+          }
+        </div>
+
+        <!-- Version -->
+        <div class="meta-field meta-field--version">
+          <label for="inst-version">Version Tag <span class="text-red-500">*</span></label>
+          <input
+            id="inst-version"
+            type="text"
+            pInputText
+            [(ngModel)]="version"
+            placeholder="e.g. 1.0"
+            class="w-full"
+          />
+        </div>
+
+        <!-- Default Checkbox -->
+        <div class="meta-field meta-field--checkbox">
+          <label class="checkbox-container">
+            <p-checkbox
+              [(ngModel)]="isDefault"
+              [binary]="true"
+              inputId="inst-default"
+            ></p-checkbox>
+            <span>Set as Default for Rounds</span>
+          </label>
+        </div>
+
+        <!-- Active Checkbox -->
+        <div class="meta-field meta-field--checkbox">
+          <label class="checkbox-container">
+            <p-checkbox
+              [(ngModel)]="isActive"
+              [binary]="true"
+              inputId="inst-active"
+            ></p-checkbox>
+            <span>Active Template</span>
+          </label>
+        </div>
+
+        <!-- View Mode Switcher -->
+        @if (mode !== 'preview') {
+          <div class="meta-field meta-field--viewmode">
+            <label>Studio Layout</label>
+            <div class="viewmode-toggle">
+              <button
+                type="button"
+                class="viewmode-btn"
+                [class.active]="viewMode === 'split'"
+                (click)="setViewMode('split')"
+                pTooltip="Split Studio: Canvas + Live Preview"
+                tooltipPosition="bottom"
+              >
+                <i class="pi pi-pause"></i>
+                <span>Split View</span>
+              </button>
+              <button
+                type="button"
+                class="viewmode-btn"
+                [class.active]="viewMode === 'builder'"
+                (click)="setViewMode('builder')"
+                pTooltip="Canvas Only: Maximize Builder"
+                tooltipPosition="bottom"
+              >
+                <i class="pi pi-pencil"></i>
+                <span>Canvas</span>
+              </button>
+              <button
+                type="button"
+                class="viewmode-btn"
+                [class.active]="viewMode === 'preview'"
+                (click)="setViewMode('preview')"
+                pTooltip="Preview Only: Candidate View"
+                tooltipPosition="bottom"
+              >
+                <i class="pi pi-eye"></i>
+                <span>Preview</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Description -->
+      <div class="top-bar-row top-bar-row--desc">
+        <div class="meta-field w-full">
+          <div class="flex justify-content-between align-items-center mb-1">
+            <label for="inst-desc">Candidate Overview / Intro Note</label>
+            <span class="text-xs text-500">{{ (description || '').length }}/500</span>
+          </div>
+          <input
+            id="inst-desc"
+            type="text"
+            pInputText
+            [(ngModel)]="description"
+            (blur)="descriptionTouched = true"
+            [class.ng-invalid]="descriptionTouched && !isDescriptionValid"
+            [class.ng-dirty]="descriptionTouched"
+            maxlength="500"
+            placeholder="e.g. Please read the following proctoring rules carefully before starting your assessment."
+            class="w-full"
+          />
+          @if (descriptionTouched && !isDescriptionValid) {
+            <small class="p-error text-red-500 block mt-1">{{ descriptionErrorMessage }}</small>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORICAL PROTECTION BANNER -->
+    @if (hasCompletedRecruitmentReferences && mode !== 'preview') {
+      <div class="completed-reference-banner">
+        <i class="pi pi-shield"></i>
+        <div class="banner-text">
+          <span class="banner-title">Historical Record Protection Active</span>
+          <span class="banner-desc">This template was used in completed recruitments. To protect past candidate records, edits must be saved as a new version.</span>
+        </div>
+      </div>
+    }
+
+    <!-- MIDDLE SCROLLABLE BODY -->
+    <div class="instruction-dialog__body">
+      <div
+        class="instruction-studio-grid"
+        [ngClass]="{
+          'grid--split': viewMode === 'split',
+          'grid--builder-only': viewMode === 'builder',
+          'grid--preview-only': viewMode === 'preview'
+        }"
+      >
+        <!-- LEFT COLUMN: DRAG & DROP COMPONENT CANVAS -->
+        @if (viewMode !== 'preview') {
+          <div class="builder-canvas">
+            <!-- Component Palette -->
+            <div class="component-palette">
+              <div class="palette-header">
+                <span class="palette-title">
+                  <i class="pi pi-th-large"></i>
+                  <span>Add Component Block:</span>
+                </span>
+                <span class="palette-hint">Click any preset to insert or drag cards to reorder</span>
+              </div>
+              <div class="palette-buttons">
+                @for (preset of componentPresets; track preset.key) {
+                  <button
+                    type="button"
+                    class="palette-chip palette-chip--{{ preset.severity }}"
+                    (click)="addComponentFromPreset(preset.key)"
+                    [pTooltip]="'Add ' + preset.label + ' card'"
+                    tooltipPosition="top"
+                  >
+                    <i [class]="preset.icon"></i>
+                    <span>+ {{ preset.label }}</span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Drag & Drop DropList for Section Cards -->
+            <div
+              cdkDropList
+              [cdkDropListData]="sections"
+              (cdkDropListDropped)="onSectionDrop($event)"
+              class="sections-droplist"
+            >
+              @for (section of sections; let sIdx = $index; track trackByIndex(sIdx)) {
+                <div
+                  cdkDrag
+                  class="section-card section-card--{{ section.severity }}"
+                  [class.section-card--collapsed]="section.collapsed"
+                >
+                  <!-- CDK Drag Placeholder -->
+                  <div class="section-card__placeholder" *cdkDragPlaceholder></div>
+
+                  <!-- Card Header Bar -->
+                  <div class="section-card__header">
+                    <!-- Drag Handle -->
+                    <div
+                      cdkDragHandle
+                      class="section-card__drag-handle"
+                      pTooltip="Drag to reorder component"
+                      tooltipPosition="top"
+                    >
+                      <i class="pi pi-bars"></i>
+                    </div>
+
+                    <!-- Component Title -->
+                    <div class="section-card__field-title">
+                      <label>Block Title</label>
+                      <input
+                        type="text"
+                        pInputText
+                        [(ngModel)]="section.title"
+                        placeholder="e.g. Critical Proctoring Rules"
+                        class="w-full"
+                      />
+                    </div>
+
+                    <!-- Severity / Style -->
+                    <div class="section-card__field-severity">
+                      <label>Theme</label>
+                      <p-select
+                        [options]="severityOptions"
+                        [(ngModel)]="section.severity"
+                        optionLabel="label"
+                        optionValue="value"
+                        appendTo="body"
+                        class="w-full"
+                      ></p-select>
+                    </div>
+
+                    <!-- Icon -->
+                    <div class="section-card__field-icon">
+                      <label>Icon</label>
+                      <p-select
+                        [options]="iconOptions"
+                        [(ngModel)]="section.icon"
+                        optionLabel="label"
+                        optionValue="value"
+                        appendTo="body"
+                        class="w-full"
+                      >
+                        <ng-template #selectedItem let-selectedOption>
+                          <div class="flex align-items-center gap-2">
+                            <i [class]="selectedOption.value"></i>
+                            <span class="text-xs">{{ selectedOption.label }}</span>
+                          </div>
+                        </ng-template>
+                        <ng-template #item let-itemOption>
+                          <div class="flex align-items-center gap-2">
+                            <i [class]="itemOption.value"></i>
+                            <span class="text-xs">{{ itemOption.label }}</span>
+                          </div>
+                        </ng-template>
+                      </p-select>
+                    </div>
+
+                    <!-- Card Header Actions -->
+                    <div class="section-card__actions">
+                      <!-- Collapse/Expand -->
+                      <button
+                        type="button"
+                        class="action-btn"
+                        (click)="toggleSectionCollapse(sIdx)"
+                        [pTooltip]="section.collapsed ? 'Expand Rules' : 'Collapse Rules'"
+                        tooltipPosition="top"
+                      >
+                        <i [class]="section.collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'"></i>
+                      </button>
+
+                      <!-- Duplicate -->
+                      <button
+                        type="button"
+                        class="action-btn"
+                        (click)="duplicateSection(sIdx)"
+                        pTooltip="Duplicate Block"
+                        tooltipPosition="top"
+                      >
+                        <i class="pi pi-copy"></i>
+                      </button>
+
+                      <!-- Delete -->
+                      @if (sections.length > 1) {
+                        <button
+                          type="button"
+                          class="action-btn action-btn--danger"
+                          (click)="removeSection(sIdx)"
+                          pTooltip="Remove Block"
+                          tooltipPosition="top"
+                        >
+                          <i class="pi pi-trash"></i>
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Card Body: Rules List (Draggable) -->
+                  @if (!section.collapsed) {
+                    <div class="section-card__body">
+                      <div class="rules-header">
+                        <span class="rules-label">Rules & Instructions (Drag to reorder):</span>
+                        <span class="rules-count">{{ section.rules.length }} items</span>
+                      </div>
+
+                      <div
+                        cdkDropList
+                        [cdkDropListData]="section.rules"
+                        (cdkDropListDropped)="onRuleDrop($event, sIdx)"
+                        class="rules-droplist"
+                      >
+                        @for (rule of section.rules; let rIdx = $index; track trackByIndex(rIdx)) {
+                          <div cdkDrag class="rule-item">
+                            <!-- Rule Drag Placeholder -->
+                            <div class="rule-item__placeholder" *cdkDragPlaceholder></div>
+
+                            <!-- Rule Drag Handle -->
+                            <span
+                              cdkDragHandle
+                              class="rule-drag-handle"
+                              pTooltip="Drag to reorder rule"
+                              tooltipPosition="top"
+                            >
+                              <i class="pi pi-bars"></i>
+                            </span>
+
+                            <span class="rule-index">{{ rIdx + 1 }}.</span>
+
+                            <input
+                              type="text"
+                              pInputText
+                              [(ngModel)]="section.rules[rIdx]"
+                              placeholder="Enter specific instruction or rule here..."
+                              class="w-full rule-input"
+                            />
+
+                            @if (section.rules.length > 1) {
+                              <button
+                                type="button"
+                                class="rule-delete-btn"
+                                (click)="removeRule(sIdx, rIdx)"
+                                pTooltip="Remove rule"
+                                tooltipPosition="top"
+                              >
+                                <i class="pi pi-times"></i>
+                              </button>
+                            }
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Add Rule Button -->
+                      <div class="add-rule-row">
+                        <button
+                          type="button"
+                          class="add-rule-btn"
+                          (click)="addRule(sIdx)"
+                        >
+                          <i class="pi pi-plus"></i>
+                          <span>Add Another Rule</span>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Bottom Add Section Button -->
+            <div class="canvas-bottom-action">
+              <button
+                type="button"
+                class="add-custom-section-btn"
+                (click)="addSection()"
+              >
+                <i class="pi pi-plus-circle"></i>
+                <span>Add New Blank Section</span>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- RIGHT COLUMN: LIVE CANDIDATE PREVIEW -->
+        @if (viewMode !== 'builder') {
+          <div class="preview-panel">
+            <div class="preview-panel__header">
+              <div class="preview-badge">
+                <i class="pi pi-desktop"></i>
+                <span>Candidate Screen Preview (Live)</span>
+              </div>
+              <span class="preview-subtext">Real-time simulation of pre-assessment proctoring modal</span>
+            </div>
+
+            <div class="preview-screen-mockup">
+              <!-- Mock Window Titlebar -->
+              <div class="mock-titlebar">
+                <div class="mock-dots">
+                  <span class="mock-dot mock-dot--red"></span>
+                  <span class="mock-dot mock-dot--yellow"></span>
+                  <span class="mock-dot mock-dot--green"></span>
+                </div>
+                <span class="mock-title">Aptitude Assessment Instructions</span>
+              </div>
+
+              <!-- Candidate Modal Content -->
+              <div class="mock-modal-content">
+                <!-- Intro / Description Box -->
+                <div class="candidate-intro-box">
+                  <i class="pi pi-info-circle candidate-intro-icon"></i>
+                  <p>
+                    {{ description || 'Please read the following instructions carefully before starting your assessment session.' }}
+                  </p>
+                </div>
+
+                <!-- Rendered Cards -->
+                <div class="candidate-cards-list">
+                  @for (sec of sections; track sec.title) {
+                    <div class="candidate-card candidate-card--{{ sec.severity || 'info' }}">
+                      <div class="candidate-card__header">
+                        <i
+                          class="candidate-card__icon"
+                          [ngClass]="sec.icon || 'pi pi-info-circle'"
+                        ></i>
+                        <h4 class="candidate-card__title">{{ sec.title }}</h4>
+                      </div>
+                      <ul class="candidate-card__rules">
+                        @for (rule of sec.rules; track rule) {
+                          <li>{{ rule }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- FIXED STICKY FOOTER -->
+    <footer class="instruction-dialog__footer">
+      <div class="footer-left">
+        @if (mode !== 'preview') {
+          <app-button
+            [buttonLabel]="'Cancel'"
+            [buttonVariant]="'outlined'"
+            (btnClick)="onClose()"
+          ></app-button>
+        }
+      </div>
+
+      <div class="footer-right">
+        @if (mode === 'preview') {
+          <app-button
+            [buttonLabel]="'Close Preview'"
+            (btnClick)="onClose()"
+          ></app-button>
+        } @else if (mode === 'clone') {
+          <p-button
+            label="Save as New Version"
+            icon="pi pi-copy"
+            severity="help"
+            [outlined]="true"
+            [disabled]="!hasChanges() || !isFormValid || isSubmitting"
+            (onClick)="onSaveAsNewVersion()"
+            pTooltip="Creates a new version without modifying the original template"
+            tooltipPosition="top"
+          ></p-button>
+        } @else if (mode === 'edit') {
+          @if (hasCompletedRecruitmentReferences) {
+            @if (hasContentOrTitleChanges()) {
+              <p-button
+                label="Save as New Version"
+                icon="pi pi-copy"
+                severity="primary"
+                [disabled]="!isFormValid || isSubmitting"
+                (onClick)="onSaveAsNewVersion()"
+                pTooltip="Creates a new version to protect historical recruitment records"
+                tooltipPosition="top"
+              ></p-button>
+            } @else {
+              <p-button
+                label="Save Changes"
+                icon="pi pi-check"
+                severity="primary"
+                [disabled]="!hasChanges() || isSubmitting"
+                (onClick)="onSave()"
+                pTooltip="Save status changes"
+                tooltipPosition="top"
+              ></p-button>
+            }
+          } @else {
+            @if (hasChanges()) {
+              <p-button
+                label="Save as New Version"
+                icon="pi pi-copy"
+                severity="help"
+                [outlined]="true"
+                [disabled]="!isFormValid || isSubmitting"
+                (onClick)="onSaveAsNewVersion()"
+                pTooltip="Creates a new version without modifying the original template"
+                tooltipPosition="top"
+              ></p-button>
+            }
+
+            <p-button
+              label="Save Changes"
+              icon="pi pi-check"
+              severity="primary"
+              [disabled]="!isFormValid || isSubmitting"
+              (onClick)="onSave()"
+            ></p-button>
+          }
+        } @else {
+          <p-button
+            label="Create Instruction"
+            icon="pi pi-check"
+            severity="primary"
+            [disabled]="!isFormValid || isSubmitting"
+            (onClick)="onSave()"
+          ></p-button>
+        }
+      </div>
+    </footer>
+  }
+</div>

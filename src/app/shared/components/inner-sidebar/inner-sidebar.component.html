@@ -2,28 +2,90 @@
   class="inner-sidebar"
   [ngClass]="showMenu ? 'inner-sidebar_expand' : 'inner-sidebar_collapse'"
 >
-  <span
-    class="pi inner-sidebar__btn"
-    [ngClass]="
-      showMenu
-        ? 'pi-arrow-left inner-sidebar__btn_close'
-        : 'pi-arrow-right inner-sidebar__btn_bar'
-    "
-    (click)="showMenu = !showMenu"
-    (keydown.enter)="showMenu = !showMenu"
-    tabindex="0"
-  ></span>
+  <div class="inner-sidebar__header">
+    @if (showMenu) {
+      <div class="inner-sidebar__title">
+        <i [class]="icon()"></i>
+        <span>{{ title() }}</span>
+      </div>
+    }
+    <span
+      class="pi inner-sidebar__btn"
+      [ngClass]="
+        showMenu
+          ? 'pi-arrow-left inner-sidebar__btn_close'
+          : 'pi-arrow-right inner-sidebar__btn_bar'
+      "
+      (click)="showMenu = !showMenu"
+      (keydown.enter)="showMenu = !showMenu"
+      tabindex="0"
+      role="button"
+      [pTooltip]="!showMenu ? 'Expand sidebar' : ''"
+      [tooltipDisabled]="showMenu"
+      tooltipPosition="top"
+      tooltipStyleClass="sidebar-tooltip"
+      appendTo="body"
+      [showDelay]="50"
+    ></span>
+  </div>
   <p-menu [model]="items()">
+    <ng-template pTemplate="submenuheader" #submenuheader let-item>
+      @if (showMenu) {
+        <span class="inner-sidebar__group-label">{{ item.label }}</span>
+      }
+    </ng-template>
     <ng-template #item let-item>
       @if (item) {
-        <a
-          [routerLink]="item.route"
-          class="p-menu-item-link"
-          [ngClass]="{ active: item.index === activeMenuItem() }"
-        >
-          <span [class]="item.icon"></span>
-          <span class="ml-2">{{ item.label }} </span>
-        </a>
+        @if (item.route || item.routerLink) {
+          <a
+            [routerLink]="item.disabled ? null : (item.route || item.routerLink)"
+            class="p-menu-item-link"
+            [title]="item.label || ''"
+            [ngClass]="{ active: item['index'] === activeMenuItem(), disabled: item.disabled }"
+            [attr.aria-disabled]="item.disabled"
+            [pTooltip]="!showMenu ? (item.tooltip || item.label) : ''"
+            [tooltipDisabled]="showMenu"
+            tooltipPosition="right"
+            tooltipStyleClass="sidebar-tooltip"
+            appendTo="body"
+            [showDelay]="50"
+          >
+            <span [class]="item.icon">
+              @if (item['completed']) {
+                <i class="inner-sidebar__status-check pi pi-check"></i>
+              }
+            </span>
+            <span>{{ item.label }}</span>
+            @if (item.badge) {
+              <span class="inner-sidebar__badge" [class]="item.badgeStyleClass">{{ item.badge }}</span>
+            }
+          </a>
+        } @else {
+          <button
+            type="button"
+            class="p-menu-item-link inner-sidebar__btn-item"
+            [title]="item.label || ''"
+            [ngClass]="{ active: item['index'] === activeMenuItem(), disabled: item.disabled }"
+            [attr.aria-disabled]="item.disabled"
+            (click)="onItemClick($event, item)"
+            [pTooltip]="!showMenu ? (item.tooltip || item.label) : ''"
+            [tooltipDisabled]="showMenu"
+            tooltipPosition="right"
+            tooltipStyleClass="sidebar-tooltip"
+            appendTo="body"
+            [showDelay]="50"
+          >
+            <span [class]="item.icon">
+              @if (item['completed']) {
+                <i class="inner-sidebar__status-check pi pi-check"></i>
+              }
+            </span>
+            <span>{{ item.label }}</span>
+            @if (item.badge) {
+              <span class="inner-sidebar__badge" [class]="item.badgeStyleClass">{{ item.badge }}</span>
+            }
+          </button>
+        }
       }
     </ng-template>
   </p-menu>

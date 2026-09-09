@@ -46,20 +46,9 @@ describe('DashboardComponent', () => {
       {
         label: 'Settings',
         icon: 'pi pi-cog',
-        items: [
-          {
-            label: 'Questions',
-            icon: 'pi pi-file-check',
-            routerLink: ['/admin/settings/questions'],
-            routerLinkActiveOptions: { exact: true },
-          },
-          {
-            label: 'Batches',
-            icon: 'pi pi-file-check',
-            routerLink: ['/admin/settings/batches'],
-            routerLinkActiveOptions: { exact: true },
-          },
-        ],
+        routerLink: ['/admin/settings'],
+        routerLinkActiveOptions: { exact: false },
+        tooltip: 'Settings',
       },
     ] as MenuItem[],
 
@@ -91,20 +80,9 @@ describe('DashboardComponent', () => {
       {
         label: 'Settings',
         icon: 'pi pi-cog',
-        items: [
-          {
-            label: 'Questions',
-            icon: 'pi pi-file-check',
-            routerLink: ['/admin/settings/questions'],
-            routerLinkActiveOptions: { exact: true },
-          },
-          {
-            label: 'Batches',
-            icon: 'pi pi-file-check',
-            routerLink: ['/admin/settings/batches'],
-            routerLinkActiveOptions: { exact: true },
-          },
-        ],
+        routerLink: ['/admin/settings'],
+        routerLinkActiveOptions: { exact: false },
+        tooltip: 'Settings',
       },
     ] as MenuItem[],
 
@@ -251,12 +229,12 @@ describe('DashboardComponent', () => {
     expect(component.links).toEqual(mockLinks.fallback);
   });
 
-  it('should have nested items under Settings menu', () => {
+  it('should have Settings menu link navigating to /admin/settings', () => {
     mockStoreService.getUserRole.and.returnValue(['admin']);
     component.ngOnInit();
     const settings = component.links.find((l) => l.label === 'Settings');
     expect(settings).toBeDefined();
-    expect(settings?.items?.length).toBeGreaterThan(0);
+    expect(settings?.routerLink).toEqual(['/admin/settings']);
   });
 
   it('candidate role should NOT see admin-only links', () => {

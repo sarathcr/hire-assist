@@ -52,6 +52,59 @@
                 </div>
               </p-accordion-header>
               <p-accordion-content>
+                <!-- Dynamic Aptitude Instructions Bar -->
+                <div class="QuestionSet__instruction-bar">
+                  <div class="QuestionSet__instruction-bar-info">
+                    <div class="QuestionSet__instruction-icon">
+                      <i class="pi pi-file-check"></i>
+                    </div>
+                    <div class="QuestionSet__instruction-text">
+                      <span class="QuestionSet__instruction-title">Aptitude Test Instructions</span>
+                      <span class="QuestionSet__instruction-subtitle">
+                        Candidate instructions for this round. Select an existing template or customize/version it.
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div class="QuestionSet__instruction-actions">
+                    <div class="QuestionSet__instruction-select-wrapper">
+                      <p-select
+                        [options]="instructionOptions"
+                        [ngModel]="getRoundInstructionId(round.assessmentRoundId ?? 0)"
+                        (ngModelChange)="onRoundInstructionChange(round.assessmentRoundId ?? 0, $event)"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Select instructions..."
+                        [disabled]="isReadOnly() || isAssigningInstruction.get(round.assessmentRoundId ?? 0) === true"
+                        styleClass="QuestionSet__instruction-select"
+                      ></p-select>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="p-button p-button-outlined p-button-secondary p-button-sm QuestionSet__instruction-btn"
+                      (click)="onPreviewRoundInstruction(round.assessmentRoundId ?? 0)"
+                      pTooltip="Preview Candidate Instructions Modal"
+                      tooltipPosition="top"
+                    >
+                      <i class="pi pi-eye"></i>
+                      <span>Preview</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      class="p-button p-button-outlined p-button-primary p-button-sm QuestionSet__instruction-btn"
+                      (click)="onCustomizeRoundInstruction(round.assessmentRoundId ?? 0)"
+                      [disabled]="isReadOnly()"
+                      pTooltip="Customize & save as a new version for this round"
+                      tooltipPosition="top"
+                    >
+                      <i class="pi pi-copy"></i>
+                      <span>Customize / New Version</span>
+                    </button>
+                  </div>
+                </div>
+
                 @let roundSets = getQuestionSetsForRound(round.assessmentRoundId ?? 0);
                 @let emptySets = getEmptyQuestionSetsForRound(round.assessmentRoundId ?? 0);
 

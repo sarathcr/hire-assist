@@ -14,6 +14,7 @@ import { CardSkeletonComponent } from './components/card/card-skeleton.component
 import { CandidateAssessment } from './models/candidate.model';
 import { CandidateService } from './services/candidate.service';
 import { DeviceWarningService } from '../../shared/services/device-width.service';
+import { InstructionSection } from '../admin/models/instruction.model';
 
 @Component({
   selector: 'app-candidate',
@@ -148,55 +149,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     this.deviceWarningService.checkDeviceWidth().subscribe((canProceed) => {
       if (canProceed) {
         const modalData: DialogData = {
-          message: `
-            <div class="instruction-modal">
-              <div class="instruction-modal__intro">
-                <i class="pi pi-info-circle instruction-modal__intro-icon"></i>
-                <p>Please read the following instructions carefully before starting your assessment session.</p>
-              </div>
-
-              <div class="instruction-modal__grid">
-                <!-- Section 1: Critical Proctoring Rules -->
-                <div class="instruction-card instruction-card--danger">
-                  <div class="instruction-card__header">
-                    <i class="pi pi-exclamation-triangle instruction-card__icon"></i>
-                    <h4 class="instruction-card__title">Critical Proctoring Rules</h4>
-                  </div>
-                  <ul class="instruction-card__list">
-                    <li><strong>Full-Screen Mode:</strong> Upon starting, the assessment will enter full-screen mode. You must remain in this mode throughout the session.</li>
-                    <li><strong>Strict Proctoring:</strong> Exiting full-screen mode or switching to other browser tabs/applications will <strong>immediately terminate</strong> your test.</li>
-                    <li><strong>Locked Assessment:</strong> If your session is terminated due to technical issues, please contact the HR manager to unlock it.</li>
-                  </ul>
-                </div>
-
-                <!-- Section 2: Test Navigation & Rules -->
-                <div class="instruction-card instruction-card--info">
-                  <div class="instruction-card__header">
-                    <i class="pi pi-compass instruction-card__icon"></i>
-                    <h4 class="instruction-card__title">Test Navigation</h4>
-                  </div>
-                  <ul class="instruction-card__list">
-                    <li>Select an answer and click <strong>'Next'</strong> to save and move forward.</li>
-                    <li>Use <strong>'Mark for Review'</strong> to revisit a question later.</li>
-                    <li>Click <strong>'Skip'</strong> if you wish to bypass a question.</li>
-                    <li><strong>Flexibility:</strong> You can return and update your answers at any time until the timer expires.</li>
-                  </ul>
-                </div>
-
-                <!-- Section 3: Submission & Support -->
-                <div class="instruction-card instruction-card--success">
-                  <div class="instruction-card__header">
-                    <i class="pi pi-check-circle instruction-card__icon"></i>
-                    <h4 class="instruction-card__title">Submission & Support</h4>
-                  </div>
-                  <ul class="instruction-card__list">
-                    <li><strong>Auto-Submission:</strong> Once the timer expires, all attempted answers are automatically saved and submitted.</li>
-                    <li><strong>Assistance:</strong> For any confusion or technical difficulties, please contact the volunteers present in the room.</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          `,
+          message: this.buildInstructionsHtml(assessment.instructionContent),
           isChoice: true,
           isHtml: true,
           acceptButtonText: 'Start Assessment',
@@ -322,5 +275,112 @@ export class CandidateComponent extends BaseComponent implements OnInit {
       d = new Date(dateStr.replace(/-/g, '/').replace('T', ' ').split('.')[0]);
     }
     return d;
+  }
+
+  private buildInstructionsHtml(instructionContent?: string): string {
+    let sections: InstructionSection[] = [];
+    if (instructionContent) {
+      try {
+        sections = typeof instructionContent === 'string' ? JSON.parse(instructionContent) : instructionContent;
+      } catch {
+        sections = [];
+      }
+    }
+
+    if (!sections || !Array.isArray(sections) || sections.length === 0) {
+      return `
+        <div class="instruction-modal">
+          <div class="instruction-modal__intro">
+            <i class="pi pi-info-circle instruction-modal__intro-icon"></i>
+            <p>Please read the following instructions carefully before starting your assessment session.</p>
+          </div>
+          <div class="instruction-modal__grid">
+            <div class="instruction-card instruction-card--danger">
+              <div class="instruction-card__header">
+                <i class="pi pi-exclamation-triangle instruction-card__icon"></i>
+                <h4 class="instruction-card__title">Critical Proctoring Rules</h4>
+              </div>
+              <ul class="instruction-card__list">
+                <li><strong>Full-Screen Mode:</strong> Upon starting, the assessment will enter full-screen mode. You must remain in this mode throughout the session.</li>
+                <li><strong>Strict Proctoring:</strong> Exiting full-screen mode or switching to other browser tabs/applications will <strong>immediately terminate</strong> your test.</li>
+                <li><strong>Locked Assessment:</strong> If your session is terminated due to technical issues, please contact the HR manager to unlock it.</li>
+              </ul>
+            </div>
+            <div class="instruction-card instruction-card--info">
+              <div class="instruction-card__header">
+                <i class="pi pi-compass instruction-card__icon"></i>
+                <h4 class="instruction-card__title">Test Navigation</h4>
+              </div>
+              <ul class="instruction-card__list">
+                <li>Select an answer and click <strong>'Next'</strong> to save and move forward.</li>
+                <li>Use <strong>'Mark for Review'</strong> to revisit a question later.</li>
+                <li>Click <strong>'Skip'</strong> if you wish to bypass a question.</li>
+                <li><strong>Flexibility:</strong> You can return and update your answers at any time until the timer expires.</li>
+              </ul>
+            </div>
+            <div class="instruction-card instruction-card--success">
+              <div class="instruction-card__header">
+                <i class="pi pi-check-circle instruction-card__icon"></i>
+                <h4 class="instruction-card__title">Submission & Support</h4>
+              </div>
+              <ul class="instruction-card__list">
+                <li><strong>Auto-Submission:</strong> Once the timer expires, all attempted answers are automatically saved and submitted.</li>
+                <li><strong>Assistance:</strong> For any confusion or technical difficulties, please contact the volunteers present in the room.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    const cardsHtml = sections
+      .map((sec) => {
+        const severityClass = `instruction-card--${sec.severity || 'info'}`;
+        const iconClass =
+          sec.icon ||
+          (sec.severity === 'danger'
+            ? 'pi pi-exclamation-triangle'
+            : sec.severity === 'success'
+              ? 'pi pi-check-circle'
+              : sec.severity === 'warn'
+                ? 'pi pi-bell'
+                : 'pi pi-compass');
+
+        const rulesList = (sec.rules || [])
+          .map((r) => {
+            let formatted = r;
+            if (!formatted.includes('<strong>') && formatted.includes(':')) {
+              const colonIdx = formatted.indexOf(':');
+              formatted = `<strong>${formatted.substring(0, colonIdx + 1)}</strong>${formatted.substring(colonIdx + 1)}`;
+            }
+            return `<li>${formatted}</li>`;
+          })
+          .join('');
+
+        return `
+          <div class="instruction-card ${severityClass}">
+            <div class="instruction-card__header">
+              <i class="${iconClass} instruction-card__icon"></i>
+              <h4 class="instruction-card__title">${sec.title}</h4>
+            </div>
+            <ul class="instruction-card__list">
+              ${rulesList}
+            </ul>
+          </div>
+        `;
+      })
+      .join('');
+
+    return `
+      <div class="instruction-modal">
+        <div class="instruction-modal__intro">
+          <i class="pi pi-info-circle instruction-modal__intro-icon"></i>
+          <p>Please read the following instructions carefully before starting your assessment session.</p>
+        </div>
+        <div class="instruction-modal__grid">
+          ${cardsHtml}
+        </div>
+      </div>
+    `;
   }
 }

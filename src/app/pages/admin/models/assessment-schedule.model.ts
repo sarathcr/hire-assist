@@ -59,6 +59,7 @@ export interface AssessmentRoundsInterface {
   timerHour?: string;
   maxTerminationCount?: number;
   roundTypeId?: number;
+  instructionId?: number;
   assessmentRoundFeedbackCriteria?: any[];
 }
 

@@ -6,62 +6,34 @@ import { SkeletonModule } from 'primeng/skeleton';
 @Component({
   selector: 'app-question-set-step-skeleton',
   standalone: true,
-  imports: [CommonModule, SkeletonModule, AccordionModule],
+  imports: [CommonModule, SkeletonModule],
   template: `
-    <!-- Hero Section Skeleton -->
-    <div class="QuestionSet__hero">
-      <div class="QuestionSet__hero-content">
-        <div class="QuestionSet__hero-icon">
-          <p-skeleton shape="circle" width="64px" height="64px" />
-        </div>
-        <div class="QuestionSet__hero-text">
-          <p-skeleton width="200px" height="28px" class="skeleton-mb-10" />
-          <p-skeleton width="350px" height="16px" />
-        </div>
-        <p-skeleton width="180px" height="40px" />
-      </div>
-    </div>
-
     <!-- Accordion Section Skeleton -->
     <div class="QuestionSet__accordion-section">
       <div class="QuestionSet__accordion-header">
         <div class="QuestionSet__accordion-header-icon">
-          <p-skeleton shape="circle" width="56px" height="56px" />
+          <p-skeleton width="20px" height="20px" borderRadius="4px" />
         </div>
         <div class="QuestionSet__accordion-header-text">
-          <p-skeleton width="280px" height="24px" class="skeleton-mb-10" />
-          <p-skeleton width="300px" height="16px" />
+          <p-skeleton width="180px" height="18px" styleClass="mb-2" />
+          <p-skeleton width="280px" height="13px" />
         </div>
       </div>
       <div class="QuestionSet__accordion-container">
-        <p-accordion [multiple]="true">
-          @for (item of accordionItems; track item) {
-            <p-accordion-panel>
-              <p-accordion-header>
-                <div class="QuestionSet__accordion-item-header">
-                  <p-skeleton
-                    width="52px"
-                    height="52px"
-                    class="skeleton-rounded"
-                  />
-                  <div class="QuestionSet__accordion-item-content">
-                    <p-skeleton
-                      width="200px"
-                      height="20px"
-                      class="skeleton-mb-5"
-                    />
-                    <p-skeleton width="250px" height="14px" />
-                  </div>
-                  <p-skeleton
-                    width="100px"
-                    height="28px"
-                    class="skeleton-rounded"
-                  />
-                </div>
-              </p-accordion-header>
-            </p-accordion-panel>
-          }
-        </p-accordion>
+        @for (item of accordionItems; track item) {
+          <div class="QuestionSet__skeleton-round-card">
+            <div class="QuestionSet__accordion-item-icon">
+              <p-skeleton width="20px" height="20px" borderRadius="4px" />
+            </div>
+            <div class="QuestionSet__accordion-item-content">
+              <p-skeleton width="160px" height="18px" styleClass="mb-2" />
+              <p-skeleton width="110px" height="13px" />
+            </div>
+            <div class="QuestionSet__accordion-item-actions">
+              <p-skeleton width="130px" height="32px" borderRadius="8px" />
+            </div>
+          </div>
+        }
       </div>
     </div>
   `,

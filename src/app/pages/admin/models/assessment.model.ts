@@ -18,6 +18,7 @@ export interface RoundModel {
   timerHour?: number;
   maxTerminationCount?: number;
   roundTypeId?: number;
+  instructionId?: number;
 }
 
 export interface Assessment {
@@ -91,6 +92,7 @@ export interface AssessmentRound {
   sequence: number;
   isActive: boolean;
   roundTypeId?: number;
+  instructionId?: number;
 }
 
 export class Score extends FormEntity {
@@ -124,6 +126,7 @@ export interface AssessmentRoundFormGroup {
   maxTerminationCount?: number;
   feedbackCriteria?: FeedbackCriteriaConfig[]; 
   roundType?: string;
+  instructionId?: number;
 }
 
 export interface CoordinatorRoundDto {

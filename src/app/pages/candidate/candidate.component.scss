@@ -764,6 +764,22 @@
         color: #22c55e;
       }
     }
+
+    &--warn {
+      border-left: 6px solid #f59e0b;
+      background: #fffdfa;
+
+      .instruction-card__header {
+        border-color: #fef3c7;
+      }
+      .instruction-card__icon,
+      .instruction-card__title {
+        color: #b45309; /* High contrast orange/amber */
+      }
+      .instruction-card__list li::before {
+        color: #f59e0b;
+      }
+    }
   }
 }
 

@@ -17,6 +17,7 @@ import { BadgeModule } from 'primeng/badge';
 import { MenuModule } from 'primeng/menu';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { RippleModule } from 'primeng/ripple';
+import { RouterModule, Router } from '@angular/router';
 import { ToggleMenuService } from '../../services/toggle-menu.service';
 import { SidebarCollapseService } from '../../services/sidebar-collapse.service';
 
@@ -28,6 +29,7 @@ import { SidebarCollapseService } from '../../services/sidebar-collapse.service'
     RippleModule,
     CommonModule,
     PanelMenuModule,
+    RouterModule,
   ],
   templateUrl: './side-nav.component.html',
   styleUrl: './side-nav.component.scss',
@@ -41,12 +43,30 @@ export class SideNavComponent implements OnChanges, OnInit, OnDestroy {
   public showMenu = computed(() => this.toggleMenu.getToggleMenu());
   private collapseService = inject(SidebarCollapseService);
   public collapsed = computed(() => this.collapseService.isCollapsed());
+  private router = inject(Router);
   public navLinkInterceptor: MenuItem[] = [];
   public mainNavLinks: MenuItem[] = [];
   public bottomNavLinks: MenuItem[] = [];
   @Input() public navLinks: MenuItem[] | undefined;
   public isMobile = false;
   private cdr = inject(ChangeDetectorRef);
+
+  public settingsSublinks = [
+    { label: 'Questions', icon: 'pi pi-file-check', route: '/admin/settings/questions' },
+    { label: 'Question Types', icon: 'pi pi-tags', route: '/admin/settings/question-types' },
+    { label: 'Batches', icon: 'pi pi-calendar', route: '/admin/settings/batches' },
+    { label: 'Panels', icon: 'pi pi-clone', route: '/admin/settings/panels' },
+    { label: 'Panel Assignment', icon: 'pi pi-user-plus', route: '/admin/settings/panel-assignment' },
+    { label: 'Departments', icon: 'pi pi-building', route: '/admin/settings/departments' },
+  ];
+
+  public isSettingsActive(): boolean {
+    return this.router.url.startsWith('/admin/settings');
+  }
+
+  public isSublinkActive(route: string): boolean {
+    return this.router.url.includes(route);
+  }
 
   @HostListener('window:resize')
   onResize(): void {
@@ -105,16 +125,7 @@ export class SideNavComponent implements OnChanges, OnInit, OnDestroy {
       this.onNavLinkClick(currentNavLinks);
       this.navLinkInterceptor = currentNavLinks;
 
-      // Split Settings to bottom section
-      const settingsIndex = currentNavLinks.findIndex(
-        (l) => (l?.label || '').toLowerCase() === 'settings',
-      );
-      if (settingsIndex > -1) {
-        const settings = currentNavLinks.splice(settingsIndex, 1)[0];
-        this.bottomNavLinks = [settings];
-      } else {
-        this.bottomNavLinks = [];
-      }
+      this.bottomNavLinks = [];
       this.mainNavLinks = currentNavLinks;
       // Update tooltip classes after navLinks are set
       setTimeout(() => {

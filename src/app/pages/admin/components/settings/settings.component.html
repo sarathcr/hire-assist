@@ -1,1 +1,17 @@
-<router-outlet></router-outlet>
+<div class="settings-page">
+  <div class="settings-page__header">
+    <h1 class="settings-page__title">{{ pageTitle }}</h1>
+  </div>
+  <div class="settings-page__body">
+    <aside class="settings-page__sidebar">
+      <app-inner-sidebar
+        [items]="settingsMenuItems"
+        [activeMenuItem]="activeMenuItem"
+      ></app-inner-sidebar>
+    </aside>
+    <div class="settings-page__content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
+

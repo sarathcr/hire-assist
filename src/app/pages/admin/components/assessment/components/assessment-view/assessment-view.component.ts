@@ -7,7 +7,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { StepperModule } from 'primeng/stepper';
 import { TooltipModule } from 'primeng/tooltip';
 import { Subscription } from 'rxjs';
-import { MessageService } from 'primeng/api';
+import { MessageService, MenuItem } from 'primeng/api';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import type { Option } from '../../../../../../shared/models/option';
@@ -28,6 +28,7 @@ import { AssessmentService } from '../../../../services/assessment.service';
 import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
 import { forkJoin, of, Observable } from 'rxjs';
 import { switchMap, map, catchError } from 'rxjs/operators';
+import { InnerSidebarComponent } from '../../../../../../shared/components/inner-sidebar/inner-sidebar.component';
 
 export interface AssessmentViewModel {
   id?: string;
@@ -63,6 +64,7 @@ import { SkeletonModule } from 'primeng/skeleton';
     FrontDeskComponent,
     ImportCandidateListStepComponent,
     SkeletonModule,
+    InnerSidebarComponent,
   ],
 
   templateUrl: './assessment-view.component.html',
@@ -116,7 +118,7 @@ export class AssessmentViewComponent
       index: 0,
       label: 'Rounds',
       description: 'Configure assessment rounds and sequence',
-      icon: 'pi pi-list',
+      icon: 'pi pi-step-forward',
     },
     {
       index: 1,
@@ -188,6 +190,52 @@ export class AssessmentViewComponent
     });
   }
 
+  public stepMenuItems: MenuItem[] = [
+    {
+      label: 'Rounds',
+      icon: 'pi pi-step-forward',
+      index: 0,
+      disabled: false,
+      tooltip: 'Rounds: Configure assessment rounds and sequence',
+    },
+  ];
+
+  public updateStepMenuItems(): void {
+    this.stepMenuItems = this.filteredStepConfig.map((step) => {
+      const key = this.stepKeys[step.index];
+      const isCompleted =
+        this.stepsLoaded &&
+        this.stepsStatus &&
+        this.stepsStatus[key] === 'Completed';
+      const isEnabled = this.stepsLoaded && this.isStepEnabled(step.index);
+
+      let tooltipText = step.description;
+      if (!isEnabled) {
+        tooltipText = `${step.label}: Complete previous steps to unlock`;
+      } else if (isCompleted) {
+        tooltipText = `${step.label}: ${step.description} (Completed)`;
+      } else {
+        tooltipText = `${step.label}: ${step.description}`;
+      }
+
+      return {
+        label: step.label,
+        icon: step.icon,
+        index: step.index,
+        disabled: !isEnabled,
+        tooltip: tooltipText,
+        ['completed']: isCompleted,
+      };
+    });
+  }
+
+  public onStepSelect(item: MenuItem): void {
+    const itemIndex = item ? (item['index'] as number | undefined) : undefined;
+    if (itemIndex !== undefined) {
+      this.setActiveStep(itemIndex);
+    }
+  }
+
   private stepStatusUpdateSubscription?: Subscription;
   private stepCompletedSubscription?: Subscription;
 
@@ -207,7 +255,7 @@ export class AssessmentViewComponent
   }
 
   ngOnInit(): void {
-    if (history.state.assessment) {
+    if (history?.state?.assessment) {
       this.assessment = history.state.assessment;
       localStorage.setItem('assessment', JSON.stringify(this.assessment));
     } else {
@@ -218,7 +266,7 @@ export class AssessmentViewComponent
     }
 
     // Reuse steps status if passed via navigation state to avoid redundant API call
-    if (history.state.stepsStatus) {
+    if (history?.state?.stepsStatus) {
       this.stepsStatus = history.state.stepsStatus;
       this.stepsLoaded = true;
     }
@@ -226,6 +274,7 @@ export class AssessmentViewComponent
       this.normalizeDates(this.assessment);
     }
     this.getCurrentRouteId();
+    this.updateStepMenuItems();
     this.stepStatusUpdateSubscription =
       this.stepsStatusService.stepStatusUpdate$.subscribe((assessmentId) => {
         if (assessmentId === this.assessmentId) {
@@ -257,29 +306,42 @@ export class AssessmentViewComponent
   public onCompleteStep(step: number): void {
     if (!this.completedSteps.includes(step)) {
       this.completedSteps.push(step);
+      this.updateStepMenuItems();
     }
   }
 
+  private lastStepWarningTime = 0;
+
   public setActiveStep(step: number): void {
     if (this.isStepUpdating) return;
+    if (this.activeStep === step) return;
+
+    const now = Date.now();
+    const canShowWarning = now - this.lastStepWarningTime > 600;
 
     // Block if coordinator assignment is incomplete and navigating past step 2
     if (this.isCoordinatorIncomplete && step > 2) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'Please assign coordinators to all recruitment rounds before proceeding.',
-      });
+      if (canShowWarning) {
+        this.lastStepWarningTime = now;
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Warning',
+          detail: 'Please assign coordinators to all recruitment rounds before proceeding.',
+        });
+      }
       return;
     }
 
     // Block if front desk coordinator assignment is incomplete and navigating past step 3
     if (this.isFrontDeskIncomplete && step > 3) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'Please assign front desk coordinators before proceeding.',
-      });
+      if (canShowWarning) {
+        this.lastStepWarningTime = now;
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Warning',
+          detail: 'Please assign front desk coordinators before proceeding.',
+        });
+      }
       return;
     }
 
@@ -290,42 +352,54 @@ export class AssessmentViewComponent
       
       // 1. Block EVERYTHING if server-side check says sets are incomplete
       if (this.hasOnlineAptitudeRound && this.isQuestionSetIncomplete) {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Warning',
-          detail: 'Please create question sets and add questions in each set under the rounds before leaving.',
-        });
+        if (canShowWarning) {
+          this.lastStepWarningTime = now;
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Warning',
+            detail: 'Please create question sets and add questions in each set under the rounds before leaving.',
+          });
+        }
         return;
       }
 
       if (comp) {
         // Block if we have modified question sets and haven't clicked Complete yet
         if (step > 1 && this.hasModifiedQuestionSetAfterComplete) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Warning',
-            detail: 'Please click "Complete Question Set Step" to complete the step before proceeding.',
-          });
+          if (canShowWarning) {
+            this.lastStepWarningTime = now;
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Warning',
+              detail: 'Please click "Complete Question Set Step" to complete the step before proceeding.',
+            });
+          }
           return;
         }
 
         // Block if step has unsaved changes/modifications
-        if (step > 1 && comp.isDirty) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Warning',
-            detail: 'Please click "Complete Question Set Step" to complete the step before proceeding.',
-          });
+        if (comp.isDirty) {
+          if (canShowWarning) {
+            this.lastStepWarningTime = now;
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Warning',
+              detail: 'Please save or complete the current Question Set before proceeding.',
+            });
+          }
           return;
         }
 
         // 2. Block only FORWARD navigation if rounds are missing sets
         if (step > 1 && !comp.hasAllRoundsConfigured) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Warning',
-            detail: 'Please create at least one question set for every assessment round and add questions before proceeding.',
-          });
+          if (canShowWarning) {
+            this.lastStepWarningTime = now;
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Warning',
+              detail: 'Please create at least one question set for every assessment round and add questions before proceeding.',
+            });
+          }
           return;
         }
       }
@@ -334,6 +408,7 @@ export class AssessmentViewComponent
     if (!this.visitedSteps.includes(step)) {
       this.visitedSteps.push(step);
     }
+    this.updateStepMenuItems();
   }
 
   public onNextStep(currentStep: number): void {
@@ -451,7 +526,9 @@ export class AssessmentViewComponent
   public loadStepsStatus(shouldUpdateActiveStep: boolean = true, providedStatus?: StepStatus): void {
     if (!this.assessmentId) return;
 
-    this.isStepUpdating = true;
+    if (shouldUpdateActiveStep) {
+      this.isStepUpdating = true;
+    }
 
     // Use provided status if available, otherwise fetch from API
     const statusObs = providedStatus 
@@ -573,6 +650,7 @@ export class AssessmentViewComponent
                   this.setActiveStepFromStatus();
                 }
                 this.isStepUpdating = false;
+                this.updateStepMenuItems();
                 return null;
               })
             );

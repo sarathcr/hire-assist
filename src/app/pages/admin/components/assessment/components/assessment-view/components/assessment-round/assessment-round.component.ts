@@ -12,6 +12,7 @@ import {
   Output,
   ViewChild,
   input,
+  NgZone,
 } from '@angular/core';
 import Sortable from 'sortablejs';
 import {
@@ -159,6 +160,7 @@ export class AssessmentRoundComponent
     private readonly dialogService: DialogService,
     private readonly cdr: ChangeDetectorRef,
     private readonly stepsStatusService: StepsStatusService,
+    private readonly ngZone: NgZone,
   ) {
     this.fGroup = buildFormGroup(this.assessmentSchedule);
     effect(() => {
@@ -610,11 +612,12 @@ export class AssessmentRoundComponent
       return;
     }
 
-    if (this.submittedData.length === 0 || this.isLoading) {
+    if (!this.submittedData || this.submittedData.length === 0 || this.isLoading) {
       return;
     }
 
-    if (typeof Sortable === 'undefined') {
+    const SortableConstructor: any = (Sortable as any)?.default || Sortable;
+    if (!SortableConstructor) {
       return;
     }
 
@@ -713,7 +716,12 @@ export class AssessmentRoundComponent
     }
 
     try {
-      this.sortableInstance = new Sortable(element, {
+      const SortableConstructor: any = (Sortable as any)?.default || Sortable;
+      const createSortable =
+        SortableConstructor?.create ||
+        ((el: HTMLElement, opt: any) => new SortableConstructor(el, opt));
+
+      this.sortableInstance = createSortable.call(SortableConstructor, element, {
         animation: 200,
         ghostClass: 'assessment-round__sortable-ghost',
         chosenClass: 'assessment-round__sortable-chosen',
@@ -727,26 +735,30 @@ export class AssessmentRoundComponent
         onStart: () => {
           element.classList.add('sortable-dragging');
         },
-        onEnd: (evt) => {
-          element.classList.remove('sortable-dragging');
-          if (
-            evt.oldIndex !== undefined &&
-            evt.newIndex !== undefined &&
-            evt.oldIndex !== evt.newIndex
-          ) {
-            const movedItem = this.submittedData[evt.oldIndex];
-            this.submittedData.splice(evt.oldIndex, 1);
-            this.submittedData.splice(evt.newIndex, 0, movedItem);
-            this.submittedData = [...this.submittedData];
+        onEnd: (evt: any) => {
+          this.ngZone.run(() => {
+            element.classList.remove('sortable-dragging');
+            if (
+              evt.oldIndex !== undefined &&
+              evt.newIndex !== undefined &&
+              evt.oldIndex !== evt.newIndex
+            ) {
+              const movedItem = this.submittedData[evt.oldIndex];
+              this.submittedData.splice(evt.oldIndex, 1);
+              this.submittedData.splice(evt.newIndex, 0, movedItem);
+              this.submittedData = [...this.submittedData];
 
-            const movedControl = this.roundConfigForms.at(evt.oldIndex);
-            this.roundConfigForms.removeAt(evt.oldIndex);
-            this.roundConfigForms.insert(evt.newIndex, movedControl);
-          }
+              const movedControl = this.roundConfigForms.at(evt.oldIndex);
+              this.roundConfigForms.removeAt(evt.oldIndex);
+              this.roundConfigForms.insert(evt.newIndex, movedControl);
+
+              this.cdr.detectChanges();
+            }
+          });
         },
       });
     } catch (error) {
-      // Error handling - SortableJS initialization failed
+      console.warn('SortableJS initialization warning:', error);
     }
   }
 

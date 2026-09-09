@@ -1,0 +1,30 @@
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding-top: var(--spacing-20);
+  box-shadow: 0px -15px 20px -26px #000;
+}
+
+.question-type-form {
+  padding: var(--spacing-10) 0 0;
+  padding-top: var(--spacing-25);
+
+  &__field {
+    width: 100%;
+
+    &-container {
+      display: flex;
+      gap: 1rem;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    &__field {
+      &-container {
+        display: block;
+      }
+    }
+  }
+}

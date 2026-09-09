@@ -1,0 +1,25 @@
+<div class="question-type">
+  <div class="question-type__title">
+    <h1>Question Types</h1>
+  </div>
+
+  <app-table
+    [tableData]="data"
+    [columnsData]="columns"
+    [parentLoader]="isLoading"
+    [hasSearch]="true"
+    [hasCheckbox]="false"
+    (edit)="editQuestionType($event)"
+    (delete)="deleteQuestionType($event)"
+    (pageChangeAndSort)="onTablePayloadChange($event)"
+    (buttonClick)="onButtonClick($event)"
+  >
+    <div class="question-type__button">
+      <app-button
+        [buttonLabel]="'New'"
+        icon="pi pi-plus"
+        (btnClick)="addNewQuestionType()"
+      ></app-button>
+    </div>
+  </app-table>
+</div>

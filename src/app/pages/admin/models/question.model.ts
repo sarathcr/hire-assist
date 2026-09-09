@@ -91,6 +91,7 @@ export interface QuestionSetModel {
   updatedBy?: string;
   assessmentRoundId?: number;
   roundName?: string;
+  instructionId?: number | null;
 }
 
 export interface QuestionSet {

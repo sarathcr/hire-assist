@@ -14,7 +14,6 @@
   padding-bottom: 80px;
   flex-grow: 1;
 
-
   &__header {
     display: flex;
     justify-content: space-between;
@@ -177,7 +176,7 @@
     justify-content: center;
     z-index: 100;
     transition: left 0.25s ease-in-out;
-    padding: 12px 0;
+    // padding: 12px 0;
 
     @media screen and (max-width: 1024px) {
       left: 0 !important;

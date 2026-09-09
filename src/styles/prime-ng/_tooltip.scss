@@ -27,6 +27,9 @@
 }
 
 .sidebar-tooltip {
+  z-index: 9999 !important;
+  pointer-events: none;
+
   .p-tooltip-text {
     font-size: 0.7rem !important;
     padding: 0.4rem 0.75rem !important;

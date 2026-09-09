@@ -13,6 +13,8 @@ import { DepartmentsComponent } from './pages/admin/components/settings/componen
 import { InterviewerPanelAssignmentComponent } from './pages/admin/components/settings/components/interviewer-panel-assignment/interviewer-panel-assignment.component';
 import { PanelsComponent } from './pages/admin/components/settings/components/panels/panels.component';
 import { QuestionsComponent } from './pages/admin/components/settings/components/questions/questions.component';
+import { QuestionTypesComponent } from './pages/admin/components/settings/components/question-types/question-types.component';
+import { InstructionsComponent } from './pages/admin/components/settings/components/instructions/instructions.component';
 import { SettingsComponent } from './pages/admin/components/settings/settings.component';
 import { LoginComponent } from './pages/auth/components/login/login.component';
 import { ResetPasswordChangeComponent } from './pages/auth/components/reset-password-change/reset-password-change.component';
@@ -181,7 +183,18 @@ export const routes: Routes = [
         component: SettingsComponent,
         data: { breadcrumb: 'Settings', breadcrumbDisabled: true },
         children: [
+          { path: '', redirectTo: 'questions', pathMatch: 'full' },
           { path: 'questions', component: QuestionsComponent, data: { breadcrumb: 'Questions' } },
+          {
+            path: 'question-types',
+            component: QuestionTypesComponent,
+            data: { breadcrumb: 'Question Types' },
+          },
+          {
+            path: 'instructions',
+            component: InstructionsComponent,
+            data: { breadcrumb: 'Aptitude Test Instructions' },
+          },
           {
             path: 'batches',
             component: BatchesComponent,
