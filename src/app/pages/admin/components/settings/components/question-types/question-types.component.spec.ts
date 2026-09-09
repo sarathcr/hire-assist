@@ -151,6 +151,21 @@ describe('QuestionTypesComponent', () => {
     );
   });
 
+  it('should include activeRecruitmentCount column in tableColumns', () => {
+    const activeRecruitmentCol = component.columns.columns.find(
+      (col) => col.field === 'activeRecruitmentCount',
+    );
+    expect(activeRecruitmentCol).toBeDefined();
+    expect(activeRecruitmentCol?.displayName).toBe('Active Recruitments');
+    expect(activeRecruitmentCol?.sortedColumn).toBeTrue();
+    expect(component.columns.displayedColumns).toContain('activeRecruitmentCount');
+  });
+
+  it('should default questionCount and activeRecruitmentCount to 0 if missing in response', () => {
+    expect(component.data.data[0].questionCount).toBe(0);
+    expect(component.data.data[0].activeRecruitmentCount).toBe(0);
+  });
+
   it('should dispatch actions correctly from onButtonClick', () => {
     spyOn(component, 'editQuestionType');
     spyOn(component, 'deleteQuestionType');

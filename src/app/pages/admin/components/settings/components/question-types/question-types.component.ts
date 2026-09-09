@@ -54,6 +54,13 @@ const tableColumns: TableColumnsData = {
       hasTextFilter: false,
     },
     {
+      field: 'activeRecruitmentCount',
+      displayName: 'Active Recruitments',
+      sortedColumn: true,
+      hasChip: false,
+      hasTextFilter: false,
+    },
+    {
       field: 'createdAt',
       displayName: 'Created At',
       fieldType: FieldType.StringToDate,
@@ -72,7 +79,13 @@ const tableColumns: TableColumnsData = {
       hasChip: false,
     },
   ],
-  displayedColumns: ['questionType', 'questionCount', 'createdAt', 'actions'],
+  displayedColumns: [
+    'questionType',
+    'questionCount',
+    'activeRecruitmentCount',
+    'createdAt',
+    'actions',
+  ],
 };
 
 @Component({
@@ -296,6 +309,13 @@ export class QuestionTypesComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     const next = (res: any) => {
       if (res) {
+        if (Array.isArray(res.data)) {
+          res.data = res.data.map((item: any) => ({
+            ...item,
+            questionCount: item.questionCount ?? 0,
+            activeRecruitmentCount: item.activeRecruitmentCount ?? 0,
+          }));
+        }
         this.data = res;
       }
       this.isLoading = false;
@@ -321,6 +341,13 @@ export class QuestionTypesComponent implements OnInit, OnDestroy {
       .getData(payload)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe((response: any) => {
+        if (response && Array.isArray(response.data)) {
+          response.data = response.data.map((item: any) => ({
+            ...item,
+            questionCount: item.questionCount ?? 0,
+            activeRecruitmentCount: item.activeRecruitmentCount ?? 0,
+          }));
+        }
         this.data = response;
       });
   }
