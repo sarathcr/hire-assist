@@ -7,6 +7,7 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MessageService } from 'primeng/api';
 import { QuestionTypesComponent } from './question-types.component';
 import { QuestionTypeService } from '../../../../services/question-type.service';
+import { QuestionType } from '../../../../models/question-type.model';
 import { StoreService } from '../../../../../../shared/services/store.service';
 import { CollectionService } from '../../../../../../shared/services/collection.service';
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';

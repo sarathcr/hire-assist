@@ -60,6 +60,22 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   private deleteRef?: DynamicDialogRef;
   @ViewChild('fileUpload') fileUpload!: FileUpload;
 
+  public get existingFilesCount(): number {
+    return this.uploadedFileUrl?.length || 0;
+  }
+
+  public get totalFilesCount(): number {
+    return this.existingFilesCount + this.previewImages.length;
+  }
+
+  public get remainingFilesCount(): number {
+    return Math.max(0, this.MAX_FILES - this.totalFilesCount);
+  }
+
+  public get isMaxFilesReached(): boolean {
+    return this.totalFilesCount >= this.MAX_FILES;
+  }
+
   constructor(
     private readonly fb: FormBuilder,
     private readonly ref: DynamicDialogRef,
@@ -106,6 +122,9 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
             // Log the response structure for debugging
             console.log('ID Proofs received from API:', existingProof);
             this.uploadedFileUrl = existingProof;
+            if (this.totalFilesCount >= this.MAX_FILES) {
+              this.fileValidationError = `Maximum ${this.MAX_FILES} files allowed`;
+            }
             this.fetchImage();
           } else {
             this.uploadedFileUrl = [];
@@ -124,14 +143,35 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     if (this.previewImages.length === 0) {
       return { required: true };
     }
+    if (this.totalFilesCount > this.MAX_FILES) {
+      return { maxFiles: true };
+    }
     return null;
   }
   public onFileChange(event: FileSelectEvent): void {
     const files = event.currentFiles || event.files || [];
     this.fileValidationError = null;
 
+    if (this.isLoadingExistingImages) {
+      this.fileUpload.clear();
+      return;
+    }
+
+    if (this.isMaxFilesReached) {
+      this.fileValidationError = `Maximum ${this.MAX_FILES} files allowed`;
+      this.fileUpload.clear();
+      return;
+    }
+
+    const remainingSlots = this.MAX_FILES - this.totalFilesCount;
+    if (files.length > remainingSlots) {
+      this.fileValidationError = `Maximum ${this.MAX_FILES} files allowed`;
+      this.fileUpload.clear();
+      return;
+    }
+
     Array.from(files).forEach((file: File) => {
-      if (this.previewImages.length >= this.MAX_FILES) {
+      if (this.totalFilesCount >= this.MAX_FILES) {
         this.fileValidationError = `Maximum ${this.MAX_FILES} files allowed`;
         return;
       }
@@ -184,7 +224,9 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     URL.revokeObjectURL(this.previewImages[index].previewUrl);
     this.previewImages.splice(index, 1);
 
-    this.fileValidationError = null;
+    if (this.totalFilesCount < this.MAX_FILES) {
+      this.fileValidationError = null;
+    }
     this.updateFormValidation();
   }
 
@@ -203,14 +245,22 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     if (
       this.fGroup.valid &&
       this.previewImages.length > 0 &&
-      !this.isUploading
+      !this.isUploading &&
+      this.totalFilesCount <= this.MAX_FILES
     ) {
       this.uploadFiles();
     }
   }
 
   private uploadFiles(): void {
-    if (!this.candidateId || this.previewImages.length === 0) {
+    if (
+      !this.candidateId ||
+      this.previewImages.length === 0 ||
+      this.totalFilesCount > this.MAX_FILES
+    ) {
+      if (this.totalFilesCount > this.MAX_FILES) {
+        this.fileValidationError = `Maximum ${this.MAX_FILES} files allowed`;
+      }
       return;
     }
 
@@ -342,8 +392,12 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
             this.uploadedFileUrl = this.uploadedFileUrl.filter((_, i) => i !== index);
           }
           this.imageUrl = this.imageUrl.filter((_, i) => i !== index);
-          this.fGroup.patchValue({ idFile: null });
-          this.fileValidationError = null;
+          this.updateFormValidation();
+          if (this.totalFilesCount >= this.MAX_FILES) {
+            this.fileValidationError = `Maximum ${this.MAX_FILES} files allowed`;
+          } else {
+            this.fileValidationError = null;
+          }
 
           this.messageService.add({
             severity: 'success',

@@ -164,4 +164,14 @@ describe('InnerSidebarComponent', () => {
     expect(menuLinks[1].nativeElement.classList).toContain('active');
     expect(menuLinks[0].nativeElement.classList).not.toContain('active');
   });
+
+  it('should not set native title attribute on menu links to prevent unstyled duplicate tooltip', () => {
+    fixture.detectChanges();
+    const menuLinks = fixture.debugElement.queryAll(
+      By.css('.p-menu-item-link'),
+    );
+    menuLinks.forEach((link) => {
+      expect(link.nativeElement.getAttribute('title')).toBeNull();
+    });
+  });
 });

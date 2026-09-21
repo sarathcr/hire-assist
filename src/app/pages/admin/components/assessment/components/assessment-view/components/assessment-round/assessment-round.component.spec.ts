@@ -62,4 +62,42 @@ describe('AssessmentRoundComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should not show min validation error when toggling from online to offline and back to online', () => {
+    component.roundTypeOptions = [
+      { label: 'Online Aptitude Test', value: '1' },
+      { label: 'Offline Panel Interview', value: '2' },
+    ];
+    component.submittedData = [
+      {
+        id: '1',
+        name: 'Aptitude Round',
+        roundType: '1',
+        maxTerminationCount: 2,
+        durationDate: new Date(),
+        feedbackCriteria: [],
+        sequence: 1,
+        timerHour: 0,
+      } as any,
+    ];
+
+    component.buildRoundConfigForms();
+    const group = component.roundConfigForms.at(0);
+    const countCtrl = group.get('maxTerminationCount');
+    const roundTypeCtrl = group.get('roundType');
+
+    // Initially 2
+    expect(countCtrl?.value).toBe(2);
+    expect(countCtrl?.valid).toBeTrue();
+
+    // Switch to offline (2)
+    roundTypeCtrl?.setValue('2');
+    expect(countCtrl?.valid).toBeTrue();
+
+    // Switch back to online (1)
+    roundTypeCtrl?.setValue('1');
+    expect(countCtrl?.value).toBe(2);
+    expect(countCtrl?.valid).toBeTrue();
+    expect(countCtrl?.hasError('min')).toBeFalse();
+  });
 });

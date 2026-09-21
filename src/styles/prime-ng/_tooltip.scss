@@ -1,4 +1,9 @@
 .p-tooltip {
+  z-index: 99999 !important;
+  pointer-events: none;
+  width: max-content;
+  max-width: 600px;
+
   .p-tooltip-text {
     background-color: #ffffff !important;
     color: #0f172a !important;
@@ -8,7 +13,9 @@
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
     border: 1px solid #e2e8f0 !important;
     line-height: 1.5 !important;
-    max-width: 300px !important;
+    max-width: 600px !important;
+    word-break: normal;
+    overflow-wrap: break-word;
   }
 
   &.p-tooltip-right .p-tooltip-arrow { border-right-color: #ffffff !important; }
@@ -22,8 +29,19 @@
 }
 
 .assessment-card__tooltip,
+.assessment-card__avatar-tooltip,
 .assessment-card__footer_rounds__status {
   @extend .p-tooltip;
+}
+
+.assessment-card__avatar-tooltip {
+  z-index: 99999 !important;
+
+  .p-tooltip-text {
+    white-space: nowrap !important;
+    width: max-content !important;
+    max-width: none !important;
+  }
 }
 
 .sidebar-tooltip {

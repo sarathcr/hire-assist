@@ -9,7 +9,7 @@
     #dt
     [value]="displayData() || []"
     [tableStyle]="{
-      'min-width': '50rem',
+      'min-width': tableMinWidth() || '50rem',
       'table-layout': 'auto',
       width: '100%',
     }"
@@ -697,7 +697,7 @@
                 >
                 </p-button>
               } @else {
-                <p-popover #op appendTo="body">
+                <p-popover #op appendTo="body" (onHide)="onPopoverHide(op)">
                   <div
                     class="flex flex-column gap-1 p-1"
                     style="
@@ -770,7 +770,7 @@
                     product.isActionsDisabled ? product.disabledReason : ''
                   "
                   tooltipPosition="left"
-                  (onClick)="op.toggle($event)"
+                  (onClick)="toggleRowPopover($event, op)"
                 ></p-button>
               }
             </td>

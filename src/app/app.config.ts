@@ -20,6 +20,11 @@ import { authInterceptor } from './shared/interceptors/auth.interceptor';
 import { errorInterceptor } from './shared/interceptors/error.interceptor';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { CollectionService } from './shared/services/collection.service';
+import { pdfDefaultOptions } from 'ngx-extended-pdf-viewer';
+
+// Disable range requests and streaming to prevent 'Invalid PDF structure' errors from cloud storage CORS
+pdfDefaultOptions.disableRange = true;
+pdfDefaultOptions.disableStream = true;
 
 export const appConfig: ApplicationConfig = {
   providers: [

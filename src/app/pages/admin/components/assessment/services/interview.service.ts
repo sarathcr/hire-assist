@@ -257,10 +257,17 @@ export class InterviewService extends ApiService<any> {
     );
   }
 
-  public getCandidateAptitudeReport(recruitmentId: number, email: string, assessmentRoundId?: number) {
+  public getCandidateAptitudeReport(recruitmentId: number, email: string, assessmentRoundId?: number, interviewId?: number) {
     let url = `${this.getResourceUrl()}/assessment/aptitude-report/${recruitmentId}/${email}`;
+    const params: string[] = [];
     if (assessmentRoundId) {
-      url += `?assessmentRoundId=${assessmentRoundId}`;
+      params.push(`assessmentRoundId=${assessmentRoundId}`);
+    }
+    if (interviewId) {
+      params.push(`interviewId=${interviewId}`);
+    }
+    if (params.length > 0) {
+      url += `?${params.join('&')}`;
     }
     return this.httpClient.get<CandidateAptitudeReport>(url);
   }

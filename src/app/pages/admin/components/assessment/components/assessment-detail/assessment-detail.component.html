@@ -724,13 +724,17 @@
           Manage candidate selection, scheduling, and status
         </p>
       </div>
-      <div class="assessment-detail__actions">
+      <div
+        class="assessment-detail__actions"
+        [pTooltip]="actionsButtonTooltip"
+        tooltipPosition="left"
+      >
         <p-button
           icon="pi pi-bolt"
           label="Actions"
           [outlined]="true"
           severity="secondary"
-          [disabled]="data && !data.isActive"
+          [disabled]="isActionsButtonDisabled"
           (onClick)="openMenu($event, actionsMenu)"
         />
         <p-menu
@@ -738,6 +742,7 @@
           [model]="actionItems"
           [popup]="true"
           appendTo="body"
+          (onHide)="onMenuHide(actionsMenu)"
         />
       </div>
     </div>

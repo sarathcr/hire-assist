@@ -1225,6 +1225,11 @@
     gap: var(--spacing-10);
     flex-wrap: wrap;
 
+    &:has(.p-disabled),
+    &:has(:disabled) {
+      cursor: not-allowed;
+    }
+
     ::ng-deep {
       .p-button {
         font-size: clamp(12px, 1.5vw + 0.25rem, 14px);
@@ -1239,6 +1244,16 @@
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
           filter: brightness(1.1);
+        }
+
+        &:disabled,
+        &.p-disabled {
+          opacity: 0.5 !important;
+          cursor: not-allowed !important;
+          pointer-events: none !important;
+          transform: none !important;
+          box-shadow: none !important;
+          filter: none !important;
         }
       }
     }

@@ -71,7 +71,7 @@
             <i class="pi pi-sitemap"></i>
             <span>{{ data()?.rounds?.length ?? 0 }} Rounds</span>
           </div>
-          <p-popover [styleClass]="'assessment-card__popover'" #opr>
+          <p-popover [styleClass]="'assessment-card__popover'" #opr (onHide)="onPopoverHide(opr)">
             @if (data()?.rounds?.length) {
               <ul class="assessment-card__footer_rounds__list">
                 @for (rounds of data()?.rounds; track rounds) {
@@ -108,15 +108,35 @@
           aria-label="Toggle users"
         >
           <div class="assessment-card__avatar-group">
-            @if (data()?.users?.length) {
-              @for (user of (data()?.users?.slice(0, 3)); track user; let i = $index) {
-                <div class="assessment-card__avatar" [style.z-index]="3 - i" [pTooltip]="user.userId" tooltipPosition="top">
+            @if (distinctUsers().length) {
+              @for (user of (distinctUsers().slice(0, 3)); track user.userId; let i = $index) {
+                <div
+                  #avatarRef
+                  class="assessment-card__avatar"
+                  [style.z-index]="3 - i"
+                  [pTooltip]="user.tooltipText"
+                  tooltipPosition="top"
+                  tooltipStyleClass="assessment-card__avatar-tooltip"
+                  tooltipZIndex="99999"
+                  [positionLeft]="getAvatarTooltipOffset(avatarRef, user.tooltipText)"
+                  (mouseenter)="getAvatarTooltipOffset(avatarRef, user.tooltipText)"
+                >
                   {{ getUserInitials(user.userId) }}
                 </div>
               }
-              @if ((data()?.users?.length ?? 0) > 3) {
-                <div class="assessment-card__avatar assessment-card__avatar--more" [style.z-index]="0">
-                  +{{ (data()?.users?.length ?? 0) - 3 }}
+              @if (distinctUsers().length > 3) {
+                <div
+                  #moreRef
+                  class="assessment-card__avatar assessment-card__avatar--more"
+                  [style.z-index]="0"
+                  [pTooltip]="'+' + (distinctUsers().length - 3) + ' more'"
+                  tooltipPosition="top"
+                  tooltipStyleClass="assessment-card__avatar-tooltip"
+                  tooltipZIndex="99999"
+                  [positionLeft]="getAvatarTooltipOffset(moreRef, '+' + (distinctUsers().length - 3) + ' more')"
+                  (mouseenter)="getAvatarTooltipOffset(moreRef, '+' + (distinctUsers().length - 3) + ' more')"
+                >
+                  +{{ distinctUsers().length - 3 }}
                 </div>
               }
             } @else {
@@ -126,15 +146,20 @@
             }
           </div>
           
-          <p-popover [styleClass]="'assessment-card__popover'" #op>
-            @if (data()?.users?.length) {
+          <p-popover [styleClass]="'assessment-card__popover'" #op (onHide)="onPopoverHide(op)">
+            @if (distinctUsers().length) {
               <ul class="assessment-card__footer_users__list">
-                @for (user of data()?.users; track user) {
+                @for (user of distinctUsers(); track user.userId) {
                   <li class="assessment-card__footer_users__item">
                     <div class="assessment-card__footer_users__avatar-small">
                       {{ getUserInitials(user.userId) }}
                     </div>
-                    <span>{{ user.userId }}</span>
+                    <div class="assessment-card__footer_users__info">
+                      <span class="assessment-card__footer_users__name">{{ user.userId }}</span>
+                      @if (user.rolesText) {
+                        <span class="assessment-card__footer_users__role-badge">{{ user.rolesText }}</span>
+                      }
+                    </div>
                   </li>
                 }
               </ul>

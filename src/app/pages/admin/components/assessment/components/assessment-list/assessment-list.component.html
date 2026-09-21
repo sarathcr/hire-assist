@@ -9,7 +9,7 @@
         class="assessment-list__search-bar"
       >
       </app-search-bar>
-      <p-menu #displayMenu [model]="displayMenuItems" [popup]="true" appendTo="body"></p-menu>
+      <p-menu #displayMenu [model]="displayMenuItems" [popup]="true" appendTo="body" (onHide)="onMenuHide(displayMenu)"></p-menu>
       <p-button
         [icon]="'pi pi-sliders-h'"
         [outlined]="!hasActiveDisplayModifiers()"

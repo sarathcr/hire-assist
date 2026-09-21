@@ -276,22 +276,19 @@ export class AssignPanelInterviewerComponent implements OnInit {
           // After successful PanelAssignments, call InterviewPanel API for each panel
           this.callInterviewPanelAPIs(apiPayload);
         },
-        error: (error: CustomErrorResponse) => {
+        error: (error: any) => {
           this.isSubmitting = false; // Reset on error
-          const businerssErrorCode = error.error.businessError;
-          if (businerssErrorCode === 3105) {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: error.error.errorValue,
-            });
-          } else {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to update interviewers into panels',
-            });
-          }
+          const errorMessage =
+            error?.error?.errorValue ||
+            error?.error?.type ||
+            error?.error?.message ||
+            error?.message ||
+            'Failed to update interviewers into panels';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: errorMessage,
+          });
         },
       });
   }

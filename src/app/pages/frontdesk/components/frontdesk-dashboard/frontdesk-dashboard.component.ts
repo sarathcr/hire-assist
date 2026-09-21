@@ -9,6 +9,7 @@ import { Assessment } from '../../../admin/models/assessment.model';
 import { GenericDataSource } from '../../../../shared/components/pagination/generic-data-source';
 import { ASSESSMENT_URL } from '../../../../shared/constants/api';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { DropdownManagerService } from '../../../../shared/services/dropdown-manager.service';
 import { SearchBarComponent } from '../../../../shared/components/search-bar/search-bar/search-bar.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state/empty-state.component';
 import { KeyValueMap } from '../../../../shared/models/common.models';
@@ -48,6 +49,7 @@ export class FrontdeskDashboardComponent
     public router: Router,
     public dataSource: GenericDataSource<Assessment>,
     public messageService: MessageService,
+    private dropdownManager: DropdownManagerService,
   ) {
     super();
   }
@@ -168,7 +170,13 @@ export class FrontdeskDashboardComponent
 
   public openMenu(event: MouseEvent, menu: any): void {
     event.stopPropagation();
+    const target = (event.currentTarget || event.target) as HTMLElement;
+    this.dropdownManager.registerOpen(menu, target);
     menu.toggle(event);
+  }
+
+  public onMenuHide(menu: any): void {
+    this.dropdownManager.registerClose(menu);
   }
 
   public onSort(field: string, direction: 'asc' | 'desc'): void {

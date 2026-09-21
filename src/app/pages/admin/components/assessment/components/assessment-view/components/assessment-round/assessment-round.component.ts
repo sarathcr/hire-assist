@@ -71,6 +71,14 @@ import { CollectionService } from '../../../../../../../../shared/services/colle
 import { CreateRoundModalComponent } from './components/create-round-modal/create-round-modal.component';
 import { StepsStatusService } from '../../../../services/steps-status.service';
 import { CommonModule } from '@angular/common';
+import { DialogModule } from 'primeng/dialog';
+
+export interface DependencyReason {
+  type: 'coordinator' | 'questionset' | 'interview';
+  title: string;
+  description: string;
+  icon: string;
+}
 
 @Component({
   selector: 'app-assessment-round',
@@ -94,6 +102,7 @@ import { CommonModule } from '@angular/common';
     AccordionContent,
     CommonModule,
     Select,
+    DialogModule,
   ],
   templateUrl: './assessment-round.component.html',
   styleUrl: './assessment-round.component.scss',
@@ -112,6 +121,11 @@ export class AssessmentRoundComponent
   public submittedData: AssessmentRoundFormGroup[] = [];
   public newRoundsToCreate: RoundsInterface[] = [];
   public isLoading = false;
+  public showCannotDeleteModal = false;
+  public cannotDeleteRoundInfo?: {
+    roundName: string;
+    reasons: DependencyReason[];
+  };
   public roundConfigForms = new FormArray<FormGroup>([]);
   public feedbackCriteriaOptions: Option[] = [];
   public roundTypeOptions: Option[] = [];
@@ -119,6 +133,7 @@ export class AssessmentRoundComponent
   public isFetchingRoundTypes = false;
   private isFullCriteriaLoaded = false;
   public submitted = false;
+  public activeAccordionPanels: string[] = [];
 
   private readonly ROUND_TYPE_APTITUDE = '1';
   private readonly ROUND_TYPE_INTERVIEW = '2';
@@ -225,6 +240,35 @@ export class AssessmentRoundComponent
     }
   }
 
+  private getRoundDependencyReasons(round: AssessmentRoundFormGroup): DependencyReason[] {
+    const reasons: DependencyReason[] = [];
+    if (round.hasCoordinators) {
+      reasons.push({
+        type: 'coordinator',
+        title: 'Coordinators Assigned',
+        description: 'Coordinators have been assigned to this round in the Coordinators step.',
+        icon: 'pi pi-users',
+      });
+    }
+    if (round.hasQuestionSets) {
+      reasons.push({
+        type: 'questionset',
+        title: 'Question Set Assigned',
+        description: 'A question set is linked to this round in the Question Set step.',
+        icon: 'pi pi-file-edit',
+      });
+    }
+    if (round.hasInterviews) {
+      reasons.push({
+        type: 'interview',
+        title: 'Candidates Scheduled',
+        description: 'Candidates have already been scheduled for this round.',
+        icon: 'pi pi-calendar',
+      });
+    }
+    return reasons;
+  }
+
   private setupRoundSelectionListener(): void {
     this.fGroup
       .get('round')
@@ -232,6 +276,45 @@ export class AssessmentRoundComponent
         if (this.isUpdatingRounds) {
           return;
         }
+
+        // Check if any unselected master round has active references
+        const currentMasterRounds = this.submittedData.filter(
+          (r) => !r.id.startsWith('new-'),
+        );
+        const unselectedRounds = currentMasterRounds.filter(
+          (r) =>
+            !selectedRoundIds?.some(
+              (id) => id?.toString() === r.id?.toString(),
+            ),
+        );
+
+        for (const round of unselectedRounds) {
+          const reasons = this.getRoundDependencyReasons(round);
+          if (reasons.length > 0) {
+            this.cannotDeleteRoundInfo = {
+              roundName: round.name,
+              reasons,
+            };
+            this.showCannotDeleteModal = true;
+
+            // Revert the MultiSelect value to keep this round selected
+            this.isUpdatingRounds = true;
+            const currentSelection = this.fGroup.value.round || [];
+            if (
+              !currentSelection.some(
+                (id: any) => id?.toString() === round.id?.toString(),
+              )
+            ) {
+              this.fGroup.patchValue(
+                { round: [...currentSelection, round.id] },
+                { emitEvent: false },
+              );
+            }
+            this.isUpdatingRounds = false;
+            return;
+          }
+        }
+
         this.syncSelectedRounds(selectedRoundIds);
       });
   }
@@ -268,8 +351,12 @@ export class AssessmentRoundComponent
 
   private syncSelectedRounds(selectedRoundIds: string[]): void {
     if (!selectedRoundIds || selectedRoundIds.length === 0) {
-      this.submittedData = [];
-      this.destroySortable();
+      const existingNewRounds = this.submittedData.filter((round) =>
+        round.id.startsWith('new-'),
+      );
+      this.submittedData = [...existingNewRounds];
+      this.buildRoundConfigForms();
+      this.reinitSortable();
       return;
     }
 
@@ -280,7 +367,10 @@ export class AssessmentRoundComponent
     const selectedRounds = this.rounds
       .filter(
         (item: Option) =>
-          item.value !== undefined && selectedRoundIds.includes(item.value),
+          item.value !== undefined &&
+          selectedRoundIds.some(
+            (id) => id?.toString() === item.value?.toString(),
+          ),
       )
       .map((item: Option) => ({
         id: item.value?.toString() || '',
@@ -290,14 +380,19 @@ export class AssessmentRoundComponent
         maxTerminationCount: 0,
       }));
 
-    const existingIds = new Set(this.submittedData.map((item) => item.id));
+    const existingIds = new Set(
+      this.submittedData.map((item) => item.id?.toString()),
+    );
     const existingData = this.submittedData.filter(
       (round) =>
-        round.id.startsWith('new-') || selectedRoundIds.includes(round.id),
+        round.id.startsWith('new-') ||
+        selectedRoundIds.some(
+          (id) => id?.toString() === round.id?.toString(),
+        ),
     );
 
     const newRounds = selectedRounds.filter(
-      (round) => !existingIds.has(round.id),
+      (round) => !existingIds.has(round.id?.toString()),
     );
 
     this.submittedData = [
@@ -784,6 +879,19 @@ export class AssessmentRoundComponent
 
   public onRemoveRound(roundId: string): void {
     const removedRound = this.submittedData.find((r) => r.id === roundId);
+    if (!removedRound) {
+      return;
+    }
+
+    const reasons = this.getRoundDependencyReasons(removedRound);
+    if (reasons.length > 0) {
+      this.cannotDeleteRoundInfo = {
+        roundName: removedRound.name,
+        reasons,
+      };
+      this.showCannotDeleteModal = true;
+      return;
+    }
 
     // Remove from submitted data
     this.submittedData = this.submittedData.filter(
@@ -793,17 +901,17 @@ export class AssessmentRoundComponent
     // If it's an existing round (not a temp ID), also remove from form selection
     if (roundId.startsWith('new-')) {
       // Remove from newRoundsToCreate if it was a new round
-      if (removedRound) {
-        this.newRoundsToCreate = this.newRoundsToCreate.filter(
-          (round) => round.name !== removedRound.name,
-        );
-      }
+      this.newRoundsToCreate = this.newRoundsToCreate.filter(
+        (round) => round.name !== removedRound.name,
+      );
       this.buildRoundConfigForms();
       this.reinitSortable();
     } else {
       const currentSelection = this.fGroup.value.round || [];
       this.fGroup.patchValue({
-        round: currentSelection.filter((id: string) => id !== roundId),
+        round: currentSelection.filter(
+          (id: any) => id?.toString() !== roundId?.toString(),
+        ),
       }); // Allow emitting event to sync PrimeNG MultiSelect correctly!
     }
     this.roundsUpdated.emit(this.submittedData.length);
@@ -885,13 +993,16 @@ export class AssessmentRoundComponent
     const group = this.getRoundFormGroup(idx);
     const fc = group.get(controlName);
 
-    if (!fc || !fc.touched || !fc.errors) {
+    if (!fc || (!fc.touched && !this.submitted) || !fc.errors) {
       return '';
     }
 
     const errors = fc.errors;
 
     if (errors['required']) {
+      if (controlName === 'duration') {
+        return 'Duration is required.';
+      }
       return 'This field is required.';
     }
 
@@ -921,6 +1032,9 @@ export class AssessmentRoundComponent
 
   public buildRoundConfigForms(): void {
     this.roundConfigForms.clear();
+    this.activeAccordionPanels = this.submittedData.map((_, idx) =>
+      idx.toString(),
+    );
     for (const data of this.submittedData) {
       // Infer initial round type if not present
       let initialRoundType = data.roundType;
@@ -938,6 +1052,11 @@ export class AssessmentRoundComponent
       }
 
       const isAptitude = this.isAptitudeRound(initialRoundType);
+      let initialTerminationCount = data.maxTerminationCount;
+      if (isAptitude && (!initialTerminationCount || initialTerminationCount < 1)) {
+        initialTerminationCount = 1;
+        data.maxTerminationCount = 1;
+      }
 
       const group = new FormGroup({
         roundType: new FormControl(initialRoundType, [Validators.required]),
@@ -957,7 +1076,7 @@ export class AssessmentRoundComponent
           },
         ]),
         maxTerminationCount: new FormControl(
-          data.maxTerminationCount,
+          initialTerminationCount,
           isAptitude
             ? [
                 Validators.required,
@@ -995,9 +1114,19 @@ export class AssessmentRoundComponent
             Validators.pattern('^[0-9]+$'),
           ]);
           criteriaArray.setValidators([]);
+
+          const currentVal = Number(countCtrl?.value);
+          if (!currentVal || currentVal < 1) {
+            const fallbackVal =
+              data.maxTerminationCount && data.maxTerminationCount >= 1
+                ? data.maxTerminationCount
+                : 1;
+            countCtrl?.setValue(fallbackVal);
+          }
+          countCtrl?.markAsUntouched();
+          countCtrl?.markAsPristine();
         } else {
           countCtrl?.setValidators([]);
-          countCtrl?.setValue(0);
           criteriaArray.setValidators([
             Validators.required,
             Validators.minLength(1),
@@ -1061,8 +1190,15 @@ export class AssessmentRoundComponent
     this.roundConfigForms.controls.forEach((group) => {
       const durationCtrl = group.get('duration');
       const val = durationCtrl?.value;
-      if (!val || (val.getHours() === 0 && val.getMinutes() === 0)) {
+      if (!val) {
         durationCtrl?.setErrors({ required: true });
+        hasInvalidDuration = true;
+      } else if (
+        val instanceof Date &&
+        val.getHours() === 0 &&
+        val.getMinutes() === 0
+      ) {
+        durationCtrl?.setErrors({ invalidDuration: true });
         hasInvalidDuration = true;
       }
     });
@@ -1070,11 +1206,31 @@ export class AssessmentRoundComponent
     this.roundConfigForms.markAllAsTouched();
 
     if (this.roundConfigForms.invalid || hasInvalidDuration) {
+      const invalidIndices = this.roundConfigForms.controls
+        .map((ctrl, i) => (ctrl.invalid ? i.toString() : null))
+        .filter((val): val is string => val !== null);
+      this.activeAccordionPanels = Array.from(
+        new Set([...this.activeAccordionPanels, ...invalidIndices]),
+      );
+
       this.messageService.add({
         severity: 'warn',
         summary: 'Validation Error',
         detail: 'Please fill in all required fields for each round.',
       });
+
+      setTimeout(() => {
+        const firstInvalidElement = document.querySelector(
+          '.assessment-round .p-error, .assessment-round .is-invalid, .assessment-round .ng-invalid:not(form):not(div)',
+        );
+        if (firstInvalidElement) {
+          firstInvalidElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+        }
+      }, 100);
+
       return;
     }
 
@@ -1182,7 +1338,9 @@ export class AssessmentRoundComponent
             `${item.durationDate.getMinutes().toString().padStart(2, '0')}:` +
             `${item.durationDate.getSeconds().toString().padStart(2, '0')}`
           : '00:00:00',
-        maxTerminationCount: item.maxTerminationCount || 0,
+        maxTerminationCount: this.isAptitudeRound(item.roundType)
+          ? (item.maxTerminationCount || 0)
+          : 0,
         roundTypeId: item.roundType ? Number(item.roundType) : 0,
         isActive: true,
         assessmentRoundFeedbackCriteria: (item.feedbackCriteria || []).map(
@@ -1314,6 +1472,9 @@ export class AssessmentRoundComponent
                     !!fc.feedbackCriteriaId && fc.feedbackCriteriaId !== 0,
                 })),
                 roundType: item.roundTypeId?.toString(),
+                hasCoordinators: !!item.hasCoordinators,
+                hasQuestionSets: !!item.hasQuestionSets,
+                hasInterviews: !!item.hasInterviews,
               };
             });
 
@@ -1379,7 +1540,9 @@ export class AssessmentRoundComponent
         id: d.id,
         name: d.name,
         roundType: d.roundType,
-        maxTerminationCount: d.maxTerminationCount,
+        maxTerminationCount: this.isAptitudeRound(d.roundType)
+          ? (d.maxTerminationCount || 0)
+          : 0,
         duration: d.durationDate
           ? `${d.durationDate.getHours()}:${d.durationDate.getMinutes()}`
           : '',

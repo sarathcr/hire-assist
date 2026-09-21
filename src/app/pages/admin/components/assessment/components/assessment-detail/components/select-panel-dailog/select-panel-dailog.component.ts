@@ -268,6 +268,7 @@ export class SelectPanelDailogComponent implements OnInit {
       configMap: this.configMap,
       formData: normalizedFormData,
       isEdit: true,
+      existingAssignments: this.panelData?.data || [],
       // assessmentId and interviewId are omitted here to prevent the child dialog 
       // from making autonomous API calls. The parent handles the API updates.
     };
@@ -278,9 +279,11 @@ export class SelectPanelDailogComponent implements OnInit {
       showHeader: false,
       contentStyle: { padding: '0' },
       focusOnShow: false,
+      styleClass: 'interviewerPanels__dialog',
       breakpoints: {
         '960px': '75vw',
-        '90vw': '90vw',
+        '640px': '92vw',
+        '480px': '95vw',
       },
     });
 
@@ -319,9 +322,10 @@ export class SelectPanelDailogComponent implements OnInit {
             },
             error: (error: CustomErrorResponse) => {
               const errorMessage =
-                error.error?.type ||
                 error.error?.errorValue ||
+                error.error?.type ||
                 error.error?.message ||
+                (error as any)?.message ||
                 'interviewers are not updated to Panels';
               this.messageService.add({
                 severity: 'error',
@@ -515,9 +519,10 @@ export class SelectPanelDailogComponent implements OnInit {
             this.isSubmitting = false;
             this.isLoading = false;
             const errorMessage =
-              error.error?.type ||
               error.error?.errorValue ||
+              error.error?.type ||
               error.error?.message ||
+              (error as any)?.message ||
               'Failed to update interviewers into panels';
             this.messageService.add({
               severity: 'error',

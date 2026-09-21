@@ -58,7 +58,12 @@ export class ScheduleInterviewComponent
   ngOnInit(): void {
     this.fGroup.addControl(
       'bufferMinutes',
-      new FormControl(30, [Validators.required, Validators.min(0)])
+      new FormControl(30, [
+        Validators.required,
+        Validators.min(1),
+        Validators.max(1440),
+        Validators.pattern(/^[0-9]+$/),
+      ])
     );
 
     this.data = this.config.data?.candidateIds || this.config.data;
@@ -200,10 +205,18 @@ export class ScheduleInterviewComponent
         this.updateValidationMinDate();
 
         if (this.validationMinDate && dateTime < this.validationMinDate) {
-          const bufferVal = this.fGroup.get('bufferMinutes')?.value;
-          const bufferMinutes = (bufferVal !== null && bufferVal !== undefined && !isNaN(bufferVal)) ? Number(bufferVal) : 30;
+          const bufferControl = this.fGroup.get('bufferMinutes');
+          const bufferVal = bufferControl?.value;
+          const bufferMinutes =
+            bufferControl?.valid &&
+            bufferVal !== null &&
+            bufferVal !== undefined &&
+            !isNaN(bufferVal)
+              ? Number(bufferVal)
+              : 30;
+          const hoursBracket = bufferMinutes > 60 ? ` ${this.formatMinutesToHours(bufferMinutes)}` : '';
           dateControl.setErrors({
-            errorMessage: `Interview must be scheduled at least ${bufferMinutes} minutes from now.`,
+            errorMessage: `Interview must be scheduled at least ${bufferMinutes} minutes${hoursBracket} from now.`,
           });
         } else if (this.maxDate && dateTime > this.maxDate) {
           dateControl.setErrors({
@@ -212,6 +225,31 @@ export class ScheduleInterviewComponent
         }
       }
     }
+  }
+
+  public get bufferHoursText(): string {
+    const val = this.fGroup.get('bufferMinutes')?.value;
+    if (val === null || val === undefined || val === '' || isNaN(val)) {
+      return '';
+    }
+    const minutes = Number(val);
+    if (minutes > 60) {
+      return this.formatMinutesToHours(minutes);
+    }
+    return '';
+  }
+
+  public formatMinutesToHours(minutes: number): string {
+    if (!minutes || minutes <= 60) {
+      return '';
+    }
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = Math.round(minutes % 60);
+
+    if (remainingMinutes === 0) {
+      return hours === 1 ? '(1 hour)' : `(${hours} hours)`;
+    }
+    return `(${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} min${remainingMinutes > 1 ? 's' : ''})`;
   }
 
   private setupDateValidation(): void {

@@ -111,6 +111,23 @@ export class CandidateComponent extends BaseComponent implements OnInit {
           return comparisonDate >= today;
         });
 
+        // Deduplicate per assessment round: prioritize active/scheduled over terminated
+        const assessmentMap = new Map<string, CandidateAssessment>();
+        for (const a of this.activeAssessments) {
+          const key = `${a.assessmentId}_${a.assessmentRoundId ?? a.round ?? ''}`;
+          const existing = assessmentMap.get(key);
+          if (!existing) {
+            assessmentMap.set(key, a);
+          } else {
+            if (existing.statusId === StatusEnum.Terminated && a.statusId !== StatusEnum.Terminated) {
+              assessmentMap.set(key, a);
+            } else if (a.interviewId && existing.interviewId && a.interviewId > existing.interviewId && a.statusId !== StatusEnum.Terminated) {
+              assessmentMap.set(key, a);
+            }
+          }
+        }
+        this.activeAssessments = Array.from(assessmentMap.values());
+
         this.previousAssessments = res.filter((a) => {
           const isFinished =
             a.statusId == StatusEnum.Completed ||
@@ -454,49 +471,49 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     }
 
     if (!sections || !Array.isArray(sections) || sections.length === 0) {
-      return `
-        <div class="instruction-modal">
-          <div class="instruction-modal__intro">
-            <i class="pi pi-info-circle instruction-modal__intro-icon"></i>
-            <p>${sanitizedIntro}</p>
-          </div>
-          <div class="instruction-modal__grid">
-            <div class="instruction-card instruction-card--danger">
-              <div class="instruction-card__header">
-                <i class="pi pi-exclamation-triangle instruction-card__icon"></i>
-                <h4 class="instruction-card__title">Critical Proctoring Rules</h4>
-              </div>
-              <ul class="instruction-card__list">
-                <li><strong>Full-Screen Mode:</strong> Upon starting, the assessment will enter full-screen mode. You must remain in this mode throughout the session.</li>
-                <li><strong>Strict Proctoring:</strong> Exiting full-screen mode or switching to other browser tabs/applications will <strong>immediately terminate</strong> your test.</li>
-                <li><strong>Locked Assessment:</strong> If your session is terminated due to technical issues, please contact the HR manager to unlock it.</li>
-              </ul>
-            </div>
-            <div class="instruction-card instruction-card--info">
-              <div class="instruction-card__header">
-                <i class="pi pi-compass instruction-card__icon"></i>
-                <h4 class="instruction-card__title">Test Navigation</h4>
-              </div>
-              <ul class="instruction-card__list">
-                <li>Select an answer and click <strong>'Next'</strong> to save and move forward.</li>
-                <li>Use <strong>'Mark for Review'</strong> to revisit a question later.</li>
-                <li>Click <strong>'Skip'</strong> if you wish to bypass a question.</li>
-                <li><strong>Flexibility:</strong> You can return and update your answers at any time until the timer expires.</li>
-              </ul>
-            </div>
-            <div class="instruction-card instruction-card--success">
-              <div class="instruction-card__header">
-                <i class="pi pi-check-circle instruction-card__icon"></i>
-                <h4 class="instruction-card__title">Submission & Support</h4>
-              </div>
-              <ul class="instruction-card__list">
-                <li><strong>Auto-Submission:</strong> Once the timer expires, all attempted answers are automatically saved and submitted.</li>
-                <li><strong>Assistance:</strong> For any confusion or technical difficulties, please contact the volunteers present in the room.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      `;
+      return (
+        '<div class="instruction-modal">' +
+        '<div class="instruction-modal__intro">' +
+        '<i class="pi pi-info-circle instruction-modal__intro-icon"></i>' +
+        `<p>${sanitizedIntro}</p>` +
+        '</div>' +
+        '<div class="instruction-modal__grid">' +
+        '<div class="instruction-card instruction-card--danger">' +
+        '<div class="instruction-card__header">' +
+        '<i class="pi pi-exclamation-triangle instruction-card__icon"></i>' +
+        '<h4 class="instruction-card__title">Critical Proctoring Rules</h4>' +
+        '</div>' +
+        '<ul class="instruction-card__list">' +
+        '<li><strong>Full-Screen Mode:</strong> Upon starting, the assessment will enter full-screen mode. You must remain in this mode throughout the session.</li>' +
+        '<li><strong>Strict Proctoring:</strong> Exiting full-screen mode or switching to other browser tabs/applications will <strong>immediately terminate</strong> your test.</li>' +
+        '<li><strong>Locked Assessment:</strong> If your session is terminated due to technical issues, please contact the HR manager to unlock it.</li>' +
+        '</ul>' +
+        '</div>' +
+        '<div class="instruction-card instruction-card--info">' +
+        '<div class="instruction-card__header">' +
+        '<i class="pi pi-compass instruction-card__icon"></i>' +
+        '<h4 class="instruction-card__title">Test Navigation</h4>' +
+        '</div>' +
+        '<ul class="instruction-card__list">' +
+        "<li>Select an answer and click <strong>'Next'</strong> to save and move forward.</li>" +
+        "<li>Use <strong>'Mark for Review'</strong> to revisit a question later.</li>" +
+        "<li>Click <strong>'Skip'</strong> if you wish to bypass a question.</li>" +
+        '<li><strong>Flexibility:</strong> You can return and update your answers at any time until the timer expires.</li>' +
+        '</ul>' +
+        '</div>' +
+        '<div class="instruction-card instruction-card--success">' +
+        '<div class="instruction-card__header">' +
+        '<i class="pi pi-check-circle instruction-card__icon"></i>' +
+        '<h4 class="instruction-card__title">Submission & Support</h4>' +
+        '</div>' +
+        '<ul class="instruction-card__list">' +
+        '<li><strong>Auto-Submission:</strong> Once the timer expires, all attempted answers are automatically saved and submitted.</li>' +
+        '<li><strong>Assistance:</strong> For any confusion or technical difficulties, please contact the volunteers present in the room.</li>' +
+        '</ul>' +
+        '</div>' +
+        '</div>' +
+        '</div>'
+      );
     }
 
     const cardsHtml = sections
@@ -514,7 +531,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
 
         const rulesList = (sec.rules || [])
           .map((r) => {
-            let formatted = r;
+            let formatted = this.escapeHtml(r || '');
             if (!formatted.includes('<strong>') && formatted.includes(':')) {
               const colonIdx = formatted.indexOf(':');
               formatted = `<strong>${formatted.substring(0, colonIdx + 1)}</strong>${formatted.substring(colonIdx + 1)}`;
@@ -523,30 +540,28 @@ export class CandidateComponent extends BaseComponent implements OnInit {
           })
           .join('');
 
-        return `
-          <div class="instruction-card ${severityClass}">
-            <div class="instruction-card__header">
-              <i class="${iconClass} instruction-card__icon"></i>
-              <h4 class="instruction-card__title">${sec.title}</h4>
-            </div>
-            <ul class="instruction-card__list">
-              ${rulesList}
-            </ul>
-          </div>
-        `;
+        const safeTitle = this.escapeHtml(sec.title || '');
+
+        return (
+          `<div class="instruction-card ${severityClass}">` +
+          '<div class="instruction-card__header">' +
+          `<i class="${iconClass} instruction-card__icon"></i>` +
+          `<h4 class="instruction-card__title">${safeTitle}</h4>` +
+          '</div>' +
+          `<ul class="instruction-card__list">${rulesList}</ul>` +
+          '</div>'
+        );
       })
       .join('');
 
-    return `
-      <div class="instruction-modal">
-        <div class="instruction-modal__intro">
-          <i class="pi pi-info-circle instruction-modal__intro-icon"></i>
-          <p>${sanitizedIntro}</p>
-        </div>
-        <div class="instruction-modal__grid">
-          ${cardsHtml}
-        </div>
-      </div>
-    `;
+    return (
+      '<div class="instruction-modal">' +
+      '<div class="instruction-modal__intro">' +
+      '<i class="pi pi-info-circle instruction-modal__intro-icon"></i>' +
+      `<p>${sanitizedIntro}</p>` +
+      '</div>' +
+      `<div class="instruction-modal__grid">${cardsHtml}</div>` +
+      '</div>'
+    );
   }
 }

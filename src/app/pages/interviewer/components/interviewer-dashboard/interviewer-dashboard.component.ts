@@ -5,6 +5,7 @@ import { SkeletonComponent } from '../../../../shared/components/assessment-card
 import { BaseComponent } from '../../../../shared/components/base/base.component';
 import { GenericDataSource } from '../../../../shared/components/pagination/generic-data-source';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { DropdownManagerService } from '../../../../shared/services/dropdown-manager.service';
 import { ASSESSMENT_URL } from '../../../../shared/constants/api';
 import { KeyValueMap } from '../../../../shared/models/common.models';
 import { AssessmentForm } from '../../../admin/models/assessment-form.model';
@@ -55,6 +56,7 @@ export class InterviewerDashboardComponent
   constructor(
     public dataSource: GenericDataSource<AssessmentForm>,
     private router: Router,
+    private dropdownManager: DropdownManagerService,
   ) {
     super();
   }
@@ -171,7 +173,13 @@ export class InterviewerDashboardComponent
 
   public openMenu(event: Event, menu: any): void {
     event.stopPropagation();
+    const target = (event.currentTarget || event.target) as HTMLElement;
+    this.dropdownManager.registerOpen(menu, target);
     menu.toggle(event);
+  }
+
+  public onMenuHide(menu: any): void {
+    this.dropdownManager.registerClose(menu);
   }
 
   public onStatusFilter(status: string | null): void {
@@ -265,11 +273,25 @@ export class InterviewerDashboardComponent
   }
 
   public getCandidateCount(assessment: any): number {
-    const localCount =
-      assessment.users?.filter((u: any) => u.role === 'Candidate').length ?? 0;
-    return localCount === 0 && assessment.candidateCount != null
-      ? assessment.candidateCount
-      : localCount;
+    if (assessment.candidateCount != null && assessment.candidateCount >= 0) {
+      return assessment.candidateCount;
+    }
+    if (assessment.users && assessment.users.length > 0) {
+      const candidateUsers = assessment.users.filter(
+        (u: any) =>
+          u.role?.toLowerCase() === 'candidate' ||
+          u.roleName?.toLowerCase() === 'candidate',
+      );
+      if (candidateUsers.length > 0) {
+        const uniqueCandidateIds = new Set(
+          candidateUsers.map(
+            (u: any) => u.userId || u.id || u.email || u.name,
+          ),
+        );
+        return uniqueCandidateIds.size;
+      }
+    }
+    return 0;
   }
 
   public toggleRounds(event: Event, id: number): void {

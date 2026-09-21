@@ -305,8 +305,7 @@
                             </div>
                           }
                           @if (
-                            hasValue(detail.totalScore) ||
-                            detail.totalScore === 0
+                            getDetailTotalScore(detail) !== null
                           ) {
                             <div
                               class="ifb__detail-item ifb__detail-item--score"
@@ -317,13 +316,14 @@
                               >
                               <span
                                 class="ifb__detail-value ifb__detail-value--primary"
-                                >{{ detail.totalScore || 0 }}</span
+                                >{{ getDetailTotalScore(detail) }}<span *ngIf="getDetailOutOfScore(detail) !== null"> / {{ getDetailOutOfScore(detail) }}</span></span
                               >
                             </div>
                           }
                           @if (
                             hasValue(detail.score) &&
-                            detail.score !== detail.totalScore
+                            detail.score !== detail.totalScore &&
+                            getDetailTotalScore(detail) === null
                           ) {
                             <div class="ifb__detail-item">
                               <span class="ifb__detail-label"
@@ -968,11 +968,13 @@
   [header]="viewerTitle"
   [draggable]="false" 
   [resizable]="false"
+  [maximizable]="true"
   styleClass="ifb__viewer-dialog"
   [dismissableMask]="true"
+  (onHide)="closeViewer()"
 >
   <div class="ifb__viewer-container">
-    @if (!viewerUrl) {
+    @if (!viewerUrl || isPreparingFile) {
       <div class="ifb__viewer-skeleton">
         <p-skeleton width="100%" height="100%" />
         <div class="ifb__viewer-loader">
@@ -982,13 +984,44 @@
       </div>
     } @else {
       @if (isViewerPdf) {
-        <iframe 
-          [src]="viewerUrl | safe: 'resourceUrl'" 
-          width="100%" 
-          height="100%" 
-          frameborder="0"
-          class="ifb__viewer-iframe"
-        ></iframe>
+        @if (pdfFailedToLoad) {
+          <div class="ifb__viewer-error" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: 2rem; gap: 1rem;">
+            <i class="pi pi-exclamation-circle" style="font-size: 3rem; color: #6366f1;"></i>
+            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700;">Preview Unavailable</h3>
+            <p style="margin: 0; max-width: 420px; color: #64748b; font-size: 0.95rem;">Unable to preview this document directly in the viewer. You can open or download the file using the options below:</p>
+            <div class="ifb__error-actions" style="display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; justify-content: center;">
+              <a [href]="rawFileUrl || viewerUrl" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+                <p-button label="Open in New Tab" icon="pi pi-external-link" />
+              </a>
+              <a [href]="rawFileUrl || viewerUrl" [download]="viewerTitle" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+                <p-button label="Download File" icon="pi pi-download" [outlined]="true" />
+              </a>
+            </div>
+          </div>
+        } @else {
+          <div style="position: relative; width: 100%; height: 100%; flex: 1; display: flex; flex-direction: column;">
+            @if (isPdfRendering) {
+              <div class="ifb__viewer-loader" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+                <i class="pi pi-spin pi-spinner" style="font-size: 2.5rem; color: #6366f1;"></i>
+                <span style="font-weight: 600; color: #334155;">Rendering Document...</span>
+              </div>
+            }
+            <ngx-extended-pdf-viewer 
+              [src]="viewerUrl" 
+              height="100%" 
+              [textLayer]="true"
+              [showSidebarButton]="false"
+              [showOpenFileButton]="false"
+              [showPrintButton]="true"
+              [showDownloadButton]="true"
+              (pageRendered)="onPdfPageRendered()"
+              (pdfLoaded)="onPdfLoaded()"
+              (pdfLoadingFailed)="onPdfLoadingFailed($event)"
+              [style.visibility]="isPdfRendering ? 'hidden' : 'visible'"
+            >
+            </ngx-extended-pdf-viewer>
+          </div>
+        }
       } @else if (isViewerImage) {
         <div class="ifb__viewer-image-wrapper">
           <app-image [imageUrl]="viewerUrl" [isZoomable]="true" [removeIcon]="true" />

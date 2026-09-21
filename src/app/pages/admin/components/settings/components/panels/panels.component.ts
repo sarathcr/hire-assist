@@ -336,7 +336,7 @@ export class PanelsComponent implements OnInit, OnDestroy {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: `Error : ${error.error.type}`,
+        detail: error?.error?.type || 'Failed to fetch panels',
       });
       this.isLoading = false;
     };

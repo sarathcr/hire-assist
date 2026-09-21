@@ -64,6 +64,8 @@ import { DialogFooterComponent } from '../../../../../../shared/components/dialo
 import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 
+import { NgxExtendedPdfViewerModule, pdfDefaultOptions } from 'ngx-extended-pdf-viewer';
+
 @Component({
   selector: 'app-interviewer-feedback',
   imports: [
@@ -90,7 +92,8 @@ import { StatusEnum } from '../../../../../../shared/enums/status.enum';
     ButtonModule,
     Dialog,
     Skeleton,
-    SafePipe
+    SafePipe,
+    NgxExtendedPdfViewerModule
   ],
   templateUrl: './interviewer-feedback.component.html',
   styleUrl: './interviewer-feedback.component.scss',
@@ -140,9 +143,14 @@ export class InterviewerFeedbackComponent
   // Viewer state
   public displayViewer = false;
   public viewerUrl = '';
+  public rawFileUrl = '';
   public viewerTitle = '';
   public isViewerPdf = false;
   public isViewerImage = false;
+  public pdfFailedToLoad = false;
+  public isPdfRendering = false;
+  public isPreparingFile = false;
+  private createdBlobUrl: string | null = null;
 
   public interview!: Interview;
   public durationSeconds = 0;
@@ -170,8 +178,17 @@ export class InterviewerFeedbackComponent
     private readonly router: Router,
   ) {
     super();
+    pdfDefaultOptions.disableRange = true;
+    pdfDefaultOptions.disableStream = true;
     this.fGroup = buildFormGroup(this.score);
     this.setConfigMaps();
+  }
+
+  private cleanCurrentBlobUrl(): void {
+    if (this.createdBlobUrl) {
+      URL.revokeObjectURL(this.createdBlobUrl);
+      this.createdBlobUrl = null;
+    }
   }
   ngOnInit(): void {
     const param = this.route.snapshot.paramMap;
@@ -301,7 +318,7 @@ export class InterviewerFeedbackComponent
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: `Error : ${error.error.type}`,
+        detail: error.error?.type || 'Failed to load feedback criteria',
       });
 
       this.isFeedbackCriteriaLoaded = true;
@@ -502,6 +519,38 @@ export class InterviewerFeedbackComponent
     return value !== null && value !== undefined && value !== '';
   }
 
+  public getDetailTotalScore(detail: any): number | null {
+    if (this.hasValue(detail?.totalScore)) return Number(detail.totalScore);
+    if (this.hasValue(detail?.score)) return Number(detail.score);
+    if (detail?.feedbackListDto && detail.feedbackListDto.length > 0) {
+      const sum = detail.feedbackListDto.reduce((acc: number, f: any) => acc + (Number(f.feedbackScore) || 0), 0);
+      return sum;
+    }
+    return null;
+  }
+
+  public getDetailOutOfScore(detail: any): number | null {
+    if (this.hasValue(detail?.outofScore)) return Number(detail.outofScore);
+    if (this.hasValue(detail?.maxScore)) return Number(detail.maxScore);
+    if (detail?.feedbackListDto && detail.feedbackListDto.length > 0) {
+      const sum = detail.feedbackListDto.reduce((acc: number, f: any) => acc + (Number(f.maxScore) || 0), 0);
+      return sum > 0 ? sum : null;
+    }
+    // Fallback for aptitude round if outofScore is missing from remote API
+    if (
+      this.hasValue(detail?.totalQuestions) &&
+      Number(detail.totalQuestions) > 0 &&
+      this.hasValue(detail?.correctAnswers) &&
+      Number(detail.correctAnswers) > 0 &&
+      this.hasValue(detail?.totalScore) &&
+      Number(detail.totalScore) > 0
+    ) {
+      const markPerQuestion = Number(detail.totalScore) / Number(detail.correctAnswers);
+      return Math.round(markPerQuestion * Number(detail.totalQuestions));
+    }
+    return null;
+  }
+
   public getDetailDate(
     detail: AssessmentDetails & { date?: string | Date },
   ): string | Date | null {
@@ -523,45 +572,45 @@ export class InterviewerFeedbackComponent
 
   public isImage(filename: string): boolean {
     if (!filename) return false;
-    const ext = filename.split('.').pop()?.toLowerCase();
-    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext || '');
+    const cleanName = filename.split('?')[0].toLowerCase();
+    const ext = cleanName.split('.').pop()?.toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext || '') ||
+      ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'].some(e => cleanName.includes(e));
+  }
+
+  public isPdf(filename: string): boolean {
+    if (!filename) return false;
+    const cleanName = filename.split('?')[0].toLowerCase();
+    return cleanName.endsWith('.pdf') || cleanName.includes('.pdf');
   }
 
   public viewFile(file: FileDto): void {
+    this.pdfFailedToLoad = false;
+    this.cleanCurrentBlobUrl();
+
     const key = file.id || file.blobId || '';
-    const blobUrl = this.previewImageUrls.get(key) || this.reportImages[key];
-    const filename = file.name || '';
-    this.viewerTitle = file.attachmentName || filename;
+    const existingUrl = this.previewImageUrls.get(key) || this.reportImages[key];
+    const filename = file.name || file.attachmentName || file.url || key || '';
+    this.viewerTitle = file.attachmentName || file.name || filename;
     
-    // Prioritize the blob URL if we already fetched it
-    if (blobUrl) {
-      if (this.isImage(filename)) {
-        this.isViewerImage = true;
-        this.isViewerPdf = false;
-      } else {
-        this.isViewerImage = false;
-        this.isViewerPdf = true;
-      }
-      this.viewerUrl = blobUrl;
+    // Prioritize the blob/pre-signed URL if we already fetched it
+    if (existingUrl) {
       this.displayViewer = true;
+      this.rawFileUrl = existingUrl;
+      this.loadViewerContent(existingUrl, filename);
       return;
     }
 
-    // Fallback if blob is not pre-fetched yet
+    // Fallback if URL is not pre-fetched yet
     const type = file.attachmentType || 9; // Default for feedback attachments
     if (key) {
-      this.fetchFileBlob(file);
-      // We'll show a loading state in the UI while it fetches
       this.displayViewer = true;
-      this.viewerUrl = ''; // Clear to trigger loading state
-      
-      if (this.isImage(filename)) {
-        this.isViewerImage = true;
-        this.isViewerPdf = false;
-      } else {
-        this.isViewerImage = false;
-        this.isViewerPdf = true;
-      }
+      this.viewerUrl = '';
+      this.isPreparingFile = true;
+      this.fetchFileBlob(file, (url: string) => {
+        this.rawFileUrl = url;
+        this.loadViewerContent(url, filename);
+      });
       return;
     }
 
@@ -570,13 +619,125 @@ export class InterviewerFeedbackComponent
       const fullUrl = file.url.startsWith('http') 
         ? file.url 
         : `${INTERVIEW_URL.replace('/api/interview', '')}/${file.url}`;
-      window.open(fullUrl, '_blank');
+      this.displayViewer = true;
+      this.rawFileUrl = fullUrl;
+      this.loadViewerContent(fullUrl, filename);
     }
   }
 
-  public fetchFileBlob(file: FileDto): void {
+  private async loadViewerContent(url: string, filename: string): Promise<void> {
+    this.isPreparingFile = true;
+    this.viewerUrl = '';
+    this.pdfFailedToLoad = false;
+
+    if (url.startsWith('blob:')) {
+      this.viewerUrl = url;
+      const isPdf = this.isPdf(filename) || this.isPdf(url);
+      this.isViewerPdf = isPdf;
+      this.isViewerImage = !isPdf;
+      this.isPdfRendering = isPdf;
+      this.isPreparingFile = false;
+      return;
+    }
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Fetch failed with status ${response.status}`);
+      }
+      const blob = await response.blob();
+
+      const headerBuffer = await blob.slice(0, 8).arrayBuffer();
+      const bytes = new Uint8Array(headerBuffer);
+
+      const isPdfMagic = bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46; // %PDF
+      const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+      const isPng = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
+      const isGif = bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46;
+      const isWebp = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+
+      if (isJpeg || isPng || isGif || isWebp) {
+        this.isViewerPdf = false;
+        this.isViewerImage = true;
+        this.isPdfRendering = false;
+        const mimeType = isPng ? 'image/png' : isGif ? 'image/gif' : isWebp ? 'image/webp' : 'image/jpeg';
+        this.cleanCurrentBlobUrl();
+        this.createdBlobUrl = URL.createObjectURL(new Blob([blob], { type: mimeType }));
+        this.viewerUrl = this.createdBlobUrl;
+      } else if (isPdfMagic) {
+        this.isViewerImage = false;
+        this.isViewerPdf = true;
+        this.isPdfRendering = true;
+        this.cleanCurrentBlobUrl();
+        this.createdBlobUrl = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+        this.viewerUrl = this.createdBlobUrl;
+      } else {
+        const isPdfByName = this.isPdf(filename) || this.isPdf(url);
+        if (isPdfByName) {
+          this.isViewerImage = false;
+          this.isViewerPdf = true;
+          this.isPdfRendering = true;
+          this.cleanCurrentBlobUrl();
+          this.createdBlobUrl = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+          this.viewerUrl = this.createdBlobUrl;
+        } else {
+          this.isViewerPdf = false;
+          this.isViewerImage = true;
+          this.isPdfRendering = false;
+          this.cleanCurrentBlobUrl();
+          this.createdBlobUrl = URL.createObjectURL(blob);
+          this.viewerUrl = this.createdBlobUrl;
+        }
+      }
+    } catch (error) {
+      console.warn('Could not pre-fetch file as blob, falling back to direct URL:', error);
+      const isPdfByName = this.isPdf(filename) || this.isPdf(url);
+      this.isViewerPdf = isPdfByName;
+      this.isViewerImage = !isPdfByName;
+      this.isPdfRendering = isPdfByName;
+      this.viewerUrl = url;
+    } finally {
+      this.isPreparingFile = false;
+    }
+  }
+
+  public closeViewer(): void {
+    this.displayViewer = false;
+    this.cleanCurrentBlobUrl();
+    this.viewerUrl = '';
+    this.rawFileUrl = '';
+    this.isViewerPdf = false;
+    this.isViewerImage = false;
+    this.viewerTitle = '';
+    this.pdfFailedToLoad = false;
+    this.isPdfRendering = false;
+    this.isPreparingFile = false;
+  }
+
+  public onPdfPageRendered(): void {
+    this.isPdfRendering = false;
+  }
+
+  public onPdfLoaded(): void {
+    setTimeout(() => {
+      this.isPdfRendering = false;
+    }, 1000);
+  }
+
+  public onPdfLoadingFailed(error: any): void {
+    console.warn('PDF loading failed:', error);
+    this.isPdfRendering = false;
+    this.pdfFailedToLoad = true;
+  }
+
+  public fetchFileBlob(file: FileDto, onSuccess?: (url: string) => void): void {
     const key = file.blobId || file.id;
-    if (!key || this.previewImageUrls.has(key) || this.imageLoadingStates[key]) return;
+    if (!key) return;
+    if (this.previewImageUrls.has(key)) {
+      if (onSuccess) onSuccess(this.previewImageUrls.get(key)!);
+      return;
+    }
+    if (this.imageLoadingStates[key]) return;
 
     this.imageLoadingStates[key] = true;
     // Extract only the filename as some IDs contain folder paths
@@ -591,13 +752,19 @@ export class InterviewerFeedbackComponent
         this.previewImageUrls = new Map(this.previewImageUrls);
         this.imageLoadingStates[key] = false;
         
-        // If this file is currently being viewed, update the viewerUrl
-        if (this.displayViewer && !this.viewerUrl) {
-          this.viewerUrl = url;
+        if (onSuccess) {
+          onSuccess(url);
+        } else if (this.displayViewer && !this.viewerUrl) {
+          this.rawFileUrl = url;
+          this.loadViewerContent(url, file.name || key);
         }
       },
       error: () => {
         this.imageLoadingStates[key] = false;
+        if (this.displayViewer && !this.viewerUrl) {
+          this.isPreparingFile = false;
+          this.pdfFailedToLoad = true;
+        }
       },
     });
   }
@@ -1428,6 +1595,7 @@ export class InterviewerFeedbackComponent
       document.removeEventListener('mouseup', this._timerUpHandler);
       document.removeEventListener('touchend', this._timerUpHandler);
     }
+    this.cleanCurrentBlobUrl();
     // Revoke object URLs for images to prevent memory leaks
     Object.values(this.reportImages).forEach((url) => URL.revokeObjectURL(url));
   }

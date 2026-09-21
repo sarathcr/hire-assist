@@ -465,11 +465,55 @@ export class InstructionsComponent implements OnInit, OnDestroy {
     if (item.action === 'Created' || item.action === 'Deleted') {
       return item.details || '';
     }
-    if (item.field) {
-      const formatVal = (v: any) =>
-        v === '' || v === null || v === undefined ? 'null' : v;
-      return `${item.field}: ${formatVal(item.previousValue)} → ${formatVal(item.currentValue)}`;
+
+    const prevRaw = item.previousValue;
+    const currRaw = item.currentValue;
+
+    const isPrevEmpty =
+      prevRaw === null ||
+      prevRaw === undefined ||
+      prevRaw === '' ||
+      prevRaw === 'null' ||
+      prevRaw === 'None';
+    const isCurrEmpty =
+      currRaw === null ||
+      currRaw === undefined ||
+      currRaw === '' ||
+      currRaw === 'null' ||
+      currRaw === 'None';
+
+    // If both values are empty (legacy or non-diff audit entries), fall back to details
+    if (isPrevEmpty && isCurrEmpty) {
+      return item.details || item.field || 'Instruction was modified';
     }
+
+    // Friendly display when newly added/set
+    if (isPrevEmpty && !isCurrEmpty) {
+      if (item.field?.toLowerCase() === 'section') {
+        return `Added Section: ${currRaw}`;
+      }
+      if (item.field?.toLowerCase().startsWith('rule in section')) {
+        return `Added ${item.field}: ${currRaw}`;
+      }
+      return `${item.field}: None → ${currRaw}`;
+    }
+
+    // Friendly display when removed/cleared
+    if (!isPrevEmpty && isCurrEmpty) {
+      if (item.field?.toLowerCase() === 'section') {
+        return `Removed Section: ${prevRaw}`;
+      }
+      if (item.field?.toLowerCase().startsWith('rule in section')) {
+        return `Removed ${item.field}: ${prevRaw}`;
+      }
+      return `${item.field}: ${prevRaw} → None`;
+    }
+
+    // Both previous and current have values -> updated/changed
+    if (item.field) {
+      return `${item.field}: ${prevRaw} → ${currRaw}`;
+    }
+
     return item.details || 'Instruction was modified';
   }
 
@@ -572,7 +616,10 @@ export class InstructionsComponent implements OnInit, OnDestroy {
           err?.error?.errorValue ||
           err?.error?.type ||
           err?.error?.message ||
-          extractErrorMessage(err, 'Failed to create aptitude test instruction.');
+          extractErrorMessage(
+            err,
+            'Failed to create aptitude test instruction.',
+          );
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -603,7 +650,10 @@ export class InstructionsComponent implements OnInit, OnDestroy {
           err?.error?.errorValue ||
           err?.error?.type ||
           err?.error?.message ||
-          extractErrorMessage(err, 'Failed to update aptitude test instruction.');
+          extractErrorMessage(
+            err,
+            'Failed to update aptitude test instruction.',
+          );
         this.messageService.add({
           severity: 'error',
           summary: 'Error',

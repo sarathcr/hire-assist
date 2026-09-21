@@ -50,6 +50,14 @@
       padding: 1rem;
       min-height: 100px;
     }
+
+    &--disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #f1f3f5;
+      border-color: #ced4da;
+      pointer-events: none;
+    }
   }
 
   &__validation-error {
@@ -452,6 +460,11 @@
     @media (max-width: 640px) {
       padding: 1rem;
       gap: 1rem;
+    }
+
+    &--uploading {
+      overflow-y: hidden !important;
+      overflow: hidden !important;
     }
   }
 

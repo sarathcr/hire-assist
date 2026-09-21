@@ -1,6 +1,9 @@
 <div class="proofUpload">
   <!-- Scrollable Content Area -->
-  <div class="proofUpload__content">
+  <div
+    class="proofUpload__content"
+    [class.proofUpload__content--uploading]="isUploading"
+  >
     <!-- ID Type Selection -->
     <div class="proofUpload__field">
       <app-input-select [formGroup]="fGroup" [config]="idTypeSelectConfig" />
@@ -16,23 +19,49 @@
         customUpload
         [showUploadButton]="false"
         [showCancelButton]="false"
+        [disabled]="isMaxFilesReached || isLoadingExistingImages"
+        accept="image/jpeg,image/png,application/pdf"
         (onSelect)="onFileChange($event)"
       >
         <ng-template pTemplate="content">
           <div
             class="proofUpload__upload-area"
+            [class.proofUpload__upload-area--disabled]="
+              isMaxFilesReached || isLoadingExistingImages
+            "
             role="button"
-            tabindex="0"
-            (click)="fileUpload.choose()"
-            (keydown.enter)="fileUpload.choose()"
-            (keydown.space)="fileUpload.choose()"
+            [attr.tabindex]="
+              isMaxFilesReached || isLoadingExistingImages ? -1 : 0
+            "
+            (click)="
+              !(isMaxFilesReached || isLoadingExistingImages) &&
+                fileUpload.choose()
+            "
+            (keydown.enter)="
+              !(isMaxFilesReached || isLoadingExistingImages) &&
+                fileUpload.choose()
+            "
+            (keydown.space)="
+              !(isMaxFilesReached || isLoadingExistingImages) &&
+                fileUpload.choose()
+            "
           >
             <div class="proofUpload__upload-placeholder">
               <i class="pi pi-cloud-upload proofUpload__upload-icon"></i>
               <p class="proofUpload__upload-text">
-                Drag and drop JPG, PNG, or PDF here
+                {{
+                  isMaxFilesReached
+                    ? 'Maximum file limit reached'
+                    : 'Drag and drop JPG, PNG, or PDF here'
+                }}
               </p>
-              <p class="proofUpload__upload-hint">or click to browse</p>
+              <p class="proofUpload__upload-hint">
+                {{
+                  isMaxFilesReached
+                    ? 'Delete existing files to upload new ones'
+                    : 'or click to browse'
+                }}
+              </p>
               <p class="proofUpload__upload-limit">
                 Max {{ MAX_FILES }} files &bull; Max
                 {{ MAX_FILE_SIZE / 1048576 }}MB each
@@ -202,21 +231,6 @@
       }
     </div>
 
-    <!-- Upload Progress Overlay -->
-    @if (isUploading) {
-      <div class="proofUpload__upload-overlay">
-        <div class="proofUpload__upload-progress">
-          <p-progressSpinner
-            [style]="{ width: '60px', height: '60px' }"
-            strokeWidth="4"
-          ></p-progressSpinner>
-          <p class="proofUpload__upload-progress-text">Uploading files...</p>
-          <p class="proofUpload__upload-progress-percent">
-            {{ uploadProgress }}%
-          </p>
-        </div>
-      </div>
-    }
   </div>
   <footer class="proofUpload__actions">
     <app-button
@@ -230,8 +244,29 @@
       buttonLabel="Upload Files"
       [buttonSize]="'medium'"
       [isLoading]="isUploading"
-      [disabled]="!fGroup.valid || previewImages.length === 0 || isUploading"
+      [disabled]="
+        !fGroup.valid ||
+        previewImages.length === 0 ||
+        isUploading ||
+        totalFilesCount > MAX_FILES
+      "
       (btnClick)="onSubmit()"
     ></app-button>
   </footer>
+
+  <!-- Upload Progress Overlay covering entire modal -->
+  @if (isUploading) {
+    <div class="proofUpload__upload-overlay">
+      <div class="proofUpload__upload-progress">
+        <p-progressSpinner
+          [style]="{ width: '60px', height: '60px' }"
+          strokeWidth="4"
+        ></p-progressSpinner>
+        <p class="proofUpload__upload-progress-text">Uploading files...</p>
+        <p class="proofUpload__upload-progress-percent">
+          {{ uploadProgress }}%
+        </p>
+      </div>
+    </div>
+  }
 </div>

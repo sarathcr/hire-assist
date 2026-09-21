@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, HostListener, inject } from '@angular/core';
+import { Component, OnInit, HostListener, inject, ViewChildren, QueryList } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   CdkDragDrop,
@@ -12,7 +12,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { CheckboxModule } from 'primeng/checkbox';
 import { SelectModule } from 'primeng/select';
-import { TooltipModule } from 'primeng/tooltip';
+import { TooltipModule, Tooltip } from 'primeng/tooltip';
 import { ButtonComponent } from '../../../../../../../shared/components/button/button.component';
 import { InstructionService } from '../../../../../services/instruction.service';
 import {
@@ -62,15 +62,20 @@ export class InstructionDialogComponent implements OnInit {
   public viewMode: 'split' | 'builder' | 'preview' = 'split';
   public isLoading = false;
   public isSubmitting = false;
+  @ViewChildren(Tooltip) public tooltips!: QueryList<Tooltip>;
+  public isDragging = false;
 
   // Form Fields
   public id?: number;
   public title = '';
   public description = '';
   public version = '1.0';
+  public originalVersion = '1.0';
   public isDefault = false;
   public isActive = true;
   public sections: InstructionSection[] = [];
+  public readonly MAX_SECTIONS = 10;
+  public readonly MAX_RULES_PER_SECTION = 10;
 
   // Validation flags
   public titleTouched = false;
@@ -79,6 +84,7 @@ export class InstructionDialogComponent implements OnInit {
   public mobileSettingsOpen = false;
   public isMobileView = false;
   public hasCompletedRecruitmentReferences = false;
+  public existingInstructions: Array<{ id: number; title: string; version: string }> = [];
 
   private initialSnapshot = '';
   private initialContentSnapshot = '';
@@ -208,11 +214,32 @@ export class InstructionDialogComponent implements OnInit {
     } else {
       this.initDefaultSections();
     }
+
+    this.loadExistingInstructions();
+  }
+
+  private loadExistingInstructions(): void {
+    this.instructionService.getInstructions(false).subscribe({
+      next: (list) => {
+        this.existingInstructions = (list || []).map((item) => ({
+          id: item.id,
+          title: (item.title || '').trim(),
+          version: (item.version || '').trim(),
+        }));
+        if (this.mode === 'clone') {
+          this.version = this.computeNextVersion(this.originalVersion, this.title);
+        }
+      },
+      error: () => {
+        this.existingInstructions = [];
+      },
+    });
   }
 
   private initDefaultSections(): void {
     this.title = 'Online Aptitude Assessment Rules';
     this.description = 'Standard proctoring, navigation, and submission guidelines.';
+    this.originalVersion = '1.0';
     this.version = '1.0';
     this.isDefault = false;
     this.isActive = true;
@@ -253,7 +280,7 @@ export class InstructionDialogComponent implements OnInit {
     ];
 
     if (this.mode === 'clone') {
-      this.version = this.computeNextVersion(this.version);
+      this.version = this.computeNextVersion(this.originalVersion);
     }
     this.takeSnapshot();
   }
@@ -275,7 +302,8 @@ export class InstructionDialogComponent implements OnInit {
     this.id = inst.id;
     this.title = inst.title || '';
     this.description = inst.description || '';
-    this.version = inst.version || '1.0';
+    this.originalVersion = inst.version || '1.0';
+    this.version = this.originalVersion;
     this.isDefault = inst.isDefault || false;
     this.isActive = inst.isActive ?? true;
 
@@ -294,13 +322,34 @@ export class InstructionDialogComponent implements OnInit {
 
     this.hasCompletedRecruitmentReferences = !!(inst.hasRecruitmentReferences ?? inst.hasCompletedRecruitmentReferences);
 
-    if (this.mode === 'clone' || this.hasCompletedRecruitmentReferences) {
-      this.version = this.computeNextVersion(this.version);
+    if (this.mode === 'clone') {
+      this.version = this.computeNextVersion(this.originalVersion, this.title);
     }
     this.takeSnapshot();
   }
 
-  private computeNextVersion(v: string): string {
+  private computeNextVersion(v: string, title?: string): string {
+    let candidate = this.incrementVersionString(v);
+    const targetTitle = (title || this.title || '').trim().toLowerCase();
+    if (!targetTitle || !this.existingInstructions?.length) {
+      return candidate;
+    }
+    let safetyLimit = 50;
+    while (
+      safetyLimit > 0 &&
+      this.existingInstructions.some(
+        (item) =>
+          (item.title || '').trim().toLowerCase() === targetTitle &&
+          this.normalizeVersion(item.version) === this.normalizeVersion(candidate),
+      )
+    ) {
+      candidate = this.incrementVersionString(candidate);
+      safetyLimit--;
+    }
+    return candidate;
+  }
+
+  private incrementVersionString(v: string): string {
     const clean = (v || '1.0').trim();
     const parts = clean.split('.');
     if (parts.length >= 2 && !isNaN(Number(parts[parts.length - 1]))) {
@@ -404,22 +453,147 @@ export class InstructionDialogComponent implements OnInit {
     return '';
   }
 
+  public normalizeVersion(v: string | undefined | null): string {
+    if (!v) return '';
+    let clean = v.trim().toLowerCase();
+    if (clean.startsWith('v')) {
+      clean = clean.substring(1).trim();
+    }
+    return clean;
+  }
+
+  public isDuplicateForAction(action: 'save' | 'saveAsNewVersion'): boolean {
+    const currentTitle = (this.title || '').trim().toLowerCase();
+    const currentVersion = this.normalizeVersion(this.version);
+    if (!currentTitle || !currentVersion) return false;
+
+    return this.existingInstructions.some((item) => {
+      if (action === 'save' && this.mode === 'edit' && item.id === this.id) {
+        return false;
+      }
+      const itemTitle = (item.title || '').trim().toLowerCase();
+      const itemVersion = this.normalizeVersion(item.version);
+      return itemTitle === currentTitle && itemVersion === currentVersion;
+    });
+  }
+
+  public get isDuplicateTitleAndVersion(): boolean {
+    if (this.mode === 'preview') {
+      return false;
+    }
+    if (
+      this.mode === 'edit' &&
+      this.hasCompletedRecruitmentReferences &&
+      this.hasContentOrTitleChanges() &&
+      this.normalizeVersion(this.version) === this.normalizeVersion(this.originalVersion)
+    ) {
+      return false;
+    }
+    const action =
+      (this.mode === 'edit' &&
+        this.hasCompletedRecruitmentReferences &&
+        this.hasContentOrTitleChanges()) ||
+      this.mode === 'clone'
+        ? 'saveAsNewVersion'
+        : 'save';
+    return this.isDuplicateForAction(action);
+  }
+
+  public get duplicateErrorMessage(): string {
+    return 'An instruction with this title and version already exists.';
+  }
+
+  public get areSectionsValid(): boolean {
+    if (
+      !this.sections ||
+      this.sections.length === 0 ||
+      this.sections.length > this.MAX_SECTIONS
+    ) {
+      return false;
+    }
+    return this.sections.every(
+      (sec) =>
+        sec.title &&
+        sec.title.trim().length > 0 &&
+        sec.title.length <= 100 &&
+        sec.rules &&
+        sec.rules.length > 0 &&
+        sec.rules.length <= this.MAX_RULES_PER_SECTION &&
+        sec.rules.every(
+          (r) =>
+            r !== undefined &&
+            r !== null &&
+            r.trim().length > 0 &&
+            r.length <= 300,
+        ),
+    );
+  }
+
   public get isFormValid(): boolean {
-    return this.isTitleValid && this.isVersionValid && this.isDescriptionValid && this.sections.length > 0;
+    return (
+      this.isTitleValid &&
+      this.isVersionValid &&
+      this.isDescriptionValid &&
+      this.sections.length > 0 &&
+      this.areSectionsValid &&
+      !this.isDuplicateTitleAndVersion
+    );
+  }
+
+  // Drag & Drop Reordering Lifecycle and Tooltip Management
+  public onDragStart(): void {
+    this.isDragging = true;
+    this.hideAllTooltips();
+  }
+
+  public onDragEnd(): void {
+    this.hideAllTooltips();
+    setTimeout(() => {
+      this.isDragging = false;
+    }, 100);
+  }
+
+  public onDragHandlePointerDown(): void {
+    this.hideAllTooltips();
+  }
+
+  public hideAllTooltips(): void {
+    if (this.tooltips) {
+      this.tooltips.forEach((tooltip) => {
+        try {
+          tooltip.deactivate();
+        } catch {
+          // Safe fallback
+        }
+      });
+    }
+    if (typeof document !== 'undefined') {
+      const tooltipElements = document.querySelectorAll('.p-tooltip');
+      tooltipElements.forEach((el) => {
+        el.remove();
+      });
+    }
   }
 
   // Drag & Drop Reordering for Sections
   public onSectionDrop(event: CdkDragDrop<InstructionSection[]>): void {
+    this.hideAllTooltips();
+    if (event.previousIndex === event.currentIndex) return;
     moveItemInArray(this.sections, event.previousIndex, event.currentIndex);
+    this.sections = [...this.sections];
   }
 
   // Drag & Drop Reordering for Rules inside a Section
   public onRuleDrop(event: CdkDragDrop<string[]>, sectionIndex: number): void {
+    this.hideAllTooltips();
+    if (event.previousIndex === event.currentIndex) return;
     moveItemInArray(this.sections[sectionIndex].rules, event.previousIndex, event.currentIndex);
+    this.sections[sectionIndex].rules = [...this.sections[sectionIndex].rules];
   }
 
   // Component Palette Actions
   public addComponentFromPreset(presetKey: string): void {
+    if (this.sections.length >= this.MAX_SECTIONS) return;
     const preset = this.componentPresets.find((p) => p.key === presetKey);
     if (!preset) return;
 
@@ -427,12 +601,13 @@ export class InstructionDialogComponent implements OnInit {
       title: preset.defaultTitle,
       severity: preset.severity,
       icon: preset.icon,
-      rules: [...preset.defaultRules],
+      rules: [...preset.defaultRules].slice(0, this.MAX_RULES_PER_SECTION),
       collapsed: false,
     });
   }
 
   public addSection(): void {
+    if (this.sections.length >= this.MAX_SECTIONS) return;
     this.sections.push({
       title: 'New Instruction Section',
       severity: 'info',
@@ -443,12 +618,14 @@ export class InstructionDialogComponent implements OnInit {
   }
 
   public duplicateSection(index: number): void {
+    if (this.sections.length >= this.MAX_SECTIONS) return;
     const src = this.sections[index];
+    const cloneTitle = `${src.title || ''} (Copy)`.slice(0, 100);
     const clone: InstructionSection = {
-      title: `${src.title} (Copy)`,
+      title: cloneTitle,
       severity: src.severity,
       icon: src.icon,
-      rules: [...src.rules],
+      rules: [...src.rules].slice(0, this.MAX_RULES_PER_SECTION),
       collapsed: false,
     };
     this.sections.splice(index + 1, 0, clone);
@@ -465,6 +642,7 @@ export class InstructionDialogComponent implements OnInit {
   }
 
   public addRule(sectionIndex: number): void {
+    if (this.sections[sectionIndex].rules.length >= this.MAX_RULES_PER_SECTION) return;
     this.sections[sectionIndex].rules.push('');
   }
 
@@ -482,6 +660,25 @@ export class InstructionDialogComponent implements OnInit {
     return index;
   }
 
+  public formatRule(rule: string): string {
+    if (!rule) return '';
+    const safeRule = this.escapeHtml(rule);
+    if (!safeRule.includes('<strong>') && safeRule.includes(':')) {
+      const colonIdx = safeRule.indexOf(':');
+      return `<strong>${safeRule.substring(0, colonIdx + 1)}</strong>${safeRule.substring(colonIdx + 1)}`;
+    }
+    return safeRule;
+  }
+
+  private escapeHtml(text: string): string {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   public onSave(): void {
     if (this.hasCompletedRecruitmentReferences && this.hasContentOrTitleChanges()) {
       this.onSaveAsNewVersion();
@@ -493,14 +690,21 @@ export class InstructionDialogComponent implements OnInit {
     this.descriptionTouched = true;
     if (!this.isFormValid) return;
 
+    const sanitizedSections = this.sections.map(({ collapsed, ...rest }) => ({
+      ...rest,
+      title: (rest.title || '').trim().slice(0, 100),
+      rules: (rest.rules || [])
+        .map((r) => (r || '').trim())
+        .filter((r) => r.length > 0)
+        .map((r) => r.slice(0, 300)),
+    }));
+
     const payload = {
       id: this.id || 0,
       title: this.title.trim(),
       description: this.description.trim(),
       version: this.version.trim(),
-      content: JSON.stringify(
-        this.sections.map(({ collapsed, ...rest }) => rest),
-      ),
+      content: JSON.stringify(sanitizedSections),
       isDefault: this.isDefault,
       isActive: this.isActive,
     };
@@ -512,19 +716,29 @@ export class InstructionDialogComponent implements OnInit {
   }
 
   public onSaveAsNewVersion(): void {
+    if (this.normalizeVersion(this.version) === this.normalizeVersion(this.originalVersion)) {
+      this.version = this.computeNextVersion(this.originalVersion, this.title);
+    }
     this.titleTouched = true;
     this.versionTouched = true;
     this.descriptionTouched = true;
-    if (!this.isFormValid) return;
+    if (this.isDuplicateForAction('saveAsNewVersion') || !this.isFormValid) return;
+
+    const sanitizedSections = this.sections.map(({ collapsed, ...rest }) => ({
+      ...rest,
+      title: (rest.title || '').trim().slice(0, 100),
+      rules: (rest.rules || [])
+        .map((r) => (r || '').trim())
+        .filter((r) => r.length > 0)
+        .map((r) => r.slice(0, 300)),
+    }));
 
     const payload = {
       sourceInstructionId: this.id,
       title: this.title.trim(),
       description: this.description.trim(),
       version: this.version.trim(),
-      content: JSON.stringify(
-        this.sections.map(({ collapsed, ...rest }) => rest),
-      ),
+      content: JSON.stringify(sanitizedSections),
       isDefault: this.isDefault,
     };
 

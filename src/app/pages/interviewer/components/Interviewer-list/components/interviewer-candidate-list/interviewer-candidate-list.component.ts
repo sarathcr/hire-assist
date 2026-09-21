@@ -254,7 +254,7 @@ export class InterviewerCandidateListComponent implements OnInit {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: `Error : ${error.error?.type || 'Failed to fetch interviews'}`,
+            detail: error.error?.type || 'Failed to fetch interviews',
           });
         },
       });

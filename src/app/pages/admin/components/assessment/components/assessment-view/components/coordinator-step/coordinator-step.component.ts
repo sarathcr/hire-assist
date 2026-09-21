@@ -242,7 +242,7 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: `Error : ${error.error.type}`,
+          detail: error?.error?.type || 'Failed to remove coordinator',
         });
       };
       this.assessmentService

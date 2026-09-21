@@ -273,8 +273,6 @@
                                   [onLoadQuestionImage]="getLoadQuestionImageHandler(setId)"
                                   [onLoadOptionImage]="getLoadOptionImageHandler(setId)"
                                   [selectionDisabled]="isReadOnly()"
-                                  (history)="viewHistory($event)"
-                                  (buttonClick)="onButtonClick($event)"
                                   (rowExpand)="onRowExpand($event, setId)"
                                 ></app-table>
                               </div>
@@ -336,12 +334,6 @@
       </p>
     </div>
   }
-
-  <app-history-drawer
-    [visible]="visible"
-    [events]="events"
-    (visibleChange)="visible = $event"
-  ></app-history-drawer>
 }
 @if (isLoading) {
   <app-question-set-step-skeleton></app-question-set-step-skeleton>

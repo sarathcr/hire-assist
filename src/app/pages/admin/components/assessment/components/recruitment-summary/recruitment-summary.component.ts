@@ -496,20 +496,23 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   ): { score: number; maxScore: number } | null {
     if (!round) return null;
 
+    const rawScore = round.totalScore !== undefined && round.totalScore !== null ? round.totalScore : round.score;
+    const rawMaxScore = round.maxScore !== undefined && round.maxScore !== null ? round.maxScore : round.outofScore;
+
     const hasTotalScore =
-      round.totalScore !== undefined &&
-      round.totalScore !== null &&
-      !isNaN(Number(round.totalScore));
+      rawScore !== undefined &&
+      rawScore !== null &&
+      !isNaN(Number(rawScore));
     const hasOutofScore =
-      round.outofScore !== undefined &&
-      round.outofScore !== null &&
-      !isNaN(Number(round.outofScore)) &&
-      Number(round.outofScore) > 0;
+      rawMaxScore !== undefined &&
+      rawMaxScore !== null &&
+      !isNaN(Number(rawMaxScore)) &&
+      Number(rawMaxScore) > 0;
 
     if (hasTotalScore && hasOutofScore) {
       return {
-        score: Number(round.totalScore),
-        maxScore: Number(round.outofScore),
+        score: Math.round(Number(rawScore) * 100) / 100,
+        maxScore: Math.round(Number(rawMaxScore) * 100) / 100,
       };
     }
 

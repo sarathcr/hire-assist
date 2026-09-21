@@ -583,7 +583,7 @@
                                 </tr>
                               </thead>
                               <tbody>
-                                @for (crit of round.feedbackCriteria; track crit.name) {
+                                @for (crit of round.feedbackCriteria; track ($index + '-' + crit.name + '-' + (crit.interviewerName || ''))) {
                                   @if (crit.name !== 'Attachments') {
                                     <tr>
                                       <td data-label="Criteria">

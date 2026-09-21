@@ -19,6 +19,9 @@ export interface RoundModel {
   maxTerminationCount?: number;
   roundTypeId?: number;
   instructionId?: number;
+  hasCoordinators?: boolean;
+  hasQuestionSets?: boolean;
+  hasInterviews?: boolean;
 }
 
 export interface Assessment {
@@ -127,6 +130,9 @@ export interface AssessmentRoundFormGroup {
   feedbackCriteria?: FeedbackCriteriaConfig[]; 
   roundType?: string;
   instructionId?: number;
+  hasCoordinators?: boolean;
+  hasQuestionSets?: boolean;
+  hasInterviews?: boolean;
 }
 
 export interface CoordinatorRoundDto {

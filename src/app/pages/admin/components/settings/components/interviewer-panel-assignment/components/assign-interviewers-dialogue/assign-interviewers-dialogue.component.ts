@@ -102,37 +102,37 @@ export class AssignInterviewersDialogueComponent implements OnInit {
         interviewers: [],
         panels: null,
       });
-
-      // Asynchronously fetch all existing assignments to bypass pagination limit
-      const payload = {
-        multiSortedColumns: [],
-        filterMap: {},
-        pagination: {
-          pageNumber: 1,
-          pageSize: -1,
-        },
-      };
-      this.coordinatorPanelBridgeService
-        .paginationEntity<any>('panel/activePanelSummary', payload)
-        .subscribe({
-          next: (res: any) => {
-            const resData = (res.data || []).map((item: any) => {
-              return {
-                ...item,
-                interviewerNames:
-                  item.interviewers?.map((i: any) => i.name).join(', ') ?? '',
-                interviewers: item.interviewers ?? [],
-                name: item.name || item.panelName || item.panel || item.title,
-              };
-            });
-            this.existingAssignments = resData;
-            this.setOptions();
-          },
-          error: () => {
-            // Keep using the initial set of assignments from config.data
-          },
-        });
     }
+
+    // Asynchronously fetch all existing assignments to bypass pagination limit
+    const payload = {
+      multiSortedColumns: [],
+      filterMap: {},
+      pagination: {
+        pageNumber: 1,
+        pageSize: -1,
+      },
+    };
+    this.coordinatorPanelBridgeService
+      .paginationEntity<any>('panel/activePanelSummary', payload)
+      .subscribe({
+        next: (res: any) => {
+          const resData = (res.data || []).map((item: any) => {
+            return {
+              ...item,
+              interviewerNames:
+                item.interviewers?.map((i: any) => i.name).join(', ') ?? '',
+              interviewers: item.interviewers ?? [],
+              name: item.name || item.panelName || item.panel || item.title,
+            };
+          });
+          this.existingAssignments = resData;
+          this.setOptions();
+        },
+        error: () => {
+          // Keep using the initial set of assignments from config.data
+        },
+      });
     this.initialValue = this.fGroup.value;
   }
 
@@ -176,6 +176,68 @@ export class AssignInterviewersDialogueComponent implements OnInit {
     });
   }
 
+  public get assignedConflictError(): string | null {
+    const formValue = this.fGroup.value;
+    const selectedPanelId = formValue.panels ? String(formValue.panels) : null;
+    const selectedInterviewerIds: string[] = (
+      Array.isArray(formValue.interviewers)
+        ? formValue.interviewers
+        : formValue.interviewers
+          ? [formValue.interviewers]
+          : []
+    ).map(String);
+
+    if (!selectedPanelId && selectedInterviewerIds.length === 0) return null;
+
+    const currentPanelId = this.isEdit
+      ? String(
+          this.data?.formData?.panelId ||
+            this.data?.formData?.id ||
+            this.data?.formData?.panelName ||
+            '',
+        )
+      : null;
+
+    // 1. Check if the selected panel is already assigned to an interview
+    if (selectedPanelId && selectedPanelId !== currentPanelId) {
+      const assignedPanel = this.existingAssignments.find(
+        (a: any) =>
+          String(a.id || a.panelId) === selectedPanelId &&
+          (a.status?.toLowerCase() === 'assigned' ||
+            a.isAssigned === true ||
+            a.originalStatus?.toLowerCase() === 'assigned'),
+      );
+      if (assignedPanel) {
+        return `Panel '${assignedPanel.name || selectedPanelId}' is already assigned to an interview and cannot be selected.`;
+      }
+    }
+
+    // 2. Check if any selected interviewer belongs to another assigned panel
+    for (const interviewerId of selectedInterviewerIds) {
+      const conflictPanel = this.existingAssignments.find((a: any) => {
+        const pId = String(a.id || a.panelId);
+        if (pId === currentPanelId) return false;
+        const isAssigned =
+          a.status?.toLowerCase() === 'assigned' ||
+          a.isAssigned === true ||
+          a.originalStatus?.toLowerCase() === 'assigned';
+        if (!isAssigned) return false;
+        return a.interviewers?.some(
+          (i: any) => String(i.id) === String(interviewerId),
+        );
+      });
+      if (conflictPanel) {
+        const interviewerObj = this.interviewers?.find(
+          (i) => String(i.value) === String(interviewerId),
+        );
+        const name = interviewerObj?.label || interviewerId;
+        return `Interviewer '${name}' is already assigned to active panel '${conflictPanel.name || conflictPanel.id}'.`;
+      }
+    }
+
+    return null;
+  }
+
   public getPanelNames(): string {
     const panelValue = this.fGroup.get('panels')?.value;
     if (!panelValue) return '';
@@ -194,6 +256,15 @@ export class AssignInterviewersDialogueComponent implements OnInit {
     this.fGroup.markAllAsTouched();
 
     if (!this.fGroup.valid) {
+      return;
+    }
+
+    if (this.assignedConflictError) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: this.assignedConflictError,
+      });
       return;
     }
 
@@ -251,8 +322,8 @@ export class AssignInterviewersDialogueComponent implements OnInit {
               },
               error: (error: any) => {
                 const errorMessage =
-                  error?.error?.type ||
                   error?.error?.errorValue ||
+                  error?.error?.type ||
                   error?.error?.message ||
                   error?.message ||
                   'Failed to assign interview panel';
@@ -266,8 +337,8 @@ export class AssignInterviewersDialogueComponent implements OnInit {
           },
           error: (error: any) => {
             const errorMessage =
-              error?.error?.type ||
               error?.error?.errorValue ||
+              error?.error?.type ||
               error?.error?.message ||
               error?.message ||
               'Failed to update interviewers into panels';
@@ -306,23 +377,66 @@ export class AssignInterviewersDialogueComponent implements OnInit {
     ] as unknown as Option[];
     let panelOptions = this.optionsMap['panels'] as unknown as Option[];
 
-    if (!this.isEdit && this.existingAssignments.length > 0) {
-      const assignedPanelIds = this.existingAssignments.map((a: any) =>
-        String(a.id || a.panelId),
-      );
-      panelOptions = panelOptions.filter(
-        (p) => !assignedPanelIds.includes(String(p.value)),
-      );
+    if (this.existingAssignments && this.existingAssignments.length > 0) {
+      const currentPanelId = this.isEdit
+        ? String(
+            this.data?.formData?.panelId ||
+              this.data?.formData?.id ||
+              this.data?.formData?.panelName ||
+              '',
+          )
+        : null;
 
-      const assignedInterviewerIds = new Set();
-      this.existingAssignments.forEach((a: any) => {
-        a.interviewers?.forEach((i: any) =>
-          assignedInterviewerIds.add(String(i.id)),
+      panelOptions = panelOptions.filter((p) => {
+        const pId = String(p.value);
+        if (currentPanelId && pId === currentPanelId) {
+          return true;
+        }
+
+        const existing = this.existingAssignments.find(
+          (a: any) => String(a.id || a.panelId) === pId,
         );
+
+        if (!existing) {
+          return true;
+        }
+
+        // Exclude if already assigned to an interview
+        const isAssigned =
+          existing.status?.toLowerCase() === 'assigned' ||
+          existing.isAssigned === true ||
+          existing.originalStatus?.toLowerCase() === 'assigned';
+        if (isAssigned) {
+          return false;
+        }
+
+        // For panel assignment dialog, panels that already have an assignment are not selectable
+        return false;
+      });
+
+      const unavailableInterviewerIds = new Set<string>();
+      this.existingAssignments.forEach((a: any) => {
+        const panelId = String(a.id || a.panelId);
+        if (currentPanelId && panelId === currentPanelId) {
+          return;
+        }
+
+        const isAssigned =
+          a.status?.toLowerCase() === 'assigned' ||
+          a.isAssigned === true ||
+          a.originalStatus?.toLowerCase() === 'assigned';
+
+        // Interviewers in assigned panels are always unavailable.
+        // In create mode (!isEdit), interviewers in any existing panel assignment are also unavailable.
+        if (isAssigned || !this.isEdit) {
+          a.interviewers?.forEach((i: any) =>
+            unavailableInterviewerIds.add(String(i.id)),
+          );
+        }
       });
 
       interviewerOptions = interviewerOptions.filter(
-        (i) => !assignedInterviewerIds.has(String(i.value)),
+        (i) => !unavailableInterviewerIds.has(String(i.value)),
       );
     }
 

@@ -61,19 +61,25 @@
                   <!-- Right: Stat chips -->
                   <div class="panel-detail__acc-stats">
                     <span class="panel-detail__stat-chip panel-detail__stat-chip--total">
-                      <i class="pi pi-list"></i>
-                      {{ totalForPanel(panel.panelId) }} Candidate{{ totalForPanel(panel.panelId) !== 1 ? 's' : '' }}
+                      <i class="pi pi-users"></i>
+                      {{ totalCandidatesForPanel(panel.panelId) }} Candidate{{ totalCandidatesForPanel(panel.panelId) !== 1 ? 's' : '' }}
                     </span>
+                    @if (totalInterviewsForPanel(panel.panelId) > totalCandidatesForPanel(panel.panelId)) {
+                      <span class="panel-detail__stat-chip panel-detail__stat-chip--interviews">
+                        <i class="pi pi-calendar"></i>
+                        {{ totalInterviewsForPanel(panel.panelId) }} Interviews
+                      </span>
+                    }
                     @if (countByStatus(panel.panelId, 'selected') > 0) {
                       <span class="panel-detail__stat-chip panel-detail__stat-chip--selected">
                         <i class="pi pi-check-circle"></i>
                         {{ countByStatus(panel.panelId, 'selected') }} Selected
                       </span>
                     }
-                    @if (countByStatus(panel.panelId, 'assigned') > 0) {
+                    @if (countPendingForPanel(panel.panelId) > 0) {
                       <span class="panel-detail__stat-chip panel-detail__stat-chip--assigned">
                         <i class="pi pi-clock"></i>
-                        {{ countByStatus(panel.panelId, 'assigned') }} Pending
+                        {{ countPendingForPanel(panel.panelId) }} Pending
                       </span>
                     }
                   </div>

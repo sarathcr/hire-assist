@@ -459,7 +459,8 @@ body:has(.p-dynamicdialog-mask) app-root {
    Instruction Builder - Theme & Icon Select Overlay Panels
    ========================================================================== */
 .instruction-theme-select-panel {
-  min-width: 190px !important;
+  min-width: 220px !important;
+  width: max-content !important;
   border-radius: 10px !important;
   box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 4px 6px -2px rgba(15, 23, 42, 0.05) !important;
   border: 1px solid #e2e8f0 !important;
@@ -490,6 +491,7 @@ body:has(.p-dynamicdialog-mask) app-root {
     align-items: center;
     gap: 10px;
     width: 100%;
+    white-space: nowrap;
 
     .theme-color-dot {
       width: 10px;
@@ -503,6 +505,7 @@ body:has(.p-dynamicdialog-mask) app-root {
       font-size: 0.85rem;
       font-weight: 600;
       color: #1e293b;
+      white-space: nowrap;
       flex: 1;
     }
 
@@ -514,6 +517,9 @@ body:has(.p-dynamicdialog-mask) app-root {
       border: 1px solid;
       text-transform: uppercase;
       letter-spacing: 0.03em;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-left: auto;
     }
   }
 }

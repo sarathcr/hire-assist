@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AccordionModule } from 'primeng/accordion';
@@ -27,6 +27,7 @@ import { SafePipe } from '../../../../../../../../shared/pipes/safepipe';
 import { forkJoin, map } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { MessageService } from 'primeng/api';
+import { NgxExtendedPdfViewerModule, pdfDefaultOptions } from 'ngx-extended-pdf-viewer';
 
 @Component({
   selector: 'app-candidate-detail-view',
@@ -49,14 +50,15 @@ import { MessageService } from 'primeng/api';
     ButtonModule,
     Skeleton,
     Dialog,
-    SafePipe
+    SafePipe,
+    NgxExtendedPdfViewerModule
 ],
   templateUrl: './candidate-detail-view.component.html',
   styleUrl: './candidate-detail-view.component.scss',
 })
 export class CandidateDetailViewComponent
   extends BaseComponent
-  implements OnInit
+  implements OnInit, OnDestroy
 {
   public assessmentId!: number;
   public candidateId!: string;
@@ -70,12 +72,13 @@ export class CandidateDetailViewComponent
   public interviewId!: number;
   public assessmentRoundId!: number;
   public isAadhaarVisible = false;
-  /** Per-round report data keyed by assessmentRoundId */
-  public aptitudeReportMap: Record<number, CandidateAptitudeReport | null> = {};
-  /** Per-round loading state keyed by assessmentRoundId */
-  public isReportLoadingMap: Record<number, boolean> = {};
-  /** Per-round visibility toggle keyed by assessmentRoundId */
-  public showReportMap: Record<number, boolean> = {};
+  public activeTab = '0';
+  /** Per-round report data keyed by composite round key */
+  public aptitudeReportMap: Record<string, CandidateAptitudeReport | null> = {};
+  /** Per-round loading state keyed by composite round key */
+  public isReportLoadingMap: Record<string, boolean> = {};
+  /** Per-round visibility toggle keyed by composite round key */
+  public showReportMap: Record<string, boolean> = {};
   public reportImages: Record<string, string> = {};
   public imageLoadingStates: Record<string, boolean> = {};
   public idProofsDataSource: FileDto[] = [];
@@ -85,9 +88,14 @@ export class CandidateDetailViewComponent
   // Viewer state
   public displayViewer = false;
   public viewerUrl = '';
+  public rawFileUrl = '';
   public viewerTitle = '';
   public isViewerPdf = false;
   public isViewerImage = false;
+  public pdfFailedToLoad = false;
+  public isPdfRendering = false;
+  public isPreparingFile = false;
+  private createdBlobUrl: string | null = null;
 
   constructor(
     public activatedRoute: ActivatedRoute,
@@ -96,6 +104,21 @@ export class CandidateDetailViewComponent
     private messageService: MessageService,
   ) {
     super();
+    pdfDefaultOptions.disableRange = true;
+    pdfDefaultOptions.disableStream = true;
+  }
+
+  override ngOnDestroy(): void {
+    this.cleanCurrentBlobUrl();
+    Object.values(this.reportImages).forEach((url) => URL.revokeObjectURL(url));
+    super.ngOnDestroy();
+  }
+
+  private cleanCurrentBlobUrl(): void {
+    if (this.createdBlobUrl) {
+      URL.revokeObjectURL(this.createdBlobUrl);
+      this.createdBlobUrl = null;
+    }
   }
 
   // LifeCycle Hooks
@@ -112,19 +135,20 @@ export class CandidateDetailViewComponent
     this.interviewId = Number(this.activatedRoute.snapshot.paramMap.get('interviewId')) || 0;
     this.assessmentRoundId = Number(this.activatedRoute.snapshot.queryParamMap.get('assessmentRoundId')) || 0;
     this.lastCompletedRoundId = Number(this.activatedRoute.snapshot.queryParamMap.get('lastCompletedRoundId')) || 0;
+
+    if (this.assessmentRoundId > 0 || this.lastCompletedRoundId > 0 || this.interviewId > 0) {
+      this.activeTab = '1';
+    }
+
     this.getCandidateDetails();
   }
 
-  override ngOnDestroy(): void {
-    super.ngOnDestroy();
-    Object.values(this.reportImages).forEach(url => URL.revokeObjectURL(url));
-  }
 
   public onTabChange(value: string | number): void {
-    const tabValue = String(value);
-    if (tabValue === '1') {
+    this.activeTab = String(value);
+    if (this.activeTab === '1') {
       this.getInterviewFeedbacks();
-    } else if (tabValue === '2') {
+    } else if (this.activeTab === '2') {
       this.getIdProofs();
     }
   }
@@ -134,6 +158,9 @@ export class CandidateDetailViewComponent
     const next = (res: candidateDetails) => {
       this.candidateDetailsDataSource = res;
       this.isLoading = false;
+      if (this.activeTab === '1') {
+        this.getInterviewFeedbacks();
+      }
     };
     const error = () => {
       this.isLoading = false;
@@ -193,41 +220,47 @@ export class CandidateDetailViewComponent
   }
 
   public isImage(filename: string): boolean {
-    const ext = filename.split('.').pop()?.toLowerCase();
-    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(ext || '');
+    if (!filename) return false;
+    const cleanName = filename.split('?')[0].toLowerCase();
+    const ext = cleanName.split('.').pop()?.toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext || '') ||
+      ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'].some(e => cleanName.includes(e));
+  }
+
+  public isPdf(filename: string): boolean {
+    if (!filename) return false;
+    const cleanName = filename.split('?')[0].toLowerCase();
+    return cleanName.endsWith('.pdf') || cleanName.includes('.pdf');
   }
 
   public viewFile(file: FileDto): void {
-    const key = this.getImageId(file);
-    const blobUrl = this.reportImages[key];
-    const filename = file.name || '';
-    this.viewerTitle = file.attachmentName || filename;
+    this.pdfFailedToLoad = false;
+    this.cleanCurrentBlobUrl();
     
-    // Prioritize the blob URL if we already fetched it
-    if (blobUrl) {
-      const isImg = this.isImage(filename);
-      const isPdf = filename.toLowerCase().endsWith('.pdf');
-      
-      this.isViewerImage = isImg;
-      this.isViewerPdf = isPdf;
-      this.viewerUrl = blobUrl;
+    const key = this.getImageId(file);
+    const existingUrl = this.reportImages[key];
+    const filename = file.name || file.attachmentName || file.url || key || '';
+    this.viewerTitle = file.attachmentName || file.name || filename;
+    
+    // Prioritize the blob/pre-signed URL if we already fetched it
+    if (existingUrl) {
       this.displayViewer = true;
+      this.rawFileUrl = existingUrl;
+      this.loadViewerContent(existingUrl, filename);
       return;
     }
 
-    // Fallback if blob is not pre-fetched yet
-    const type = file.attachmentType || 4;
+    // Fallback if URL is not pre-fetched yet
+    const fileAny = file as any;
+    const type = file.attachmentType || fileAny.AttachmentType || fileAny.attachmentTypeId || fileAny.AttachmentTypeId || 4;
     if (key) {
-      this.fetchFileBlob(key, type);
-      // We'll show a loading state in the UI while it fetches
       this.displayViewer = true;
-      this.viewerUrl = ''; // Clear to trigger loading state
-      
-      const isImg = this.isImage(filename);
-      const isPdf = filename.toLowerCase().endsWith('.pdf');
-      
-      this.isViewerImage = isImg;
-      this.isViewerPdf = isPdf;
+      this.viewerUrl = '';
+      this.isPreparingFile = true;
+      this.fetchFileBlob(key, type, (url: string) => {
+        this.rawFileUrl = url;
+        this.loadViewerContent(url, filename);
+      });
       return;
     }
 
@@ -236,8 +269,122 @@ export class CandidateDetailViewComponent
       const fullUrl = file.url.startsWith('http') 
         ? file.url 
         : `${this.assessmentService.getResourceUrl().replace('/api/assessment', '')}/${file.url}`;
-      window.open(fullUrl, '_blank');
+      this.displayViewer = true;
+      this.rawFileUrl = fullUrl;
+      this.loadViewerContent(fullUrl, filename);
     }
+  }
+
+  private async loadViewerContent(url: string, filename: string): Promise<void> {
+    this.isPreparingFile = true;
+    this.viewerUrl = '';
+    this.pdfFailedToLoad = false;
+
+    // Check if URL is already a local blob URL
+    if (url.startsWith('blob:')) {
+      this.viewerUrl = url;
+      const isPdf = this.isPdf(filename) || this.isPdf(url);
+      this.isViewerPdf = isPdf;
+      this.isViewerImage = !isPdf;
+      this.isPdfRendering = isPdf;
+      this.isPreparingFile = false;
+      return;
+    }
+
+    try {
+      // Standard HTTP GET fetch without Range headers to avoid CORS/streaming issues with S3
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Fetch failed with HTTP status ${response.status}`);
+      }
+      const blob = await response.blob();
+
+      // Read magic bytes to determine format directly from data
+      const headerBuffer = await blob.slice(0, 8).arrayBuffer();
+      const bytes = new Uint8Array(headerBuffer);
+
+      const isPdfMagic = bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46; // %PDF
+      const isJpeg = bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+      const isPng = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47;
+      const isGif = bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46;
+      const isWebp = bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
+
+      if (isJpeg || isPng || isGif || isWebp) {
+        // Auto-detected image
+        this.isViewerPdf = false;
+        this.isViewerImage = true;
+        this.isPdfRendering = false;
+        const mimeType = isPng ? 'image/png' : isGif ? 'image/gif' : isWebp ? 'image/webp' : 'image/jpeg';
+        this.cleanCurrentBlobUrl();
+        this.createdBlobUrl = URL.createObjectURL(new Blob([blob], { type: mimeType }));
+        this.viewerUrl = this.createdBlobUrl;
+      } else if (isPdfMagic) {
+        // Verified valid PDF: convert to in-memory blob URL for instantaneous local rendering
+        this.isViewerImage = false;
+        this.isViewerPdf = true;
+        this.isPdfRendering = true;
+        this.cleanCurrentBlobUrl();
+        this.createdBlobUrl = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+        this.viewerUrl = this.createdBlobUrl;
+      } else {
+        // Fallback by extension
+        const isPdfByName = this.isPdf(filename) || this.isPdf(url);
+        if (isPdfByName) {
+          this.isViewerImage = false;
+          this.isViewerPdf = true;
+          this.isPdfRendering = true;
+          this.cleanCurrentBlobUrl();
+          this.createdBlobUrl = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+          this.viewerUrl = this.createdBlobUrl;
+        } else {
+          this.isViewerPdf = false;
+          this.isViewerImage = true;
+          this.isPdfRendering = false;
+          this.cleanCurrentBlobUrl();
+          this.createdBlobUrl = URL.createObjectURL(blob);
+          this.viewerUrl = this.createdBlobUrl;
+        }
+      }
+    } catch (error) {
+      console.warn('Could not pre-fetch file as blob, falling back to direct URL:', error);
+      const isPdfByName = this.isPdf(filename) || this.isPdf(url);
+      this.isViewerPdf = isPdfByName;
+      this.isViewerImage = !isPdfByName;
+      this.isPdfRendering = isPdfByName;
+      this.viewerUrl = url;
+    } finally {
+      this.isPreparingFile = false;
+    }
+  }
+
+  public closeViewer(): void {
+    this.displayViewer = false;
+    this.cleanCurrentBlobUrl();
+    this.viewerUrl = '';
+    this.rawFileUrl = '';
+    this.isViewerPdf = false;
+    this.isViewerImage = false;
+    this.viewerTitle = '';
+    this.pdfFailedToLoad = false;
+    this.isPdfRendering = false;
+    this.isPreparingFile = false;
+  }
+
+  public onPdfPageRendered(): void {
+    this.isPdfRendering = false;
+  }
+
+  public onPdfLoaded(): void {
+    // Fallback safeguard in case pageRendered doesn't fire
+    setTimeout(() => {
+      this.isPdfRendering = false;
+    }, 1000);
+  }
+
+  public onPdfLoadingFailed(error: any): void {
+    console.warn('PDF loading failed, falling back to direct open/download options:', error);
+    this.isPdfRendering = false;
+    this.pdfFailedToLoad = true;
   }
 
   public getStatusSeverity(status: string): 'success' | 'danger' | 'warn' | 'info' | undefined {
@@ -245,6 +392,7 @@ export class CandidateDetailViewComponent
       case 'selected':
         return 'success';
       case 'rejected':
+      case 'terminated':
         return 'danger';
       case 'completed':
         return 'success';
@@ -261,12 +409,31 @@ export class CandidateDetailViewComponent
       case 'selected':
         return 'success';
       case 'rejected':
+      case 'terminated':
         return 'danger';
       case 'completed':
         return 'success';
       default:
         return 'info';
     }
+  }
+
+  public getRoundKey(round: any): string {
+    if (!round) return '';
+    if (round.interviewId) {
+      return `interview_${round.interviewId}`;
+    }
+    const roundId = round.assessmentRoundId || round.roundId || round.sequence || '0';
+    const attempt = round.attemptNumber ? `_attempt_${round.attemptNumber}` : '';
+    return `round_${roundId}${attempt}`;
+  }
+
+  public getRoundAttemptLabel(round: any): string {
+    if (!round) return '';
+    if (round.attemptNumber) {
+      return `Attempt ${round.attemptNumber}`;
+    }
+    return '';
   }
 
   public getFeedbackScoreSeverity(
@@ -309,6 +476,38 @@ export class CandidateDetailViewComponent
 
   public hasValue(value: any): boolean {
     return value !== null && value !== undefined && value !== '';
+  }
+
+  public getDetailTotalScore(detail: any): number | null {
+    if (this.hasValue(detail?.totalScore)) return Number(detail.totalScore);
+    if (this.hasValue(detail?.score)) return Number(detail.score);
+    if (detail?.feedbackListDto && detail.feedbackListDto.length > 0) {
+      const sum = detail.feedbackListDto.reduce((acc: number, f: any) => acc + (Number(f.feedbackScore) || 0), 0);
+      return sum;
+    }
+    return null;
+  }
+
+  public getDetailOutOfScore(detail: any): number | null {
+    if (this.hasValue(detail?.outofScore)) return Number(detail.outofScore);
+    if (this.hasValue(detail?.maxScore)) return Number(detail.maxScore);
+    if (detail?.feedbackListDto && detail.feedbackListDto.length > 0) {
+      const sum = detail.feedbackListDto.reduce((acc: number, f: any) => acc + (Number(f.maxScore) || 0), 0);
+      return sum > 0 ? sum : null;
+    }
+    // Fallback for aptitude round if outofScore is missing from remote API
+    if (
+      this.hasValue(detail?.totalQuestions) &&
+      Number(detail.totalQuestions) > 0 &&
+      this.hasValue(detail?.correctAnswers) &&
+      Number(detail.correctAnswers) > 0 &&
+      this.hasValue(detail?.totalScore) &&
+      Number(detail.totalScore) > 0
+    ) {
+      const markPerQuestion = Number(detail.totalScore) / Number(detail.correctAnswers);
+      return Math.round(markPerQuestion * Number(detail.totalQuestions));
+    }
+    return null;
   }
 
   public formatLabel(label: string): string {
@@ -388,28 +587,29 @@ export class CandidateDetailViewComponent
       }
     }
 
+    const key = this.getRoundKey(round);
     const roundId = round.assessmentRoundId;
 
     // Toggle off if already loaded
-    if (this.aptitudeReportMap[roundId]) {
-      this.showReportMap[roundId] = !this.showReportMap[roundId];
+    if (this.aptitudeReportMap[key]) {
+      this.showReportMap[key] = !this.showReportMap[key];
       return;
     }
 
-    this.isReportLoadingMap[roundId] = true;
-    this.showReportMap[roundId] = true;
+    this.isReportLoadingMap[key] = true;
+    this.showReportMap[key] = true;
 
     this.interviewService
-      .getCandidateAptitudeReport(this.assessmentId, this.candidateDetailsDataSource.email, roundId)
+      .getCandidateAptitudeReport(this.assessmentId, this.candidateDetailsDataSource.email, roundId, round.interviewId)
       .subscribe({
         next: (res: CandidateAptitudeReport) => {
-          this.aptitudeReportMap[roundId] = res;
-          this.isReportLoadingMap[roundId] = false;
+          this.aptitudeReportMap[key] = res;
+          this.isReportLoadingMap[key] = false;
           this.loadReportImagesForRound(res);
         },
         error: () => {
-          this.isReportLoadingMap[roundId] = false;
-          this.showReportMap[roundId] = false;
+          this.isReportLoadingMap[key] = false;
+          this.showReportMap[key] = false;
         },
       });
   }
@@ -448,8 +648,13 @@ export class CandidateDetailViewComponent
     });
   }
 
-  private fetchFileBlob(id: string, type: number): void {
-    if (!id || this.reportImages[id] || this.imageLoadingStates[id]) return;
+  private fetchFileBlob(id: string, type: number, onSuccess?: (url: string) => void): void {
+    if (!id) return;
+    if (this.reportImages[id]) {
+      if (onSuccess) onSuccess(this.reportImages[id]);
+      return;
+    }
+    if (this.imageLoadingStates[id]) return;
 
     this.imageLoadingStates[id] = true;
     // Extract only the filename as some IDs contain folder paths (e.g. "Option Image/")
@@ -461,10 +666,11 @@ export class CandidateDetailViewComponent
         this.reportImages[id] = url;
         this.imageLoadingStates[id] = false;
         
-        // If this file is currently being viewed, update the viewerUrl
-        if (this.displayViewer && !this.viewerUrl) {
-          // This allows on-demand fetching to show results automatically
-          this.viewerUrl = url;
+        if (onSuccess) {
+          onSuccess(url);
+        } else if (this.displayViewer && !this.viewerUrl) {
+          this.rawFileUrl = url;
+          this.loadViewerContent(url, id);
         }
 
         // Ensure reactivity
@@ -472,6 +678,10 @@ export class CandidateDetailViewComponent
       },
       error: () => {
         this.imageLoadingStates[id] = false;
+        if (this.displayViewer && !this.viewerUrl) {
+          this.isPreparingFile = false;
+          this.pdfFailedToLoad = true;
+        }
       },
     });
   }

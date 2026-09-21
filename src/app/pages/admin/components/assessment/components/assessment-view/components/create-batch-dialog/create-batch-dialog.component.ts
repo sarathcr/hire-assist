@@ -64,13 +64,20 @@ export class CreateBatchDialogComponent implements OnInit {
     this.candidateData = this.config.data;
     
     if (this.config.data?.recruitmentStartDate) {
+      (this.fGroup as any).recruitmentStartDate = this.config.data.recruitmentStartDate;
       const recStart = new Date(this.config.data.recruitmentStartDate);
+      recStart.setHours(0, 0, 0, 0);
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       this.minDate = recStart > today ? recStart : today;
+    } else {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      this.minDate = today;
     }
     if (this.config.data?.recruitmentEndDate) {
       const max = new Date(this.config.data.recruitmentEndDate);
-      max.setMinutes(max.getMinutes() + 1);
+      max.setHours(23, 59, 59, 999);
       this.maxDate = max;
     }
 
@@ -187,15 +194,22 @@ export class CreateBatchDialogComponent implements OnInit {
       // Adjust minDate if the prefilled start date is in the past, so the calendar input won't clear it
       if (start) {
         const recStart = this.config.data?.recruitmentStartDate ? new Date(this.config.data.recruitmentStartDate) : null;
-        this.minDate = recStart && recStart < start ? recStart : start;
+        if (recStart) recStart.setHours(0, 0, 0, 0);
+        const normalizedStart = new Date(start);
+        normalizedStart.setHours(0, 0, 0, 0);
+        this.minDate = recStart && recStart < normalizedStart ? recStart : normalizedStart;
       } else {
         // Fallback to default minDate calculation
         if (this.config.data?.recruitmentStartDate) {
           const recStart = new Date(this.config.data.recruitmentStartDate);
+          recStart.setHours(0, 0, 0, 0);
           const today = new Date();
+          today.setHours(0, 0, 0, 0);
           this.minDate = recStart > today ? recStart : today;
         } else {
-          this.minDate = new Date();
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          this.minDate = today;
         }
       }
 

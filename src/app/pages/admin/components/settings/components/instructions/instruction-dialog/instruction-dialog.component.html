@@ -13,13 +13,17 @@
         <!-- Title -->
         <div class="meta-field meta-field--title">
           <div class="desc-header-row">
-            <label for="inst-title">Instruction Title <span class="text-red-500">*</span></label>
+            <label for="inst-title"
+              >Instruction Title <span class="text-red-500">*</span></label
+            >
             <span
               class="char-counter"
-              [class.limit-near]="(title || '').length >= 140 && (title || '').length <= 150"
+              [class.limit-near]="
+                (title || '').length >= 140 && (title || '').length <= 150
+              "
               [class.limit-reached]="(title || '').length > 150"
             >
-              {{ (title || '').length }} / 150
+              {{ (title || "").length }} / 150
             </span>
           </div>
           <input
@@ -27,20 +31,30 @@
             type="text"
             pInputText
             [(ngModel)]="title"
+            [disabled]="mode === 'preview'"
             (blur)="titleTouched = true"
             (input)="onTitleInput()"
-            [class.ng-invalid]="titleTouched && !isTitleValid"
+            maxlength="150"
+            [class.ng-invalid]="
+              (titleTouched && !isTitleValid) || isDuplicateTitleAndVersion
+            "
             [class.ng-dirty]="titleTouched"
             placeholder="e.g. Standard Aptitude Proctoring Rules"
             class="w-full"
           />
           @if (titleTouched && !isTitleValid) {
-            <small class="p-error text-red-500 block mt-1">{{ titleErrorMessage }}</small>
+            <small class="p-error text-red-500 block mt-1">{{
+              titleErrorMessage
+            }}</small>
+          } @else if (isDuplicateTitleAndVersion) {
+            <small class="p-error text-red-500 block mt-1">{{
+              duplicateErrorMessage
+            }}</small>
           }
         </div>
 
         <!-- View Mode Switcher -->
-        @if (mode !== 'preview') {
+        @if (mode !== "preview") {
           <div class="meta-field meta-field--viewmode">
             <div class="desc-header-row">
               <label>Studio Layout</label>
@@ -94,13 +108,21 @@
           <span class="toggle-text">
             <i class="pi pi-sliders-h"></i>
             <span>Template Settings</span>
-            <span class="settings-pill">v{{ version || '1.0' }}</span>
-            <span class="settings-pill" [class.active]="isActive">{{ isActive ? 'Active' : 'Inactive' }}</span>
+            <span class="settings-pill">{{
+              version.startsWith("v") ? version : "v" + (version || "1.0")
+            }}</span>
+            <span class="settings-pill" [class.active]="isActive">{{
+              isActive ? "Active" : "Inactive"
+            }}</span>
             @if (isDefault) {
               <span class="settings-pill settings-pill--default">Default</span>
             }
           </span>
-          <i [class]="mobileSettingsOpen ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
+          <i
+            [class]="
+              mobileSettingsOpen ? 'pi pi-chevron-up' : 'pi pi-chevron-down'
+            "
+          ></i>
         </button>
       </div>
 
@@ -110,22 +132,35 @@
           <!-- Version -->
           <div class="meta-field meta-field--version">
             <div class="desc-header-row">
-              <label for="inst-version">Version Tag <span class="text-red-500">*</span></label>
+              <label for="inst-version"
+                >Version Tag <span class="text-red-500">*</span></label
+              >
             </div>
             <input
               id="inst-version"
               type="text"
               pInputText
               [(ngModel)]="version"
+              [disabled]="mode === 'preview'"
               (blur)="versionTouched = true"
               (input)="onVersionInput()"
-              [class.ng-invalid]="versionTouched && !isVersionValid"
+              maxlength="15"
+              [class.ng-invalid]="
+                (versionTouched && !isVersionValid) ||
+                isDuplicateTitleAndVersion
+              "
               [class.ng-dirty]="versionTouched"
               placeholder="e.g. 1.0"
               class="w-full"
             />
             @if (versionTouched && !isVersionValid) {
-              <small class="p-error text-red-500 block mt-1">{{ versionErrorMessage }}</small>
+              <small class="p-error text-red-500 block mt-1">{{
+                versionErrorMessage
+              }}</small>
+            } @else if (isDuplicateTitleAndVersion) {
+              <small class="p-error text-red-500 block mt-1">{{
+                duplicateErrorMessage
+              }}</small>
             }
           </div>
 
@@ -140,6 +175,7 @@
                   [(ngModel)]="isDefault"
                   [binary]="true"
                   inputId="inst-default"
+                  [disabled]="mode === 'preview'"
                 ></p-checkbox>
                 <span>Set as Default for Rounds</span>
               </label>
@@ -148,6 +184,7 @@
                   [(ngModel)]="isActive"
                   [binary]="true"
                   inputId="inst-active"
+                  [disabled]="mode === 'preview'"
                 ></p-checkbox>
                 <span>Active Template</span>
               </label>
@@ -162,10 +199,13 @@
               <label for="inst-desc">Candidate Overview / Intro Note</label>
               <span
                 class="char-counter"
-                [class.limit-near]="(description || '').length >= 450 && (description || '').length <= 500"
+                [class.limit-near]="
+                  (description || '').length >= 450 &&
+                  (description || '').length <= 500
+                "
                 [class.limit-reached]="(description || '').length > 500"
               >
-                {{ (description || '').length }} / 500
+                {{ (description || "").length }} / 500
               </span>
             </div>
             <input
@@ -173,6 +213,7 @@
               type="text"
               pInputText
               [(ngModel)]="description"
+              [disabled]="mode === 'preview'"
               (blur)="descriptionTouched = true"
               [class.ng-invalid]="descriptionTouched && !isDescriptionValid"
               [class.ng-dirty]="descriptionTouched"
@@ -181,7 +222,9 @@
               class="w-full"
             />
             @if (descriptionTouched && !isDescriptionValid) {
-              <small class="p-error text-red-500 block mt-1">{{ descriptionErrorMessage }}</small>
+              <small class="p-error text-red-500 block mt-1">{{
+                descriptionErrorMessage
+              }}</small>
             }
           </div>
         </div>
@@ -189,12 +232,18 @@
     </div>
 
     <!-- RECRUITMENT REFERENCE PROTECTION BANNER -->
-    @if (hasCompletedRecruitmentReferences && mode !== 'preview') {
+    @if (hasCompletedRecruitmentReferences && mode !== "preview") {
       <div class="completed-reference-banner">
         <i class="pi pi-shield"></i>
         <div class="banner-text">
-          <span class="banner-title">Recruitment Reference Protection Active</span>
-          <span class="banner-desc">This template is referenced in one or more recruitments. To protect test integrity and candidate records, edits must be saved as a new version.</span>
+          <span class="banner-title"
+            >Recruitment Reference Protection Active</span
+          >
+          <span class="banner-desc"
+            >This template is referenced in one or more recruitments. To protect
+            test integrity and candidate records, edits must be saved as a new
+            version.</span
+          >
         </div>
       </div>
     }
@@ -206,11 +255,11 @@
         [ngClass]="{
           'grid--split': viewMode === 'split',
           'grid--builder-only': viewMode === 'builder',
-          'grid--preview-only': viewMode === 'preview'
+          'grid--preview-only': viewMode === 'preview',
         }"
       >
         <!-- LEFT COLUMN: DRAG & DROP COMPONENT CANVAS -->
-        @if (viewMode !== 'preview') {
+        @if (viewMode !== "preview") {
           <div class="builder-canvas">
             <!-- Component Palette -->
             <div class="component-palette">
@@ -218,16 +267,26 @@
                 <span class="palette-title">
                   <i class="pi pi-th-large"></i>
                   <span>Add Component Block:</span>
+                  <span class="palette-count"
+                    >({{ sections.length }}/{{ MAX_SECTIONS }})</span
+                  >
                 </span>
-                <span class="palette-hint">Click any preset to insert or drag cards to reorder</span>
+                <span class="palette-hint"
+                  >Click any preset button to add an instruction block</span
+                >
               </div>
               <div class="palette-buttons">
                 @for (preset of componentPresets; track preset.key) {
                   <button
                     type="button"
                     class="palette-chip palette-chip--{{ preset.severity }}"
+                    [disabled]="sections.length >= MAX_SECTIONS"
                     (click)="addComponentFromPreset(preset.key)"
-                    [pTooltip]="'Add ' + preset.label + ' card'"
+                    [pTooltip]="
+                      sections.length >= MAX_SECTIONS
+                        ? 'Maximum ' + MAX_SECTIONS + ' sections reached'
+                        : 'Add ' + preset.label + ' card'
+                    "
                     tooltipPosition="top"
                   >
                     <i [class]="preset.icon"></i>
@@ -237,21 +296,95 @@
               </div>
             </div>
 
+            <!-- Cards List Header -->
+            <div class="cards-list-header">
+              <span class="cards-list-title">
+                <i class="pi pi-list"></i>
+                <span>Instruction Blocks</span>
+                <span class="cards-list-count">({{ sections.length }})</span>
+              </span>
+              <span class="cards-list-hint">
+                <i class="pi pi-bars"></i> Click and drag the menu icon (☰) on
+                any block to reorder
+              </span>
+            </div>
+
             <!-- Drag & Drop DropList for Section Cards -->
             <div
               cdkDropList
+              id="sections-droplist"
               [cdkDropListData]="sections"
               (cdkDropListDropped)="onSectionDrop($event)"
               class="sections-droplist"
+              cdkDropListOrientation="vertical"
             >
-              @for (section of sections; let sIdx = $index; track trackByIndex(sIdx)) {
+              @for (section of sections; let sIdx = $index; track section) {
                 <div
                   cdkDrag
+                  [cdkDragData]="section"
+                  (cdkDragStarted)="onDragStart()"
+                  (cdkDragEnded)="onDragEnd()"
                   class="section-card section-card--{{ section.severity }}"
                   [class.section-card--collapsed]="section.collapsed"
                 >
                   <!-- CDK Drag Placeholder -->
-                  <div class="section-card__placeholder" *cdkDragPlaceholder></div>
+                  <div
+                    class="section-card__placeholder"
+                    *cdkDragPlaceholder
+                  ></div>
+
+                  <!-- CDK Drag Preview -->
+                  <div
+                    *cdkDragPreview
+                    class="section-card-preview section-card-preview--{{
+                      section.severity
+                    }}"
+                  >
+                    <div class="section-card-preview__header">
+                      <div class="section-card-preview__drag-handle">
+                        <i class="pi pi-bars"></i>
+                      </div>
+                      <div class="section-card-preview__icon">
+                        <i [class]="section.icon || 'pi pi-info-circle'"></i>
+                      </div>
+                      <div class="section-card-preview__title-group">
+                        <span class="section-card-preview__title">
+                          {{ section.title || "Untitled Instruction Section" }}
+                        </span>
+                        <span
+                          class="section-card-preview__badge section-card-preview__badge--{{
+                            section.severity
+                          }}"
+                        >
+                          {{ section.severity | uppercase }}
+                        </span>
+                      </div>
+                      <div class="section-card-preview__rules-count">
+                        <i class="pi pi-list"></i>
+                        <span>
+                          {{ section.rules.length }}
+                          {{ section.rules.length === 1 ? "Rule" : "Rules" }}
+                        </span>
+                      </div>
+                    </div>
+                    @if (!section.collapsed && section.rules.length > 0) {
+                      <div class="section-card-preview__body">
+                        @for (r of section.rules.slice(0, 3); track $index) {
+                          <div class="section-card-preview__rule">
+                            <span class="rule-bullet">•</span>
+                            <span class="rule-text">{{
+                              r || "Instruction rule..."
+                            }}</span>
+                          </div>
+                        }
+                        @if (section.rules.length > 3) {
+                          <div class="section-card-preview__more">
+                            +{{ section.rules.length - 3 }} more rules
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
 
                   <!-- Card Header Bar -->
                   <div class="section-card__header">
@@ -259,19 +392,42 @@
                     <div
                       cdkDragHandle
                       class="section-card__drag-handle"
-                      pTooltip="Drag to reorder component"
+                      pTooltip="Drag to reorder block"
                       tooltipPosition="top"
+                      [tooltipDisabled]="isDragging"
+                      (pointerdown)="onDragHandlePointerDown()"
                     >
                       <i class="pi pi-bars"></i>
                     </div>
 
                     <!-- Component Title -->
                     <div class="section-card__field-title">
-                      <label>Block Title</label>
+                      <div class="block-title-header">
+                        <label
+                          >Block Title
+                          <span class="text-red-500">*</span></label
+                        >
+                        <span
+                          class="char-counter"
+                          [class.limit-near]="
+                            (section.title || '').length >= 90 &&
+                            (section.title || '').length < 100
+                          "
+                          [class.limit-reached]="
+                            (section.title || '').length >= 100
+                          "
+                        >
+                          {{ (section.title || "").length }} / 100
+                        </span>
+                      </div>
                       <input
                         type="text"
                         pInputText
                         [(ngModel)]="section.title"
+                        maxlength="100"
+                        [class.ng-invalid]="
+                          !section.title || !section.title.trim()
+                        "
                         placeholder="e.g. Critical Proctoring Rules"
                         class="w-full"
                       />
@@ -293,10 +449,18 @@
                           <div class="theme-select-value">
                             <span
                               class="theme-color-dot"
-                              [style.backgroundColor]="getSeverityOption(selectedOption || section.severity).color"
+                              [style.backgroundColor]="
+                                getSeverityOption(
+                                  selectedOption || section.severity
+                                ).color
+                              "
                             ></span>
                             <span class="theme-label-text">
-                              {{ getSeverityOption(selectedOption || section.severity).label }}
+                              {{
+                                getSeverityOption(
+                                  selectedOption || section.severity
+                                ).label
+                              }}
                             </span>
                           </div>
                         </ng-template>
@@ -306,7 +470,9 @@
                               class="theme-color-dot"
                               [style.backgroundColor]="itemOption.color"
                             ></span>
-                            <span class="theme-option-name">{{ itemOption.label }}</span>
+                            <span class="theme-option-name">{{
+                              itemOption.label
+                            }}</span>
                             <span
                               class="theme-option-tag"
                               [style.color]="itemOption.color"
@@ -335,10 +501,18 @@
                         <ng-template #selectedItem let-selectedOption>
                           <div class="icon-select-value">
                             <div class="icon-preview-glyph">
-                              <i [class]="getIconOption(selectedOption || section.icon).value"></i>
+                              <i
+                                [class]="
+                                  getIconOption(selectedOption || section.icon)
+                                    .value
+                                "
+                              ></i>
                             </div>
                             <span class="icon-label-text">
-                              {{ getIconOption(selectedOption || section.icon).shortLabel }}
+                              {{
+                                getIconOption(selectedOption || section.icon)
+                                  .shortLabel
+                              }}
                             </span>
                           </div>
                         </ng-template>
@@ -347,7 +521,9 @@
                             <div class="icon-glyph-badge">
                               <i [class]="itemOption.value"></i>
                             </div>
-                            <span class="icon-option-name">{{ itemOption.label }}</span>
+                            <span class="icon-option-name">{{
+                              itemOption.label
+                            }}</span>
                           </div>
                         </ng-template>
                       </p-select>
@@ -360,18 +536,36 @@
                         type="button"
                         class="action-btn"
                         (click)="toggleSectionCollapse(sIdx)"
-                        [pTooltip]="section.collapsed ? 'Expand Rules' : 'Collapse Rules'"
+                        [pTooltip]="
+                          section.collapsed ? 'Expand Rules' : 'Collapse Rules'
+                        "
+                        [tooltipDisabled]="isDragging"
                         tooltipPosition="top"
                       >
-                        <i [class]="section.collapsed ? 'pi pi-chevron-down' : 'pi pi-chevron-up'"></i>
+                        <i
+                          [class]="
+                            section.collapsed
+                              ? 'pi pi-chevron-down'
+                              : 'pi pi-chevron-up'
+                          "
+                        ></i>
                       </button>
 
                       <!-- Duplicate -->
                       <button
                         type="button"
                         class="action-btn"
+                        [disabled]="sections.length >= MAX_SECTIONS"
+                        [class.action-btn--disabled]="
+                          sections.length >= MAX_SECTIONS
+                        "
                         (click)="duplicateSection(sIdx)"
-                        pTooltip="Duplicate Block"
+                        [pTooltip]="
+                          sections.length >= MAX_SECTIONS
+                            ? 'Maximum ' + MAX_SECTIONS + ' sections reached'
+                            : 'Duplicate Block'
+                        "
+                        [tooltipDisabled]="isDragging"
                         tooltipPosition="top"
                       >
                         <i class="pi pi-copy"></i>
@@ -384,6 +578,7 @@
                           class="action-btn action-btn--danger"
                           (click)="removeSection(sIdx)"
                           pTooltip="Remove Block"
+                          [tooltipDisabled]="isDragging"
                           tooltipPosition="top"
                         >
                           <i class="pi pi-trash"></i>
@@ -396,20 +591,62 @@
                   @if (!section.collapsed) {
                     <div class="section-card__body">
                       <div class="rules-header">
-                        <span class="rules-label">Rules & Instructions (Drag to reorder):</span>
-                        <span class="rules-count">{{ section.rules.length }} items</span>
+                        <span class="rules-label">
+                          <span>Rules & Instructions</span>
+                          <span class="rules-reorder-hint">
+                            <i class="pi pi-bars"></i> Click & drag menu icon
+                            (☰) to reorder
+                          </span>
+                        </span>
+                        <span class="rules-count"
+                          >{{ section.rules.length }} /
+                          {{ MAX_RULES_PER_SECTION }} rules (max 300 chars /
+                          rule)</span
+                        >
                       </div>
 
                       <div
                         cdkDropList
+                        [id]="'rules-droplist-' + sIdx"
                         [cdkDropListData]="section.rules"
                         (cdkDropListDropped)="onRuleDrop($event, sIdx)"
                         class="rules-droplist"
+                        cdkDropListOrientation="vertical"
                       >
-                        @for (rule of section.rules; let rIdx = $index; track trackByIndex(rIdx)) {
-                          <div cdkDrag class="rule-item">
+                        @for (
+                          rule of section.rules;
+                          let rIdx = $index;
+                          track trackByIndex(rIdx)
+                        ) {
+                          <div
+                            cdkDrag
+                            (cdkDragStarted)="onDragStart()"
+                            (cdkDragEnded)="onDragEnd()"
+                            class="rule-item"
+                            [class.rule-item--invalid]="
+                              !section.rules[rIdx] ||
+                              !section.rules[rIdx].trim()
+                            "
+                          >
                             <!-- Rule Drag Placeholder -->
-                            <div class="rule-item__placeholder" *cdkDragPlaceholder></div>
+                            <div
+                              class="rule-item__placeholder"
+                              *cdkDragPlaceholder
+                            ></div>
+
+                            <!-- Rule Drag Preview -->
+                            <div *cdkDragPreview class="rule-drag-preview">
+                              <span class="rule-drag-handle">
+                                <i class="pi pi-bars"></i>
+                              </span>
+                              <span class="rule-index">{{ rIdx + 1 }}.</span>
+                              <span class="rule-text">
+                                {{
+                                  section.rules[rIdx] ||
+                                    "Enter specific instruction or rule here..."
+                                }}
+                              </span>
+                            </div>
 
                             <!-- Rule Drag Handle -->
                             <span
@@ -417,6 +654,8 @@
                               class="rule-drag-handle"
                               pTooltip="Drag to reorder rule"
                               tooltipPosition="top"
+                              [tooltipDisabled]="isDragging"
+                              (pointerdown)="onDragHandlePointerDown()"
                             >
                               <i class="pi pi-bars"></i>
                             </span>
@@ -427,9 +666,41 @@
                               type="text"
                               pInputText
                               [(ngModel)]="section.rules[rIdx]"
+                              maxlength="300"
+                              [class.ng-invalid]="
+                                !section.rules[rIdx] ||
+                                !section.rules[rIdx].trim()
+                              "
                               placeholder="Enter specific instruction or rule here..."
                               class="w-full rule-input"
                             />
+
+                            <span
+                              class="rule-char-counter"
+                              [class.limit-empty]="
+                                !section.rules[rIdx] ||
+                                !section.rules[rIdx].trim()
+                              "
+                              [class.limit-near]="
+                                (section.rules[rIdx] || '').length >= 270 &&
+                                (section.rules[rIdx] || '').length < 300
+                              "
+                              [class.limit-reached]="
+                                (section.rules[rIdx] || '').length >= 300
+                              "
+                              [pTooltip]="
+                                !section.rules[rIdx] ||
+                                !section.rules[rIdx].trim()
+                                  ? 'Rule instruction cannot be empty'
+                                  : 'Rule character count: ' +
+                                    (section.rules[rIdx] || '').length +
+                                    ' / 300'
+                              "
+                              [tooltipDisabled]="isDragging"
+                              tooltipPosition="top"
+                            >
+                              {{ (section.rules[rIdx] || "").length }} / 300
+                            </span>
 
                             @if (section.rules.length > 1) {
                               <button
@@ -437,6 +708,7 @@
                                 class="rule-delete-btn"
                                 (click)="removeRule(sIdx, rIdx)"
                                 pTooltip="Remove rule"
+                                [tooltipDisabled]="isDragging"
                                 tooltipPosition="top"
                               >
                                 <i class="pi pi-times"></i>
@@ -451,10 +723,33 @@
                         <button
                           type="button"
                           class="add-rule-btn"
+                          [disabled]="
+                            section.rules.length >= MAX_RULES_PER_SECTION
+                          "
+                          [class.disabled]="
+                            section.rules.length >= MAX_RULES_PER_SECTION
+                          "
                           (click)="addRule(sIdx)"
+                          [pTooltip]="
+                            section.rules.length >= MAX_RULES_PER_SECTION
+                              ? 'Maximum ' +
+                                MAX_RULES_PER_SECTION +
+                                ' rules reached'
+                              : 'Add another rule'
+                          "
+                          [tooltipDisabled]="isDragging"
+                          tooltipPosition="top"
                         >
                           <i class="pi pi-plus"></i>
-                          <span>Add Another Rule</span>
+                          <span>{{
+                            section.rules.length >= MAX_RULES_PER_SECTION
+                              ? "Max Rules Reached (" +
+                                MAX_RULES_PER_SECTION +
+                                "/" +
+                                MAX_RULES_PER_SECTION +
+                                ")"
+                              : "Add Another Rule"
+                          }}</span>
                         </button>
                       </div>
                     </div>
@@ -468,24 +763,47 @@
               <button
                 type="button"
                 class="add-custom-section-btn"
+                [disabled]="sections.length >= MAX_SECTIONS"
+                [class.disabled]="sections.length >= MAX_SECTIONS"
                 (click)="addSection()"
+                [pTooltip]="
+                  sections.length >= MAX_SECTIONS
+                    ? 'Maximum ' + MAX_SECTIONS + ' sections reached'
+                    : 'Add New Blank Section'
+                "
+                [tooltipDisabled]="isDragging"
+                tooltipPosition="top"
               >
                 <i class="pi pi-plus-circle"></i>
-                <span>Add New Blank Section</span>
+                <span>{{
+                  sections.length >= MAX_SECTIONS
+                    ? "Max Sections Reached (" +
+                      MAX_SECTIONS +
+                      "/" +
+                      MAX_SECTIONS +
+                      ")"
+                    : "Add New Blank Section (" +
+                      sections.length +
+                      "/" +
+                      MAX_SECTIONS +
+                      ")"
+                }}</span>
               </button>
             </div>
           </div>
         }
 
         <!-- RIGHT COLUMN: LIVE CANDIDATE PREVIEW -->
-        @if (viewMode !== 'builder') {
+        @if (viewMode !== "builder") {
           <div class="preview-panel">
             <div class="preview-panel__header">
               <div class="preview-badge">
                 <i class="pi pi-desktop"></i>
                 <span>Candidate Screen Preview (Live)</span>
               </div>
-              <span class="preview-subtext">Real-time simulation of pre-assessment proctoring modal</span>
+              <span class="preview-subtext"
+                >Real-time simulation of pre-assessment proctoring modal</span
+              >
             </div>
 
             <div class="preview-screen-mockup">
@@ -496,7 +814,9 @@
                   <span class="mock-dot mock-dot--yellow"></span>
                   <span class="mock-dot mock-dot--green"></span>
                 </div>
-                <span class="mock-title">{{ title || 'Aptitude Assessment Instructions' }}</span>
+                <span class="mock-title">{{
+                  title || "Aptitude Assessment Instructions"
+                }}</span>
               </div>
 
               <!-- Candidate Modal Content -->
@@ -505,14 +825,21 @@
                 <div class="candidate-intro-box">
                   <i class="pi pi-info-circle candidate-intro-icon"></i>
                   <p>
-                    {{ description || 'Please read the following instructions carefully before starting your assessment session.' }}
+                    {{
+                      description ||
+                        "Please read the following instructions carefully before starting your assessment session."
+                    }}
                   </p>
                 </div>
 
                 <!-- Rendered Cards -->
                 <div class="candidate-cards-list">
-                  @for (sec of sections; track sec.title) {
-                    <div class="candidate-card candidate-card--{{ sec.severity || 'info' }}">
+                  @for (sec of sections; track sec) {
+                    <div
+                      class="candidate-card candidate-card--{{
+                        sec.severity || 'info'
+                      }}"
+                    >
                       <div class="candidate-card__header">
                         <i
                           class="candidate-card__icon"
@@ -521,8 +848,8 @@
                         <h4 class="candidate-card__title">{{ sec.title }}</h4>
                       </div>
                       <ul class="candidate-card__rules">
-                        @for (rule of sec.rules; track rule) {
-                          <li>{{ rule }}</li>
+                        @for (rule of sec.rules; track trackByIndex($index)) {
+                          <li [innerHTML]="formatRule(rule)"></li>
                         }
                       </ul>
                     </div>
@@ -538,7 +865,7 @@
     <!-- FIXED STICKY FOOTER -->
     <footer class="instruction-dialog__footer">
       <div class="footer-left">
-        @if (mode !== 'preview') {
+        @if (mode !== "preview") {
           <div class="dialog-footer__btn-wrapper">
             <app-button
               buttonLabel="Cancel"
@@ -550,7 +877,7 @@
       </div>
 
       <div class="footer-right">
-        @if (mode === 'preview') {
+        @if (mode === "preview") {
           <div class="dialog-footer__btn-wrapper">
             <app-button
               buttonLabel="Close Preview"
@@ -558,7 +885,7 @@
               (btnClick)="onClose()"
             ></app-button>
           </div>
-        } @else if (mode === 'clone') {
+        } @else if (mode === "clone") {
           <p-button
             [label]="isMobileView ? 'New Version' : 'Save as New Version'"
             icon="pi pi-copy"
@@ -566,10 +893,10 @@
             [outlined]="true"
             [disabled]="!hasChanges() || !isFormValid || isSubmitting"
             (onClick)="onSaveAsNewVersion()"
-            pTooltip="Creates a new version without modifying the original template"
+            pTooltip="Creates a new version by modifying the original template"
             tooltipPosition="top"
           ></p-button>
-        } @else if (mode === 'edit') {
+        } @else if (mode === "edit") {
           @if (hasCompletedRecruitmentReferences) {
             @if (hasContentOrTitleChanges()) {
               <p-button
@@ -586,7 +913,7 @@
                 [label]="isMobileView ? 'Save' : 'Save Changes'"
                 icon="pi pi-check"
                 severity="primary"
-                [disabled]="!hasChanges() || isSubmitting"
+                [disabled]="!hasChanges() || !isFormValid || isSubmitting"
                 (onClick)="onSave()"
                 pTooltip="Save status changes"
                 tooltipPosition="top"
@@ -599,9 +926,13 @@
                 icon="pi pi-copy"
                 severity="help"
                 [outlined]="true"
-                [disabled]="!isFormValid || isSubmitting"
+                [disabled]="
+                  isDuplicateForAction('saveAsNewVersion') ||
+                  !isFormValid ||
+                  isSubmitting
+                "
                 (onClick)="onSaveAsNewVersion()"
-                pTooltip="Creates a new version without modifying the original template"
+                pTooltip="Creates a new version by modifying the original template"
                 tooltipPosition="top"
               ></p-button>
             }

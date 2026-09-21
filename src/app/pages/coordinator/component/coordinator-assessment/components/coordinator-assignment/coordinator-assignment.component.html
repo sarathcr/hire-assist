@@ -88,7 +88,9 @@
     <div class="coordinator-detail__content">
       <!-- Step 0: Candidate Selection -->
       @if (activeStep === 0) {
-        <div class="coordinator-detail__table-container">
+        <div
+          class="coordinator-detail__table-container coordinator-detail__table-container--candidate"
+        >
           <app-table
             [tableData]="data"
             [columnsData]="candidateColumn"
@@ -102,6 +104,7 @@
             (selectedIds)="getSelectedcandidateId($event)"
             [alreadySelected]="selectedCandidate"
             scrollHeight="400px"
+            tableMinWidth="100%"
           ></app-table>
         </div>
         <div

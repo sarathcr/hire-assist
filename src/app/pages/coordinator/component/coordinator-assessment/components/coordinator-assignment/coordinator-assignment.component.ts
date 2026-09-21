@@ -19,6 +19,8 @@ import { TableDataSourceService } from '../../../../../../shared/components/tabl
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
 import { INTERVIEW_URL } from '../../../../../../shared/constants/api';
 
+import { finalize, timeout } from 'rxjs';
+import { StoreService } from '../../../../../../shared/services/store.service';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import {
   FilterMap,
@@ -55,12 +57,14 @@ const candidateTable: TableColumnsData = {
       displayName: 'Candidate Name',
       sortedColumn: false,
       hasChip: false,
+      width: '60%',
     },
     {
       field: 'status',
       displayName: 'Status',
       sortedColumn: false,
       hasChip: false,
+      width: '40%',
     },
   ],
   displayedColumns: [],
@@ -192,6 +196,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
   constructor(
     public dialog: DialogService,
     public messageService: MessageService,
+    private readonly storeService: StoreService,
     private readonly interviewService: InterviewService,
     private readonly coordinatorPanelBridgeService: CoordinatorPanelBridgeService,
     private readonly activatedRoute: ActivatedRoute,
@@ -454,7 +459,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       });
   }
 
-  public getPaginatedPanelData() {
+  public getPaginatedPanelData(isSilent = false) {
     const payload = {
       multiSortedColumns: [],
       filterMap: {},
@@ -464,12 +469,21 @@ export class CoordinatorAssignmentComponent implements OnInit {
       },
     };
 
-    this.isPanelLoading = true;
+    if (!isSilent) {
+      this.isPanelLoading = true;
+    }
     this.coordinatorPanelBridgeService
       .paginationEntity('panel/activePanelSummary', payload)
+      .pipe(
+        finalize(() => {
+          if (!isSilent) {
+            this.isPanelLoading = false;
+          }
+        }),
+      )
       .subscribe({
         next: (res: any) => {
-          const resData = res.data.map((item: PanelSummary) => {
+          const resData = (res?.data || []).map((item: PanelSummary) => {
             return {
               ...item,
               originalStatus: (item as any).originalStatus || item.status,
@@ -491,15 +505,15 @@ export class CoordinatorAssignmentComponent implements OnInit {
           if (this.lastSelectedPanelId) {
             this.updateSelectedPanelFromData(this.lastSelectedPanelId);
           }
-          this.isPanelLoading = false;
         },
         error: () => {
-          this.isPanelLoading = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Error in getting Panel Details.',
-          });
+          if (!isSilent) {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Error in getting Panel Details.',
+            });
+          }
         },
       });
   }
@@ -551,6 +565,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       configMap: this.configMap,
       formData: normalizedFormData,
       isEdit: true,
+      existingAssignments: this.panelData?.data || [],
     };
     this.ref = this.dialog.open(AssignInterviewersDialogueComponent, {
       data: data,
@@ -559,42 +574,76 @@ export class CoordinatorAssignmentComponent implements OnInit {
       showHeader: false,
       contentStyle: { padding: '0' },
       focusOnShow: false,
+      styleClass: 'interviewerPanels__dialog',
       breakpoints: {
         '960px': '75vw',
-        '98vw': '98vw',
+        '640px': '92vw',
+        '480px': '95vw',
       },
     });
 
     this.ref.onClose.subscribe((formData: interviewerEditResponse) => {
       if (formData?.panels && formData?.interviewers?.length) {
+        // Optimistically update the panel in memory so the table updates instantly without skeleton loading
+        const allInterviewers = (this.storeService.getCollection()?.['interviewers'] as any[]) || [];
+        const matchedInterviewers = allInterviewers.filter((u: any) =>
+          formData.interviewers.includes(u.id),
+        );
+        const interviewersList = matchedInterviewers.length > 0
+          ? matchedInterviewers
+          : formData.interviewers.map((id: any) => ({ id, name: String(id) }));
+        const interviewerNames = interviewersList.map((u: any) => u.name).join(', ');
+
+        if (this.panelData?.data) {
+          const panel = this.panelData.data.find(
+            (p: any) => String(p.id) === String(formData.panels),
+          );
+          if (panel) {
+            (panel as any).interviewers = interviewersList;
+            (panel as any).interviewerNames = interviewerNames;
+            (panel as any).isDisabled = !this.isPanelSelectable(panel);
+            this.panelData = { ...this.panelData };
+          }
+          if (this.lastSelectedPanelId && String(this.lastSelectedPanelId) === String(formData.panels)) {
+            this.updateSelectedPanelFromData(this.lastSelectedPanelId);
+          }
+        }
+
         const payload = [
           {
-            panelId: formData.panels,
+            panelId: Number(formData.panels),
             interviewers: formData.interviewers,
           },
         ];
 
+        // Execute API call in background without freezing the table with skeleton loaders
         this.coordinatorPanelBridgeService
           .addInterviewerPanels(payload)
+          .pipe(timeout(60000))
           .subscribe({
             next: () => {
-              this.getPaginatedPanelData();
+              this.getPaginatedPanelData(true); // Silent sync in background
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
                 detail: 'Updated interviewers into panels',
               });
             },
-            error: (error: CustomErrorResponse) => {
-              const businerssErrorCode = error.error.businessError;
-              if (businerssErrorCode === 3105) {
-                this.messageService.add({
-                  severity: 'error',
-                  summary: 'Error',
-                  detail: error.error.errorValue,
-                });
-              }
-              this.getPaginatedPanelData();
+            error: (error: any) => {
+              const errorMessage =
+                error?.name === 'TimeoutError'
+                  ? 'Request timed out waiting for server response.'
+                  : error?.error?.errorValue ||
+                    error?.error?.type ||
+                    error?.error?.message ||
+                    error?.message ||
+                    'Failed to update interviewers into panels';
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: errorMessage,
+              });
+              this.getPaginatedPanelData(false);
             },
           });
       } else if (formData) {
@@ -753,38 +802,48 @@ export class CoordinatorAssignmentComponent implements OnInit {
   }
   private loadPanelData(payload: PaginatedPayload): void {
     this.isPanelLoading = true;
-    this.dataSource2.getData(payload).subscribe({
-      next: (response: any) => {
-        const resData = response.data.map((item: any) => {
-          return {
-            ...item,
-            originalStatus: item.originalStatus || item.status,
-            interviewerNames:
-              item.interviewers?.map((i: Interviewer) => i.name).join(', ') ??
-              '',
-            interviewers: item.interviewers ?? [],
-            name:
-              item.name ||
-              (item as any).panelName ||
-              (item as any).panel ||
-              (item as any).title,
-            panelDescription: item.panelDescription || (item as any).description,
-            status: (this.candidateAssignedPanelId && String(item.id) === String(this.candidateAssignedPanelId)) ? 'Assigned' : (item.originalStatus || item.status),
-            isDisabled: !this.isPanelSelectable(item),
-          };
-        });
+    this.dataSource2
+      .getData(payload)
+      .pipe(
+        finalize(() => {
+          this.isPanelLoading = false;
+        }),
+      )
+      .subscribe({
+        next: (response: any) => {
+          const resData = (response?.data || []).map((item: any) => {
+            return {
+              ...item,
+              originalStatus: item.originalStatus || item.status,
+              interviewerNames:
+                item.interviewers?.map((i: Interviewer) => i.name).join(', ') ??
+                '',
+              interviewers: item.interviewers ?? [],
+              name:
+                item.name ||
+                (item as any).panelName ||
+                (item as any).panel ||
+                (item as any).title,
+              panelDescription: item.panelDescription || (item as any).description,
+              status: (this.candidateAssignedPanelId && String(item.id) === String(this.candidateAssignedPanelId)) ? 'Assigned' : (item.originalStatus || item.status),
+              isDisabled: !this.isPanelSelectable(item),
+            };
+          });
 
-        this.panelData = { ...response, data: resData };
-        // If there's a selected panel ID, try to restore the full panel object
-        if (this.lastSelectedPanelId) {
-          this.updateSelectedPanelFromData(this.lastSelectedPanelId);
-        }
-        this.isPanelLoading = false;
-      },
-      error: () => {
-        this.isPanelLoading = false;
-      },
-    });
+          this.panelData = { ...response, data: resData };
+          // If there's a selected panel ID, try to restore the full panel object
+          if (this.lastSelectedPanelId) {
+            this.updateSelectedPanelFromData(this.lastSelectedPanelId);
+          }
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Error in getting Panel Details.',
+          });
+        },
+      });
   }
   // Stepper Methods
 

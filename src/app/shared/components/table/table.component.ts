@@ -44,6 +44,7 @@ import {
 import { BaseComponent } from '../base/base.component';
 import { ImageComponent } from '../image';
 import { ImageSkeletonComponent } from '../image/image-skeleton';
+import { DropdownManagerService } from '../../services/dropdown-manager.service';
 
 export const matchOptions = [
   { label: 'Equals', value: FilterMatchMode.EQUALS },
@@ -148,6 +149,7 @@ export class TableComponent<
   public alreadySelected = input<string[]>([]);
   public clearSelectionIds = input<string[] | null>(null);
   public selectionDisabled = input<boolean>(false);
+  public tableMinWidth = input<string>();
   @Input() selectionMode: 'single' | 'multiple' | undefined = 'multiple';
   @Input() hasPaginator = true;
   public selectedItems: { id: string }[] = [];
@@ -244,8 +246,20 @@ export class TableComponent<
   private clickTimeout: any = null;
   private lastClickTime = 0;
   public onRowClick(product: any): void {
+    const now = Date.now();
+    if (now - this.lastClickTime < 400) {
+      return;
+    }
+    this.lastClickTime = now;
+    this.dropdownManager.closeActive();
     if (product.isDisabled) {
-      const status = product?.status || '';
+      const status =
+        product?.status || (product?.isScheduled ? 'Scheduled' : '');
+      const isPanel = !!(
+        product?.panelName ||
+        product?.panel ||
+        product?.interviewers !== undefined
+      );
       const isEmptyPanel =
         product?.interviewers && product.interviewers.length === 0;
 
@@ -254,7 +268,11 @@ export class TableComponent<
         summary: 'Read-only',
         detail: isEmptyPanel
           ? 'This panel has no interviewers assigned and cannot be selected.'
-          : `This candidate is already ${status} and cannot be selected.`,
+          : isPanel
+            ? `This panel is already ${status} and cannot be selected.`
+            : status
+              ? `This candidate is already ${status} and cannot be selected.`
+              : 'This candidate is currently disabled and cannot be selected.',
       });
     } else {
       this.view.emit(product);
@@ -335,6 +353,12 @@ export class TableComponent<
 
         // Only show if it was a tap (small movement) - increased threshold
         if (deltaX < 15 && deltaY < 15) {
+          if (product.isDisabled) {
+            this.hideCustomTooltip();
+            this.onRowClick(product);
+            return;
+          }
+
           // Get tooltip text
           const tooltipText = this.getTooltipText(product);
           if (!tooltipText) {
@@ -532,6 +556,7 @@ export class TableComponent<
 
   override ngOnDestroy(): void {
     super.ngOnDestroy();
+    this.dropdownManager.closeActive();
     // Clean up custom tooltip on component destroy
     this.hideCustomTooltip();
     if (this.clickTimeout) {
@@ -543,34 +568,35 @@ export class TableComponent<
   constructor(
     @Inject(PLATFORM_ID) private readonly platformId: object,
     private readonly messageService: MessageService,
+    private readonly dropdownManager: DropdownManagerService,
   ) {
     super();
     effect(() => {
       const currentTableData = this.tableData();
       const alreadySelectedIds = this.alreadySelected();
+      const wasLoading = this.internalIsLoading();
+
+      if (currentTableData) {
+        this.internalIsLoading.set(false);
+
+        // Keep lastPaginationCall in sync with current data so that duplicate lazy load events
+        // (triggered by PrimeNG table rendering the received data) are correctly skipped.
+        const currentPayload = new PaginatedPayload();
+        currentPayload.pagination.pageNumber = currentTableData.pageNumber || 1;
+        currentPayload.pagination.pageSize = currentTableData.pageSize || 10;
+        currentPayload.filterMap = { ...(this.globalPayload?.filterMap || {}) };
+        currentPayload.multiSortedColumns = [
+          ...(this.globalPayload?.multiSortedColumns || []),
+        ];
+        this.lastPaginationCall = {
+          payload: currentPayload,
+          timestamp: Date.now(),
+        };
+      }
 
       if (!currentTableData || !this.table) {
         return;
       }
-
-      // Check if external data reset happened (mismatch between last request and current data)
-      if (this.lastPaginationCall) {
-        const lastPageSize =
-          this.lastPaginationCall.payload.pagination.pageSize;
-        const lastPageNumber =
-          this.lastPaginationCall.payload.pagination.pageNumber;
-
-        if (
-          currentTableData.pageSize !== lastPageSize ||
-          currentTableData.pageNumber !== lastPageNumber
-        ) {
-          // External change detected, clear lastPaginationCall so next user action isn't blocked
-          this.lastPaginationCall = null;
-        }
-      }
-
-      const wasLoading = this.internalIsLoading();
-      this.internalIsLoading.set(false);
 
       if (
         wasLoading &&
@@ -584,6 +610,15 @@ export class TableComponent<
       }
 
       this.handleSelectionSync(alreadySelectedIds, currentTableData);
+    });
+
+    let prevParentLoader: boolean | undefined = undefined;
+    effect(() => {
+      const currentParentLoader = this.parentLoader();
+      if (prevParentLoader === true && !currentParentLoader) {
+        this.internalIsLoading.set(false);
+      }
+      prevParentLoader = currentParentLoader;
     });
 
     const sub = this.searchSubject
@@ -723,6 +758,7 @@ export class TableComponent<
   }
 
   public onSearch(event: any): void {
+    this.dropdownManager.closeActive();
     const target = event.target as HTMLInputElement;
     if (target && (target as any).__isRestoring) {
       this.searchValue = event.target.value ?? '';
@@ -758,7 +794,19 @@ export class TableComponent<
     this.delete.emit(id);
   }
 
+  public toggleRowPopover(event: Event, popover: any): void {
+    event.stopPropagation();
+    const target = (event.currentTarget || event.target) as HTMLElement;
+    this.dropdownManager.registerOpen(popover, target);
+    popover.toggle(event);
+  }
+
+  public onPopoverHide(popover: any): void {
+    this.dropdownManager.registerClose(popover);
+  }
+
   public onButtonClick(event: any, fName?: string): void {
+    this.dropdownManager.closeActive();
     this.buttonClick.emit({ event, fName });
   }
 
@@ -902,6 +950,7 @@ export class TableComponent<
   }
 
   public onClear() {
+    this.dropdownManager.closeActive();
     this.internalIsLoading.set(true);
     this.searchValue = '';
     this.activeFilters.clear();
@@ -918,6 +967,7 @@ export class TableComponent<
   }
 
   public onFilterApplied(event: any): void {
+    this.dropdownManager.closeActive();
     if (!event.filters || !this.table) {
       return;
     }

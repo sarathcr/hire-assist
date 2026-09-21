@@ -1,5 +1,5 @@
 import { DecimalPipe, NgClass, DatePipe } from '@angular/common';
-import { Component, input, OnInit, output, ViewChild } from '@angular/core';
+import { Component, input, OnInit, output, ViewChild, inject, computed } from '@angular/core';
 import { MenuItem, MenuItemCommandEvent } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { PopoverModule } from 'primeng/popover';
@@ -8,6 +8,14 @@ import { SpeedDial } from 'primeng/speeddial';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { Assessment } from '../../../pages/admin/models/assessment.model';
+import { DropdownManagerService } from '../../services/dropdown-manager.service';
+
+export interface DistinctUser {
+  userId: string;
+  roles: string[];
+  rolesText: string;
+  tooltipText: string;
+}
 
 @Component({
   selector: 'app-assessment-card',
@@ -37,6 +45,69 @@ export class AssessmentCardComponent implements OnInit {
   public lastUpdatedInfo = '';
   public showContent = input<boolean>(true);
 
+  public distinctUsers = computed<DistinctUser[]>(() => {
+    const rawUsers = this.data()?.users ?? [];
+    const userMap = new Map<string, DistinctUser>();
+
+    for (const u of rawUsers) {
+      if (!u?.userId) continue;
+      const key = u.userId.toLowerCase().trim();
+      const existing = userMap.get(key);
+
+      const newRoles = u.role
+        ? u.role
+            .split(',')
+            .map((r) => r.trim())
+            .filter((r) => r.length > 0)
+        : [];
+
+      if (!existing) {
+        userMap.set(key, {
+          userId: u.userId,
+          roles: [...newRoles],
+          rolesText: '',
+          tooltipText: '',
+        });
+      } else {
+        for (const role of newRoles) {
+          if (!existing.roles.includes(role)) {
+            existing.roles.push(role);
+          }
+        }
+      }
+    }
+
+    return Array.from(userMap.values()).map((user) => {
+      const rolesText = user.roles.join(', ');
+      return {
+        ...user,
+        rolesText,
+        tooltipText: rolesText ? `${user.userId} (${rolesText})` : user.userId,
+      };
+    });
+  });
+
+  public getAvatarTooltipOffset(el?: HTMLElement, text?: string): number {
+    if (typeof window === 'undefined' || !el) return 0;
+    const rect = el.getBoundingClientRect();
+    if (!rect || rect.width === 0) return 0;
+
+    const textLength = text?.length ?? 25;
+    // Accurate character width (8.2px per char at 0.75rem Poppins) + 36px padding/border
+    const estimatedTooltipWidth = Math.max(120, Math.ceil(textLength * 8.2 + 36));
+    const halfWidth = estimatedTooltipWidth / 2;
+    const centerX = rect.left + rect.width / 2;
+    const padding = 24;
+
+    if (centerX + halfWidth > window.innerWidth - padding) {
+      return -Math.ceil((centerX + halfWidth) - (window.innerWidth - padding));
+    }
+    if (centerX - halfWidth < padding) {
+      return Math.ceil(padding - (centerX - halfWidth));
+    }
+    return 0;
+  }
+
   ngOnInit(): void {
     this.setActionItems();
 
@@ -57,12 +128,20 @@ export class AssessmentCardComponent implements OnInit {
     }
   }
 
+  private dropdownManager = inject(DropdownManagerService);
+
   public togglePopover(
-    popover: { toggle: (event: Event) => void },
+    popover: any,
     event: Event,
   ): void {
     event.stopPropagation();
+    const target = (event.currentTarget || event.target) as HTMLElement;
+    this.dropdownManager.registerOpen(popover, target);
     popover.toggle(event);
+  }
+
+  public onPopoverHide(popover: any): void {
+    this.dropdownManager.registerClose(popover);
   }
 
   private setActionItems(): void {

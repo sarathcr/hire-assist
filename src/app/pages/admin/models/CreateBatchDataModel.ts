@@ -40,10 +40,20 @@ export class CreateBatchDataModel extends FormEntity {
       }
 
       const selectedDate = new Date(control.value);
-      const now = new Date();
+      selectedDate.setHours(0, 0, 0, 0);
 
-      // We allow a small tolerance of 5 seconds (5000ms) for millisecond mismatch on immediate submissions.
-      if (selectedDate.getTime() + 5000 < now.getTime()) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const recStartRaw = (control.parent as any)?.recruitmentStartDate;
+      const recStart = recStartRaw ? new Date(recStartRaw) : null;
+      if (recStart) {
+        recStart.setHours(0, 0, 0, 0);
+      }
+
+      const minAllowed = recStart && recStart < today ? recStart : today;
+
+      if (selectedDate < minAllowed) {
         return {
           errorMessage: 'Start date cannot be in the past.',
         };

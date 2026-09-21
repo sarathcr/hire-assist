@@ -27,6 +27,7 @@ import { DialogFooterComponent } from '../../../../../../shared/components/dialo
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
 import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
+import { DropdownManagerService } from '../../../../../../shared/services/dropdown-manager.service';
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import {
   FilterMap,
@@ -244,6 +245,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     public readonly candidateService: CandidateService,
     public readonly batchService: BatchService,
     public readonly confirmationService: ConfirmationService,
+    private readonly dropdownManager: DropdownManagerService,
   ) {}
 
   // LifeCycle Hooks
@@ -298,16 +300,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.roundStatus = status === 'Completed';
 
     const selectedRound = this.step[index];
-    this.updateTableColumns(selectedRound?.roundTypeId);
+    this.updateTableColumns(selectedRound);
 
     // Automatically update selectedGuideTab based on the round type
-    const roundName = selectedRound?.round?.toLowerCase() || '';
-    const roundTypeId = selectedRound?.roundTypeId;
-    const isAptitude =
-      roundTypeId === 1 ||
-      roundName.includes('aptitude') ||
-      roundName.includes('test');
-    this.selectedGuideTab = isAptitude ? 'aptitude' : 'interview';
+    this.selectedGuideTab = this.isAptitudeRound(selectedRound)
+      ? 'aptitude'
+      : 'interview';
 
     this.filterMap = {
       assessmentId: this.assessmentId,
@@ -317,7 +315,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     this.getPaginatedCandidateData(this.filterMap);
   }
 
-  private updateTableColumns(roundTypeId?: number): void {
+  private updateTableColumns(round?: AssessmentRound): void {
     const baseColumns: any[] = [
       {
         field: 'name',
@@ -350,13 +348,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       },
     ];
 
-    const selectedRound = this.step?.[this.activeMenuItemIndex];
-    const roundName = selectedRound?.round?.toLowerCase() || '';
-    const isPanel =
-      roundTypeId === 2 ||
-      String(roundTypeId) === '2' ||
-      roundName.includes('panel') ||
-      roundName.includes('interview');
+    const selectedRound =
+      round ??
+      (this.step && this.activeMenuItemIndex !== -1
+        ? this.step[this.activeMenuItemIndex]
+        : undefined);
+    const isAptitude = this.isAptitudeRound(selectedRound);
+    const isPanel = this.isPanelRound(selectedRound);
 
     if (isPanel) {
       baseColumns.push({
@@ -369,7 +367,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       });
     }
 
-    if (roundTypeId === 1) {
+    if (isAptitude) {
       baseColumns.push({
         field: 'batch',
         displayName: 'Batch',
@@ -487,14 +485,57 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     ]);
   }
 
-  public isAptitudeRound(): boolean {
-    if (!this.step || this.activeMenuItemIndex === -1) return false;
-    const currentRound = this.step[this.activeMenuItemIndex];
-    return (
-      currentRound?.roundTypeId === 1 ||
-      currentRound?.round?.toLowerCase().includes('aptitude') ||
-      currentRound?.round?.toLowerCase().includes('test')
-    );
+  public isAptitudeRound(round?: AssessmentRound): boolean {
+    const targetRound =
+      round ??
+      (this.step && this.activeMenuItemIndex !== -1
+        ? this.step[this.activeMenuItemIndex]
+        : undefined);
+    if (!targetRound) return false;
+
+    const rawRoundTypeId =
+      targetRound.roundTypeId ??
+      (targetRound as any).roundType ??
+      (targetRound as any).RoundTypeId;
+
+    if (
+      rawRoundTypeId !== undefined &&
+      rawRoundTypeId !== null &&
+      rawRoundTypeId !== '' &&
+      !isNaN(Number(rawRoundTypeId)) &&
+      Number(rawRoundTypeId) > 0
+    ) {
+      return Number(rawRoundTypeId) === 1;
+    }
+
+    const roundName = targetRound.round?.toLowerCase() || '';
+    return roundName.includes('aptitude') || roundName.includes('test');
+  }
+
+  public isPanelRound(round?: AssessmentRound): boolean {
+    const targetRound =
+      round ??
+      (this.step && this.activeMenuItemIndex !== -1
+        ? this.step[this.activeMenuItemIndex]
+        : undefined);
+    if (!targetRound) return false;
+
+    const rawRoundTypeId =
+      targetRound.roundTypeId ??
+      (targetRound as any).roundType ??
+      (targetRound as any).RoundTypeId;
+
+    if (
+      rawRoundTypeId !== undefined &&
+      rawRoundTypeId !== null &&
+      rawRoundTypeId !== '' &&
+      !isNaN(Number(rawRoundTypeId)) &&
+      Number(rawRoundTypeId) > 0
+    ) {
+      return Number(rawRoundTypeId) === 2;
+    }
+
+    return !this.isAptitudeRound(targetRound);
   }
 
   public isLastRound(): boolean {
@@ -1021,14 +1062,16 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             email: item.email,
             currentLocation: item.currentLocation || item.location || 'N/A',
             score:
-              (item.score === 0 || item.score === '0') &&
-              !['completed', 'on review', 'selected', 'rejected'].includes(
-                item.status?.toLowerCase() || '',
-              )
+              item.status?.toLowerCase() === 'on review'
                 ? 'N/A'
-                : item.score === 0 || item.score === '0'
-                  ? item.score
-                  : item.score || 'N/A',
+                : (item.score === 0 || item.score === '0') &&
+                  !['completed', 'selected', 'rejected'].includes(
+                    item.status?.toLowerCase() || '',
+                  )
+                  ? 'N/A'
+                  : item.score === 0 || item.score === '0'
+                    ? item.score
+                    : item.score || 'N/A',
             status: item.status || 'Pending',
             isScheduled:
               item.isScheduled === true ||
@@ -1340,16 +1383,29 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             return timeB - timeA; // default descending
           });
 
-          const newEvents = sortedData.map((item: any) => ({
-            status: this.formatAction(item.action),
-            user:
+          const newEvents = sortedData.map((item: any) => {
+            const isSystemStatus =
+              item.action === 'Status Updated' ||
+              item.action === 'On Review' ||
+              item.action === 'Interview Completed' ||
+              (item.details && item.details.toLowerCase().includes('interview status is updated'));
+
+            let user =
               item.action === 'Score Added' && this.currentHistoryPanelName
                 ? this.currentHistoryPanelName
-                : item.changedByName,
-            date: new Date(item.changedAt ? item.changedAt : new Date()),
-            icon: this.getHistoryIcon(item.action),
-            description: this.getHistoryDescription(item),
-          }));
+                : item.changedByName;
+            if (isSystemStatus && (item.currentValue === '3' || item.currentValue === '7' || (item.details && item.details.toLowerCase().includes('interview status is updated')))) {
+              user = (item.changedByName && item.changedByName !== 'System') ? item.changedByName : (this.currentHistoryPanelName || 'Interview Panel');
+            }
+
+            return {
+              status: this.formatAction(item.action),
+              user: user,
+              date: new Date(item.changedAt ? item.changedAt : new Date()),
+              icon: this.getHistoryIcon(item.action),
+              description: this.getHistoryDescription(item),
+            };
+          });
           this.events =
             this.historyPagination.pageNumber === 1
               ? newEvents
@@ -1362,7 +1418,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private formatAction(action: string): string {
     if (!action) return 'Unknown';
     if (action.toLowerCase() === 'rescheduled') return 'Scheduled';
-    return action.charAt(0).toUpperCase() + action.slice(1).toLowerCase();
+    if (action.toLowerCase() === 'interview completed') return 'Interview Completed';
+    return action
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
+      .replace(/^./, (str) => str.toUpperCase())
+      .trim();
   }
 
   private getHistoryIcon(action: string): string {
@@ -1375,7 +1436,11 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       case 'rescheduled':
         return 'pi pi-calendar';
       case 'pending':
+      case 'on review':
         return 'pi pi-clock';
+      case 'interview completed':
+      case 'completed':
+        return 'pi pi-check-circle';
       default:
         return 'pi pi-info-circle';
     }
@@ -1394,6 +1459,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   public openMenu(event: Event, menu: Menu): void {
     event.stopPropagation();
+    if (this.isActionsButtonDisabled) {
+      return;
+    }
     const selectedCandidates =
       this.tableData?.data?.filter((c: any) =>
         this.selectedCandidateIds.includes(c.id),
@@ -1437,19 +1505,18 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
 
     this.updateActionItems();
+    const target = (event.currentTarget || event.target) as HTMLElement;
+    this.dropdownManager.registerOpen(menu, target);
     menu.toggle(event);
+  }
+
+  public onMenuHide(menu: any): void {
+    this.dropdownManager.registerClose(menu);
   }
 
   public updateActionItems(): void {
     const isAptitude = this.isAptitudeRound();
-    const selectedRound = this.step?.[this.activeMenuItemIndex];
-    const roundTypeId = selectedRound?.roundTypeId;
-    const roundName = selectedRound?.round?.toLowerCase() || '';
-    const isPanel =
-      roundTypeId === 2 ||
-      String(roundTypeId) === '2' ||
-      roundName.includes('panel') ||
-      roundName.includes('interview');
+    const isPanel = this.isPanelRound();
 
     const hasSelection = this.selectedCandidateIds.length > 0;
 
@@ -1603,6 +1670,112 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
 
     this.actionItems = items;
+  }
+
+  public hasAnyAvailableActionInRound(): boolean {
+    if (!this.data || !this.data.isActive) return false;
+    if (this.roundStatus || this.isAllRoundsCompleted) return false;
+    const candidates = this.tableData?.data;
+    if (!candidates || candidates.length === 0) return false;
+
+    const isAptitude = this.isAptitudeRound();
+    const isPanel = this.isPanelRound();
+    const hasNextRound =
+      this.activeMenuItemIndex < (this.step?.length || 0) - 1;
+
+    return candidates.some((c: any) => {
+      const status = c.status?.toLowerCase() || '';
+      const isScheduled = !!c.isScheduled;
+
+      // 1. Can assign to batch (Aptitude & not scheduled & not in terminal/active state)
+      if (
+        isAptitude &&
+        !isScheduled &&
+        !['completed', 'selected', 'rejected', 'on review', 'quit', 'terminated'].includes(status)
+      ) {
+        return true;
+      }
+
+      // 2. Can assign to panel (Panel & not in terminal/active state)
+      if (
+        isPanel &&
+        !['completed', 'selected', 'rejected', 'on review', 'quit', 'terminated'].includes(status)
+      ) {
+        return true;
+      }
+
+      // 3. Can schedule (not scheduled & not in terminal/active state)
+      if (
+        !isScheduled &&
+        !['completed', 'selected', 'rejected', 'on review', 'quit', 'terminated'].includes(status)
+      ) {
+        return true;
+      }
+
+      // 4. Can select candidate (completed or rejected)
+      if (['completed', 'rejected'].includes(status)) {
+        return true;
+      }
+
+      // 5. Can reject candidate (completed, selected, or quit)
+      if (['completed', 'selected', 'quit'].includes(status)) {
+        return true;
+      }
+
+      // 6. Can move to next round (selected & not already scheduled for next round)
+      if (hasNextRound && status === 'selected' && !isScheduled) {
+        return true;
+      }
+
+      return false;
+    });
+  }
+
+  public get isActionsButtonDisabled(): boolean {
+    if (!this.data || !this.data.isActive) {
+      return true;
+    }
+    if (this.roundStatus || this.isAllRoundsCompleted) {
+      return true;
+    }
+    if (!this.tableData?.data || this.tableData.data.length === 0) {
+      return true;
+    }
+    if (!this.hasAnyAvailableActionInRound()) {
+      return true;
+    }
+    if (this.selectedCandidateIds.length === 0) {
+      return true;
+    }
+    if (!this.actionItems || this.actionItems.length === 0) {
+      return true;
+    }
+    return this.actionItems.every((item) => item.disabled);
+  }
+
+  public get actionsButtonTooltip(): string {
+    if (!this.data || !this.data.isActive) {
+      return 'Recruitment is inactive';
+    }
+    if (this.isAllRoundsCompleted) {
+      return 'All recruitment rounds are completed';
+    }
+    if (this.roundStatus) {
+      return 'Current round is completed';
+    }
+    if (!this.tableData?.data || this.tableData.data.length === 0) {
+      return 'No candidates in this round';
+    }
+    if (!this.hasAnyAvailableActionInRound()) {
+      return 'No further actions available for candidates in this round';
+    }
+    if (this.selectedCandidateIds.length === 0) {
+      return 'Select candidate(s) to perform actions';
+    }
+    if (this.actionItems && this.actionItems.every((item) => item.disabled)) {
+      return 'No further actions can be performed on the selected candidate(s)';
+    }
+    return '';
   }
 
   public onSelectCandidates(): void {
@@ -1902,18 +2075,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         this.currentStep = this.step[initialIndex].id;
         this.roundStatus = this.step[initialIndex].status === 'Completed';
 
+        const initialRound = this.step[initialIndex];
+
         // Update columns based on the first round's type
-        this.updateTableColumns(this.step[initialIndex].roundTypeId);
+        this.updateTableColumns(initialRound);
 
         // Set initial selectedGuideTab based on the first round's type
-        const initialRound = this.step[initialIndex];
-        const roundName = initialRound?.round?.toLowerCase() || '';
-        const roundTypeId = initialRound?.roundTypeId;
-        const isAptitude =
-          roundTypeId === 1 ||
-          roundName.includes('aptitude') ||
-          roundName.includes('test');
-        this.selectedGuideTab = isAptitude ? 'aptitude' : 'interview';
+        this.selectedGuideTab = this.isAptitudeRound(initialRound)
+          ? 'aptitude'
+          : 'interview';
 
         this.filterMap = {
           assessmentId: this.assessmentId,
@@ -1972,14 +2142,16 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               email: item.email,
               currentLocation: item.currentLocation || item.location || 'N/A',
               score:
-                (item.score === 0 || item.score === '0') &&
-                !['completed', 'on review', 'selected', 'rejected'].includes(
-                  item.status?.toLowerCase() || '',
-                )
+                item.status?.toLowerCase() === 'on review'
                   ? 'N/A'
-                  : item.score === 0 || item.score === '0'
-                    ? item.score
-                    : item.score || 'N/A',
+                  : (item.score === 0 || item.score === '0') &&
+                    !['completed', 'selected', 'rejected'].includes(
+                      item.status?.toLowerCase() || '',
+                    )
+                    ? 'N/A'
+                    : item.score === 0 || item.score === '0'
+                      ? item.score
+                      : item.score || 'N/A',
               status: item.status || 'Pending',
               nextRoundStatus:
                 item.isScheduled === true ||

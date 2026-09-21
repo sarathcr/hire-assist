@@ -244,16 +244,48 @@ export class InterviewerRecruitmentPanelsComponent implements OnInit {
     return this.panelDetails.filter((r) => r.panelId === panelId);
   }
 
-  /** Count candidates with a specific status in a panel. */
+  /** Count distinct candidates with a specific status in a panel. */
   public countByStatus(panelId: number, status: string): number {
-    return this.getRowsForPanel(panelId).filter((r) =>
+    const matchingRows = this.getRowsForPanel(panelId).filter((r) =>
       r.status?.toLowerCase().includes(status.toLowerCase()),
-    ).length;
+    );
+    const uniqueCandidates = new Set(
+      matchingRows.map(
+        (r) => r.candidateId || r.candidateEmail || r.candidateName,
+      ),
+    );
+    return uniqueCandidates.size;
   }
 
-  /** Total candidates assigned to a panel. */
-  public totalForPanel(panelId: number): number {
+  /** Count pending interviews in a panel. */
+  public countPendingForPanel(panelId: number): number {
+    return this.getRowsForPanel(panelId).filter((r) => {
+      const s = r.status?.toLowerCase() || '';
+      return (
+        s.includes('assigned') ||
+        s.includes('pending') ||
+        s.includes('scheduled')
+      );
+    }).length;
+  }
+
+  /** Total distinct candidates assigned to a panel. */
+  public totalCandidatesForPanel(panelId: number): number {
+    const rows = this.getRowsForPanel(panelId);
+    const uniqueCandidates = new Set(
+      rows.map((r) => r.candidateId || r.candidateEmail || r.candidateName),
+    );
+    return uniqueCandidates.size;
+  }
+
+  /** Total interview rounds scheduled for a panel. */
+  public totalInterviewsForPanel(panelId: number): number {
     return this.getRowsForPanel(panelId).length;
+  }
+
+  /** Backward-compatible alias for total distinct candidates. */
+  public totalForPanel(panelId: number): number {
+    return this.totalCandidatesForPanel(panelId);
   }
 
   // ─── Private Methods ─────────────────────────────────────────────────────────

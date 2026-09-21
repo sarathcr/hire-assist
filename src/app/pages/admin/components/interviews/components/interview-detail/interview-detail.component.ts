@@ -178,7 +178,7 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: `Error : ${error.error.type}`,
+        detail: error.error?.type || 'Failed to load feedback criteria',
       });
       this.isFeedbackCriteriaLoaded = true;
       this.checkAllApisLoaded();

@@ -25,7 +25,6 @@ import { DialogFooterComponent } from '../../../../../../../../shared/components
 import { DialogComponent } from '../../../../../../../../shared/components/dialog/dialog.component';
 import { TableDataSourceService } from '../../../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../../../shared/components/table/table.component';
-import { HistoryDrawerComponent } from '../../../../../../../../shared/components/history-drawer/history-drawer.component';
 import { ASSESSMENT_URL } from '../../../../../../../../shared/constants/api';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import { extractErrorMessage } from '../../../../../../../../shared/utilities/error.utility';
@@ -35,7 +34,6 @@ import {
   PaginatedPayload,
 } from '../../../../../../../../shared/models/pagination.models';
 import {
-  FieldType,
   PaginatedDataActions,
   TableColumnsData,
 } from '../../../../../../../../shared/models/table.models';
@@ -73,7 +71,7 @@ const tableColumns: TableColumnsData = {
       displayName: 'Question',
       sortedColumn: true,
       hasChip: false,
-      width: 6,
+      width: 7,
     },
     {
       field: 'questionType',
@@ -86,17 +84,6 @@ const tableColumns: TableColumnsData = {
       field: 'maxMark',
       displayName: 'Max-Mark',
       sortedColumn: true,
-      hasChip: false,
-      width: 1,
-    },
-    {
-      field: 'button',
-      displayName: 'Actions',
-      fieldType: FieldType.Action,
-      buttonIcons: ['pi pi-history'],
-      buttonLabels: ['History'],
-      buttonTooltips: ['History'],
-      sortedColumn: false,
       hasChip: false,
       width: 1,
     },
@@ -147,7 +134,6 @@ interface QuestionSetAccordionData {
     FormsModule,
     AccordionModule,
     SkeletonModule,
-    HistoryDrawerComponent,
     SelectModule,
     TooltipModule,
   ],
@@ -200,40 +186,12 @@ export class SelectQuesionsetStepComponent
   public isLoading = false;
   public questionSetAccordionData = new Map<string, QuestionSetAccordionData>();
   public currentSelectedQuestionSetId: string | null = null;
-  public visible: boolean = false;
 
   // Instructions State
   public instructionOptions: { label: string; value: number; isDefault?: boolean }[] = [];
   public defaultInstructionId: number | null = null;
   public roundInstructionMap = new Map<number, number | null>();
   public isAssigningInstruction = new Map<number, boolean>();
-
-  events = [
-    {
-      status: 'Created',
-      user: 'Sarath Cheerakkadan',
-      date: '2025-10-15T10:30:00',
-      icon: 'pi pi-plus',
-    },
-    {
-      status: 'Updated',
-      user: 'Sarath Cheerakkadan',
-      date: '2025-10-15T14:00:00',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Steve Jose',
-      date: '2025-10-15T16:15:00',
-      icon: 'pi pi-pencil',
-    },
-    {
-      status: 'Updated',
-      user: 'Lakshmipriya',
-      date: '2025-10-16T10:00:00',
-      icon: 'pi pi-pencil',
-    },
-  ];
 
   constructor(
     private readonly questionSetStateService: QuestionSetStateService,
@@ -336,7 +294,7 @@ export class SelectQuesionsetStepComponent
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: `Error : ${error.error.type}`,
+        detail: error?.error?.type || 'Failed to delete question set',
       });
       this.isLoading = false;
     };
@@ -504,21 +462,6 @@ export class SelectQuesionsetStepComponent
 
   public onTablePayloadChange(payload: PaginatedPayload): void {
     this.loadData(payload);
-  }
-
-  public viewHistory(id: any) {
-    this.visible = true;
-  }
-
-  public onButtonClick(data: { event: any; fName: string }): void {
-    const { event, fName } = data;
-    switch (fName) {
-      case 'History':
-        this.viewHistory(event.id);
-        break;
-      default:
-        break;
-    }
   }
 
   public isDirtyForAccordion(questionSetId: string): boolean {

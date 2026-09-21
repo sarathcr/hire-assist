@@ -17,6 +17,7 @@ import { DialogFooterComponent } from '../../../../../../shared/components/dialo
 import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
 import { GenericDataSource } from '../../../../../../shared/components/pagination/generic-data-source';
 import { PaginationComponent } from '../../../../../../shared/components/pagination/pagination.component';
+import { DropdownManagerService } from '../../../../../../shared/services/dropdown-manager.service';
 import { ASSESSMENT_URL } from '../../../../../../shared/constants/api';
 import { KeyValueMap } from '../../../../../../shared/models/common.models';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
@@ -178,9 +179,17 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     this.dataSource.loadPaginatedData(payload);
   }
 
+  private dropdownManager = inject(DropdownManagerService);
+
   public openMenu(event: Event, menu: any): void {
     event.stopPropagation();
+    const target = (event.currentTarget || event.target) as HTMLElement;
+    this.dropdownManager.registerOpen(menu, target);
     menu.toggle(event);
+  }
+
+  public onMenuHide(menu: any): void {
+    this.dropdownManager.registerClose(menu);
   }
 
   // Public Methods
@@ -477,7 +486,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: `Error : ${error.error.type}`,
+        detail: error?.error?.type || 'Failed to create recruitment',
       });
       this.isLoading = false;
     };
@@ -505,7 +514,7 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: `Error : ${error.error.type}`,
+        detail: error?.error?.type || 'Failed to update recruitment',
       });
       this.isLoading = false;
     };

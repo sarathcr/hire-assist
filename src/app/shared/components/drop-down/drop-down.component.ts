@@ -6,6 +6,7 @@ import { MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { AuthService } from '../../services/auth.service';
 import { StoreService } from '../../services/store.service';
+import { DropdownManagerService } from '../../services/dropdown-manager.service';
 
 @Component({
   selector: 'app-drop-down',
@@ -24,6 +25,7 @@ export class DropDownComponent implements OnInit {
   dropdownEl = viewChild<ElementRef>('dropdown');
 
   private destroyRef = inject(DestroyRef);
+  private dropdownManager = inject(DropdownManagerService);
 
   constructor(
     private router: Router,
@@ -46,21 +48,38 @@ export class DropDownComponent implements OnInit {
   onDocumentClick(event: MouseEvent) {
     if (!this.dropdownEl()?.nativeElement.contains(event.target)) {
       this.showMenu.set(false);
+      this.dropdownManager.closeActive();
     }
   }
 
   toggleMenu(event: Event) {
     event.stopPropagation();
-    this.showMenu.update((v) => !v);
+    const willOpen = !this.showMenu();
+    if (willOpen) {
+      const target = (event.currentTarget || event.target) as HTMLElement;
+      this.dropdownManager.registerOpen(
+        {
+          hide: () => this.showMenu.set(false),
+          container: this.dropdownEl()?.nativeElement,
+          target,
+        },
+        target,
+      );
+    } else {
+      this.dropdownManager.closeActive();
+    }
+    this.showMenu.set(willOpen);
   }
 
   handleLogout(): void {
     this.showMenu.set(false);
+    this.dropdownManager.closeActive();
     this.authService.logout();
   }
 
   navigateToProfile() {
     this.showMenu.set(false);
+    this.dropdownManager.closeActive();
     this.router.navigate(['/profile']);
   }
 }

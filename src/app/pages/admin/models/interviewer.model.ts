@@ -25,6 +25,9 @@ export interface PreviousInterview {
   sequence: number;
   feedBacks: Feedback[] | [];
   assessmentDetails: AssessmentDetails[];
+  interviewId?: number;
+  attemptNumber?: number;
+  isTerminated?: boolean;
 }
 
 export interface Feedback {

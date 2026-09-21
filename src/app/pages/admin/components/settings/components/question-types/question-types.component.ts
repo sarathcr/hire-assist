@@ -326,7 +326,7 @@ export class QuestionTypesComponent implements OnInit, OnDestroy {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: `Error : ${error?.error?.type || 'Failed to fetch question types'}`,
+        detail: error?.error?.type || 'Failed to fetch question types',
       });
     };
 

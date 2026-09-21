@@ -52,8 +52,6 @@
                   <div class="schedule-interview-dialog__chip-wrapper">
                     <p-chip
                       [label]="candidate.name"
-                      [removable]="true"
-                      (onRemove)="removeCandidate(i)"
                       styleClass="schedule-interview-dialog__chip"
                       icon="pi pi-user"
                     ></p-chip>
@@ -80,14 +78,22 @@
               type="number"
               pInputText
               formControlName="bufferMinutes"
-              min="0"
+              min="1"
+              max="1440"
+              step="1"
               class="schedule-interview-dialog__buffer-input"
               placeholder="e.g. 30"
             />
+            @if (bufferHoursText) {
+              <div class="schedule-interview-dialog__buffer-hint">
+                <i class="pi pi-clock"></i>
+                <span>{{ bufferHoursText }}</span>
+              </div>
+            }
           </div>
-          @if (fGroup.get('bufferMinutes')?.touched && fGroup.get('bufferMinutes')?.errors) {
+          @if ((fGroup.get('bufferMinutes')?.dirty || fGroup.get('bufferMinutes')?.touched) && fGroup.get('bufferMinutes')?.errors) {
             <small class="schedule-interview-dialog__buffer-error">
-              Buffer minutes is required and must be 0 or greater.
+              Buffer minutes is required and must be an integer between 1 and 1440 (24 hours).
             </small>
           }
         </div>

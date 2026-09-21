@@ -28,7 +28,7 @@
 
     <!-- Tabs Section -->
     <p-tabs
-      value="0"
+      [value]="activeTab"
       class="candidate-detail__tabs"
       (valueChange)="onTabChange($event)"
     >
@@ -210,14 +210,17 @@
                     >
                       @for (
                         round of interviewFeedbacksDataSource!;
-                        track round.roundId
+                        track (round.interviewId || round.assessmentRoundId || round.roundId || $index)
                       ) {
-                        <p-accordion-panel [value]="round.sequence">
+                        <p-accordion-panel [value]="getRoundKey(round)">
                           <p-accordion-header (click)="onPreviousRoundAccordionOpen(round)">
                             <div class="candidate-detail__round-header">
                               <span class="candidate-detail__round-name">
                                 <i class="pi pi-sitemap"></i>
                                 {{ round.roundName }}
+                                @if (getRoundAttemptLabel(round)) {
+                                  <span class="candidate-detail__attempt-tag">{{ getRoundAttemptLabel(round) }}</span>
+                                }
                               </span>
                               @if (round.status) {
                                 <p-tag
@@ -473,7 +476,7 @@
                                       }
 
                                       <!-- Total Score -->
-                                      @if (hasValue(detail.totalScore)) {
+                                      @if (getDetailTotalScore(detail) !== null) {
                                         <div
                                           class="candidate-detail__detail-item"
                                         >
@@ -491,7 +494,7 @@
                                             >
                                             <span
                                               class="candidate-detail__detail-value candidate-detail__detail-value--success"
-                                              >{{ detail.totalScore }}</span
+                                              >{{ getDetailTotalScore(detail) }}<span *ngIf="getDetailOutOfScore(detail) !== null"> / {{ getDetailOutOfScore(detail) }}</span></span
                                             >
                                           </div>
                                         </div>
@@ -503,18 +506,18 @@
                                       <div class="candidate-detail__aptitude-report">
                                         <div class="candidate-detail__report-toggle">
                                           <p-button
-                                            [label]="showReportMap[round.assessmentRoundId] ? 'Hide Detailed Report' : 'View Detailed Report'"
-                                            [icon]="showReportMap[round.assessmentRoundId] ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-                                            [loading]="isReportLoadingMap[round.assessmentRoundId]"
+                                            [label]="showReportMap[getRoundKey(round)] ? 'Hide Detailed Report' : 'View Detailed Report'"
+                                            [icon]="showReportMap[getRoundKey(round)] ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                                            [loading]="isReportLoadingMap[getRoundKey(round)]"
                                             severity="secondary"
                                             [outlined]="true"
                                             (click)="fetchAptitudeReport(round)"
                                           />
                                         </div>
 
-                                        @if (showReportMap[round.assessmentRoundId] && aptitudeReportMap[round.assessmentRoundId]) {
+                                        @if (showReportMap[getRoundKey(round)] && aptitudeReportMap[getRoundKey(round)]) {
                                           <div class="candidate-detail__report-grid">
-                                            @for (ans of aptitudeReportMap[round.assessmentRoundId]!.answers; track ans.questionId) {
+                                            @for (ans of aptitudeReportMap[getRoundKey(round)]!.answers; track ans.questionId) {
                                               <!-- Question Card -->
                                               <div class="candidate-detail__question-card">
                                                   <div class="candidate-detail__question-header">
@@ -776,25 +779,59 @@
   [header]="viewerTitle"
   [draggable]="false" 
   [resizable]="false"
+  [maximizable]="true"
   styleClass="candidate-detail__viewer-dialog"
   [dismissableMask]="true"
+  (onHide)="closeViewer()"
 >
   <div class="candidate-detail__viewer-container">
-    @if (!viewerUrl) {
+    @if (!viewerUrl || isPreparingFile) {
       <div class="candidate-detail__viewer-loader">
-        <i class="pi pi-spinner"></i>
-        <h3>Fetching Document</h3>
-        <p>Please wait while we securely retrieve the attachment from our servers...</p>
+        <i class="pi pi-spin pi-spinner"></i>
+        <h3>Loading Attachment</h3>
+        <p>Please wait while we retrieve the file...</p>
       </div>
     } @else {
       @if (isViewerPdf) {
-        <iframe 
-          [src]="viewerUrl | safe: 'resourceUrl'" 
-          width="100%" 
-          height="100%" 
-          frameborder="0"
-          class="candidate-detail__viewer-iframe"
-        ></iframe>
+        @if (pdfFailedToLoad) {
+          <div class="candidate-detail__viewer-error">
+            <i class="pi pi-exclamation-circle"></i>
+            <h3>Preview Unavailable</h3>
+            <p>Unable to preview this document directly in the viewer. You can open or download the file using the options below:</p>
+            <div class="candidate-detail__error-actions">
+              <a [href]="rawFileUrl || viewerUrl" target="_blank" rel="noopener noreferrer">
+                <p-button label="Open in New Tab" icon="pi pi-external-link" />
+              </a>
+              <a [href]="rawFileUrl || viewerUrl" [download]="viewerTitle" target="_blank" rel="noopener noreferrer">
+                <p-button label="Download File" icon="pi pi-download" [outlined]="true" />
+              </a>
+            </div>
+          </div>
+        } @else {
+          <div class="candidate-detail__pdf-viewer-wrapper">
+            @if (isPdfRendering) {
+              <div class="candidate-detail__viewer-loader candidate-detail__viewer-loader--pdf">
+                <i class="pi pi-spin pi-spinner"></i>
+                <h3>Rendering Document</h3>
+                <p>Please wait while the PDF pages are being prepared and rendered...</p>
+              </div>
+            }
+            <ngx-extended-pdf-viewer 
+              [src]="viewerUrl" 
+              height="100%" 
+              [textLayer]="true"
+              [showSidebarButton]="false"
+              [showOpenFileButton]="false"
+              [showPrintButton]="true"
+              [showDownloadButton]="true"
+              (pageRendered)="onPdfPageRendered()"
+              (pdfLoaded)="onPdfLoaded()"
+              (pdfLoadingFailed)="onPdfLoadingFailed($event)"
+              [style.visibility]="isPdfRendering ? 'hidden' : 'visible'"
+            >
+            </ngx-extended-pdf-viewer>
+          </div>
+        }
       } @else if (isViewerImage) {
         <div class="candidate-detail__viewer-image-wrapper">
           <app-image [imageUrl]="viewerUrl" [isZoomable]="true" [removeIcon]="true" />

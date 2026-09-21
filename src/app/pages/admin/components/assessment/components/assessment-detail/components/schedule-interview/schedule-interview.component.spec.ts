@@ -161,4 +161,73 @@ describe('ScheduleInterviewComponent', () => {
       errorMessage: 'Interview must be scheduled at least 10 minutes from now.',
     });
   }));
+
+  it('should validate bufferMinutes boundary constraints (min 1, max 1440, integer pattern)', () => {
+    const bufferControl = component.fGroup.get('bufferMinutes');
+
+    // Default value (30) should be valid
+    expect(bufferControl?.valid).toBeTrue();
+
+    // Boundary values (1 and 1440) should be valid
+    bufferControl?.setValue(1);
+    expect(bufferControl?.valid).toBeTrue();
+
+    bufferControl?.setValue(1440);
+    expect(bufferControl?.valid).toBeTrue();
+
+    // Less than 1 should be invalid
+    bufferControl?.setValue(0);
+    expect(bufferControl?.hasError('min')).toBeTrue();
+
+    bufferControl?.setValue(-5);
+    expect(bufferControl?.hasError('min')).toBeTrue();
+
+    // Greater than 1440 should be invalid
+    bufferControl?.setValue(1441);
+    expect(bufferControl?.hasError('max')).toBeTrue();
+
+    // Decimals / floats should be invalid
+    bufferControl?.setValue('10.5');
+    expect(bufferControl?.hasError('pattern')).toBeTrue();
+
+    // Empty / null should be invalid
+    bufferControl?.setValue(null);
+    expect(bufferControl?.hasError('required')).toBeTrue();
+  });
+
+  it('should format minutes to hours in brackets correctly when greater than 60 minutes', () => {
+    expect(component.formatMinutesToHours(30)).toBe('');
+    expect(component.formatMinutesToHours(60)).toBe('');
+    expect(component.formatMinutesToHours(90)).toBe('(1 hour 30 mins)');
+    expect(component.formatMinutesToHours(120)).toBe('(2 hours)');
+    expect(component.formatMinutesToHours(150)).toBe('(2 hours 30 mins)');
+    expect(component.formatMinutesToHours(1440)).toBe('(24 hours)');
+  });
+
+  it('should return bufferHoursText only when bufferMinutes > 60', () => {
+    const bufferControl = component.fGroup.get('bufferMinutes');
+
+    bufferControl?.setValue(30);
+    expect(component.bufferHoursText).toBe('');
+
+    bufferControl?.setValue(90);
+    expect(component.bufferHoursText).toBe('(1 hour 30 mins)');
+
+    bufferControl?.setValue(120);
+    expect(component.bufferHoursText).toBe('(2 hours)');
+  });
+
+  it('should include hour in brackets in date validation error message when buffer > 60', fakeAsync(() => {
+    const scheduleControl = component.fGroup.get('scheduleDate');
+    const bufferControl = component.fGroup.get('bufferMinutes');
+
+    bufferControl?.setValue(90);
+    // 30 minutes from now should be invalid (since buffer is 90 mins)
+    scheduleControl?.setValue(new Date(Date.now() + 30 * 60 * 1000));
+    tick();
+
+    expect(scheduleControl?.errors).toEqual({
+      errorMessage: 'Interview must be scheduled at least 90 minutes (1 hour 30 mins) from now.',
+    });
+  }));
 });

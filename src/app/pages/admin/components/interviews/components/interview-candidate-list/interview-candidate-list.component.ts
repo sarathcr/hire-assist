@@ -309,13 +309,26 @@ export class InterviewCandidateListComponent implements OnInit {
             return timeB - timeA; // default descending
           });
 
-          const newEvents = sortedData.map((item: any) => ({
-            status: this.formatAction(item.action),
-            user: (item.action === 'Score Added' && this.currentHistoryPanelName) ? this.currentHistoryPanelName : item.changedByName,
-            date: new Date(item.changedAt ? item.changedAt : new Date()),
-            icon: this.getHistoryIcon(item.action),
-            description: this.getHistoryDescription(item)
-          }));
+          const newEvents = sortedData.map((item: any) => {
+            const isSystemStatus =
+              item.action === 'Status Updated' ||
+              item.action === 'On Review' ||
+              item.action === 'Interview Completed' ||
+              (item.details && item.details.toLowerCase().includes('interview status is updated'));
+
+            let user = (item.action === 'Score Added' && this.currentHistoryPanelName) ? this.currentHistoryPanelName : item.changedByName;
+            if (isSystemStatus && (item.currentValue === '3' || item.currentValue === '7' || (item.details && item.details.toLowerCase().includes('interview status is updated')))) {
+              user = (item.changedByName && item.changedByName !== 'System') ? item.changedByName : (this.currentHistoryPanelName || 'Interview Panel');
+            }
+
+            return {
+              status: this.formatAction(item.action),
+              user: user,
+              date: new Date(item.changedAt ? item.changedAt : new Date()),
+              icon: this.getHistoryIcon(item.action),
+              description: this.getHistoryDescription(item)
+            };
+          });
           this.events = this.historyPagination.pageNumber === 1 ? newEvents : [...this.events, ...newEvents];
           this.historyPagination.totalRecords = res.totalRecords;
         },
@@ -332,8 +345,10 @@ export class InterviewCandidateListComponent implements OnInit {
   private formatAction(action: string): string {
     if (!action) return '';
     if (action.toLowerCase() === 'rescheduled') return 'Scheduled';
+    if (action.toLowerCase() === 'interview completed') return 'Interview Completed';
     return action
-      .replace(/([A-Z])/g, ' $1')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
       .replace(/^./, (str) => str.toUpperCase())
       .trim();
   }
@@ -374,6 +389,11 @@ export class InterviewCandidateListComponent implements OnInit {
         return 'pi pi-users';
       case 'statusupdated':
         return 'pi pi-sync';
+      case 'on review':
+        return 'pi pi-clock';
+      case 'interview completed':
+      case 'completed':
+        return 'pi pi-check-circle';
       default:
         return 'pi pi-info-circle';
     }
@@ -420,6 +440,23 @@ export class InterviewCandidateListComponent implements OnInit {
             today.setHours(0, 0, 0, 0);
 
             res.data.forEach((item: any) => {
+              if (item.status?.toLowerCase() === 'on review') {
+                item.score = 'N/A';
+              } else if (
+                (item.score === 0 || item.score === '0') &&
+                !['completed', 'selected', 'rejected'].includes(
+                  item.status?.toLowerCase() || '',
+                )
+              ) {
+                item.score = 'N/A';
+              } else if (
+                item.score === null ||
+                item.score === undefined ||
+                item.score === ''
+              ) {
+                item.score = 'N/A';
+              }
+
               if (item.interviewDate) {
                 const interviewDate = new Date(item.interviewDate);
                 interviewDate.setHours(0, 0, 0, 0);
@@ -472,7 +509,7 @@ export class InterviewCandidateListComponent implements OnInit {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: `Error : ${error.error.type}`,
+            detail: error?.error?.type || 'An error occurred',
           });
         },
       });
