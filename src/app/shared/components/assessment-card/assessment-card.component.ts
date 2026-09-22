@@ -87,27 +87,6 @@ export class AssessmentCardComponent implements OnInit {
     });
   });
 
-  public getAvatarTooltipOffset(el?: HTMLElement, text?: string): number {
-    if (typeof window === 'undefined' || !el) return 0;
-    const rect = el.getBoundingClientRect();
-    if (!rect || rect.width === 0) return 0;
-
-    const textLength = text?.length ?? 25;
-    // Accurate character width (8.2px per char at 0.75rem Poppins) + 36px padding/border
-    const estimatedTooltipWidth = Math.max(120, Math.ceil(textLength * 8.2 + 36));
-    const halfWidth = estimatedTooltipWidth / 2;
-    const centerX = rect.left + rect.width / 2;
-    const padding = 24;
-
-    if (centerX + halfWidth > window.innerWidth - padding) {
-      return -Math.ceil((centerX + halfWidth) - (window.innerWidth - padding));
-    }
-    if (centerX - halfWidth < padding) {
-      return Math.ceil(padding - (centerX - halfWidth));
-    }
-    return 0;
-  }
-
   ngOnInit(): void {
     this.setActionItems();
 

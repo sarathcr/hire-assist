@@ -111,32 +111,30 @@
             @if (distinctUsers().length) {
               @for (user of (distinctUsers().slice(0, 3)); track user.userId; let i = $index) {
                 <div
-                  #avatarRef
                   class="assessment-card__avatar"
                   [style.z-index]="3 - i"
-                  [pTooltip]="user.tooltipText"
-                  tooltipPosition="top"
-                  tooltipStyleClass="assessment-card__avatar-tooltip"
-                  tooltipZIndex="99999"
-                  [positionLeft]="getAvatarTooltipOffset(avatarRef, user.tooltipText)"
-                  (mouseenter)="getAvatarTooltipOffset(avatarRef, user.tooltipText)"
+                  [attr.aria-label]="user.tooltipText"
                 >
                   {{ getUserInitials(user.userId) }}
+                  <div class="assessment-card__avatar-tooltip-box">
+                    <span class="assessment-card__avatar-tooltip-email">{{ user.userId }}</span>
+                    @if (user.rolesText) {
+                      <span class="assessment-card__avatar-tooltip-roles">({{ user.rolesText }})</span>
+                    }
+                  </div>
                 </div>
               }
               @if (distinctUsers().length > 3) {
                 <div
-                  #moreRef
                   class="assessment-card__avatar assessment-card__avatar--more"
                   [style.z-index]="0"
-                  [pTooltip]="'+' + (distinctUsers().length - 3) + ' more'"
-                  tooltipPosition="top"
-                  tooltipStyleClass="assessment-card__avatar-tooltip"
-                  tooltipZIndex="99999"
-                  [positionLeft]="getAvatarTooltipOffset(moreRef, '+' + (distinctUsers().length - 3) + ' more')"
-                  (mouseenter)="getAvatarTooltipOffset(moreRef, '+' + (distinctUsers().length - 3) + ' more')"
+                  [attr.aria-label]="'+' + (distinctUsers().length - 3) + ' more'"
                 >
                   +{{ distinctUsers().length - 3 }}
+                  <div class="assessment-card__avatar-tooltip-box">
+                    <span class="assessment-card__avatar-tooltip-email">+{{ distinctUsers().length - 3 }} more</span>
+                    <span class="assessment-card__avatar-tooltip-roles">Click to view all</span>
+                  </div>
                 </div>
               }
             } @else {

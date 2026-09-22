@@ -384,6 +384,7 @@
   }
 
   &__avatar {
+    position: relative;
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -407,11 +408,87 @@
       margin-left: 0;
     }
 
+    &:hover {
+      z-index: 100 !important;
+
+      .assessment-card__avatar-tooltip-box {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+    }
+
     &--more {
       background: var(--color-white, #ffffff);
       color: var(--color-dune, #374151);
       border-color: rgba(0, 0, 0, 0.1);
     }
+  }
+
+  &__avatar-tooltip-box {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    right: -4px;
+    background-color: #ffffff;
+    color: #0f172a;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 1.4;
+    text-transform: none;
+    letter-spacing: normal;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 260px;
+    width: max-content;
+    pointer-events: none;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+    cursor: default;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      right: 14px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: #ffffff transparent transparent transparent;
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 100%;
+      right: 13px;
+      border-width: 7px;
+      border-style: solid;
+      border-color: #e2e8f0 transparent transparent transparent;
+    }
+  }
+
+  &__avatar-tooltip-email {
+    font-weight: 600;
+    color: #0f172a;
+    font-size: 0.75rem;
+    word-break: break-all;
+  }
+
+  &__avatar-tooltip-roles {
+    font-size: 0.6875rem;
+    color: #64748b;
+    font-weight: 400;
+    line-height: 1.2;
   }
 
   &__footer_users__avatar-small {

@@ -29,19 +29,8 @@
 }
 
 .assessment-card__tooltip,
-.assessment-card__avatar-tooltip,
 .assessment-card__footer_rounds__status {
   @extend .p-tooltip;
-}
-
-.assessment-card__avatar-tooltip {
-  z-index: 99999 !important;
-
-  .p-tooltip-text {
-    white-space: nowrap !important;
-    width: max-content !important;
-    max-width: none !important;
-  }
 }
 
 .sidebar-tooltip {
