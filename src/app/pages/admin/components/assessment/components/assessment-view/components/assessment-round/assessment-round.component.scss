@@ -1753,6 +1753,11 @@
       color: #059669;
     }
 
+    &--frontdesk &__icon-box {
+      background: #f5f3ff;
+      color: #7c3aed;
+    }
+
     &__details {
       flex: 1;
       min-width: 0;

@@ -153,6 +153,7 @@
               <app-assessment-round
                 [assessmentId]="assessmentId"
                 [isReadOnly]="isSchedulingConfigReadOnly"
+                [hasFrontDeskAssigned]="stepsStatus.frontDesk === 'Completed'"
               ></app-assessment-round>
             } @else if (this.activeStep === 1) {
               <app-select-quesionset-step

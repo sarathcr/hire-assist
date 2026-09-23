@@ -75,9 +75,10 @@ import { CreateRoundModalComponent } from './components/create-round-modal/creat
 import { StepsStatusService } from '../../../../services/steps-status.service';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
+import { frontDeskResponse } from '../../../../../../models/frontDesk-model';
 
 export interface DependencyReason {
-  type: 'coordinator' | 'questionset' | 'interview';
+  type: 'coordinator' | 'questionset' | 'interview' | 'frontdesk';
   title: string;
   description: string;
   icon: string;
@@ -168,6 +169,7 @@ export class AssessmentRoundComponent
 
   public assessmentId = input<number>();
   public isReadOnly = input<boolean>(false);
+  public hasFrontDeskAssigned = input<boolean>(false);
   private dialogRef: DynamicDialogRef | undefined;
   private assessmentRoundSubscription?: Subscription;
   private isDataLoaded = false;
@@ -263,7 +265,10 @@ export class AssessmentRoundComponent
     );
   }
 
-  private getRoundDependencyReasons(round: AssessmentRoundFormGroup): DependencyReason[] {
+  private getRoundDependencyReasons(
+    round: AssessmentRoundFormGroup,
+    willHaveNoRounds: boolean = false,
+  ): DependencyReason[] {
     const reasons: DependencyReason[] = [];
     if (round.hasInterviews) {
       reasons.push({
@@ -289,6 +294,14 @@ export class AssessmentRoundComponent
         icon: 'pi pi-file-edit',
       });
     }
+    if (willHaveNoRounds && this.hasFrontDeskAssigned()) {
+      reasons.push({
+        type: 'frontdesk',
+        title: 'Front Desk Coordinators Assigned',
+        description: 'Front desk coordinators assigned to the recruitment will be unassigned automatically.',
+        icon: 'pi pi-building',
+      });
+    }
     return reasons;
   }
 
@@ -312,7 +325,12 @@ export class AssessmentRoundComponent
         );
 
         for (const round of unselectedRounds) {
-          const reasons = this.getRoundDependencyReasons(round);
+          const willHaveNoRounds =
+            this.submittedData.filter((r) => r.id !== round.id).length === 0;
+          const reasons = this.getRoundDependencyReasons(
+            round,
+            willHaveNoRounds,
+          );
           const isSaved = this.isRoundSavedInDb(round);
           if (reasons.length > 0 || isSaved) {
             const isHardBlocked = reasons.some((r) => r.type === 'interview');
@@ -912,7 +930,12 @@ export class AssessmentRoundComponent
       return;
     }
 
-    const reasons = this.getRoundDependencyReasons(removedRound);
+    const willHaveNoRounds =
+      this.submittedData.filter((r) => r.id !== roundId).length === 0;
+    const reasons = this.getRoundDependencyReasons(
+      removedRound,
+      willHaveNoRounds,
+    );
     const isSaved = this.isRoundSavedInDb(removedRound);
 
     if (reasons.length > 0 || isSaved) {
@@ -1070,6 +1093,43 @@ export class AssessmentRoundComponent
         );
 
       cleanupTasks.push(deleteCoordinatorsTask);
+    }
+
+    const remainingRounds = this.submittedData.filter(
+      (r) => r.id !== round.id,
+    );
+    const willHaveNoRounds = remainingRounds.length === 0;
+
+    // If all rounds are removed but coordinator task wasn't added because round.hasCoordinators was false,
+    // ensure any leftover coordinators for the assessment are cleaned up
+    if (willHaveNoRounds && !round.hasCoordinators) {
+      const deleteRemainingCoordinatorsTask = this.assessmentService
+        .Deletecoordinator(assessmentId)
+        .pipe(catchError(() => of(null)));
+      cleanupTasks.push(deleteRemainingCoordinatorsTask);
+    }
+
+    // 3. Clean up Front Desk if all rounds are being removed
+    if (willHaveNoRounds) {
+      const deleteFrontDeskTask = this.assessmentService
+        .getFrontDeskUserByAssessment(assessmentId)
+        .pipe(
+          switchMap((res: frontDeskResponse[]) => {
+            const idsToDelete = (res || [])
+              .map((item) => item.id)
+              .filter((id): id is number => id != null && id > 0);
+
+            if (idsToDelete.length === 0) {
+              return of(null);
+            }
+            return this.assessmentService
+              .deleteFrontDeskUsers(idsToDelete)
+              .pipe(catchError(() => of(null)));
+          }),
+          catchError(() => of(null)),
+        );
+
+      cleanupTasks.push(deleteFrontDeskTask);
     }
 
     const finalizeCascadeRemoval = () => {

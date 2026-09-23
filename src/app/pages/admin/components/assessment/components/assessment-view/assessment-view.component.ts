@@ -280,6 +280,7 @@ export class AssessmentViewComponent
           }
           if (this.activeStep === 0) {
             this.assessmentRounds = [];
+            this.visitedSteps = [0];
           }
           this.loadStepsStatus(false);
         }
@@ -548,8 +549,21 @@ export class AssessmentViewComponent
       next: ({ status, rounds }) => {
         this.stepsStatus = status;
         this.assessmentRounds = rounds || [];
+        if (this.assessmentRounds.length === 0) {
+          this.stepsStatus = {
+            rounds: 'Pending',
+            questionSets: 'Pending',
+            coordinators: 'Pending',
+            frontDesk: 'Pending',
+            interviewers: 'Pending',
+            schedule: 'Pending',
+          };
+          this.completedSteps = [];
+          this.visitedSteps = [0];
+        } else {
+          this.updateCompletedStepsFromStatus();
+        }
         this.stepsLoaded = true;
-        this.updateCompletedStepsFromStatus();
 
         if (shouldUpdateActiveStep) {
           this.setActiveStepFromStatus();

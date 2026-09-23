@@ -461,6 +461,8 @@
                     Coordinators assigned to this round will be unassigned automatically.
                   } @else if (item.type === 'questionset' && !cannotDeleteRoundInfo?.isHardBlocked) {
                     Question sets assigned to this round will be permanently deleted.
+                  } @else if (item.type === 'frontdesk' && !cannotDeleteRoundInfo?.isHardBlocked) {
+                    Front desk coordinators assigned to the recruitment will be unassigned automatically.
                   } @else {
                     {{ item.description }}
                   }

@@ -57,6 +57,7 @@ describe('AssessmentRoundComponent', () => {
 
     fixture = TestBed.createComponent(AssessmentRoundComponent);
     component = fixture.componentInstance;
+    component['setConfigMaps']();
   });
 
   it('should create', () => {
@@ -99,5 +100,29 @@ describe('AssessmentRoundComponent', () => {
     expect(countCtrl?.value).toBe(2);
     expect(countCtrl?.valid).toBeTrue();
     expect(countCtrl?.hasError('min')).toBeFalse();
+  });
+
+  it('should include frontdesk dependency reason when removing the last round and frontdesk is assigned', () => {
+    (component as any).hasFrontDeskAssigned = () => true;
+    const testRound = {
+      id: '1',
+      name: 'Round 1',
+    } as any;
+
+    const reasons = component['getRoundDependencyReasons'](testRound, true);
+    const hasFrontDesk = reasons.some((r) => r.type === 'frontdesk');
+    expect(hasFrontDesk).toBeTrue();
+  });
+
+  it('should not include frontdesk dependency reason when remaining rounds exist', () => {
+    (component as any).hasFrontDeskAssigned = () => true;
+    const testRound = {
+      id: '1',
+      name: 'Round 1',
+    } as any;
+
+    const reasons = component['getRoundDependencyReasons'](testRound, false);
+    const hasFrontDesk = reasons.some((r) => r.type === 'frontdesk');
+    expect(hasFrontDesk).toBeFalse();
   });
 });
