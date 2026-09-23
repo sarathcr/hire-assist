@@ -136,6 +136,7 @@
   align-items: center !important;
   gap: 0.5rem !important;
 
+  p-checkbox,
   .p-checkbox,
   .p-multiselect-item-checkbox {
     display: inline-flex !important;
@@ -144,11 +145,23 @@
     align-self: center !important;
     flex-shrink: 0 !important;
     margin: 0 !important;
+    line-height: 1 !important;
+    height: auto !important;
+
+    .p-checkbox {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      vertical-align: middle !important;
+      margin: 0 !important;
+      line-height: 1 !important;
+    }
 
     .p-checkbox-box {
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
+      margin: 0 !important;
     }
   }
 }
@@ -167,12 +180,14 @@
   margin: 0 !important;
 }
 
-// Multiselect header styles - vertically center select-all checkbox
+// Multiselect header styles - vertically center select-all checkbox and make filter 100% width
 .p-multiselect-header {
   display: flex !important;
   align-items: center !important;
   gap: 0.5rem !important;
+  width: 100% !important;
 
+  p-checkbox,
   .p-checkbox,
   .p-multiselect-header-checkbox {
     display: inline-flex !important;
@@ -181,18 +196,45 @@
     align-self: center !important;
     flex-shrink: 0 !important;
     margin: 0 !important;
+    line-height: 1 !important;
+    height: auto !important;
+
+    .p-checkbox {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      vertical-align: middle !important;
+      margin: 0 !important;
+      line-height: 1 !important;
+    }
 
     .p-checkbox-box {
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
+      margin: 0 !important;
     }
   }
 
   .p-multiselect-filter-container {
-    flex: 1;
+    flex: 1 1 auto !important;
     display: flex !important;
     align-items: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+
+    p-iconfield,
+    .p-iconfield {
+      width: 100% !important;
+      flex: 1 1 auto !important;
+      display: block !important;
+      position: relative !important;
+    }
+
+    .p-multiselect-filter {
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
   }
 }
 
