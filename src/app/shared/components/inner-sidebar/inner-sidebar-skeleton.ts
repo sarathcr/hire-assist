@@ -1,51 +1,59 @@
-import { Component } from '@angular/core';
-import { Menu } from 'primeng/menu';
+import { Component, input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-inner-sidebar-skeleton',
-  imports: [SkeletonModule, Menu],
-  template: `<div class="inner-sidebar">
-    <span
-      class="pi inner-sidebar__btn inner-sidebar__btn_skeleton inner-sidebar__btn_close"
-    >
-      <p-skeleton width="2rem" height="1.5rem" />
-    </span>
-    <p-menu [model]="items" class="inner-sidebar_skeleton">
-      <ng-template #item let-item>
-        @if (item) {
-          <a class="p-menu-item-link">
-            <p-skeleton width="8rem" />
-          </a>
+  standalone: true,
+  imports: [CommonModule, SkeletonModule],
+  template: `
+    <div class="inner-sidebar inner-sidebar_expand inner-sidebar--skeleton">
+      <div class="inner-sidebar__header">
+        <div class="inner-sidebar__title">
+          <p-skeleton shape="circle" size="14px" />
+          <p-skeleton width="115px" height="12px" borderRadius="4px" />
+        </div>
+        <div class="inner-sidebar__btn inner-sidebar__btn--skeleton">
+          <p-skeleton width="12px" height="12px" borderRadius="3px" />
+        </div>
+      </div>
+
+      <div class="inner-sidebar__skeleton-list">
+        @for (item of skeletonItems; track $index) {
+          <div
+            class="inner-sidebar__skeleton-item"
+            [class.inner-sidebar__skeleton-item--active]="$index === 0"
+          >
+            <div class="inner-sidebar__skeleton-icon">
+              <p-skeleton shape="circle" size="18px" />
+            </div>
+            <div class="inner-sidebar__skeleton-label">
+              <p-skeleton [width]="item.width" height="12px" borderRadius="4px" />
+            </div>
+          </div>
         }
-      </ng-template>
-    </p-menu>
-  </div>`,
+      </div>
+    </div>
+  `,
   styleUrl: './inner-sidebar.component.scss',
 })
 export class InnerSideBarSkeletonComponent {
-  public config = [1, 2, 3];
-  public items = [
-    {
-      label: 'Item 1',
-      icon: 'pi pi-fw pi-plus',
-      command: () => {
-        // Item 1 action
-      },
-    },
-    {
-      label: 'Item 2',
-      icon: 'pi pi-fw pi-plus',
-      command: () => {
-        // Item 2 action
-      },
-    },
-    {
-      label: 'Item 3',
-      icon: 'pi pi-fw pi-plus',
-      command: () => {
-        // Item 3 action
-      },
-    },
+  public itemCount = input<number>(5);
+
+  private readonly defaultWidths = [
+    '75px',
+    '110px',
+    '100px',
+    '85px',
+    '70px',
+    '95px',
+    '80px',
   ];
+
+  public get skeletonItems(): { width: string }[] {
+    const count = this.itemCount() || 5;
+    return Array.from({ length: count }, (_, i) => ({
+      width: this.defaultWidths[i % this.defaultWidths.length],
+    }));
+  }
 }

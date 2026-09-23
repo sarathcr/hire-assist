@@ -44,10 +44,6 @@
                 <div
                   class="coordinator__form-field-wrapper coordinator__form-field--round"
                 >
-                  <label class="coordinator__field-label">
-                    <i class="pi pi-list"></i>
-                    Recruitment Round
-                  </label>
                   <app-input-multiselect
                     class="coordinator__form-field"
                     [formGroup]="roundGroup"
@@ -59,10 +55,6 @@
                 <div
                   class="coordinator__form-field-wrapper coordinator__form-field--coordinator"
                 >
-                  <label class="coordinator__field-label">
-                    <i class="pi pi-user"></i>
-                    Coordinator
-                  </label>
                   <app-input-multiselect
                     class="coordinator__form-field"
                     [formGroup]="roundGroup"
@@ -125,7 +117,7 @@
           (btnClick)="onSubmit()"
           [icon]="'pi pi-check'"
           [buttonSize]="'small'"
-          [disabled]="isReadOnly() || fGroup.pristine || fGroup.invalid || assessmentRoundsDetailsFormArray.length === 0"
+          [disabled]="isReadOnly() || fGroup.pristine || fGroup.invalid || (assessmentRoundsDetailsFormArray.length === 0 && !isEdit)"
           class="coordinator__submit-btn"
         ></app-button>
       </footer>

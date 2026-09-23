@@ -12,8 +12,7 @@ import { BaseComponent } from '../../../../../../shared/components/base/base.com
 import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import type { Option } from '../../../../../../shared/models/option';
 import { CordinatorData } from '../../../../models/assessment-schedule.model';
-import { Assessment, RoundModel, CoordinatorDto } from '../../../../models/assessment.model';
-import { frontDeskResponse } from '../../../../models/frontDesk-model';
+import { Assessment, RoundModel } from '../../../../models/assessment.model';
 import {
   StepStatus,
   StepsStatusService,
@@ -25,10 +24,10 @@ import { FrontDeskComponent } from './components/front-desk/front-desk.component
 import { ImportCandidateListStepComponent } from './components/import-candidate-list-step/import-candidate-list-step.component';
 import { SelectQuesionsetStepComponent } from './components/select-quesionset-step/select-quesionset-step.component';
 import { AssessmentService } from '../../../../services/assessment.service';
-import { PaginatedPayload } from '../../../../../../shared/models/pagination.models';
 import { forkJoin, of, Observable } from 'rxjs';
-import { switchMap, map, catchError } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { InnerSidebarComponent } from '../../../../../../shared/components/inner-sidebar/inner-sidebar.component';
+import { InnerSideBarSkeletonComponent } from '../../../../../../shared/components/inner-sidebar/inner-sidebar-skeleton';
 
 export interface AssessmentViewModel {
   id?: string;
@@ -65,6 +64,7 @@ import { SkeletonModule } from 'primeng/skeleton';
     ImportCandidateListStepComponent,
     SkeletonModule,
     InnerSidebarComponent,
+    InnerSideBarSkeletonComponent,
   ],
 
   templateUrl: './assessment-view.component.html',
@@ -84,7 +84,7 @@ export class AssessmentViewComponent
 
   public assessmentId!: number;
 
-  public activeStep = 0;
+  public activeStep = -1;
   public completedSteps: number[] = [];
   public visitedSteps: number[] = [];
   public isdisableCompleted = false;
@@ -103,6 +103,7 @@ export class AssessmentViewComponent
   public hasModifiedQuestionSetAfterComplete = false;
   public isCoordinatorIncomplete = false;
   private lastProgressPercentage = 0;
+  private initialPassedStatus?: StepStatus;
   public stepKeys: (keyof StepStatus)[] = [
     'rounds',
     'questionSets',
@@ -155,8 +156,6 @@ export class AssessmentViewComponent
   }
 
   public get filteredStepConfig() {
-    if (!this.stepsLoaded) return [this.stepConfig[0]];
-
     if (this.assessmentRounds.length === 0) {
       return [this.stepConfig[0]];
     }
@@ -173,8 +172,6 @@ export class AssessmentViewComponent
   }
 
   public get filteredStepKeys(): (keyof StepStatus)[] {
-    if (!this.stepsLoaded) return ['rounds'];
-
     if (this.assessmentRounds.length === 0) {
       return ['rounds'];
     }
@@ -267,8 +264,8 @@ export class AssessmentViewComponent
 
     // Reuse steps status if passed via navigation state to avoid redundant API call
     if (history?.state?.stepsStatus) {
+      this.initialPassedStatus = history.state.stepsStatus;
       this.stepsStatus = history.state.stepsStatus;
-      this.stepsLoaded = true;
     }
     if (this.assessment) {
       this.normalizeDates(this.assessment);
@@ -281,6 +278,9 @@ export class AssessmentViewComponent
           if (this.activeStep === 1) {
             this.hasModifiedQuestionSetAfterComplete = true;
           }
+          if (this.activeStep === 0) {
+            this.assessmentRounds = [];
+          }
           this.loadStepsStatus(false);
         }
       });
@@ -290,6 +290,9 @@ export class AssessmentViewComponent
       this.stepsStatusService.stepCompleted$.subscribe((assessmentId) => {
         if (assessmentId === this.assessmentId) {
           this.hasModifiedQuestionSetAfterComplete = false;
+          if (this.activeStep === 0) {
+            this.assessmentRounds = [];
+          }
           this.moveToNextStep();
         }
       });
@@ -345,19 +348,19 @@ export class AssessmentViewComponent
       return;
     }
 
-    // Block ANY navigation away from the Question Set step (step 1)
-    // when there are question sets created but not all have been submitted.
-    if (this.activeStep === 1 && step !== 1) {
+    // Block forward navigation away from the Question Set step (step 1)
+    // when rounds are incomplete. Backward navigation (to Rounds step) is allowed.
+    if (this.activeStep === 1 && step > 1) {
       const comp = this.questionSetStepComponent;
       
-      // 1. Block EVERYTHING if server-side check says sets are incomplete
+      // 1. Block forward navigation if server-side check says sets are incomplete
       if (this.hasOnlineAptitudeRound && this.isQuestionSetIncomplete) {
         if (canShowWarning) {
           this.lastStepWarningTime = now;
           this.messageService.add({
             severity: 'warn',
             summary: 'Warning',
-            detail: 'Please create question sets and add questions in each set under the rounds before leaving.',
+            detail: 'Please create question sets and add questions in each set under the rounds before proceeding.',
           });
         }
         return;
@@ -512,13 +515,9 @@ export class AssessmentViewComponent
           });
         }
 
-        // Only load if status wasn't already provided via state
-        if (!this.stepsLoaded) {
-          this.loadStepsStatus();
-        } else {
-          // If already loaded from state, we still need to process rounds and active step
-          this.loadStepsStatus(true, this.stepsStatus);
-        }
+        const passedStatus = this.initialPassedStatus;
+        this.initialPassedStatus = undefined;
+        this.loadStepsStatus(true, passedStatus);
       }
     });
   }
@@ -531,135 +530,37 @@ export class AssessmentViewComponent
     }
 
     // Use provided status if available, otherwise fetch from API
-    const statusObs = providedStatus 
+    const statusObs: Observable<StepStatus> = providedStatus 
       ? of(providedStatus) 
       : this.stepsStatusService.getAssessmentStepsStatus(this.assessmentId);
 
-    statusObs.pipe(
-      switchMap((status: StepStatus) => {
+    // Load rounds from API only if not loaded yet or active step is 0 (Rounds)
+    const roundsObs: Observable<RoundModel[]> = (this.assessmentRounds.length > 0 && this.activeStep !== 0)
+      ? of(this.assessmentRounds)
+      : this.assessmentScheduleService.GetAssessmentRound(this.assessmentId).pipe(
+          catchError(() => of([]))
+        );
+
+    forkJoin({
+      status: statusObs,
+      rounds: roundsObs,
+    }).subscribe({
+      next: ({ status, rounds }) => {
         this.stepsStatus = status;
+        this.assessmentRounds = rounds || [];
         this.stepsLoaded = true;
         this.updateCompletedStepsFromStatus();
 
-        // 2. Load rounds from API only if not loaded yet or active step is 0 (Rounds)
-        const roundsObs: Observable<RoundModel[]> = (this.assessmentRounds.length > 0 && this.activeStep !== 0)
-          ? of(this.assessmentRounds)
-          : this.assessmentScheduleService.GetAssessmentRound(this.assessmentId!);
-
-        return roundsObs.pipe(
-          switchMap((rounds: RoundModel[]) => {
-            this.assessmentRounds = rounds;
-            
-            // 1. Question Set Validation Observable
-            let questionSetVal$: Observable<boolean>;
-            if (this.hasOnlineAptitudeRound) {
-              const payload = new PaginatedPayload();
-              payload.filterMap = { assessmentId: this.assessmentId };
-              payload.pagination.pageSize = -1;
-
-              questionSetVal$ = this.assessmentService.paginationEntity<any>('QuestionSetSummary', payload).pipe(
-                switchMap(res => {
-                  const questionSets = res.data || [];
-                  const createdSets = questionSets.filter((qs: any) => qs.id > 0);
-                  const aptitudeRounds = this.assessmentRounds.filter((r) => r.roundTypeId === 1);
-                  
-                  const hasMissingSet = aptitudeRounds.some(round => {
-                    return !createdSets.some((qs: any) => qs.assessmentRoundId === round.id);
-                  });
-
-                  if (hasMissingSet || createdSets.length === 0) {
-                    return of(true);
-                  }
-
-                  const questionSetQueries = createdSets.map(qs => 
-                    this.assessmentService.getQuestionsBySet(qs.id.toString()).pipe(
-                      catchError(() => of({ questions: [] }))
-                    )
-                  );
-
-                  return forkJoin(questionSetQueries).pipe(
-                    map((results: any[]) => {
-                      const hasEmptySet = results.some(res => !res.questions || res.questions.length === 0);
-                      return hasEmptySet;
-                    })
-                  );
-                }),
-                catchError(() => of(true))
-              );
-            } else {
-              questionSetVal$ = of(false);
-            }
-
-            // 2. Coordinator Validation Observable
-            const technicalRounds = this.assessmentRounds.filter(r => r.roundTypeId === 2);
-            let coordinatorVal$: Observable<boolean>;
-            if (technicalRounds.length > 0) {
-              coordinatorVal$ = this.assessmentService.Getcoordinator(this.assessmentId).pipe(
-                map((res: CoordinatorDto) => {
-                  const assignedRoundIds = (res.coordinatorRound || []).flatMap(item => 
-                    (item.assessmentRoundId || []).map(id => Number(id))
-                  );
-                  const requiredRoundIds = technicalRounds.map(r => r.id).filter((id): id is number => id !== undefined);
-                  const hasMissing = requiredRoundIds.some(id => !assignedRoundIds.includes(id));
-                  return hasMissing;
-                }),
-                catchError(() => of(true))
-              );
-            } else {
-              coordinatorVal$ = of(false);
-            }
-
-            // 3. Front Desk Validation Observable
-            const frontDeskVal$ = this.assessmentService.getFrontDeskUserByAssessment(this.assessmentId).pipe(
-              map((res: frontDeskResponse[]) => {
-                return !res || res.length === 0;
-              }),
-              catchError(() => of(true))
-            );
-
-            // Combine all validations in parallel
-            return forkJoin({
-              isQuestionSetIncomplete: questionSetVal$,
-              isCoordinatorIncomplete: coordinatorVal$,
-              isFrontDeskIncomplete: frontDeskVal$
-            }).pipe(
-              map(({ isQuestionSetIncomplete, isCoordinatorIncomplete, isFrontDeskIncomplete }) => {
-                this.isQuestionSetIncomplete = isQuestionSetIncomplete;
-                this.isCoordinatorIncomplete = isCoordinatorIncomplete;
-                this.isFrontDeskIncomplete = isFrontDeskIncomplete;
-
-                if ((this.isQuestionSetIncomplete || this.hasModifiedQuestionSetAfterComplete) && this.stepsStatus.questionSets === 'Completed') {
-                  this.stepsStatus.questionSets = 'Active';
-                }
-
-                if (this.isCoordinatorIncomplete && this.stepsStatus.coordinators === 'Completed') {
-                  this.stepsStatus.coordinators = 'Active';
-                }
-
-                if (this.isFrontDeskIncomplete) {
-                  if (this.stepsStatus.frontDesk === 'Completed') {
-                    this.stepsStatus.frontDesk = 'Active';
-                  }
-                } else {
-                  this.stepsStatus.frontDesk = 'Completed';
-                }
-
-                this.updateCompletedStepsFromStatus();
-
-                if (shouldUpdateActiveStep) {
-                  this.setActiveStepFromStatus();
-                }
-                this.isStepUpdating = false;
-                this.updateStepMenuItems();
-                return null;
-              })
-            );
-          })
-        );
-      })
-    ).subscribe({
-      error: () => {
+        if (shouldUpdateActiveStep) {
+          this.setActiveStepFromStatus();
+        }
         this.isStepUpdating = false;
+        this.updateStepMenuItems();
+      },
+      error: () => {
+        this.stepsLoaded = true;
+        this.isStepUpdating = false;
+        this.updateStepMenuItems();
       }
     });
   }
@@ -675,7 +576,7 @@ export class AssessmentViewComponent
   }
 
   private setActiveStepFromStatus(): void {
-    if (!this.stepsStatus || !this.stepsLoaded) return;
+    if (!this.stepsStatus) return;
 
     const currentKeys = this.filteredStepKeys;
 
@@ -683,6 +584,9 @@ export class AssessmentViewComponent
     for (const key of currentKeys) {
       if (this.stepsStatus[key] === 'Active') {
         this.activeStep = this.stepKeys.indexOf(key);
+        if (!this.visitedSteps.includes(this.activeStep)) {
+          this.visitedSteps.push(this.activeStep);
+        }
         return;
       }
     }
@@ -691,6 +595,9 @@ export class AssessmentViewComponent
     for (const key of currentKeys) {
       if (this.stepsStatus[key] === 'Pending') {
         this.activeStep = this.stepKeys.indexOf(key);
+        if (!this.visitedSteps.includes(this.activeStep)) {
+          this.visitedSteps.push(this.activeStep);
+        }
         return;
       }
     }
@@ -705,7 +612,11 @@ export class AssessmentViewComponent
       );
     }
 
-    if (!this.visitedSteps.includes(this.activeStep)) {
+    if (this.activeStep < 0 && currentKeys.length > 0) {
+      this.activeStep = this.stepKeys.indexOf(currentKeys[0]);
+    }
+
+    if (this.activeStep >= 0 && !this.visitedSteps.includes(this.activeStep)) {
       this.visitedSteps.push(this.activeStep);
     }
   }

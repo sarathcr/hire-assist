@@ -72,4 +72,38 @@ describe('AssessmentViewComponent', () => {
     expect(component.stepMenuItems.length).toBeGreaterThan(0);
     expect(component.stepMenuItems[0].label).toBe('Rounds');
   });
+
+  it('should initialize activeStep as -1 and stepsLoaded as false before loading', () => {
+    const newComponent = TestBed.createComponent(AssessmentViewComponent).componentInstance;
+    expect(newComponent.activeStep).toBe(-1);
+    expect(newComponent.stepsLoaded).toBeFalse();
+  });
+
+  it('should activate schedule step (index 4) when schedule step is Active', () => {
+    component.assessmentId = 1;
+    const stepsStatusService = TestBed.inject(StepsStatusService);
+    const assessmentScheduleService = TestBed.inject(AssessmentScheduleService);
+
+    spyOn(stepsStatusService, 'getAssessmentStepsStatus').and.returnValue(
+      of({
+        rounds: 'Completed',
+        questionSets: 'Completed',
+        coordinators: 'Completed',
+        frontDesk: 'Completed',
+        interviewers: 'Completed',
+        schedule: 'Active',
+      })
+    );
+    spyOn(assessmentScheduleService, 'GetAssessmentRound').and.returnValue(
+      of([
+        { id: 1, roundTypeId: 1 } as any,
+        { id: 2, roundTypeId: 2 } as any,
+      ])
+    );
+
+    component.loadStepsStatus(true);
+
+    expect(component.stepsLoaded).toBeTrue();
+    expect(component.activeStep).toBe(4);
+  });
 });

@@ -23,6 +23,8 @@ import {
 import { AssessmentService } from '../../../../../../services/assessment.service';
 import { CollectionInterface } from '../../assessment-view.component';
 import { FrontdeskSkeletonComponent } from './front-desk-skeleton.component';
+import { forkJoin, Observable } from 'rxjs';
+import { extractErrorMessage } from '../../../../../../../../shared/utilities/error.utility';
 import { StepsStatusService } from '../../../../services/steps-status.service';
 
 @Component({
@@ -76,46 +78,98 @@ export class FrontDeskComponent implements OnInit {
     this.GetFrontDeskUsers();
   }
 
-  public onSubmit() {
+  public onSubmit(): void {
+    if (!this.hasCoordinatorChanges) {
+      return;
+    }
+
     this.fGroup.markAllAsTouched();
     const formData = this.fGroup.value;
-    if (formData?.users?.length) {
-      this.frontDesk = this.users
-        .filter((item) => formData.users.includes(item.value))
-        .map((item) => ({
-          id: parseInt(item.value, 10),
-          userId: item.value,
-          assessmentId: Number(this.assessmentId()),
-          name: item.label,
-        }));
-      const payload = this.frontDesk.map((item) => ({
-        UserId: item.userId,
-        AssessmentId: item.assessmentId,
-      }));
+    const newSelectedUserIds: string[] = formData?.users || [];
 
-      this.assessmentService.addFrontDeskUser(payload).subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Assigned Frontdesk Users',
-          });
-          this.GetFrontDeskUsers();
+    const removedRecords = this.frontDesk.filter(
+      (item) => !newSelectedUserIds.includes(item.userId),
+    );
+    const idsToDelete = removedRecords
+      .map((item) => item.id)
+      .filter((id): id is number => id != null && id > 0);
 
-          this.hasCoordinatorChanges = false;
+    const addedUserIds = newSelectedUserIds.filter(
+      (userId) => !this.frontDesk.some((item) => item.userId === userId),
+    );
 
-          // Call step status API and move to next step
-          this.checkStepStatusAndMoveNext();
-        },
-        error: () => {
-          this.messageService.add({
-            severity: 'info',
-            summary: 'Info',
-            detail: 'Frontdesk Users are not selected',
-          });
-        },
-      });
+    const newPayload = addedUserIds.map((userId) => ({
+      UserId: userId,
+      AssessmentId: Number(this.assessmentId()),
+    }));
+
+    if (newSelectedUserIds.length === 0) {
+      if (idsToDelete.length > 0) {
+        this.assessmentService.deleteFrontDeskUsers(idsToDelete).subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'Front desk coordinators removed successfully',
+            });
+            this.GetFrontDeskUsers();
+            this.hasCoordinatorChanges = false;
+            this.stepsStatusService.notifyStepStatusUpdate(
+              Number(this.assessmentId()),
+            );
+          },
+          error: (err: any) => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: extractErrorMessage(
+                err,
+                'Failed to remove front desk coordinators',
+              ),
+            });
+          },
+        });
+      } else {
+        this.hasCoordinatorChanges = false;
+      }
+      return;
     }
+
+    const tasks: Observable<any>[] = [];
+    if (idsToDelete.length > 0) {
+      tasks.push(this.assessmentService.deleteFrontDeskUsers(idsToDelete));
+    }
+    if (newPayload.length > 0) {
+      tasks.push(this.assessmentService.addFrontDeskUser(newPayload));
+    }
+
+    if (tasks.length === 0) {
+      this.hasCoordinatorChanges = false;
+      return;
+    }
+
+    forkJoin(tasks).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Assigned Frontdesk Users',
+        });
+        this.GetFrontDeskUsers();
+        this.hasCoordinatorChanges = false;
+        this.checkStepStatusAndMoveNext();
+      },
+      error: (err: any) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: extractErrorMessage(
+            err,
+            'Failed to save front desk coordinators',
+          ),
+        });
+      },
+    });
   }
 
   private GetFrontDeskUsers(): void {

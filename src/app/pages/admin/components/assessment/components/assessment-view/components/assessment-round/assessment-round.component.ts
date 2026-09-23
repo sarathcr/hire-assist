@@ -41,7 +41,7 @@ import { MultiSelect, MultiSelectModule } from 'primeng/multiselect';
 import { Select } from 'primeng/select';
 import { DividerModule } from 'primeng/divider';
 import { CardModule } from 'primeng/card';
-import { forkJoin, of, Subscription } from 'rxjs';
+import { forkJoin, Observable, of, Subscription } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
@@ -49,6 +49,7 @@ import { OptionsMap } from '../../../../../../../../shared/models/app-state.mode
 import type { Option } from '../../../../../../../../shared/models/app-state.models';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
 import { StoreService } from '../../../../../../../../shared/services/store.service';
+import { PaginatedPayload } from '../../../../../../../../shared/models/pagination.models';
 import {
   buildFormGroup,
   ConfigMap,
@@ -63,8 +64,10 @@ import {
 import { MultiSelectChangeEvent } from 'primeng/multiselect';
 import {
   AssessmentRoundFormGroup,
+  CoordinatorDto,
   RoundModel,
 } from '../../../../../../models/assessment.model';
+import { AssessmentService } from '../../../../../../services/assessment.service';
 import { AssessmentScheduleService } from '../../../../services/assessment-schedule.service';
 import { AssessmentRoundSkeletonComponent } from './assessment-round-skeleton';
 import { CollectionService } from '../../../../../../../../shared/services/collection.service';
@@ -124,8 +127,13 @@ export class AssessmentRoundComponent
   public showCannotDeleteModal = false;
   public cannotDeleteRoundInfo?: {
     roundName: string;
+    roundId: string;
+    assessmentRoundId?: number;
     reasons: DependencyReason[];
+    isHardBlocked: boolean;
   };
+  public pendingRoundToRemove?: AssessmentRoundFormGroup;
+  public isCleaningDependencies = false;
   public roundConfigForms = new FormArray<FormGroup>([]);
   public feedbackCriteriaOptions: Option[] = [];
   public roundTypeOptions: Option[] = [];
@@ -171,6 +179,7 @@ export class AssessmentRoundComponent
     private readonly storeService: StoreService,
     private readonly messageService: MessageService,
     private readonly assessmentScheduleService: AssessmentScheduleService,
+    private readonly assessmentService: AssessmentService,
     private readonly collectionService: CollectionService,
     private readonly dialogService: DialogService,
     private readonly cdr: ChangeDetectorRef,
@@ -240,8 +249,30 @@ export class AssessmentRoundComponent
     }
   }
 
+  public isRoundSavedInDb(round?: AssessmentRoundFormGroup): boolean {
+    if (!round || round.id?.startsWith('new-')) {
+      return false;
+    }
+    if (round.assessmentRoundId !== undefined) {
+      return true;
+    }
+    return (this.assessmentRounds || []).some(
+      (r) =>
+        r.roundId?.toString() === round.id?.toString() ||
+        (r.id !== undefined && r.id === round.assessmentRoundId),
+    );
+  }
+
   private getRoundDependencyReasons(round: AssessmentRoundFormGroup): DependencyReason[] {
     const reasons: DependencyReason[] = [];
+    if (round.hasInterviews) {
+      reasons.push({
+        type: 'interview',
+        title: 'Candidates Scheduled',
+        description: 'Candidates have already been scheduled for this round.',
+        icon: 'pi pi-calendar',
+      });
+    }
     if (round.hasCoordinators) {
       reasons.push({
         type: 'coordinator',
@@ -258,14 +289,6 @@ export class AssessmentRoundComponent
         icon: 'pi pi-file-edit',
       });
     }
-    if (round.hasInterviews) {
-      reasons.push({
-        type: 'interview',
-        title: 'Candidates Scheduled',
-        description: 'Candidates have already been scheduled for this round.',
-        icon: 'pi pi-calendar',
-      });
-    }
     return reasons;
   }
 
@@ -277,7 +300,7 @@ export class AssessmentRoundComponent
           return;
         }
 
-        // Check if any unselected master round has active references
+        // Check if any unselected master round has active references or is saved in DB
         const currentMasterRounds = this.submittedData.filter(
           (r) => !r.id.startsWith('new-'),
         );
@@ -290,10 +313,16 @@ export class AssessmentRoundComponent
 
         for (const round of unselectedRounds) {
           const reasons = this.getRoundDependencyReasons(round);
-          if (reasons.length > 0) {
+          const isSaved = this.isRoundSavedInDb(round);
+          if (reasons.length > 0 || isSaved) {
+            const isHardBlocked = reasons.some((r) => r.type === 'interview');
+            this.pendingRoundToRemove = round;
             this.cannotDeleteRoundInfo = {
               roundName: round.name,
+              roundId: round.id,
+              assessmentRoundId: round.assessmentRoundId,
               reasons,
+              isHardBlocked,
             };
             this.showCannotDeleteModal = true;
 
@@ -884,13 +913,30 @@ export class AssessmentRoundComponent
     }
 
     const reasons = this.getRoundDependencyReasons(removedRound);
-    if (reasons.length > 0) {
+    const isSaved = this.isRoundSavedInDb(removedRound);
+
+    if (reasons.length > 0 || isSaved) {
+      const isHardBlocked = reasons.some((r) => r.type === 'interview');
+      this.pendingRoundToRemove = removedRound;
       this.cannotDeleteRoundInfo = {
         roundName: removedRound.name,
+        roundId: removedRound.id,
+        assessmentRoundId: removedRound.assessmentRoundId,
         reasons,
+        isHardBlocked,
       };
       this.showCannotDeleteModal = true;
       return;
+    }
+
+    this.executeRemoveRound(roundId);
+  }
+
+  public executeRemoveRound(roundId: string): void {
+    const removedRound = this.submittedData.find((r) => r.id === roundId);
+    if (removedRound) {
+      removedRound.hasQuestionSets = false;
+      removedRound.hasCoordinators = false;
     }
 
     // Remove from submitted data
@@ -901,20 +947,213 @@ export class AssessmentRoundComponent
     // If it's an existing round (not a temp ID), also remove from form selection
     if (roundId.startsWith('new-')) {
       // Remove from newRoundsToCreate if it was a new round
-      this.newRoundsToCreate = this.newRoundsToCreate.filter(
-        (round) => round.name !== removedRound.name,
-      );
-      this.buildRoundConfigForms();
-      this.reinitSortable();
+      if (removedRound) {
+        this.newRoundsToCreate = this.newRoundsToCreate.filter(
+          (round) => round.name !== removedRound.name,
+        );
+      }
     } else {
+      this.isUpdatingRounds = true;
       const currentSelection = this.fGroup.value.round || [];
       this.fGroup.patchValue({
         round: currentSelection.filter(
           (id: any) => id?.toString() !== roundId?.toString(),
         ),
-      }); // Allow emitting event to sync PrimeNG MultiSelect correctly!
+      });
+      this.isUpdatingRounds = false;
     }
+    this.buildRoundConfigForms();
+    this.reinitSortable();
     this.roundsUpdated.emit(this.submittedData.length);
+  }
+
+  public cancelRemoveRound(): void {
+    this.showCannotDeleteModal = false;
+    this.pendingRoundToRemove = undefined;
+    this.cannotDeleteRoundInfo = undefined;
+  }
+
+  public confirmCascadeDelete(): void {
+    const round = this.pendingRoundToRemove;
+    if (!round || !this.assessmentId()) {
+      this.showCannotDeleteModal = false;
+      return;
+    }
+
+    this.isCleaningDependencies = true;
+    const assessmentId = Number(this.assessmentId());
+    const targetRoundIdStr = round.id;
+    const targetAssessmentRoundId = round.assessmentRoundId;
+    const isSaved = this.isRoundSavedInDb(round);
+
+    const cleanupTasks: Observable<any>[] = [];
+
+    // 1. Clean up Question Sets if linked
+    if (round.hasQuestionSets) {
+      const qsPayload = new PaginatedPayload();
+      qsPayload.filterMap = { assessmentId };
+      qsPayload.pagination.pageSize = -1;
+
+      const deleteQuestionSetsTask = this.assessmentService
+        .paginationEntity<any>('QuestionSetSummary', qsPayload)
+        .pipe(
+          switchMap((res) => {
+            const questionSets: any[] = res?.data || [];
+            const setsToDelete = questionSets.filter((qs: any) => {
+              const qsRoundId = Number(qs.assessmentRoundId);
+              return (
+                (targetAssessmentRoundId !== undefined &&
+                  qsRoundId === Number(targetAssessmentRoundId)) ||
+                qsRoundId === Number(targetRoundIdStr)
+              );
+            });
+
+            if (setsToDelete.length === 0) {
+              return of(null);
+            }
+
+            const deleteCalls = setsToDelete.map((qs) =>
+              this.assessmentService
+                .deleteQuestionSet(qs.id, assessmentId)
+                .pipe(catchError(() => of(null))),
+            );
+            return forkJoin(deleteCalls);
+          }),
+          catchError(() => of(null)),
+        );
+
+      cleanupTasks.push(deleteQuestionSetsTask);
+    }
+
+    // 2. Clean up Coordinators if assigned
+    if (round.hasCoordinators) {
+      const deleteCoordinatorsTask = this.assessmentService
+        .Getcoordinator(assessmentId)
+        .pipe(
+          switchMap((res: CoordinatorDto) => {
+            const coordinatorRounds = res?.coordinatorRound || [];
+            const remaining = coordinatorRounds.filter((item: any) => {
+              const itemRoundIds: string[] = (
+                item.assessmentRoundId || []
+              ).map(String);
+              const matchesAssessmentRoundId =
+                targetAssessmentRoundId !== undefined &&
+                itemRoundIds.includes(String(targetAssessmentRoundId));
+              const matchesMasterRoundId = itemRoundIds.includes(
+                String(targetRoundIdStr),
+              );
+              return !matchesAssessmentRoundId && !matchesMasterRoundId;
+            });
+
+            if (remaining.length === 0) {
+              return this.assessmentService
+                .Deletecoordinator(assessmentId)
+                .pipe(catchError(() => of(null)));
+            } else {
+              const payload = {
+                assessmentId: assessmentId.toString(),
+                coordinatorRound: remaining.map((item: any) => ({
+                  assessmentRoundId: Number(
+                    Array.isArray(item.assessmentRoundId)
+                      ? item.assessmentRoundId[0]
+                      : item.assessmentRoundId,
+                  ),
+                  coordinatorId: item.coordinatorId,
+                })),
+              };
+              return this.assessmentService
+                .createEntity(payload, 'Coordinator')
+                .pipe(catchError(() => of(null)));
+            }
+          }),
+          catchError(() => of(null)),
+        );
+
+      cleanupTasks.push(deleteCoordinatorsTask);
+    }
+
+    const finalizeCascadeRemoval = () => {
+      // Execute round removal in UI
+      this.executeRemoveRound(round.id);
+
+      if (this.assessmentId() && isSaved) {
+        this.mapRoundsToAssessment().subscribe({
+          next: () => {
+            this.isCleaningDependencies = false;
+            this.showCannotDeleteModal = false;
+            this.pendingRoundToRemove = undefined;
+            this.cannotDeleteRoundInfo = undefined;
+
+            this.initialSnapshot = this.getSnapshot();
+            this.isDataLoaded = false;
+            this.isLoading = false;
+            this.assessmentRoundSubscription = undefined;
+            this.GetAssessmentRoundbyAssessment();
+
+            this.stepsStatusService.notifyStepStatusUpdate(assessmentId);
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: `Round "${round.name}" and associated configurations removed successfully.`,
+            });
+            this.cdr.detectChanges();
+          },
+          error: (err: CustomErrorResponse) => {
+            this.isCleaningDependencies = false;
+            this.showCannotDeleteModal = false;
+            this.pendingRoundToRemove = undefined;
+            this.cannotDeleteRoundInfo = undefined;
+
+            // Revert state from DB
+            this.isDataLoaded = false;
+            this.isLoading = false;
+            this.assessmentRoundSubscription = undefined;
+            this.GetAssessmentRoundbyAssessment();
+
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail:
+                err?.error?.type ||
+                'Failed to remove round from assessment in the database.',
+            });
+            this.cdr.detectChanges();
+          },
+        });
+      } else {
+        this.isCleaningDependencies = false;
+        this.showCannotDeleteModal = false;
+        this.pendingRoundToRemove = undefined;
+        this.cannotDeleteRoundInfo = undefined;
+        this.stepsStatusService.notifyStepStatusUpdate(assessmentId);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: `Round "${round.name}" removed successfully.`,
+        });
+        this.cdr.detectChanges();
+      }
+    };
+
+    if (cleanupTasks.length === 0) {
+      finalizeCascadeRemoval();
+      return;
+    }
+
+    forkJoin(cleanupTasks).subscribe({
+      next: () => {
+        finalizeCascadeRemoval();
+      },
+      error: () => {
+        this.isCleaningDependencies = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail:
+            'Failed to clean up some round dependencies. Please try again.',
+        });
+      },
+    });
   }
 
   public openCreateRoundModal(): void {
@@ -1329,36 +1568,53 @@ export class AssessmentRoundComponent
 
   private mapRoundsToAssessment() {
     const payload: AssessmentRoundsInterface[] = this.submittedData.map(
-      (item: AssessmentRoundFormGroup, index: number) => ({
-        roundId: Number(item.id),
-        round: item.name,
-        sequence: index + 1,
-        timerHour: item.durationDate
-          ? `${item.durationDate.getHours().toString().padStart(2, '0')}:` +
+      (item: AssessmentRoundFormGroup, index: number) => {
+        let timerHourStr = '00:00:00';
+        if (
+          item.durationDate instanceof Date &&
+          !isNaN(item.durationDate.getTime())
+        ) {
+          timerHourStr =
+            `${item.durationDate.getHours().toString().padStart(2, '0')}:` +
             `${item.durationDate.getMinutes().toString().padStart(2, '0')}:` +
-            `${item.durationDate.getSeconds().toString().padStart(2, '0')}`
-          : '00:00:00',
-        maxTerminationCount: this.isAptitudeRound(item.roundType)
-          ? (item.maxTerminationCount || 0)
-          : 0,
-        roundTypeId: item.roundType ? Number(item.roundType) : 0,
-        isActive: true,
-        assessmentRoundFeedbackCriteria: (item.feedbackCriteria || []).map(
-          (c: any) => {
-            const rawDescription = c.description || '';
-            const plainText = rawDescription.replace(/<[^>]*>/g, '').trim();
-            const finalDescription = plainText === '' ? null : rawDescription;
+            `${item.durationDate.getSeconds().toString().padStart(2, '0')}`;
+        } else if (
+          typeof item.timerHour === 'string' &&
+          item.timerHour.includes(':')
+        ) {
+          timerHourStr = item.timerHour;
+        }
 
-            return {
-              feedbackCriteriaId:
-                c.id && !isNaN(Number(c.id)) ? Number(c.id) : 0,
-              criteriaName: c.title,
-              description: finalDescription,
-              maxScore: c.maxScore || 10,
-            };
-          },
-        ),
-      }),
+        return {
+          ...(item.assessmentRoundId
+            ? { id: Number(item.assessmentRoundId) }
+            : {}),
+          roundId: Number(item.id),
+          round: item.name,
+          sequence: index + 1,
+          timerHour: timerHourStr,
+          maxTerminationCount: this.isAptitudeRound(item.roundType)
+            ? (item.maxTerminationCount || 0)
+            : 0,
+          roundTypeId: item.roundType ? Number(item.roundType) : 0,
+          isActive: true,
+          assessmentRoundFeedbackCriteria: (item.feedbackCriteria || []).map(
+            (c: any) => {
+              const rawDescription = c.description || '';
+              const plainText = rawDescription.replace(/<[^>]*>/g, '').trim();
+              const finalDescription = plainText === '' ? null : rawDescription;
+
+              return {
+                feedbackCriteriaId:
+                  c.id && !isNaN(Number(c.id)) ? Number(c.id) : 0,
+                criteriaName: c.title,
+                description: finalDescription,
+                maxScore: c.maxScore || 10,
+              };
+            },
+          ),
+        };
+      },
     );
 
     return this.assessmentScheduleService.CreateAssessmentRound(
@@ -1459,6 +1715,10 @@ export class AssessmentRoundComponent
               return {
                 name: item.round,
                 id: item.roundId.toString(),
+                assessmentRoundId:
+                  item.id !== undefined && item.id !== null
+                    ? item.id
+                    : undefined,
                 sequence: item.sequence,
                 timerHour: item.timerHour || 0,
                 durationDate: date,

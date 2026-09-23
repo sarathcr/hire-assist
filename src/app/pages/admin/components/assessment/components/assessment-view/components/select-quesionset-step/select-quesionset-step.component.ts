@@ -1467,17 +1467,6 @@ export class SelectQuesionsetStepComponent
     const isValid = allRounds && !isIncomplete;
     const isDirty = this.isDirty;
     const status = this.stepStatus();
-    
-    console.log(`[Button Debug]`, {
-      label: 'Complete Button State',
-      isEnabled: isValid && (status !== 'Completed' || isDirty),
-      isValid,
-      isDirty,
-      status,
-      allRounds,
-      isIncomplete,
-      hasLocalModifications: this.hasLocalModifications
-    });
 
     if (!isValid) return false;
 

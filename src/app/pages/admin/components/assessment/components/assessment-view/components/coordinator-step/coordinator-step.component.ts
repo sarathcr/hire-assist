@@ -16,6 +16,7 @@ import { ButtonComponent } from '../../../../../../../../shared/components/butto
 import { InputMultiselectComponent } from '../../../../../../../../shared/components/form/input-multiselect/input-multiselect.component';
 import { OptionsMap } from '../../../../../../../../shared/models/app-state.models';
 import { CustomErrorResponse } from '../../../../../../../../shared/models/custom-error.models';
+import { extractErrorMessage } from '../../../../../../../../shared/utilities/error.utility';
 import type { Option } from '../../../../../../../../shared/models/option';
 import { StoreService } from '../../../../../../../../shared/services/store.service';
 import {
@@ -181,6 +182,10 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
   }
 
   public onSubmit(): void {
+    if (this.fGroup.pristine) {
+      return;
+    }
+
     this.fGroup.markAllAsTouched();
     if (this.fGroup.invalid) {
       if (this.assessmentRoundsDetailsFormArray.hasError('duplicateRounds')) {
@@ -194,7 +199,7 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
     }
 
     const rawData: AssessmentRoundData[] =
-      this.fGroup.getRawValue().assessmentRoundsDetails;
+      this.fGroup.getRawValue().assessmentRoundsDetails || [];
     const filteredData = rawData.filter(
       (detail) =>
         detail.assessmentRound &&
@@ -203,22 +208,7 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
         detail.coordinator.length > 0,
     );
 
-    const assignedRoundIds = filteredData.flatMap((detail) => (detail.assessmentRound as unknown as string[]) || []);
-    const requiredRoundIds = (this.cordinatorData?.assessmentRounds || []).map(r => r.value);
-    const hasMissingRounds = requiredRoundIds.some(id => !assignedRoundIds.includes(id));
-
-    if (hasMissingRounds) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Validation Error',
-        detail: 'Please assign coordinators to all recruitment rounds before proceeding.',
-      });
-      return;
-    }
-
-
     const apiPayload = filteredData.flatMap((detail) => {
-
       const rounds = (detail.assessmentRound as unknown as string[]) || [];
       const coordinators = (detail.coordinator as unknown as string[]) || [];
       return rounds.map((roundId) => ({
@@ -227,47 +217,95 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
       }));
     });
 
-    if (apiPayload.length == 0) {
+    if (apiPayload.length === 0) {
       const next = () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
-          detail: 'Removed Successfully',
+          detail: 'Coordinators removed successfully',
         });
+        this.isEdit = false;
+        if (this.cordinatorData?.cordinatorRoundData) {
+          this.cordinatorData.cordinatorRoundData.coordinatorRound = [];
+        }
         this.fGroup.markAsPristine();
-        this.checkStepStatusAndMoveNext();
+        this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
       };
 
       const error = (error: CustomErrorResponse) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: error?.error?.type || 'Failed to remove coordinator',
+          detail: extractErrorMessage(error, 'Failed to remove coordinator'),
         });
       };
       this.assessmentService
         .Deletecoordinator(Number(this.assessmentId()))
         .subscribe({ next, error });
-    } else {
-      const payload = {
-        assessmentId: this.assessmentId(),
-        coordinatorRound: apiPayload,
+      return;
+    }
+
+    const assignedRoundIds = filteredData.flatMap((detail) => (detail.assessmentRound as unknown as string[]) || []);
+    const requiredRoundIds = (this.cordinatorData?.assessmentRounds || []).map(r => r.value);
+    const hasMissingRounds = requiredRoundIds.some(id => !assignedRoundIds.includes(id));
+
+    const payload = {
+      assessmentId: this.assessmentId(),
+      coordinatorRound: apiPayload,
+    };
+
+    if (hasMissingRounds) {
+      const next = () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Coordinator assignments updated successfully',
+        });
+        this.isEdit = true;
+        if (this.cordinatorData?.cordinatorRoundData) {
+          this.cordinatorData.cordinatorRoundData.coordinatorRound = apiPayload.map((item) => ({
+            assessmentRoundId: [String(item.assessmentRoundId)],
+            coordinatorId: item.coordinatorId,
+          }));
+        }
+        this.fGroup.markAsPristine();
+        this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
       };
+
+      const error = (err: any) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: extractErrorMessage(err, 'Failed to update coordinators'),
+        });
+      };
+
+      this.assessmentService
+        .createEntity(payload, 'Coordinator')
+        .subscribe({ next, error });
+    } else {
       const next = () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Success',
           detail: 'Round and coordinator assigned successfully',
         });
+        this.isEdit = true;
+        if (this.cordinatorData?.cordinatorRoundData) {
+          this.cordinatorData.cordinatorRoundData.coordinatorRound = apiPayload.map((item) => ({
+            assessmentRoundId: [String(item.assessmentRoundId)],
+            coordinatorId: item.coordinatorId,
+          }));
+        }
         this.fGroup.markAsPristine();
         this.checkStepStatusAndMoveNext();
       };
 
-      const error = (err: string) => {
+      const error = (err: any) => {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: err,
+          detail: extractErrorMessage(err, 'Failed to assign coordinators'),
         });
       };
 
@@ -284,12 +322,14 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
     this.assessmentRoundConfigs.push(this.createRoundConfig());
     this.assessmentRoundsDetailsFormArray.push(this.createRoundFormGroup());
     this.updateAvailableOptions();
+    this.fGroup.markAsDirty();
   }
 
   public removeRound(index: number): void {
     this.assessmentRoundConfigs.splice(index, 1);
     this.assessmentRoundsDetailsFormArray.removeAt(index);
     this.updateAvailableOptions();
+    this.fGroup.markAsDirty();
   }
 
   private GetAssessmentRoundbyAssessment() {

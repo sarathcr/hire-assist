@@ -164,7 +164,19 @@
     .assessment-round__create-button {
       height: 42px;
       display: flex;
-      align-items: center;
+      align-items: stretch;
+
+      ::ng-deep {
+        .btn,
+        .p-button {
+          height: 42px !important;
+          min-height: 42px !important;
+          box-sizing: border-box !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+      }
     }
   }
 
@@ -185,8 +197,20 @@
     flex-shrink: 0;
     white-space: nowrap;
     min-width: 140px;
-    // border: 1px solid #2196f3;
+    height: 42px;
     border-radius: 10px;
+
+    ::ng-deep {
+      .btn,
+      .p-button {
+        height: 42px !important;
+        min-height: 42px !important;
+        box-sizing: border-box !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+    }
 
     @media screen and (max-width: 640px) {
       width: 100%;
@@ -483,16 +507,30 @@
 
   &__submit-button {
     min-width: 180px;
+    height: 42px;
     font-weight: 600;
     font-size: var(--font-size-base);
 
-    ::ng-deep .p-button {
-      background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
-      border: none;
+    ::ng-deep {
+      .btn,
+      .p-button {
+        height: 42px !important;
+        min-height: 42px !important;
+        box-sizing: border-box !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+      }
 
-      &:hover:not(:disabled) {
-        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+      .p-button {
+        background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
+        border: none;
+
+        &:hover:not(:disabled) {
+          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        }
       }
     }
   }
@@ -948,24 +986,28 @@
       align-items: stretch;
     }
 
+    .assessment-round__criteria-add-btn,
     > app-button {
-      ::ng-deep .p-button {
-        height: 42px !important;
-      }
-    }
+      flex-shrink: 0;
+      height: 42px;
 
-    .import-existing-wrapper {
-      display: flex;
-      align-items: stretch;
-
-      app-button {
-        ::ng-deep .p-button {
-          height: 38px;
+      ::ng-deep {
+        .btn,
+        .p-button {
+          height: 42px !important;
+          min-height: 42px !important;
+          box-sizing: border-box !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
       }
 
       @media screen and (max-width: 640px) {
         width: 100%;
+        ::ng-deep .p-button {
+          width: 100% !important;
+        }
       }
     }
 
@@ -1581,6 +1623,16 @@
         font-size: 1.35rem;
       }
     }
+
+    &--warn {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border-color: #fde68a;
+      box-shadow: 0 4px 14px rgba(217, 119, 6, 0.15);
+
+      i {
+        color: #d97706;
+      }
+    }
   }
 
   &__title {
@@ -1732,6 +1784,12 @@
       border-radius: 10px;
       flex-shrink: 0;
       letter-spacing: 0.02em;
+
+      &--cleanup {
+        color: #d97706;
+        background: #fffbeb;
+        border-color: #fef3c7;
+      }
     }
   }
 
@@ -1761,39 +1819,60 @@
 
   &__footer {
     display: flex;
-    justify-content: center;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+
+    @media screen and (max-width: 576px) {
+      flex-direction: column-reverse;
+      width: 100%;
+      gap: 10px;
+    }
   }
 
-  &__btn {
-    width: 100%;
-    height: 42px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-    color: #ffffff;
-    font-size: 0.925rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  &__footer-btn {
+    display: inline-block;
 
-    i {
-      font-size: 0.85rem;
+    ::ng-deep {
+      .btn {
+        width: auto;
+      }
+      .p-button {
+        height: 42px !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        padding: 0 20px !important;
+        border-radius: 10px !important;
+
+        .p-button-label {
+          white-space: nowrap !important;
+        }
+      }
     }
 
-    &:hover {
-      background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-      box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35);
-      transform: translateY(-1px);
+    @media screen and (max-width: 576px) {
+      width: 100%;
+
+      ::ng-deep {
+        .btn,
+        .p-button {
+          width: 100% !important;
+          justify-content: center !important;
+        }
+      }
     }
 
-    &:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 6px rgba(29, 78, 216, 0.2);
+    &--full {
+      width: 100%;
+
+      ::ng-deep {
+        .btn,
+        .p-button {
+          width: 100% !important;
+          justify-content: center !important;
+        }
+      }
     }
   }
 }

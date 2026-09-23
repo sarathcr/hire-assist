@@ -111,7 +111,7 @@
     <aside class="assessment-schedule__sidebar">
       @if (!stepsLoaded) {
         <div class="assessment-schedule__sidebar-skeleton">
-          <p-skeleton width="100%" height="220px" borderRadius="16px"></p-skeleton>
+          <app-inner-sidebar-skeleton [itemCount]="5"></app-inner-sidebar-skeleton>
         </div>
       } @else {
         <app-inner-sidebar
@@ -127,23 +127,26 @@
     <main class="assessment-schedule__main">
       <div class="assessment-schedule__content-wrapper">
         <div class="assessment-schedule__content-header">
-          <h2 class="assessment-schedule__content-title">
-            @if (stepConfig[activeStep]) {
+          @if (stepsLoaded && !isStepUpdating && activeStep >= 0 && stepConfig[activeStep]) {
+            <h2 class="assessment-schedule__content-title">
               <i [class]="stepConfig[activeStep].icon"></i>
               {{ stepConfig[activeStep].label }}
-            }
-          </h2>
-          <p class="assessment-schedule__content-description">
-            @if (stepConfig[activeStep]) {
+            </h2>
+            <p class="assessment-schedule__content-description">
               {{ stepConfig[activeStep].description }}
-            }
-          </p>
+            </p>
+          } @else {
+            <div class="flex flex-column gap-2 mb-2">
+              <p-skeleton width="200px" height="24px"></p-skeleton>
+              <p-skeleton width="320px" height="16px" styleClass="mt-1"></p-skeleton>
+            </div>
+          }
         </div>
         <div class="assessment-schedule__content">
-          @if (isStepUpdating) {
+          @if (!stepsLoaded || isStepUpdating || activeStep < 0) {
             <div class="assessment-schedule__loading-overlay">
               <i class="pi pi-spin pi-spinner text-4xl"></i>
-              <span>Validating step status...</span>
+              <span>Loading recruitment step...</span>
             </div>
           } @else {
             @if (this.activeStep === 0) {

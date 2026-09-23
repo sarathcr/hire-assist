@@ -130,6 +130,7 @@ export interface AssessmentRoundFormGroup {
   feedbackCriteria?: FeedbackCriteriaConfig[]; 
   roundType?: string;
   instructionId?: number;
+  assessmentRoundId?: number;
   hasCoordinators?: boolean;
   hasQuestionSets?: boolean;
   hasInterviews?: boolean;

@@ -36,7 +36,6 @@
               class="assessment-round__create-button"
               [icon]="'pi pi-plus'"
               [buttonLabel]="'Create New'"
-              [buttonSize]="'small'"
               [disabled]="isReadOnly()"
               (btnClick)="openCreateRoundModal()"
             ></app-button>
@@ -238,9 +237,9 @@
                                   </ng-template>
                                 </p-multiSelect>
                                 <app-button
+                                  class="assessment-round__criteria-add-btn"
                                   [icon]="'pi pi-plus'"
                                   [buttonLabel]="'Add New'"
-                                  [buttonSize]="'small'"
                                   [buttonVariant]="'outlined'"
                                   [disabled]="isReadOnly()"
                                   (btnClick)="addCriteria(idx)"
@@ -371,7 +370,6 @@
           [buttonLabel]="'Complete Rounds'"
           [isLoading]="isLoading"
           [disabled]="isReadOnly() || !submittedData || submittedData.length === 0 || !isDirty"
-          [buttonSize]="'small'"
           (btnClick)="onSubmitAll()"
         ></app-button>
       </div>
@@ -382,7 +380,7 @@
   <app-assessment-round-skeleton></app-assessment-round-skeleton>
 }
 
-<!-- Modern Cannot Remove Round Information Modal -->
+<!-- Modern Cannot Remove Round / Confirmation Modal -->
 <p-dialog
   [(visible)]="showCannotDeleteModal"
   [modal]="true"
@@ -390,18 +388,19 @@
   [resizable]="false"
   [closable]="false"
   [showHeader]="false"
-  [dismissableMask]="true"
-  [closeOnEscape]="true"
+  [dismissableMask]="!isCleaningDependencies"
+  [closeOnEscape]="!isCleaningDependencies"
   styleClass="assessment-round__cannot-delete-dialog"
   [breakpoints]="{ '960px': '75vw', '640px': '92vw', '480px': '95vw' }"
-  [style]="{ width: '480px', maxWidth: '95vw' }"
+  [style]="{ width: '500px', maxWidth: '95vw' }"
 >
   <div class="cannot-delete-modal">
     <!-- Close Button -->
     <button
       type="button"
       class="cannot-delete-modal__close-btn"
-      (click)="showCannotDeleteModal = false"
+      (click)="cancelRemoveRound()"
+      [disabled]="isCleaningDependencies"
       aria-label="Close dialog"
     >
       <i class="pi pi-times"></i>
@@ -409,57 +408,111 @@
 
     <!-- Header & Hero Icon -->
     <div class="cannot-delete-modal__header">
-      <div class="cannot-delete-modal__icon-badge">
-        <i class="pi pi-exclamation-triangle"></i>
+      <div
+        class="cannot-delete-modal__icon-badge"
+        [class.cannot-delete-modal__icon-badge--warn]="!cannotDeleteRoundInfo?.isHardBlocked"
+      >
+        @if (cannotDeleteRoundInfo?.isHardBlocked) {
+          <i class="pi pi-ban"></i>
+        } @else {
+          <i class="pi pi-exclamation-triangle"></i>
+        }
       </div>
-      <h3 class="cannot-delete-modal__title">Cannot Remove Round</h3>
+      <h3 class="cannot-delete-modal__title">
+        @if (cannotDeleteRoundInfo?.isHardBlocked) {
+          Cannot Remove Round
+        } @else if ((cannotDeleteRoundInfo?.reasons?.length ?? 0) > 0) {
+          Remove Round & Associated Assignments?
+        } @else {
+          Remove Round from Assessment?
+        }
+      </h3>
       <div class="cannot-delete-modal__round-pill">
         <i class="pi pi-bookmark"></i>
         <span>{{ cannotDeleteRoundInfo?.roundName }}</span>
       </div>
       <p class="cannot-delete-modal__subtitle">
-        This round has active assignments in other recruitment steps and cannot be deleted yet.
+        @if (cannotDeleteRoundInfo?.isHardBlocked) {
+          This round has candidates scheduled for interviews and cannot be deleted yet.
+        } @else if ((cannotDeleteRoundInfo?.reasons?.length ?? 0) > 0) {
+          Removing this round will automatically clean up the following active assignments:
+        } @else {
+          Are you sure you want to remove this round and its configurations from the assessment?
+        }
       </p>
     </div>
 
-    <!-- Active Dependencies List -->
-    <div class="cannot-delete-modal__body">
-      <div class="cannot-delete-modal__section-label">
-        <span>Active References</span>
-      </div>
-      <div class="cannot-delete-modal__cards">
-        @for (item of cannotDeleteRoundInfo?.reasons; track item.type) {
-          <div class="dependency-card dependency-card--{{ item.type }}">
-            <div class="dependency-card__icon-box">
-              <i [class]="item.icon"></i>
+    <!-- Active Dependencies List (if any) -->
+    @if ((cannotDeleteRoundInfo?.reasons?.length ?? 0) > 0) {
+      <div class="cannot-delete-modal__body">
+        <div class="cannot-delete-modal__section-label">
+          <span>Active References</span>
+        </div>
+        <div class="cannot-delete-modal__cards">
+          @for (item of cannotDeleteRoundInfo?.reasons; track item.type) {
+            <div class="dependency-card dependency-card--{{ item.type }}">
+              <div class="dependency-card__icon-box">
+                <i [class]="item.icon"></i>
+              </div>
+              <div class="dependency-card__details">
+                <span class="dependency-card__title">{{ item.title }}</span>
+                <span class="dependency-card__desc">
+                  @if (item.type === 'coordinator' && !cannotDeleteRoundInfo?.isHardBlocked) {
+                    Coordinators assigned to this round will be unassigned automatically.
+                  } @else if (item.type === 'questionset' && !cannotDeleteRoundInfo?.isHardBlocked) {
+                    Question sets assigned to this round will be permanently deleted.
+                  } @else {
+                    {{ item.description }}
+                  }
+                </span>
+              </div>
+              @if (cannotDeleteRoundInfo?.isHardBlocked) {
+                <span class="dependency-card__status-pill">
+                  Assigned
+                </span>
+              }
             </div>
-            <div class="dependency-card__details">
-              <span class="dependency-card__title">{{ item.title }}</span>
-              <span class="dependency-card__desc">{{ item.description }}</span>
-            </div>
-            <span class="dependency-card__status-pill">Assigned</span>
+          }
+        </div>
+
+        <!-- Actionable Tip Banner (Only for hard blocked rounds) -->
+        @if (cannotDeleteRoundInfo?.isHardBlocked) {
+          <div class="cannot-delete-modal__tip">
+            <i class="pi pi-info-circle cannot-delete-modal__tip-icon"></i>
+            <span class="cannot-delete-modal__tip-text">
+              To remove this round, please cancel or complete candidate interview schedules first.
+            </span>
           </div>
         }
       </div>
-
-      <!-- Actionable Tip Banner -->
-      <div class="cannot-delete-modal__tip">
-        <i class="pi pi-info-circle cannot-delete-modal__tip-icon"></i>
-        <span class="cannot-delete-modal__tip-text">
-          To remove this round, please unassign the coordinator or question set from the corresponding step first.
-        </span>
-      </div>
-    </div>
+    }
 
     <!-- Footer Action -->
     <div class="cannot-delete-modal__footer">
-      <button
-        type="button"
-        class="cannot-delete-modal__btn"
-        (click)="showCannotDeleteModal = false"
-      >
-        <span>Close</span>
-      </button>
+      @if (cannotDeleteRoundInfo?.isHardBlocked) {
+        <app-button
+          class="cannot-delete-modal__footer-btn cannot-delete-modal__footer-btn--full"
+          [buttonLabel]="'Close'"
+          (btnClick)="cancelRemoveRound()"
+        ></app-button>
+      } @else {
+        <app-button
+          class="cannot-delete-modal__footer-btn"
+          [buttonLabel]="'Cancel'"
+          [buttonVariant]="'outlined'"
+          [disabled]="isCleaningDependencies"
+          (btnClick)="cancelRemoveRound()"
+        ></app-button>
+        <app-button
+          class="cannot-delete-modal__footer-btn"
+          [buttonLabel]="(cannotDeleteRoundInfo?.reasons?.length ?? 0) > 0 ? 'Confirm & Remove' : 'Remove'"
+          [buttonSeverity]="'danger'"
+          [icon]="'pi pi-trash'"
+          [isLoading]="isCleaningDependencies"
+          [disabled]="isCleaningDependencies"
+          (btnClick)="confirmCascadeDelete()"
+        ></app-button>
+      }
     </div>
   </div>
 </p-dialog>

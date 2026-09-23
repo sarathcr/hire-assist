@@ -298,6 +298,76 @@
     }
   }
 
+  &--skeleton {
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
+
+    #{$root}__btn--skeleton {
+      cursor: default;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+
+      &:hover {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  }
+
+  &__skeleton-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__skeleton-item {
+    border-radius: 10px;
+    padding: 9px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+
+    &--active {
+      background: linear-gradient(135deg, rgba(21, 101, 192, 0.05) 0%, rgba(30, 136, 229, 0.08) 100%);
+      border-color: rgba(21, 101, 192, 0.14);
+      position: relative;
+
+      &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 22%;
+        bottom: 22%;
+        width: 3.5px;
+        background: #90caf9;
+        border-radius: 0 4px 4px 0;
+      }
+    }
+  }
+
+  &__skeleton-icon {
+    width: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__skeleton-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
   &_skeleton {
     ::ng-deep {
       .p-menu-list {
@@ -314,6 +384,44 @@
 
     &__header {
       display: none !important;
+    }
+
+    .inner-sidebar__skeleton-list {
+      display: flex !important;
+      flex-direction: row !important;
+      overflow-x: auto !important;
+      gap: 8px !important;
+      padding: 2px 0 !important;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .inner-sidebar__skeleton-item {
+      flex-shrink: 0;
+      padding: 7px 14px !important;
+      border-radius: 20px !important;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      width: auto !important;
+      gap: 6px;
+
+      &--active {
+        background: linear-gradient(135deg, rgba(21, 101, 192, 0.08) 0%, rgba(30, 136, 229, 0.12) 100%) !important;
+        border-color: rgba(21, 101, 192, 0.22) !important;
+
+        &::before {
+          display: none !important;
+        }
+      }
+
+      .inner-sidebar__skeleton-icon {
+        width: auto !important;
+        margin-right: 4px;
+      }
     }
 
     ::ng-deep {
