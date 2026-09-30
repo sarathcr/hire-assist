@@ -13,6 +13,9 @@ export interface CandidateData {
 
   candidates: any[];
   panelId?: number;
+  isCompletedHistoryRecord?: boolean;
+  existingCandidate?: Record<string, any>;
+  importedCandidate?: Record<string, any>;
 }
 
 export interface DialogData {

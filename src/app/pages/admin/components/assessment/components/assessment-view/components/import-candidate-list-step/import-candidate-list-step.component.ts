@@ -831,6 +831,12 @@ export class ImportCandidateListStepComponent implements OnInit {
                 rowData['aadhaarNumber'] ||
                 'N/A';
 
+              const isCompletedHistory =
+                (record as any).isCompletedHistory ||
+                (record.reason &&
+                  (record.reason.toLowerCase().includes('completed') ||
+                    record.reason.toLowerCase().includes('history')));
+
               const normalizedData = {
                 ...rowData,
                 name,
@@ -842,17 +848,28 @@ export class ImportCandidateListStepComponent implements OnInit {
                 'Email Id': email,
                 'Mobile number': phone,
                 'Aadhaar Number': aadhaarNumber,
-                isNonEligibleRecord: true,
-                failureReason: record.reason,
+                isNonEligibleRecord: !isCompletedHistory,
+                isCompletedHistoryRecord: isCompletedHistory,
+                existingCandidate: (record as any).existingCandidate,
+                importedCandidate: (record as any).importedCandidate,
+                failureReason:
+                  record.reason ||
+                  (isCompletedHistory
+                    ? 'Candidate has already completed a recruitment in our history. New details cannot be updated.'
+                    : 'Candidate is not eligible for import.'),
               };
 
               return {
                 ...normalizedData,
-                key: record.reason || 'Not Eligible',
+                key:
+                  record.reason ||
+                  (isCompletedHistory ? 'Completed History' : 'Not Eligible'),
                 groupId:
-                  'noneligible-' + Math.random().toString(36).substring(2, 9),
-                isNonEligibleGroup: true,
-                type: 'NonEligible',
+                  (isCompletedHistory ? 'completedhistory-' : 'noneligible-') +
+                  Math.random().toString(36).substring(2, 9),
+                isNonEligibleGroup: !isCompletedHistory,
+                isCompletedHistoryGroup: isCompletedHistory,
+                type: isCompletedHistory ? 'CompletedHistory' : 'NonEligible',
                 candidates: [
                   {
                     ...normalizedData,

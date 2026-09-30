@@ -187,4 +187,152 @@ describe('UploadIdProofDialogComponent', () => {
     const errors = component.fGroup.get('idFile')?.validator?.(component.fGroup.get('idFile')!);
     expect(errors?.['maxFiles']).toBeTrue();
   });
+
+  it('should initialize with activeTab as Aadhaar Card and idType form control patched', () => {
+    expect(component.activeTab).toBe(component.AADHAAR_TYPE);
+    expect(component.fGroup.get('idType')?.value).toBe(component.AADHAAR_TYPE);
+  });
+
+  it('should update activeTab and patch idType form control when onTabChange is called', () => {
+    component.onTabChange(component.PAN_TYPE);
+
+    expect(component.activeTab).toBe(component.PAN_TYPE);
+    expect(component.fGroup.get('idType')?.value).toBe(component.PAN_TYPE);
+  });
+
+  it('should filter existing proofs into aadhaarFiles and panFiles correctly', () => {
+    const mixedFiles: FileDto[] = [
+      { Id: '1', Name: 'aadhaar1.png', Path: '/p1', Url: 'http://test/1', AttachmentType: 4 },
+      { Id: '2', Name: 'aadhaar2.pdf', Path: '/p2', Url: 'http://test/2', AttachmentType: 4 },
+      { Id: '3', Name: 'pan1.png', Path: '/p3', Url: 'http://test/3', AttachmentType: 5 },
+    ];
+    component.uploadedFileUrl = mixedFiles;
+
+    expect(component.aadhaarFiles.length).toBe(2);
+    expect(component.aadhaarFiles[0].fileName).toBe('aadhaar1.png');
+    expect(component.aadhaarFiles[1].fileName).toBe('aadhaar2.pdf');
+    expect(component.aadhaarFiles[1].isPdf).toBeTrue();
+
+    expect(component.panFiles.length).toBe(1);
+    expect(component.panFiles[0].fileName).toBe('pan1.png');
+    expect(component.panFiles[0].isPdf).toBeFalse();
+  });
+
+  it('should clear pending previewImages and reset validation error when switching tabs without preview images', () => {
+    component.previewImages = [];
+    component.fileValidationError = 'Some error';
+
+    component.onTabChange(component.PAN_TYPE);
+
+    expect(component.activeTab).toBe(component.PAN_TYPE);
+    expect(component.fileValidationError).toBeNull();
+  });
+
+  it('should prompt confirmation when switching tabs with pending preview images and cancel switch if user cancels', () => {
+    component.activeTab = component.AADHAAR_TYPE;
+    component.previewImages = [{ file: createDummyFile('test.png'), previewUrl: 'blob:test' }];
+
+    const fakeConfirmRef = {
+      onClose: of(false),
+    } as any;
+    spyOn((component as any).dialog, 'open').and.returnValue(fakeConfirmRef);
+
+    component.onTabChange(component.PAN_TYPE);
+
+    expect((component as any).dialog.open).toHaveBeenCalled();
+    expect(component.previewImages.length).toBe(1);
+  });
+
+  it('should prompt confirmation when switching tabs with pending preview images and proceed if user confirms', () => {
+    component.activeTab = component.AADHAAR_TYPE;
+    component.previewImages = [{ file: createDummyFile('test.png'), previewUrl: 'blob:test' }];
+
+    const fakeConfirmRef = {
+      onClose: of(true),
+    } as any;
+    spyOn((component as any).dialog, 'open').and.returnValue(fakeConfirmRef);
+
+    component.onTabChange(component.PAN_TYPE);
+
+    expect((component as any).dialog.open).toHaveBeenCalled();
+    expect(component.activeTab).toBe(component.PAN_TYPE);
+    expect(component.previewImages.length).toBe(0);
+  });
+
+  it('should not close modal on upload completion, reload images, and pass success on onClose()', () => {
+    component.candidateId = 'cand-123';
+    component.activeTab = component.AADHAAR_TYPE;
+    component.previewImages = [{ file: createDummyFile('test.png'), previewUrl: 'blob:test' }];
+    component.fGroup.patchValue({ idType: component.AADHAAR_TYPE, idFile: [createDummyFile('test.png')] });
+
+    mockAssessmentService.uploadIdProof.and.returnValue(of({} as any));
+    spyOn(component, 'loadExistingImages');
+
+    component.onSubmit();
+
+    expect(mockAssessmentService.uploadIdProof).toHaveBeenCalled();
+    expect(mockDialogRef.close).not.toHaveBeenCalled();
+    expect(component.hasUploadedSuccessfully).toBeTrue();
+    expect(component.previewImages.length).toBe(0);
+    expect(component.loadExistingImages).toHaveBeenCalled();
+
+    component.onClose();
+    expect(mockDialogRef.close).toHaveBeenCalledWith({ success: true });
+  });
+
+  it('should open image viewer dialog when openViewer is called with an image file', () => {
+    const file = {
+      fileDto: createDummyFileDto('id-1', 'proof.png'),
+      blobId: 'id-1',
+      attachmentTypeId: 4,
+      attachmentTypeName: 'Aadhaar Card',
+      fileName: 'proof.png',
+      isPdf: false,
+      previewUrl: 'blob:http://localhost/proof.png',
+    };
+
+    component.openViewer(file);
+
+    expect(component.displayViewer).toBeTrue();
+    expect(component.viewerTitle).toBe('proof.png');
+    expect(component.viewerUrl).toBe('blob:http://localhost/proof.png');
+    expect(component.isViewerPdf).toBeFalse();
+  });
+
+  it('should open pdf viewer dialog when openViewer is called with a pdf file', () => {
+    const file = {
+      fileDto: createDummyFileDto('id-2', 'proof.pdf'),
+      blobId: 'id-2',
+      attachmentTypeId: 4,
+      attachmentTypeName: 'Aadhaar Card',
+      fileName: 'proof.pdf',
+      isPdf: true,
+      previewUrl: 'blob:http://localhost/proof.pdf',
+    };
+
+    component.openViewer(file);
+
+    expect(component.displayViewer).toBeTrue();
+    expect(component.viewerTitle).toBe('proof.pdf');
+    expect(component.viewerUrl).toBe('blob:http://localhost/proof.pdf');
+    expect(component.isViewerPdf).toBeTrue();
+  });
+
+  it('should open viewer for pending preview image and close cleanly', () => {
+    const preview = {
+      file: createDummyFile('preview.png'),
+      previewUrl: 'blob:http://localhost/preview.png',
+    };
+
+    component.openPreviewViewer(preview);
+    expect(component.displayViewer).toBeTrue();
+    expect(component.viewerTitle).toBe('preview.png');
+    expect(component.viewerUrl).toBe('blob:http://localhost/preview.png');
+
+    component.closeViewer();
+    expect(component.displayViewer).toBeFalse();
+    expect(component.viewerUrl).toBe('');
+    expect(component.viewerTitle).toBe('');
+    expect(component.isViewerPdf).toBeFalse();
+  });
 });

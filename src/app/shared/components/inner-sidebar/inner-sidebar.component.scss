@@ -1,3 +1,11 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .inner-sidebar {
   $root: &;
   background: #ffffff;
@@ -8,6 +16,7 @@
   position: relative;
   transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s ease;
   box-sizing: border-box;
+  max-width: 100%;
 
   &__header {
     display: flex;
@@ -376,11 +385,14 @@
     }
   }
 
-  @media (max-width: 1024px) {
+  @media (max-width: 1200px) {
     width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
     padding: 8px 10px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
 
     &__header {
       display: none !important;
@@ -394,6 +406,8 @@
       padding: 2px 0 !important;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
+      width: max-content;
+      min-width: 100%;
 
       &::-webkit-scrollbar {
         display: none;
@@ -427,6 +441,7 @@
     ::ng-deep {
       .p-menu {
         width: 100%;
+        max-width: 100%;
       }
 
       .p-menu-list {
@@ -437,6 +452,8 @@
         padding: 2px 0 !important;
         -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
+        width: max-content;
+        min-width: 100%;
 
         &::-webkit-scrollbar {
           display: none;

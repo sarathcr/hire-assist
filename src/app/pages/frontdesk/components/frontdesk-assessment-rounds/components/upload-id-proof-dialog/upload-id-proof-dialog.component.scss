@@ -29,6 +29,134 @@
     width: 100%;
   }
 
+  &__tabs {
+    width: 100%;
+
+    ::ng-deep {
+      .p-tablist {
+        border-bottom: 2px solid #e2e8f0;
+        margin-bottom: 1.25rem;
+        background: transparent;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+          display: none;
+        }
+
+        @media (max-width: 640px) {
+          margin-bottom: 0.875rem;
+        }
+      }
+
+      .p-tablist-prev-button,
+      .p-tablist-next-button {
+        display: none !important;
+      }
+
+      .p-tablist-tab-list {
+        border: none;
+        gap: 0.5rem;
+        display: flex;
+        width: auto;
+        justify-content: flex-start;
+
+        @media (max-width: 640px) {
+          gap: 0.375rem;
+        }
+      }
+
+      .p-tab {
+        padding: 0.625rem 1rem;
+        font-weight: 500;
+        font-size: 0.9375rem;
+        color: var(--text-color-secondary, #64748b);
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+
+        @media (max-width: 640px) {
+          padding: 0.5rem 0.75rem;
+          font-size: 0.8125rem;
+        }
+
+        &:hover {
+          color: var(--primary-color, #1e3a8a);
+        }
+
+        &[aria-selected="true"],
+        &.p-tab-active {
+          color: var(--primary-color, #1e3a8a);
+          font-weight: 600;
+          border-bottom-color: var(--primary-color, #1e3a8a);
+        }
+      }
+
+      .p-tabpanels {
+        background-color: transparent !important;
+        padding: 0 !important;
+        border: none !important;
+      }
+
+      .p-tabpanel {
+        padding: 0 !important;
+        background: transparent !important;
+      }
+
+      .p-badge {
+        flex-shrink: 0;
+
+        @media (max-width: 640px) {
+          font-size: 0.6875rem;
+          min-width: 1.125rem;
+          height: 1.125rem;
+          line-height: 1.125rem;
+          padding: 0 0.25rem;
+        }
+      }
+    }
+  }
+
+  &__tab-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+    width: auto;
+
+    i {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    span {
+      white-space: nowrap;
+    }
+
+    @media (max-width: 640px) {
+      gap: 0.375rem;
+
+      i {
+        font-size: 0.8125rem;
+      }
+    }
+  }
+
+  &__tab-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
   &__upload-section {
     display: flex;
     flex-direction: column;
@@ -39,7 +167,7 @@
     border: 2px dashed #dee2e6;
     border-radius: 8px;
     padding: 1.5rem;
-    margin: 0 1.125rem 1.125rem;
+    margin: 0;
     background-color: #f8f9fa;
     transition: all 0.3s ease;
     display: flex;
@@ -315,6 +443,29 @@
     object-fit: cover;
   }
 
+  &__preview-pdf {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+
+    i {
+      font-size: 2.5rem;
+      color: var(--primary-color, #1e3a8a);
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
   &__preview-remove {
     position: absolute;
     top: 0.5rem;
@@ -515,7 +666,9 @@
 
 ::ng-deep {
   .p-fileupload {
-    .p-fileupload-buttonbar {
+    .p-fileupload-buttonbar,
+    .p-fileupload-header,
+    .p-fileupload-choose-button {
       display: none !important;
       visibility: hidden !important;
       height: 0 !important;
@@ -548,7 +701,9 @@
       max-height: 90vh;
 
       @media (max-width: 640px) {
-        margin: 1rem;
+        margin: 0.5rem auto;
+        width: 95vw !important;
+        max-width: 95vw !important;
         max-height: 95vh;
       }
     }
@@ -561,4 +716,64 @@
       flex-direction: column;
     }
   }
+
+  .proofUpload__viewer-dialog {
+    width: 65vw;
+    max-width: 850px;
+    height: 80vh;
+
+    @media (max-width: 768px) {
+      width: 95vw !important;
+      height: 90vh !important;
+      margin: 0.5rem auto;
+    }
+
+    .p-dialog-content {
+      padding: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+  }
+}
+
+.proofUpload__viewer-content {
+  width: 100%;
+  height: 100%;
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8fafc;
+  overflow: auto;
+}
+
+.proofUpload__pdf-container {
+  width: 100%;
+  height: 100%;
+
+  ngx-extended-pdf-viewer {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+}
+
+.proofUpload__image-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.proofUpload__viewer-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

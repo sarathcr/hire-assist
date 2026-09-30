@@ -9,6 +9,13 @@
           <span class="validation-tab__badge validation-tab__badge--warn">{{ duplicateGroups().length }}</span>
         </button>
       }
+      @if (completedHistoryGroups().length > 0) {
+        <button class="validation-tab" [class.validation-tab--active]="activeCategory() === 'completedHistory'" (click)="setCategory('completedHistory')">
+          <i class="pi pi-shield"></i>
+          <span class="validation-tab__label">Completed History</span>
+          <span class="validation-tab__badge validation-tab__badge--warn">{{ completedHistoryGroups().length }}</span>
+        </button>
+      }
       @if (invalidGroups().length > 0) {
         <button class="validation-tab" [class.validation-tab--active]="activeCategory() === 'invalid'" (click)="setCategory('invalid')">
           <i class="pi pi-exclamation-triangle"></i>
@@ -29,12 +36,15 @@
   <!-- Header Guidance Banner -->
   <div class="validation-banner">
     <div class="validation-banner__icon">
-      <i [class]="activeCategory() === 'duplicate' ? 'pi pi-copy' : (activeCategory() === 'invalid' ? 'pi pi-exclamation-triangle' : 'pi pi-ban')"></i>
+      <i [class]="activeCategory() === 'duplicate' ? 'pi pi-copy' : (activeCategory() === 'completedHistory' ? 'pi pi-shield' : (activeCategory() === 'invalid' ? 'pi pi-exclamation-triangle' : 'pi pi-ban'))"></i>
     </div>
     <div class="validation-banner__text">
       @if (activeCategory() === 'duplicate') {
         <h3>Resolve Duplicate Records</h3>
         <p>Multiple candidates share the same contact or identity details. Review the records below, select the correct one to keep, and reject the others to continue.</p>
+      } @else if (activeCategory() === 'completedHistory') {
+        <h3>Candidate Recruitment History Protected</h3>
+        <p>This candidate has already completed a recruitment process in our history. The newly imported details cannot overwrite the preserved historical profile.</p>
       } @else if (activeCategory() === 'invalid') {
         <h3>Correct Invalid Aadhaar Formats</h3>
         <p>Aadhaar format or checksum verification failed for these candidate records. Correct the values inline or reject the records to proceed.</p>
@@ -174,7 +184,62 @@
         </div>
       }
 
-      <!-- CATEGORY 3: NON-ELIGIBLE (Spacious Dashboard Grid) -->
+      <!-- CATEGORY 3: COMPLETED HISTORY (Side-by-Side Comparison Layout) -->
+      @if (activeCategory() === 'completedHistory') {
+        <div class="history-comparison-flow">
+          @for (group of completedHistoryGroups(); track group.groupId) {
+            @for (candidate of group.candidates; track candidate.panelId) {
+              <div class="history-comparison-card">
+                <div class="history-comparison-card__banner">
+                  <i class="pi pi-exclamation-triangle"></i>
+                  <span>Candidate with Aadhaar <strong>{{ candidate['aadhaarNumber'] || candidate['Aadhaar Number'] || 'N/A' }}</strong> has already completed a recruitment process in our history. New details cannot be updated.</span>
+                </div>
+
+                <div class="history-comparison-grid">
+                  <!-- LEFT: Preserved Previous Details -->
+                  <div class="history-panel history-panel--existing">
+                    <div class="history-panel__header">
+                      <span class="status-badge status-badge--success">
+                        <i class="pi pi-shield"></i> PREVIOUS DETAILS (PRESERVED IN HISTORY)
+                      </span>
+                    </div>
+                    <div class="history-panel__body">
+                      <app-candidate-details
+                        [data]="getExistingCandidateData(candidate)"
+                        [isEditable]="false"
+                      ></app-candidate-details>
+                    </div>
+                  </div>
+
+                  <!-- RIGHT: Blocked Current Import Details -->
+                  <div class="history-panel history-panel--imported">
+                    <div class="history-panel__header">
+                      <span class="status-badge status-badge--danger">
+                        <i class="pi pi-ban"></i> CURRENT DETAILS (IMPORTED CSV - BLOCKED)
+                      </span>
+                    </div>
+                    <div class="history-panel__body">
+                      <app-candidate-details
+                        [data]="getImportedCandidateData(candidate)"
+                        [isEditable]="false"
+                      ></app-candidate-details>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="history-comparison-card__footer">
+                  <p-tag [value]="candidate['failureReason'] || 'Recruitment Completed in History'" severity="warn" [rounded]="true"></p-tag>
+                  <button class="btn btn--outlined btn--danger" (click)="onRejectRecord(candidate, group.groupId)">
+                    <i class="pi pi-trash"></i> Discard Incoming CSV Record
+                  </button>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      }
+
+      <!-- CATEGORY 4: NON-ELIGIBLE (Spacious Dashboard Grid) -->
       @if (activeCategory() === 'noneligible') {
         <div class="exceptions-grid">
           @for (group of nonEligibleGroups(); track group.groupId) {

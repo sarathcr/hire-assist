@@ -25,7 +25,15 @@ import { ImportCandidateListStepComponent } from './components/import-candidate-
 import { SelectQuesionsetStepComponent } from './components/select-quesionset-step/select-quesionset-step.component';
 import { AssessmentService } from '../../../../services/assessment.service';
 import { forkJoin, of, Observable } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, switchMap, map } from 'rxjs/operators';
+import {
+  PaginatedData,
+  PaginatedPayload,
+} from '../../../../../../shared/models/pagination.models';
+import {
+  QuestionSetModel,
+  GetSelectedQuestionsForSet,
+} from '../../../../models/question.model';
 import { InnerSidebarComponent } from '../../../../../../shared/components/inner-sidebar/inner-sidebar.component';
 import { InnerSideBarSkeletonComponent } from '../../../../../../shared/components/inner-sidebar/inner-sidebar-skeleton';
 
@@ -200,10 +208,19 @@ export class AssessmentViewComponent
   public updateStepMenuItems(): void {
     this.stepMenuItems = this.filteredStepConfig.map((step) => {
       const key = this.stepKeys[step.index];
+      const isQuestionSetStep = step.index === 1;
+      const isQuestionSetIncomplete =
+        this.isQuestionSetIncomplete ||
+        (isQuestionSetStep && this.questionSetStepComponent?.hasIncompleteQuestionSets);
+      const isQuestionSetModified =
+        this.hasModifiedQuestionSetAfterComplete ||
+        (isQuestionSetStep && this.questionSetStepComponent?.isDirty);
+
       const isCompleted =
         this.stepsLoaded &&
         this.stepsStatus &&
-        this.stepsStatus[key] === 'Completed';
+        this.stepsStatus[key] === 'Completed' &&
+        (!isQuestionSetStep || (!isQuestionSetIncomplete && !isQuestionSetModified));
       const isEnabled = this.stepsLoaded && this.isStepEnabled(step.index);
 
       let tooltipText = step.description;
@@ -224,6 +241,19 @@ export class AssessmentViewComponent
         ['completed']: isCompleted,
       };
     });
+  }
+
+  public onQuestionSetStateChange(state: { isIncomplete: boolean; isModified: boolean }): void {
+    this.isQuestionSetIncomplete = state.isIncomplete;
+    this.hasModifiedQuestionSetAfterComplete = state.isModified;
+    this.updateCompletedStepsFromStatus();
+    this.updateStepMenuItems();
+  }
+
+  public onQuestionSetIncompleteChange(isIncomplete: boolean): void {
+    this.isQuestionSetIncomplete = isIncomplete;
+    this.updateCompletedStepsFromStatus();
+    this.updateStepMenuItems();
   }
 
   public onStepSelect(item: MenuItem): void {
@@ -275,9 +305,6 @@ export class AssessmentViewComponent
     this.stepStatusUpdateSubscription =
       this.stepsStatusService.stepStatusUpdate$.subscribe((assessmentId) => {
         if (assessmentId === this.assessmentId) {
-          if (this.activeStep === 1) {
-            this.hasModifiedQuestionSetAfterComplete = true;
-          }
           if (this.activeStep === 0) {
             this.assessmentRounds = [];
             this.visitedSteps = [0];
@@ -354,8 +381,11 @@ export class AssessmentViewComponent
     if (this.activeStep === 1 && step > 1) {
       const comp = this.questionSetStepComponent;
       
-      // 1. Block forward navigation if server-side check says sets are incomplete
-      if (this.hasOnlineAptitudeRound && this.isQuestionSetIncomplete) {
+      const isIncomplete =
+        this.isQuestionSetIncomplete || (comp && comp.hasIncompleteQuestionSets);
+
+      // 1. Block forward navigation if server-side check or live check says sets are incomplete
+      if (this.hasOnlineAptitudeRound && isIncomplete) {
         if (canShowWarning) {
           this.lastStepWarningTime = now;
           this.messageService.add({
@@ -463,7 +493,10 @@ export class AssessmentViewComponent
     if (itemIndex <= 0) return true;
 
     // If question set is incomplete, block any step beyond index 1
-    if (this.isQuestionSetIncomplete && stepIndex > 1) {
+    const isQuestionSetIncomplete =
+      this.isQuestionSetIncomplete ||
+      (this.questionSetStepComponent && this.questionSetStepComponent.hasIncompleteQuestionSets);
+    if (isQuestionSetIncomplete && stepIndex > 1) {
       return false;
     }
 
@@ -545,10 +578,62 @@ export class AssessmentViewComponent
     forkJoin({
       status: statusObs,
       rounds: roundsObs,
-    }).subscribe({
-      next: ({ status, rounds }) => {
+    }).pipe(
+      switchMap(({ status, rounds }) => {
         this.stepsStatus = status;
         this.assessmentRounds = rounds || [];
+
+        if (this.assessmentRounds.length === 0) {
+          return of(false);
+        }
+
+        const hasAptitudeRound = this.assessmentRounds.some((r) => r.roundTypeId === 1);
+        if (!hasAptitudeRound) {
+          return of(false);
+        }
+
+        const payload = new PaginatedPayload();
+        payload.filterMap = { assessmentId: this.assessmentId };
+        payload.pagination.pageSize = -1;
+
+        return this.assessmentService
+          .paginationEntity<QuestionSetModel>('QuestionSetSummary', payload)
+          .pipe(
+            catchError(() => of({ data: [] } as unknown as PaginatedData<QuestionSetModel>)),
+            switchMap((res: PaginatedData<QuestionSetModel>) => {
+              const questionSets = res.data || [];
+              const createdSets = questionSets.filter((qs) => qs.id > 0);
+              const aptitudeRounds = this.assessmentRounds.filter((r) => r.roundTypeId === 1);
+
+              const hasMissingSet = aptitudeRounds.some((round) => {
+                const rId = round.id;
+                return !createdSets.some((qs) => qs.assessmentRoundId === rId);
+              });
+
+              if (hasMissingSet || createdSets.length === 0) {
+                return of(true);
+              }
+
+              const questionSetQueries = createdSets.map((qs) =>
+                this.assessmentService.getQuestionsBySet(qs.id.toString()).pipe(
+                  catchError(() => of({ questionSetId: qs.id.toString(), questions: [] } as GetSelectedQuestionsForSet))
+                )
+              );
+
+              return forkJoin(questionSetQueries).pipe(
+                map((results) => {
+                  return results.some(
+                    (qRes) => !qRes.questions || qRes.questions.length === 0
+                  );
+                }),
+                catchError(() => of(true))
+              );
+            })
+          );
+      })
+    ).subscribe({
+      next: (isIncomplete: boolean) => {
+        this.isQuestionSetIncomplete = isIncomplete;
         if (this.assessmentRounds.length === 0) {
           this.stepsStatus = {
             rounds: 'Pending',
@@ -561,6 +646,11 @@ export class AssessmentViewComponent
           this.completedSteps = [];
           this.visitedSteps = [0];
         } else {
+          if (this.isQuestionSetIncomplete) {
+            if (this.stepsStatus.questionSets === 'Completed') {
+              this.stepsStatus.questionSets = 'Active';
+            }
+          }
           this.updateCompletedStepsFromStatus();
         }
         this.stepsLoaded = true;
@@ -584,6 +674,15 @@ export class AssessmentViewComponent
     this.completedSteps = [];
     this.stepKeys.forEach((key, index) => {
       if (this.stepsStatus[key] === 'Completed') {
+        if (
+          index === 1 &&
+          (this.isQuestionSetIncomplete ||
+            this.questionSetStepComponent?.hasIncompleteQuestionSets ||
+            this.hasModifiedQuestionSetAfterComplete ||
+            this.questionSetStepComponent?.isDirty)
+        ) {
+          return;
+        }
         this.completedSteps.push(index);
       }
     });
@@ -593,6 +692,18 @@ export class AssessmentViewComponent
     if (!this.stepsStatus) return;
 
     const currentKeys = this.filteredStepKeys;
+
+    // If Question Set is incomplete, ensure we land on Question Set (step 1)
+    if (this.hasOnlineAptitudeRound && this.isQuestionSetIncomplete) {
+      const qSetIndex = this.stepKeys.indexOf('questionSets');
+      if (qSetIndex !== -1 && currentKeys.includes('questionSets')) {
+        this.activeStep = qSetIndex;
+        if (!this.visitedSteps.includes(this.activeStep)) {
+          this.visitedSteps.push(this.activeStep);
+        }
+        return;
+      }
+    }
 
     // Find the step with 'Active' status
     for (const key of currentKeys) {
@@ -649,7 +760,10 @@ export class AssessmentViewComponent
     }
 
     // If question set is incomplete, block all steps after index 1
-    if (this.isQuestionSetIncomplete && stepIndex > 1) {
+    const isQuestionSetIncomplete =
+      this.isQuestionSetIncomplete ||
+      (this.questionSetStepComponent && this.questionSetStepComponent.hasIncompleteQuestionSets);
+    if (isQuestionSetIncomplete && stepIndex > 1) {
       return false;
     }
 
@@ -785,7 +899,19 @@ export class AssessmentViewComponent
     const target = event.target as HTMLElement;
     if (!target) return;
 
-    const disabledElement = target.closest('button[disabled], input[disabled], select[disabled], textarea[disabled], .p-disabled, .disabled, [disabled], .p-button-disabled, .rounds-tab--disabled, .p-popover button[disabled]') as HTMLElement;
+    // Do NOT trigger custom hover tooltip on popovers, menus, table elements,
+    // or elements that already have their own PrimeNG tooltips
+    if (
+      target.closest(
+        '.p-popover, .p-menu, app-table, .p-datatable, .p-tooltip',
+      )
+    ) {
+      this.showHoverTooltip = false;
+      this.currentHoveredElement = null;
+      return;
+    }
+
+    const disabledElement = target.closest('button[disabled], input[disabled], select[disabled], textarea[disabled], .p-disabled, .disabled, [disabled], .p-button-disabled, .rounds-tab--disabled') as HTMLElement;
 
     if (disabledElement) {
       this.currentHoveredElement = disabledElement;

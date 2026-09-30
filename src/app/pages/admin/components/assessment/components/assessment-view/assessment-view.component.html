@@ -163,6 +163,8 @@
                 [isIncomplete]="isQuestionSetIncomplete"
                 [isParentLoading]="!stepsLoaded"
                 [hasModifiedAfterComplete]="hasModifiedQuestionSetAfterComplete"
+                (incompleteChange)="onQuestionSetIncompleteChange($event)"
+                (stepStateChange)="onQuestionSetStateChange($event)"
               ></app-select-quesionset-step>
             } @else if (this.activeStep === 2) {
               <app-coordinator-step

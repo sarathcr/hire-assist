@@ -16,7 +16,9 @@
     right: 1rem;
     background: transparent;
     border: none;
-    color: var(--text-secondary-color);
+    -webkit-appearance: none;
+    appearance: none;
+    color: #64748b;
     font-size: 1.15rem;
     cursor: pointer;
     width: 32px;
@@ -28,8 +30,8 @@
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
-      background: var(--surface-hover);
-      color: var(--text-color);
+      background: #f1f5f9;
+      color: #0f172a;
       transform: rotate(90deg);
     }
   }
@@ -44,14 +46,14 @@
 
   &__icon {
     font-size: 2.5rem;
-    color: var(--primary-color);
+    color: #1565c0;
     margin-bottom: 0.5rem;
   }
 
   &__title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--text-color);
+    color: #0f172a;
     margin: 0;
 
     @media screen and (max-width: 576px) {
@@ -61,7 +63,7 @@
 
   &__subtitle {
     font-size: 0.95rem;
-    color: var(--text-secondary-color);
+    color: #64748b;
     margin: 0;
     max-width: 300px;
     line-height: 1.4;
@@ -79,8 +81,12 @@
   }
 
   &__item {
-    background: var(--surface-card);
-    border: 1px solid var(--surface-border);
+    -webkit-appearance: none;
+    appearance: none;
+    font-family: inherit;
+    color: #0f172a;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 12px;
     padding: 1.25rem;
     display: flex;
@@ -98,14 +104,14 @@
     }
 
     &:hover {
-      background: var(--surface-hover);
-      border-color: var(--primary-color);
+      background: #f8fafc;
+      border-color: #1565c0;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 
       .choice-modal__item-arrow {
         transform: translateX(4px);
-        color: var(--primary-color);
+        color: #1565c0;
       }
     }
 
@@ -127,8 +133,8 @@
       }
 
       &--schedule {
-        background: rgba(var(--primary-color-rgb, 21, 101, 192), 0.1);
-        color: var(--primary-color);
+        background: rgba(21, 101, 192, 0.1);
+        color: #1565c0;
       }
 
       &--detail {
@@ -147,7 +153,7 @@
 
     &-title {
       font-weight: 600;
-      color: var(--text-color);
+      color: #0f172a;
       font-size: 1.05rem;
 
       @media screen and (max-width: 576px) {
@@ -157,7 +163,7 @@
 
     &-desc {
       font-size: 0.85rem;
-      color: var(--text-secondary-color);
+      color: #64748b;
 
       @media screen and (max-width: 576px) {
         font-size: 0.75rem;
@@ -165,7 +171,7 @@
     }
 
     &-arrow {
-      color: var(--surface-border);
+      color: #94a3b8;
       font-size: 0.9rem;
       transition: all 0.2s ease;
       flex-shrink: 0;

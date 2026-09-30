@@ -8,6 +8,11 @@
   position: relative;
   font-family: inherit;
   gap: 1rem;
+
+  @media (max-width: 640px) {
+    min-height: 0;
+    gap: 0.5rem;
+  }
 }
 
 // 1. Navigation Tab Bar at the Top
@@ -713,12 +718,17 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
-    padding: 0.75rem;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 16px)) 1rem;
     text-align: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    background: #ffffff;
+    z-index: 10;
 
     > .btn {
       width: 100%;
-      height: 38px;
+      height: 42px;
+      min-height: 42px;
 
       &:only-child {
         grid-column: 1 / span 2;
@@ -970,3 +980,115 @@
     transform: translateY(0);
   }
 }
+
+// 13. Completed History Side-by-Side Comparison Flow
+.history-comparison-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.history-comparison-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+
+  &__banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #fffbe6;
+    border-bottom: 1px solid #ffe58f;
+    color: #d48806;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+
+    i {
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+.history-comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1.25rem;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.history-panel {
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  &--existing {
+    border-color: #bbf7d0;
+    background: #f0fdf4;
+
+    .history-panel__header {
+      background: #dc2626; // Highlight difference
+      color: #ffffff;
+      border-bottom: 1px solid #bbf7d0;
+    }
+  }
+
+  &--imported {
+    border-color: #fecaca;
+    background: #fef2f2;
+
+    .history-panel__header {
+      background: #fee2e2;
+      color: #991b1b;
+      border-bottom: 1px solid #fecaca;
+    }
+  }
+
+  &__header {
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__body {
+    padding: 1rem;
+    flex: 1;
+    background: #ffffff;
+  }
+}
+
+.btn--danger {
+  color: #dc2626 !important;
+  border-color: #fca5a5 !important;
+
+  &:hover {
+    background: #fee2e2 !important;
+    border-color: #dc2626 !important;
+  }
+}
+

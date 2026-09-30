@@ -1457,7 +1457,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     return `Action performed by ${item.changedByName}`;
   }
 
-  public openMenu(event: Event, menu: Menu): void {
+  public openMenu(event: Event, menu: Menu, btn?: any): void {
     event.stopPropagation();
     if (this.isActionsButtonDisabled) {
       return;
@@ -1505,9 +1505,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
 
     this.updateActionItems();
-    const target = (event.currentTarget || event.target) as HTMLElement;
-    this.dropdownManager.registerOpen(menu, target);
-    menu.toggle(event);
+    this.dropdownManager.toggleMenu(menu, event, btn);
   }
 
   public onMenuHide(menu: any): void {
@@ -2182,15 +2180,17 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               reportingTime: item.reportingTime || item.ReportingTime || null,
               visibleButtonIndices: this.getVisibleButtonIndices(item),
               disabledButtonIndices:
-                this.data && !this.data.isActive ? [1] : [],
+                (this.data && !this.data.isActive) || this.isAllRoundsCompleted
+                  ? [1]
+                  : [],
               disabledButtonTooltips:
-                this.data && !this.data.isActive
+                (this.data && !this.data.isActive) || this.isAllRoundsCompleted
                   ? {
                       1: 'Recruitment is inactive/completed, you can only view the recruitment.',
                     }
                   : {},
               disabledReason:
-                this.data && !this.data.isActive
+                (this.data && !this.data.isActive) || this.isAllRoundsCompleted
                   ? 'Recruitment is inactive/completed, you can only view the recruitment.'
                   : '',
             })),
@@ -2294,7 +2294,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   @HostListener('document:mouseover', ['$event'])
   public onMouseOver(event: MouseEvent): void {
-    if (!this.data || this.data.isActive) {
+    if (!this.data || (this.data.isActive && !this.isAllRoundsCompleted)) {
       this.showHoverTooltip = false;
       return;
     }
@@ -2302,8 +2302,20 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target) return;
 
+    // Do NOT trigger custom hover tooltip on popovers, menus, table elements,
+    // or elements that already have their own PrimeNG tooltips
+    if (
+      target.closest(
+        '.p-popover, .p-menu, .assessment-detail__actions, app-table, .p-datatable, .p-tooltip',
+      )
+    ) {
+      this.showHoverTooltip = false;
+      this.currentHoveredElement = null;
+      return;
+    }
+
     const disabledElement = target.closest(
-      'button[disabled], input[disabled], select[disabled], textarea[disabled], .p-disabled, .disabled, [disabled], .p-button-disabled, .rounds-tab--disabled, .p-popover button[disabled]',
+      'button[disabled], input[disabled], select[disabled], textarea[disabled], .p-disabled, .disabled, [disabled], .p-button-disabled, .rounds-tab--disabled',
     ) as HTMLElement;
 
     if (disabledElement) {

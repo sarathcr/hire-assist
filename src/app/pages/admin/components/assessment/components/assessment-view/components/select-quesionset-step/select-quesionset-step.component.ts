@@ -3,6 +3,7 @@ import {
   ChangeDetectorRef,
   Component,
   input,
+  output,
   OnInit
 } from '@angular/core';
 import { FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -14,10 +15,13 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
+import { catchError, forkJoin, Observable, of } from 'rxjs';
 
 import { InstructionService } from '../../../../../../services/instruction.service';
 import { InstructionDialogComponent } from '../../../../../settings/components/instructions/instruction-dialog/instruction-dialog.component';
 import { AptitudeInstruction, AptitudeInstructionSummary } from '../../../../../../models/instruction.model';
+import { AssessmentRound } from '../../../../../../models/assessment.model';
+import { AssessmentScheduleService } from '../../../../services/assessment-schedule.service';
 
 import { BaseComponent } from '../../../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../../../shared/components/button/button.component';
@@ -45,6 +49,7 @@ import {
 } from '../../../../../../../../shared/utilities/form.utility';
 import {
   QuestionSetForm,
+  QuestionSetFormInterface,
   QuestionSetFormModal,
 } from '../../../../../../models/assessment-schedule.model';
 import {
@@ -159,8 +164,55 @@ export class SelectQuesionsetStepComponent
   public isIncomplete = input<boolean>(false);
   public isParentLoading = input<boolean>(true);
   public hasModifiedAfterComplete = input<boolean>(false);
+  public incompleteChange = output<boolean>();
+  public stepStateChange = output<{ isIncomplete: boolean; isModified: boolean }>();
 
-  private hasLocalModifications = false;
+  public initialSnapshot: string | null = null;
+  public initialSnapshotCaptured = false;
+
+  public getSnapshot(): string {
+    const createdSets = this.questionSets
+      .filter((qs) => qs.id > 0)
+      .map((qs) => {
+        const accordion = this.questionSetAccordionData.get(qs.id.toString());
+        const selected = accordion?.selectedIds
+          ? [...accordion.selectedIds].sort()
+          : [];
+        const roundId = qs.assessmentRoundId || 0;
+        const instructionId = this.getRoundInstructionId(roundId) || 0;
+        return {
+          id: qs.id,
+          roundId,
+          instructionId,
+          questionIds: selected.join(','),
+        };
+      })
+      .sort((a, b) => a.id - b.id);
+    return JSON.stringify(createdSets);
+  }
+
+  public captureInitialSnapshot(): void {
+    this.initialSnapshot = this.getSnapshot();
+    this.initialSnapshotCaptured = true;
+  }
+
+  public get isModified(): boolean {
+    if (!this.initialSnapshotCaptured || this.initialSnapshot === null) {
+      return false;
+    }
+    return this.getSnapshot() !== this.initialSnapshot;
+  }
+
+  public notifyStatusChange(): void {
+    const isIncomplete = this.hasIncompleteQuestionSets || !this.hasAllRoundsConfigured;
+    const isModified = this.isModified;
+    this.incompleteChange.emit(isIncomplete);
+    this.stepStateChange.emit({ isIncomplete, isModified });
+  }
+
+  public notifyIncompleteStatus(): void {
+    this.notifyStatusChange();
+  }
 
   public data!: QuestionSetForm;
   public metadata!: Metadata[];
@@ -204,6 +256,7 @@ export class SelectQuesionsetStepComponent
     private readonly cdr: ChangeDetectorRef,
     private readonly interviewService: InterviewService,
     private readonly instructionService: InstructionService,
+    private readonly assessmentScheduleService: AssessmentScheduleService,
   ) {
     super();
     this.fGroup = buildFormGroup(this.questionSetModal);
@@ -213,6 +266,7 @@ export class SelectQuesionsetStepComponent
     this.setPaginationEndpoint();
     this.setConfigMaps();
     this.loadInstructions();
+    this.loadAssessmentRounds();
     this.getAllQuestionSets(new PaginatedPayload());
   }
 
@@ -241,9 +295,34 @@ export class SelectQuesionsetStepComponent
     });
 
     childRef.onClose.subscribe(
-      (result: { isCreateSuccess?: boolean } | undefined) => {
-        if (result?.isCreateSuccess) {
+      (
+        result:
+          | {
+              isCreateSuccess?: boolean;
+              isUpdateSuccess?: boolean;
+              data?: QuestionSetFormInterface;
+            }
+          | undefined,
+      ) => {
+        if (result?.isCreateSuccess || result?.isUpdateSuccess) {
+          if (result.data) {
+            const currentSet = this.questionSets.find(
+              (qs) => qs.id === questionSet.id,
+            );
+            if (currentSet) {
+              currentSet.title = result.data.title;
+              currentSet.description = result.data.description;
+            }
+            const accordionItem = this.questionSetAccordionData.get(
+              questionSet.id.toString(),
+            );
+            if (accordionItem) {
+              accordionItem.questionSet.title = result.data.title;
+              accordionItem.questionSet.description = result.data.description;
+            }
+          }
           this.getAllQuestionSets(new PaginatedPayload(), false);
+          this.cdr.markForCheck();
         }
       },
     );
@@ -416,9 +495,7 @@ export class SelectQuesionsetStepComponent
         ...updatedAccordionData,
       });
       this.cdr.markForCheck();
-      setTimeout(() => {
-        this.cdr.detectChanges();
-      }, 0);
+      this.notifyIncompleteStatus();
     }
   }
 
@@ -436,6 +513,7 @@ export class SelectQuesionsetStepComponent
       ) || 0;
     const maxScore = this.getKnobMaxValue();
 
+    let hasChanges = false;
     // Update disabled state for each question in the table
     const updatedData = accordionData.tabledata.data.map((item: any) => {
       // Check if selecting this question would exceed the max score
@@ -447,17 +525,22 @@ export class SelectQuesionsetStepComponent
       );
       const isDisabled = wouldExceedMax && !isAlreadySelected;
 
+      if (item.isDisabled !== isDisabled) {
+        hasChanges = true;
+      }
+
       return {
         ...item,
         isDisabled: isDisabled,
       };
     });
 
-    // Create new reference to trigger change detection
-    accordionData.tabledata = {
-      ...accordionData.tabledata,
-      data: updatedData,
-    };
+    if (hasChanges) {
+      accordionData.tabledata = {
+        ...accordionData.tabledata,
+        data: updatedData,
+      };
+    }
   }
 
   public onTablePayloadChange(payload: PaginatedPayload): void {
@@ -514,6 +597,7 @@ export class SelectQuesionsetStepComponent
       .subscribe({
         next: () => {
           next();
+          this.notifyIncompleteStatus();
           this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
         },
         error,
@@ -556,6 +640,7 @@ export class SelectQuesionsetStepComponent
       .subscribe({
         next: () => {
           next();
+          this.notifyIncompleteStatus();
           this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
         },
         error,
@@ -582,7 +667,6 @@ export class SelectQuesionsetStepComponent
     childRef.onClose.subscribe(
       (result: { isCreateSuccess?: boolean } | undefined) => {
         if (result?.isCreateSuccess) {
-          this.hasLocalModifications = true;
           this.getAllQuestionSets(new PaginatedPayload(), false);
           this.stepsStatusService.notifyStepStatusUpdate(Number(this.assessmentId()));
         }
@@ -628,7 +712,7 @@ export class SelectQuesionsetStepComponent
         if (!roundsMap.has(roundId)) {
           roundsMap.set(roundId, qs);
         }
-        if (roundId > 0 && qs.instructionId) {
+        if (roundId > 0 && qs.instructionId && !this.roundInstructionMap.has(roundId)) {
           this.roundInstructionMap.set(roundId, qs.instructionId);
         }
       });
@@ -636,13 +720,15 @@ export class SelectQuesionsetStepComponent
         return (a.assessmentRoundId || 0) - (b.assessmentRoundId || 0);
       });
 
-      // Ensure defaults for any rounds without an instruction assigned yet
+      // Synchronize rounds with existing roundInstructionMap
       this.assessmentRounds.forEach((round) => {
         const rId = round.assessmentRoundId ?? 0;
-        if (rId > 0 && !this.roundInstructionMap.has(rId) && this.defaultInstructionId) {
-          this.roundInstructionMap.set(rId, round.instructionId ?? this.defaultInstructionId);
+        if (rId > 0 && this.roundInstructionMap.has(rId)) {
+          round.instructionId = this.roundInstructionMap.get(rId);
         }
       });
+
+      this.applyDefaultInstructions();
 
       const activeIds = new Set(res.data.map((qs) => qs.id.toString()));
       for (const id of this.questionSetAccordionData.keys()) {
@@ -687,19 +773,35 @@ export class SelectQuesionsetStepComponent
           }
         }
       });
-      this.setOptions();
-
       // Eagerly load selected questions for all sets so we can validate if they are empty
-      res.data.forEach((qs) => {
-        if (qs.id !== 0) {
-          const setId = qs.id.toString();
-          if (!this.questionSetAccordionData.get(setId)?.hasLoadedSelectedQuestions) {
-            this.loadQuestionsForAccordion(setId);
-          }
-        }
-      });
+      const createdSets = res.data.filter((qs) => qs.id > 0);
+      const setsToLoad = createdSets.filter(
+        (qs) => !this.questionSetAccordionData.get(qs.id.toString())?.hasLoadedSelectedQuestions,
+      );
 
-      this.isLoading = false;
+      if (setsToLoad.length === 0) {
+        this.isLoading = false;
+        if (!this.initialSnapshotCaptured) {
+          this.captureInitialSnapshot();
+        }
+        this.notifyStatusChange();
+        this.cdr.markForCheck();
+      } else {
+        let remaining = setsToLoad.length;
+        setsToLoad.forEach((qs) => {
+          this.loadQuestionsForAccordion(qs.id.toString(), () => {
+            remaining--;
+            if (remaining === 0) {
+              this.isLoading = false;
+              if (!this.initialSnapshotCaptured) {
+                this.captureInitialSnapshot();
+              }
+              this.notifyStatusChange();
+              this.cdr.markForCheck();
+            }
+          });
+        });
+      }
     };
 
     const error = () => {
@@ -877,9 +979,6 @@ export class SelectQuesionsetStepComponent
 
     this.questionSetAccordionData.set(questionSetId, updatedData);
     this.cdr.markForCheck();
-    setTimeout(() => {
-      this.cdr.detectChanges();
-    }, 0);
   }
 
   public onAccordionOpen(questionSetId: string): void {
@@ -999,6 +1098,8 @@ export class SelectQuesionsetStepComponent
         }
         if (onComplete) {
           onComplete();
+        } else {
+          this.notifyStatusChange();
         }
       },
       error: (error: CustomErrorResponse) => {
@@ -1013,6 +1114,8 @@ export class SelectQuesionsetStepComponent
         this.questionSetAccordionData.set(questionSetId, { ...accordionData });
         if (onComplete) {
           onComplete();
+        } else {
+          this.notifyStatusChange();
         }
       },
     });
@@ -1170,25 +1273,55 @@ export class SelectQuesionsetStepComponent
     const assessmentId = Number(this.assessmentId());
     if (assessmentId) {
       this.isLoading = true;
-      this.stepsStatusService.getAssessmentStepsStatus(assessmentId).subscribe({
+
+      // Persist round instructions for all rounds before completing the step
+      const assignTasks: Observable<any>[] = [];
+      for (const round of this.assessmentRounds) {
+        const roundId = round.assessmentRoundId ?? round.id ?? 0;
+        const instructionId = this.getRoundInstructionId(roundId);
+        if (roundId > 0 && instructionId) {
+          assignTasks.push(
+            this.instructionService
+              .assignInstructionToRound({ assessmentRoundId: roundId, instructionId })
+              .pipe(catchError(() => of(false))),
+          );
+        }
+      }
+
+      const saveRounds$ = assignTasks.length > 0 ? forkJoin(assignTasks) : of([]);
+      saveRounds$.subscribe({
         next: () => {
-          this.isLoading = false;
-          this.stepsStatusService.notifyStepCompleted(assessmentId);
-          this.hasLocalModifications = false;
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Question Set step completed successfully',
-          });
-        },
-        error: () => {
-          this.isLoading = false;
-          this.stepsStatusService.notifyStepCompleted(assessmentId);
-          this.hasLocalModifications = false;
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Question Set step completed successfully',
+          this.stepsStatusService.getAssessmentStepsStatus(assessmentId).subscribe({
+            next: () => {
+              this.isLoading = false;
+              this.captureInitialSnapshot();
+              for (const data of this.questionSetAccordionData.values()) {
+                data.originalSelectedIds = [...(data.selectedIds || [])];
+              }
+              this.stepsStatusService.notifyStepCompleted(assessmentId);
+              this.notifyStatusChange();
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Question Set step completed successfully',
+              });
+              this.cdr.markForCheck();
+            },
+            error: () => {
+              this.isLoading = false;
+              this.captureInitialSnapshot();
+              for (const data of this.questionSetAccordionData.values()) {
+                data.originalSelectedIds = [...(data.selectedIds || [])];
+              }
+              this.stepsStatusService.notifyStepCompleted(assessmentId);
+              this.notifyStatusChange();
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Question Set step completed successfully',
+              });
+              this.cdr.markForCheck();
+            },
           });
         },
       });
@@ -1213,6 +1346,52 @@ export class SelectQuesionsetStepComponent
     return emptyNames;
   }
 
+  public loadAssessmentRounds(): void {
+    const assessmentId = Number(this.assessmentId());
+    if (!assessmentId) return;
+
+    this.assessmentScheduleService
+      .GetAssessmentRound(assessmentId)
+      .pipe(catchError(() => of([])))
+      .subscribe({
+        next: (rounds: AssessmentRound[]) => {
+          rounds.forEach((round) => {
+            const roundId = round.id;
+            if (roundId > 0 && round.instructionId && round.instructionId > 0) {
+              this.roundInstructionMap.set(roundId, round.instructionId);
+              const target = this.assessmentRounds.find(
+                (r) => (r.assessmentRoundId || r.id) === roundId,
+              );
+              if (target) {
+                target.instructionId = round.instructionId;
+              }
+            }
+          });
+          this.applyDefaultInstructions();
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  private applyDefaultInstructions(): void {
+    if (!this.defaultInstructionId) return;
+
+    for (const round of this.assessmentRounds) {
+      const roundId = round.assessmentRoundId ?? round.id ?? 0;
+      if (roundId > 0 && !this.roundInstructionMap.has(roundId)) {
+        const initialId = round.instructionId ?? this.defaultInstructionId;
+        if (initialId) {
+          this.roundInstructionMap.set(roundId, initialId);
+          round.instructionId = initialId;
+          this.instructionService
+            .assignInstructionToRound({ assessmentRoundId: roundId, instructionId: initialId })
+            .pipe(catchError(() => of(false)))
+            .subscribe();
+        }
+      }
+    }
+  }
+
   public loadInstructions(callback?: () => void): void {
     this.instructionService.getInstructions(true).subscribe({
       next: (instructions: AptitudeInstructionSummary[]) => {
@@ -1228,16 +1407,7 @@ export class SelectQuesionsetStepComponent
           this.defaultInstructionId = instructions[0].id;
         }
 
-        // Initialize any rounds that don't have an instruction set yet
-        for (const round of this.assessmentRounds) {
-          const roundId = round.assessmentRoundId ?? 0;
-          if (roundId > 0 && !this.roundInstructionMap.has(roundId)) {
-            const initialId = round.instructionId ?? this.defaultInstructionId;
-            if (initialId) {
-              this.roundInstructionMap.set(roundId, initialId);
-            }
-          }
-        }
+        this.applyDefaultInstructions();
 
         if (callback) callback();
         this.cdr.markForCheck();
@@ -1249,14 +1419,29 @@ export class SelectQuesionsetStepComponent
   }
 
   public getRoundInstructionId(roundId: number): number | null {
-    return this.roundInstructionMap.get(roundId) ?? this.defaultInstructionId ?? null;
+    if (this.roundInstructionMap.has(roundId)) {
+      return this.roundInstructionMap.get(roundId) ?? null;
+    }
+    const targetRound = this.assessmentRounds.find(
+      (r) => (r.assessmentRoundId || r.id) === roundId,
+    );
+    if (targetRound?.instructionId) {
+      return targetRound.instructionId;
+    }
+    return this.defaultInstructionId ?? null;
   }
 
   public onRoundInstructionChange(roundId: number, instructionId: number): void {
     if (!roundId || !instructionId) return;
     this.roundInstructionMap.set(roundId, instructionId);
+    const targetRound = this.assessmentRounds.find(
+      (r) => (r.assessmentRoundId || r.id) === roundId,
+    );
+    if (targetRound) {
+      targetRound.instructionId = instructionId;
+    }
     this.isAssigningInstruction.set(roundId, true);
-    this.hasLocalModifications = true;
+    this.notifyStatusChange();
 
     this.instructionService
       .assignInstructionToRound({ assessmentRoundId: roundId, instructionId })
@@ -1417,17 +1602,24 @@ export class SelectQuesionsetStepComponent
    * If this is true, we should block ANY navigation away from this step.
    */
   public get hasIncompleteQuestionSets(): boolean {
-    // 1. If server-side check (passed from parent) says it's incomplete, it's incomplete
-    if (this.isIncomplete()) return true;
-
-    // 2. If any set is still loading, it's incomplete
-    for (const data of this.questionSetAccordionData.values()) {
-      if (data.questionSet.id > 0 && !data.hasLoadedSelectedQuestions) {
-        return true;
-      }
+    if (this.questionSets.length === 0) {
+      return this.isIncomplete();
     }
 
-    // 3. Check if any question set is confirmed empty
+    const hasLoadingSet = Array.from(this.questionSetAccordionData.values()).some(
+      (data) => data.questionSet.id > 0 && !data.hasLoadedSelectedQuestions,
+    );
+
+    // If still loading and step was already marked Completed on server, do not treat as incomplete
+    if (hasLoadingSet && this.stepStatus() === 'Completed' && !this.isModified) {
+      return false;
+    }
+
+    if (hasLoadingSet) {
+      return true;
+    }
+
+    // Check if any question set is confirmed empty
     return this.emptyQuestionSets.length > 0;
   }
 
@@ -1448,7 +1640,7 @@ export class SelectQuesionsetStepComponent
   }
 
   public get isDirty(): boolean {
-    if (this.hasLocalModifications) return true;
+    if (this.isModified) return true;
 
     // 1. Check if any question set's selections have changed
     for (const data of this.questionSetAccordionData.values()) {
@@ -1466,13 +1658,14 @@ export class SelectQuesionsetStepComponent
     const isIncomplete = this.hasIncompleteQuestionSets;
     const isValid = allRounds && !isIncomplete;
     const isDirty = this.isDirty;
+    const isModified = this.isModified;
     const status = this.stepStatus();
 
     if (!isValid) return false;
 
     // If step is already completed, it only stays enabled if there are new changes (isDirty) or modifications in session
     if (status === 'Completed') {
-      return isDirty || this.hasModifiedAfterComplete();
+      return isDirty || isModified || this.hasModifiedAfterComplete();
     }
 
     // If step is not yet completed (Active/Pending), allow completion if valid

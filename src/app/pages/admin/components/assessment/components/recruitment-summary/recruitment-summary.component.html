@@ -18,6 +18,15 @@
     <div class="header-right">
       <p-button 
         *ngIf="!isLoading && summaryData"
+        icon="pi pi-eye" 
+        label="Preview" 
+        [outlined]="true"
+        severity="secondary"
+        [loading]="isPreviewing"
+        (onClick)="previewPdf()">
+      </p-button>
+      <p-button 
+        *ngIf="!isLoading && summaryData"
         icon="pi pi-download" 
         label="Export Audit Report" 
         [raised]="true"
@@ -25,7 +34,7 @@
         [loading]="isExporting"
         (onClick)="exportPdf()">
       </p-button>
-      <p-skeleton *ngIf="isLoading" width="160px" height="2.2rem" styleClass="export-btn-skeleton"></p-skeleton>
+      <p-skeleton *ngIf="isLoading" width="220px" height="2.2rem" styleClass="export-btn-skeleton"></p-skeleton>
     </div>
   </header>
 
@@ -46,7 +55,7 @@
         [showSidebarButton]="false"
         [showOpenFileButton]="false"
         [showPrintButton]="true"
-        [showDownloadButton]="true"
+        [showDownloadButton]="false"
       >
       </ngx-extended-pdf-viewer>
     </div>

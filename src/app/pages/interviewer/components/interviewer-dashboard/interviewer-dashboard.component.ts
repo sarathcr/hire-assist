@@ -171,11 +171,8 @@ export class InterviewerDashboardComponent
     this.dataSource.loadPaginatedData(payload);
   }
 
-  public openMenu(event: Event, menu: any): void {
-    event.stopPropagation();
-    const target = (event.currentTarget || event.target) as HTMLElement;
-    this.dropdownManager.registerOpen(menu, target);
-    menu.toggle(event);
+  public openMenu(event: Event, menu: any, btn?: any): void {
+    this.dropdownManager.toggleMenu(menu, event, btn);
   }
 
   public onMenuHide(menu: any): void {

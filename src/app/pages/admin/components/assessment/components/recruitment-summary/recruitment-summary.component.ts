@@ -6,6 +6,7 @@ import { Location } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { InterviewService } from '../../services/interview.service';
 import { finalize } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 import { SkeletonModule } from 'primeng/skeleton';
 import { DialogModule } from 'primeng/dialog';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -40,6 +41,8 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   public assessmentId!: number;
   public isLoading = false;
   public isExporting = false;
+  public isPreviewing = false;
+  public currentPdfBlob: Blob | null = null;
   public summaryData: any = null;
 
   public activeAccordionIds: string[] = [];
@@ -88,6 +91,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
     if (this.pdfUrlString) {
       URL.revokeObjectURL(this.pdfUrlString);
     }
+    this.currentPdfBlob = null;
   }
 
   private fetchSummaryData(): void {
@@ -386,7 +390,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
     }
   }
 
-  public downloadFile(): void {
+  public async downloadFile(): Promise<void> {
     if (!this.currentViewingFile) return;
 
     const key = this.getImageId(this.currentViewingFile);
@@ -394,12 +398,18 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
     const filename = this.currentViewingFile.name || key || 'download';
 
     if (blobUrl) {
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      try {
+        const response = await fetch(blobUrl);
+        const blob = await response.blob();
+        await this.downloadBlob(blob, filename);
+      } catch {
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     }
   }
 
@@ -452,35 +462,151 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }
 
-  public downloadPdf(): void {
-    if (this.pdfUrlString) {
-      const link = document.createElement('a');
-      link.href = this.pdfUrlString;
-      link.download = `Audit_Report_${this.summaryData?.recruitmentName || 'Summary'}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+  public isIOSDevice(): boolean {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return false;
+    }
+    return (
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
+  }
+
+  public async downloadBlob(blob: Blob, filename: string): Promise<boolean> {
+    const isIOS = this.isIOSDevice();
+
+    // 1. On iOS devices, Web Share API with File provides the official "Save to Files" dialog
+    if (isIOS && typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+      try {
+        const mimeType = blob.type || 'application/pdf';
+        const file = new File([blob], filename, { type: mimeType });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: filename,
+          });
+          return true;
+        }
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          return true;
+        }
+        console.warn('iOS Web Share API failed or activation expired:', err);
+        if (err.name === 'NotAllowedError') {
+          return false;
+        }
+      }
+    }
+
+    // 2. Standard browser download (Desktop, Android, and iOS fallback)
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+
+    if (isIOS) {
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+    }
+
+    document.body.appendChild(link);
+    link.click();
+
+    setTimeout(() => {
+      if (document.body.contains(link)) {
+        document.body.removeChild(link);
+      }
+      URL.revokeObjectURL(blobUrl);
+    }, 2000);
+
+    return true;
+  }
+
+  public async downloadPdf(): Promise<void> {
+    const filename = `Audit_Report_${this.summaryData?.recruitmentName || 'Summary'}.pdf`;
+    if (this.currentPdfBlob) {
+      await this.downloadBlob(this.currentPdfBlob, filename);
+    } else if (this.pdfUrlString) {
+      try {
+        const response = await fetch(this.pdfUrlString);
+        const blob = await response.blob();
+        this.currentPdfBlob = blob;
+        await this.downloadBlob(blob, filename);
+      } catch (err) {
+        console.error('Error downloading from pdfUrlString:', err);
+      }
     }
   }
 
-  public exportPdf(): void {
-    this.isExporting = true;
-    this.interviewService
-      .exportRecruitmentSummaryPdf(this.assessmentId)
-      .pipe(finalize(() => (this.isExporting = false)))
-      .subscribe({
-        next: (blob) => {
-          const safeBlob = new Blob([blob], { type: 'application/pdf' });
-          if (this.pdfUrlString) {
-            URL.revokeObjectURL(this.pdfUrlString);
-          }
-          this.pdfUrlString = URL.createObjectURL(safeBlob);
-          this.showPdfModal = true;
-        },
-        error: (error) => {
-          console.error('Error exporting PDF:', error);
-        },
+  public async previewPdf(): Promise<void> {
+    if (this.isPreviewing) return;
+
+    if (this.pdfUrlString) {
+      this.showPdfModal = true;
+      return;
+    }
+
+    this.isPreviewing = true;
+    try {
+      const blob = await firstValueFrom(
+        this.interviewService.exportRecruitmentSummaryPdf(this.assessmentId)
+      );
+      this.currentPdfBlob = blob;
+      const safeBlob = new Blob([blob], { type: 'application/pdf' });
+      this.pdfUrlString = URL.createObjectURL(safeBlob);
+      this.showPdfModal = true;
+    } catch (error) {
+      console.error('Error previewing PDF:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Preview Failed',
+        detail: 'Failed to load PDF preview. Please try again.',
       });
+    } finally {
+      this.isPreviewing = false;
+    }
+  }
+
+  public async exportPdf(): Promise<void> {
+    if (this.isExporting) return;
+    this.isExporting = true;
+
+    try {
+      let blob = this.currentPdfBlob;
+      if (!blob) {
+        blob = await firstValueFrom(
+          this.interviewService.exportRecruitmentSummaryPdf(this.assessmentId)
+        );
+        this.currentPdfBlob = blob;
+        const safeBlob = new Blob([blob], { type: 'application/pdf' });
+        if (this.pdfUrlString) {
+          URL.revokeObjectURL(this.pdfUrlString);
+        }
+        this.pdfUrlString = URL.createObjectURL(safeBlob);
+      }
+
+      const filename = `Audit_Report_${this.summaryData?.recruitmentName || 'Summary'}.pdf`;
+      const downloadHandled = await this.downloadBlob(blob, filename);
+
+      if (!downloadHandled && this.isIOSDevice()) {
+        // If user activation expired during network request on iOS Safari, open preview modal so user can tap Download directly
+        this.showPdfModal = true;
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Audit Report Ready',
+          detail: 'Tap Download to save the document to your iPhone.',
+        });
+      }
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Export Failed',
+        detail: 'Failed to export audit report. Please try again.',
+      });
+    } finally {
+      this.isExporting = false;
+    }
   }
 
   public printSummary(): void {

@@ -739,9 +739,6 @@ export class TableComponent<
   }
 
   public displayData = computed(() => {
-    if (this.isLoading()) {
-      return [];
-    }
     return this.tableData()?.data || [];
   });
 
@@ -828,6 +825,15 @@ export class TableComponent<
     this.import.emit(file);
   }
 
+  private getScrollContainer(): HTMLElement | null {
+    if (!this.table) return null;
+    const el = this.table.el?.nativeElement as HTMLElement | undefined;
+    if (!el) return null;
+    return el.querySelector(
+      '.p-datatable-table-container, .p-datatable-scrollable-body, .p-datatable-wrapper',
+    ) as HTMLElement | null;
+  }
+
   public onSelectionChange(newSelection: any): void {
     // Block any selection changes when selectionDisabled is true
     if (this.selectionDisabled()) {
@@ -837,6 +843,12 @@ export class TableComponent<
       );
       return;
     }
+
+    const scrollContainer = this.getScrollContainer();
+    const savedTableScrollTop = scrollContainer ? scrollContainer.scrollTop : null;
+    const savedWindowScrollY = isPlatformBrowser(this.platformId)
+      ? window.scrollY || window.pageYOffset || document.documentElement.scrollTop
+      : 0;
 
     // Normalize newSelection to array (PrimeNG emits object for single selection, array for multiple)
     const selectionArray = Array.isArray(newSelection)
@@ -872,6 +884,19 @@ export class TableComponent<
     );
     this.lastEmittedSelection = Array.from(this.persistedSelectedIds);
     this.selectedIds.emit(selectedAcrossPages);
+
+    const restoreScroll = () => {
+      if (scrollContainer && savedTableScrollTop !== null && savedTableScrollTop > 0) {
+        scrollContainer.scrollTop = savedTableScrollTop;
+      }
+      if (savedWindowScrollY > 0 && Math.abs((window.scrollY || 0) - savedWindowScrollY) > 5) {
+        window.scrollTo({ top: savedWindowScrollY, behavior: 'instant' });
+      }
+    };
+
+    restoreScroll();
+    requestAnimationFrame(restoreScroll);
+    setTimeout(restoreScroll, 0);
   }
 
   public clearAllSelections(): void {

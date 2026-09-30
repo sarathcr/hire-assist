@@ -267,6 +267,7 @@
     white-space: nowrap;
     text-transform: uppercase;
     letter-spacing: 0.025em;
+    flex-shrink: 0;
 
     &--active {
       background: #eff6ff;
@@ -448,6 +449,18 @@
 
 ::ng-deep {
   .p-menu {
+    z-index: 1200 !important;
+    max-height: min(420px, calc(100vh - 220px));
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-color, #cbd5e1);
+      border-radius: 4px;
+    }
+
     @media screen and (max-width: 768px) {
       max-height: 280px;
       overflow-y: auto;

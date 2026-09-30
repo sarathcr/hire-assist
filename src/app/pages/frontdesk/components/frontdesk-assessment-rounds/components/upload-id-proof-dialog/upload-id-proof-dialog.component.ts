@@ -1,5 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -10,6 +16,10 @@ import { FileSelectEvent, FileUpload } from 'primeng/fileupload';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
+import { TabsModule } from 'primeng/tabs';
+import { BadgeModule } from 'primeng/badge';
+import { Dialog } from 'primeng/dialog';
+import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 import { InputSelectComponent } from '../../../../../../shared/components/form/input-select/input-select.component';
 import { AttachmentTypeEnum } from '../../../../../../shared/enums/status.enum';
 import {
@@ -25,16 +35,30 @@ import { MessageService } from 'primeng/api';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 
+export interface ExistingIdProofItem {
+  fileDto: FileDto;
+  blobId: string;
+  attachmentTypeId: number;
+  attachmentTypeName: string;
+  fileName: string;
+  isPdf: boolean;
+  previewUrl?: string;
+  isLoadingUrl?: boolean;
+}
+
 @Component({
   selector: 'app-upload-id-proof-dialog',
   imports: [
     CommonModule,
-    InputSelectComponent,
     FileUpload,
     ProgressSpinnerModule,
     ButtonModule,
     ToastModule,
     ButtonComponent,
+    TabsModule,
+    BadgeModule,
+    Dialog,
+    NgxExtendedPdfViewerModule,
   ],
   templateUrl: './upload-id-proof-dialog.component.html',
   styleUrl: './upload-id-proof-dialog.component.scss',
@@ -45,7 +69,22 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   public fGroup!: FormGroup;
   public uploadedFileName: string | undefined;
   public candidateId!: string;
-  public uploadedFileUrl?: FileDto[];
+
+  public readonly AADHAAR_TYPE = AttachmentTypeEnum.AadhaarCard.toString();
+  public readonly PAN_TYPE = AttachmentTypeEnum.PanCard.toString();
+  public activeTab: string = this.AADHAAR_TYPE;
+
+  public existingProofs: ExistingIdProofItem[] = [];
+  private _uploadedFileUrl: FileDto[] = [];
+
+  public get uploadedFileUrl(): FileDto[] {
+    return this._uploadedFileUrl;
+  }
+  public set uploadedFileUrl(files: FileDto[] | undefined) {
+    this._uploadedFileUrl = files || [];
+    this.syncExistingProofsFromDto(this._uploadedFileUrl);
+  }
+
   public forceCancelRequest: string[] = [];
   public imageUrl: string[] = [];
   public blob!: Blob;
@@ -53,15 +92,41 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   public isLoadingExistingImages = true;
   public isUploading = false;
   public uploadProgress = 0;
+  public hasUploadedSuccessfully = false;
+  public displayViewer = false;
+  public viewerTitle = '';
+  public viewerUrl: string = '';
+  public isViewerPdf = false;
   public previewImages: { file: File; previewUrl: string }[] = [];
   public readonly MAX_FILE_SIZE = 5242880;
   public readonly MAX_FILES = 10;
   public fileValidationError: string | null = null;
   private deleteRef?: DynamicDialogRef;
+  private switchTabConfirmRef?: DynamicDialogRef;
   @ViewChild('fileUpload') fileUpload!: FileUpload;
 
+  public get aadhaarFiles(): ExistingIdProofItem[] {
+    return this.existingProofs.filter(
+      (f) => f.attachmentTypeId === AttachmentTypeEnum.AadhaarCard,
+    );
+  }
+
+  public get panFiles(): ExistingIdProofItem[] {
+    return this.existingProofs.filter(
+      (f) => f.attachmentTypeId === AttachmentTypeEnum.PanCard,
+    );
+  }
+
+  public get otherFiles(): ExistingIdProofItem[] {
+    return this.existingProofs.filter(
+      (f) =>
+        f.attachmentTypeId !== AttachmentTypeEnum.AadhaarCard &&
+        f.attachmentTypeId !== AttachmentTypeEnum.PanCard,
+    );
+  }
+
   public get existingFilesCount(): number {
-    return this.uploadedFileUrl?.length || 0;
+    return this.existingProofs.length;
   }
 
   public get totalFilesCount(): number {
@@ -83,6 +148,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     private readonly assessmentService: AssessmentService,
     private readonly messageService: MessageService,
     private readonly dialog: DialogService,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   public idTypeSelectConfig: CustomSelectConfig = {
@@ -96,18 +162,127 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       { label: 'PAN Card', value: AttachmentTypeEnum.PanCard.toString() },
     ],
   };
+
   ngOnInit(): void {
+    this.activeTab = this.AADHAAR_TYPE;
     this.fGroup = this.fb.group({
-      idType: [null, Validators.required],
+      idType: [this.activeTab, Validators.required],
       idFile: [null, this.validateFiles.bind(this)],
     });
 
-    this.candidateId = this.config.data?.candidateId || this.config.data?.candidateEmail;
+    this.candidateId =
+      this.config.data?.candidateId || this.config.data?.candidateEmail;
 
     this.loadExistingImages();
   }
 
-  private loadExistingImages(): void {
+  public onTabItemClick(event: MouseEvent, targetTab: string): void {
+    if (this.activeTab === targetTab) return;
+
+    if (this.previewImages.length > 0) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.promptTabSwitchConfirmation(targetTab);
+    }
+  }
+
+  public onTabChange(tabValue: string | number): void {
+    const val = tabValue.toString();
+    if (val === this.activeTab) return;
+
+    if (this.previewImages.length > 0) {
+      const previousTab = this.activeTab;
+      this.promptTabSwitchConfirmation(val, previousTab);
+      return;
+    }
+
+    this.switchTab(val);
+  }
+
+  public promptTabSwitchConfirmation(
+    targetTab: string,
+    previousTab?: string,
+  ): void {
+    const prev = previousTab || this.activeTab;
+
+    const modalData: DialogData = {
+      message:
+        'You have un-uploaded files selected. Switching tabs without uploading will discard them. Are you sure you want to proceed?',
+      isChoice: true,
+      closeOnNavigation: true,
+      acceptButtonText: 'Yes',
+      cancelButtonText: 'Cancel',
+    };
+
+    this.switchTabConfirmRef = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Unsaved Changes',
+      width: '35vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    this.switchTabConfirmRef?.onClose.subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.previewImages.forEach((img) =>
+          URL.revokeObjectURL(img.previewUrl),
+        );
+        this.previewImages = [];
+        this.switchTab(targetTab);
+      } else {
+        this.revertTab(prev);
+      }
+    });
+  }
+
+  public switchTab(tabValue: string): void {
+    this.activeTab = tabValue;
+    this.fGroup.patchValue({ idType: tabValue });
+    this.updateFormValidation();
+    this.fileValidationError = null;
+    this.cdr.detectChanges();
+  }
+
+  private revertTab(previousTab: string): void {
+    this.activeTab = '';
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.activeTab = previousTab;
+      this.fGroup.patchValue({ idType: previousTab });
+      this.cdr.detectChanges();
+    });
+  }
+
+  private syncExistingProofsFromDto(files: FileDto[]): void {
+    this.existingProofs = (files || []).map((file) => {
+      const { blobId, attachmentTypeId } = this.getFileDtoProperties(file);
+      const fileName = this.getFileName(file);
+      const isPdf = this.isPdf(file);
+      const normTypeId =
+        attachmentTypeId !== undefined
+          ? Number(attachmentTypeId)
+          : AttachmentTypeEnum.AadhaarCard;
+      return {
+        fileDto: file,
+        blobId: blobId || '',
+        attachmentTypeId: normTypeId,
+        attachmentTypeName: this.getAttachmentTypeName(normTypeId),
+        fileName,
+        isPdf,
+        previewUrl: undefined,
+        isLoadingUrl: false,
+      };
+    });
+  }
+
+  public loadExistingImages(): void {
     if (!this.candidateId) {
       this.isLoadingExistingImages = false;
       return;
@@ -119,7 +294,6 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (existingProof: FileDto[]) => {
           if (existingProof && existingProof.length > 0) {
-            // Log the response structure for debugging
             console.log('ID Proofs received from API:', existingProof);
             this.uploadedFileUrl = existingProof;
             if (this.totalFilesCount >= this.MAX_FILES) {
@@ -148,25 +322,27 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     }
     return null;
   }
-  public onFileChange(event: FileSelectEvent): void {
+
+  public onFileChange(event: FileSelectEvent, uploader?: FileUpload): void {
     const files = event.currentFiles || event.files || [];
     this.fileValidationError = null;
+    const targetUploader = uploader || this.fileUpload;
 
     if (this.isLoadingExistingImages) {
-      this.fileUpload.clear();
+      targetUploader?.clear();
       return;
     }
 
     if (this.isMaxFilesReached) {
       this.fileValidationError = `Maximum ${this.MAX_FILES} files allowed`;
-      this.fileUpload.clear();
+      targetUploader?.clear();
       return;
     }
 
     const remainingSlots = this.MAX_FILES - this.totalFilesCount;
     if (files.length > remainingSlots) {
       this.fileValidationError = `Maximum ${this.MAX_FILES} files allowed`;
-      this.fileUpload.clear();
+      targetUploader?.clear();
       return;
     }
 
@@ -203,8 +379,8 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       }
 
       const isExistingDuplicate =
-        this.uploadedFileUrl?.some(
-          (f) => this.getFileName(f)?.toLowerCase() === file.name.toLowerCase(),
+        this.existingProofs?.some(
+          (f) => f.fileName.toLowerCase() === file.name.toLowerCase(),
         ) ?? false;
 
       if (isExistingDuplicate) {
@@ -216,7 +392,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       this.previewImages.push({ file, previewUrl });
     });
 
-    this.fileUpload.clear();
+    targetUploader?.clear();
     this.updateFormValidation();
   }
 
@@ -286,13 +462,23 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
 
           if (uploadCount === totalFiles && !hasError) {
             this.isUploading = false;
+            this.hasUploadedSuccessfully = true;
+
+            // Revoke and clear preview images
+            this.previewImages.forEach((img) =>
+              URL.revokeObjectURL(img.previewUrl),
+            );
+            this.previewImages = [];
+            this.updateFormValidation();
+
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
               detail: `${totalFiles} ID Proof file${totalFiles > 1 ? 's' : ''} uploaded successfully`,
             });
-            // Close modal after successful upload
-            this.ref.close({ success: true });
+
+            // Reload existing images so the newly saved files show immediately in the modal
+            this.loadExistingImages();
           }
         },
         error: (error: CustomErrorResponse) => {
@@ -310,21 +496,21 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    // Clean up object URLs to prevent memory leaks
     this.previewImages.forEach((img) => URL.revokeObjectURL(img.previewUrl));
   }
 
   public onClose(): void {
-    this.ref.close();
+    this.ref.close({ success: this.hasUploadedSuccessfully });
   }
 
   public onDeleteImage(index: number): void {
-    if (!this.uploadedFileUrl) return;
-
-    const file = this.uploadedFileUrl[index];
+    const file = this.existingProofs[index];
     if (!file) return;
+    this.onDeleteExistingProof(file);
+  }
 
-    this.openDeleteConfirmDialog(index, file);
+  public onDeleteExistingProof(item: ExistingIdProofItem): void {
+    this.openDeleteConfirmDialog(item);
   }
 
   public formatFileSize(bytes: number): string {
@@ -335,7 +521,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
-  private openDeleteConfirmDialog(index: number, file: FileDto): void {
+  private openDeleteConfirmDialog(item: ExistingIdProofItem): void {
     const modalData: DialogData = {
       message: `Are you sure you want to delete this file?`,
       isChoice: true,
@@ -361,7 +547,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
 
     this.deleteRef?.onClose.subscribe((res: boolean) => {
       if (res) {
-        this.deleteImage(index, file);
+        this.deleteProof(item);
       } else {
         this.messageService.add({
           severity: 'info',
@@ -372,11 +558,14 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     });
   }
 
-  private deleteImage(index: number, file: FileDto): void {
-    const { blobId, attachmentTypeId } = this.getFileDtoProperties(file);
+  private deleteProof(item: ExistingIdProofItem): void {
+    const { blobId, attachmentTypeId } = item;
 
     if (!blobId || attachmentTypeId === undefined) {
-      console.error('Missing required properties in FileDto:', file);
+      console.error(
+        'Missing required properties in ExistingIdProofItem:',
+        item,
+      );
       return;
     }
 
@@ -388,10 +577,12 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       })
       .subscribe({
         next: () => {
-          if (this.uploadedFileUrl) {
-            this.uploadedFileUrl = this.uploadedFileUrl.filter((_, i) => i !== index);
-          }
-          this.imageUrl = this.imageUrl.filter((_, i) => i !== index);
+          this.existingProofs = this.existingProofs.filter((p) => p !== item);
+          this._uploadedFileUrl = this.existingProofs.map((p) => p.fileDto);
+          this.imageUrl = this.existingProofs
+            .map((p) => p.previewUrl)
+            .filter((url): url is string => !!url);
+
           this.updateFormValidation();
           if (this.totalFilesCount >= this.MAX_FILES) {
             this.fileValidationError = `Maximum ${this.MAX_FILES} files allowed`;
@@ -419,12 +610,9 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     blobId: string | undefined;
     attachmentTypeId: number | undefined;
   } {
-    // Handle both capitalized and lowercase property names from API
-    // Check for capitalized properties first (as per FileDto interface)
     let blobId: string | undefined = file.Id;
     let attachmentTypeId: number | undefined = file.AttachmentType;
 
-    // If capitalized properties are not available, try lowercase
     if (!blobId) {
       const fileWithLowercase = file as { id?: string; blobId?: string };
       blobId = fileWithLowercase.id || fileWithLowercase.blobId;
@@ -434,9 +622,16 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
       const fileWithLowercase = file as {
         attachmentType?: number;
         attachmentTypeId?: number;
+        AttachmentTypeId?: number;
       };
       attachmentTypeId =
-        fileWithLowercase.attachmentType || fileWithLowercase.attachmentTypeId;
+        fileWithLowercase.attachmentType ??
+        fileWithLowercase.attachmentTypeId ??
+        fileWithLowercase.AttachmentTypeId;
+    }
+
+    if (attachmentTypeId !== undefined) {
+      attachmentTypeId = Number(attachmentTypeId);
     }
 
     return { blobId, attachmentTypeId };
@@ -447,18 +642,21 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   }
 
   public getAttachmentType(file: any): number | undefined {
-    return file?.AttachmentType !== undefined
-      ? file.AttachmentType
-      : file?.attachmentType;
+    const raw =
+      file?.AttachmentType !== undefined
+        ? file.AttachmentType
+        : file?.attachmentType !== undefined
+          ? file.attachmentType
+          : file?.attachmentTypeId;
+    return raw !== undefined ? Number(raw) : undefined;
   }
 
   public getAttachmentTypeName(type: number | string | undefined): string {
     if (type === undefined) return 'Unknown';
-    const typeStr = type.toString();
-    const option = this.idTypeSelectConfig.options?.find(
-      (opt) => opt.value === typeStr,
-    );
-    return option ? option.label : 'Unknown';
+    const typeNum = Number(type);
+    if (typeNum === AttachmentTypeEnum.AadhaarCard) return 'Aadhaar Card';
+    if (typeNum === AttachmentTypeEnum.PanCard) return 'PAN Card';
+    return 'Document';
   }
 
   public isPdf(file: any): boolean {
@@ -466,46 +664,74 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
     return filename.toLowerCase().endsWith('.pdf');
   }
 
-  public openImage(url: string | undefined): void {
-    if (url) {
-      window.open(url, '_blank');
-    }
+  public openViewer(file: ExistingIdProofItem): void {
+    if (!file.previewUrl) return;
+    this.viewerTitle = file.fileName;
+    this.viewerUrl = file.previewUrl;
+    this.isViewerPdf = file.isPdf;
+    this.displayViewer = true;
   }
 
-  private fetchImage() {
-    if (!this.uploadedFileUrl || this.uploadedFileUrl.length === 0) {
+  public openPreviewViewer(preview: { file: File; previewUrl: string }): void {
+    this.viewerTitle = preview.file.name;
+    this.viewerUrl = preview.previewUrl;
+    this.isViewerPdf =
+      preview.file.type === 'application/pdf' ||
+      preview.file.name.toLowerCase().endsWith('.pdf');
+    this.displayViewer = true;
+  }
+
+  public closeViewer(): void {
+    this.displayViewer = false;
+    this.viewerUrl = '';
+    this.viewerTitle = '';
+    this.isViewerPdf = false;
+  }
+
+  public openImage(
+    url: string | undefined,
+    title = 'Document Viewer',
+    isPdf = false,
+  ): void {
+    if (!url) return;
+    this.viewerTitle = title;
+    this.viewerUrl = url;
+    this.isViewerPdf = isPdf;
+    this.displayViewer = true;
+  }
+
+  public fetchImage(): void {
+    if (!this.existingProofs || this.existingProofs.length === 0) {
       this.isLoadingExistingImages = false;
       return;
     }
 
     this.isLoadingExistingImages = true;
     let loadedCount = 0;
-    const totalFiles = this.uploadedFileUrl.length;
+    const totalFiles = this.existingProofs.length;
 
-    this.uploadedFileUrl.forEach((file: FileDto, idx: number) => {
-      // Handle both capitalized and lowercase property names from API
-      const { blobId, attachmentTypeId } = this.getFileDtoProperties(file);
-
-      if (!blobId || attachmentTypeId === undefined) {
-        console.error('Missing required properties in FileDto:', file);
+    this.existingProofs.forEach((item: ExistingIdProofItem, idx: number) => {
+      if (!item.blobId || item.attachmentTypeId === undefined) {
         loadedCount++;
+        item.isLoadingUrl = false;
         if (loadedCount === totalFiles) {
           this.isLoadingExistingImages = false;
         }
         return;
       }
 
+      item.isLoadingUrl = true;
       this.assessmentService
         .GetIdProofUrl({
-          blobId: blobId,
-          attachmentTypeId: attachmentTypeId,
+          blobId: item.blobId,
+          attachmentTypeId: item.attachmentTypeId,
           candidateId: this.candidateId,
         })
         .subscribe({
           next: (res) => {
-            const url = res.url;
-            this.imageUrl[idx] = url;
-            // Force a new array reference for Angular change detection
+            item.previewUrl = res.url;
+            item.isLoadingUrl = false;
+            this.imageUrl[idx] = res.url;
             this.imageUrl = [...this.imageUrl];
             loadedCount++;
 
@@ -514,6 +740,7 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
             }
           },
           error: () => {
+            item.isLoadingUrl = false;
             loadedCount++;
             if (loadedCount === totalFiles) {
               this.isLoadingExistingImages = false;

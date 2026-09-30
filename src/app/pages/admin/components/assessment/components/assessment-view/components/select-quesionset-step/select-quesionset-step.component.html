@@ -277,21 +277,21 @@
                                 ></app-table>
                               </div>
 
-                              @if (!isLoadingContent && !isLoadingSummary) {
+                              @if (!isLoadingSummary) {
                                 <div class="QuestionSet__actions">
                                   @if (!currentAccordionData?.isUpdate) {
                                     <app-button
                                       class="QuestionSet__action-button"
                                       [buttonLabel]="'Submit Questions'"
                                       (btnClick)="onSubmit(setId)"
-                                      [disabled]="isReadOnly() || currentAccordionData.selectedIds.length === 0 || isLoading || !isDirtyForAccordion(setId)"
+                                      [disabled]="isReadOnly() || currentAccordionData.selectedIds.length === 0 || isLoading || isLoadingContent || !isDirtyForAccordion(setId)"
                                     ></app-button>
                                   } @else {
                                     <app-button
                                       class="QuestionSet__action-button"
                                       [buttonLabel]="'Save Changes'"
                                       (btnClick)="onUpdate(setId)"
-                                      [disabled]="isReadOnly() || currentAccordionData.selectedIds.length === 0 || isLoading || !isDirtyForAccordion(setId)"
+                                      [disabled]="isReadOnly() || currentAccordionData.selectedIds.length === 0 || isLoading || isLoadingContent || !isDirtyForAccordion(setId)"
                                     ></app-button>
                                   }
                                 </div>

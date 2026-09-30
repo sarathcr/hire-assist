@@ -4,237 +4,319 @@
     class="proofUpload__content"
     [class.proofUpload__content--uploading]="isUploading"
   >
-    <!-- ID Type Selection -->
-    <div class="proofUpload__field">
-      <app-input-select [formGroup]="fGroup" [config]="idTypeSelectConfig" />
-    </div>
-
-    <!-- File Upload Section -->
-    <div class="proofUpload__upload-section">
-      <p-fileupload
-        #fileUpload
-        name="idProofFiles[]"
-        [multiple]="true"
-        [auto]="false"
-        customUpload
-        [showUploadButton]="false"
-        [showCancelButton]="false"
-        [disabled]="isMaxFilesReached || isLoadingExistingImages"
-        accept="image/jpeg,image/png,application/pdf"
-        (onSelect)="onFileChange($event)"
-      >
-        <ng-template pTemplate="content">
+    <!-- Document Category Tabs -->
+    <p-tabs
+      [value]="activeTab"
+      (valueChange)="onTabChange($event)"
+      class="proofUpload__tabs"
+    >
+      <p-tablist>
+        <p-tab [value]="AADHAAR_TYPE">
           <div
-            class="proofUpload__upload-area"
-            [class.proofUpload__upload-area--disabled]="
-              isMaxFilesReached || isLoadingExistingImages
-            "
-            role="button"
-            [attr.tabindex]="
-              isMaxFilesReached || isLoadingExistingImages ? -1 : 0
-            "
-            (click)="
-              !(isMaxFilesReached || isLoadingExistingImages) &&
-                fileUpload.choose()
-            "
-            (keydown.enter)="
-              !(isMaxFilesReached || isLoadingExistingImages) &&
-                fileUpload.choose()
-            "
-            (keydown.space)="
-              !(isMaxFilesReached || isLoadingExistingImages) &&
-                fileUpload.choose()
-            "
+            class="proofUpload__tab-item"
+            (click)="onTabItemClick($event, AADHAAR_TYPE)"
           >
-            <div class="proofUpload__upload-placeholder">
-              <i class="pi pi-cloud-upload proofUpload__upload-icon"></i>
-              <p class="proofUpload__upload-text">
-                {{
-                  isMaxFilesReached
-                    ? 'Maximum file limit reached'
-                    : 'Drag and drop JPG, PNG, or PDF here'
-                }}
-              </p>
-              <p class="proofUpload__upload-hint">
-                {{
-                  isMaxFilesReached
-                    ? 'Delete existing files to upload new ones'
-                    : 'or click to browse'
-                }}
-              </p>
-              <p class="proofUpload__upload-limit">
-                Max {{ MAX_FILES }} files &bull; Max
-                {{ MAX_FILE_SIZE / 1048576 }}MB each
-              </p>
-            </div>
+            <i class="pi pi-id-card"></i>
+            <span>Aadhaar Card</span>
+            <p-badge
+              [value]="aadhaarFiles.length"
+              [severity]="aadhaarFiles.length > 0 ? 'success' : 'secondary'"
+            ></p-badge>
           </div>
-        </ng-template>
-        <ng-template pTemplate="toolbar"></ng-template>
-      </p-fileupload>
-
-      <!-- Selected Image Previews -->
-      @if (previewImages.length > 0) {
-        <div class="proofUpload__preview-section">
-          <div class="proofUpload__preview-header">
-            <span class="proofUpload__preview-title">
+        </p-tab>
+        <p-tab [value]="PAN_TYPE">
+          <div
+            class="proofUpload__tab-item"
+            (click)="onTabItemClick($event, PAN_TYPE)"
+          >
+            <i class="pi pi-credit-card"></i>
+            <span>PAN Card</span>
+            <p-badge
+              [value]="panFiles.length"
+              [severity]="panFiles.length > 0 ? 'success' : 'secondary'"
+            ></p-badge>
+          </div>
+        </p-tab>
+        @if (otherFiles.length > 0) {
+          <p-tab value="other">
+            <div
+              class="proofUpload__tab-item"
+              (click)="onTabItemClick($event, 'other')"
+            >
               <i class="pi pi-file"></i>
-              Selected Files ({{ previewImages.length }})
+              <span>Other Documents</span>
+              <p-badge
+                [value]="otherFiles.length"
+                severity="info"
+              ></p-badge>
+            </div>
+          </p-tab>
+        }
+      </p-tablist>
+
+      <p-tabpanels>
+        <!-- Aadhaar Card Tab Panel -->
+        <p-tabpanel [value]="AADHAAR_TYPE">
+          <ng-container
+            *ngTemplateOutlet="
+              documentSectionTemplate;
+              context: { typeName: 'Aadhaar Card', files: aadhaarFiles }
+            "
+          ></ng-container>
+        </p-tabpanel>
+
+        <!-- PAN Card Tab Panel -->
+        <p-tabpanel [value]="PAN_TYPE">
+          <ng-container
+            *ngTemplateOutlet="
+              documentSectionTemplate;
+              context: { typeName: 'PAN Card', files: panFiles }
+            "
+          ></ng-container>
+        </p-tabpanel>
+
+        <!-- Other Documents Tab Panel (if any exist) -->
+        @if (otherFiles.length > 0) {
+          <p-tabpanel value="other">
+            <ng-container
+              *ngTemplateOutlet="
+                documentSectionTemplate;
+                context: { typeName: 'Other Document', files: otherFiles }
+              "
+            ></ng-container>
+          </p-tabpanel>
+        }
+      </p-tabpanels>
+    </p-tabs>
+
+    <!-- Reusable Template for Document Section (Upload + Previews + Existing Files) -->
+    <ng-template
+      #documentSectionTemplate
+      let-typeName="typeName"
+      let-files="files"
+    >
+      <div class="proofUpload__tab-body">
+        <!-- File Upload Section -->
+        <div class="proofUpload__upload-section">
+          <p-fileupload
+            #fileUpload
+            name="idProofFiles[]"
+            [multiple]="true"
+            [auto]="false"
+            customUpload
+            [showUploadButton]="false"
+            [showCancelButton]="false"
+            [disabled]="isMaxFilesReached || isLoadingExistingImages"
+            accept="image/jpeg,image/png,application/pdf"
+            (onSelect)="onFileChange($event, fileUpload)"
+          >
+            <ng-template pTemplate="content">
+              <div
+                class="proofUpload__upload-area"
+                [class.proofUpload__upload-area--disabled]="
+                  isMaxFilesReached || isLoadingExistingImages
+                "
+                role="button"
+                [attr.tabindex]="
+                  isMaxFilesReached || isLoadingExistingImages ? -1 : 0
+                "
+                (click)="
+                  !(isMaxFilesReached || isLoadingExistingImages) &&
+                    fileUpload.choose()
+                "
+                (keydown.enter)="
+                  !(isMaxFilesReached || isLoadingExistingImages) &&
+                    fileUpload.choose()
+                "
+                (keydown.space)="
+                  !(isMaxFilesReached || isLoadingExistingImages) &&
+                    fileUpload.choose()
+                "
+              >
+                <div class="proofUpload__upload-placeholder">
+                  <i class="pi pi-cloud-upload proofUpload__upload-icon"></i>
+                  <p class="proofUpload__upload-text">
+                    {{
+                      isMaxFilesReached
+                        ? 'Maximum file limit reached'
+                        : 'Drag and drop ' + typeName + ' (JPG, PNG, or PDF) here'
+                    }}
+                  </p>
+                  <p class="proofUpload__upload-hint">
+                    {{
+                      isMaxFilesReached
+                        ? 'Delete existing files to upload new ones'
+                        : 'or click to browse'
+                    }}
+                  </p>
+                  <p class="proofUpload__upload-limit">
+                    Max {{ MAX_FILES }} files &bull; Max
+                    {{ MAX_FILE_SIZE / 1048576 }}MB each
+                  </p>
+                </div>
+              </div>
+            </ng-template>
+            <ng-template pTemplate="toolbar"></ng-template>
+          </p-fileupload>
+
+          <!-- Selected Image Previews for current upload -->
+          @if (previewImages.length > 0) {
+            <div class="proofUpload__preview-section">
+              <div class="proofUpload__preview-header">
+                <span class="proofUpload__preview-title">
+                  <i class="pi pi-file"></i>
+                  Selected for {{ typeName }} ({{ previewImages.length }})
+                </span>
+              </div>
+
+              <div class="proofUpload__preview-grid">
+                @for (
+                  preview of previewImages;
+                  track preview.previewUrl;
+                  let i = $index
+                ) {
+                  <div class="proofUpload__preview-card">
+                    <div
+                      class="proofUpload__preview-image-wrapper"
+                      (click)="openPreviewViewer(preview)"
+                      style="cursor: pointer"
+                      title="Click to view"
+                    >
+                      @if (preview.file.type === 'application/pdf') {
+                        <div class="proofUpload__preview-pdf">
+                          <i class="pi pi-file-pdf"></i>
+                        </div>
+                      } @else {
+                        <img
+                          [src]="preview.previewUrl"
+                          [alt]="preview.file.name"
+                          class="proofUpload__preview-image"
+                        />
+                      }
+
+                      <button
+                        class="proofUpload__preview-remove"
+                        (click)="$event.stopPropagation(); removePreviewImage(i)"
+                        type="button"
+                        [attr.aria-label]="'Remove ' + preview.file.name"
+                      >
+                        <i class="pi pi-times"></i>
+                      </button>
+                    </div>
+
+                    <div class="proofUpload__preview-info">
+                      <span
+                        class="proofUpload__preview-filename"
+                        [title]="preview.file.name"
+                      >
+                        {{ preview.file.name }}
+                      </span>
+                      <span class="proofUpload__file-size">
+                        ({{ formatFileSize(preview.file.size) }})
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (fileValidationError) {
+          <small class="proofUpload__validation-error">
+            {{ fileValidationError }}
+          </small>
+        }
+
+        <!-- Existing Images Section for this document type -->
+        <div class="proofUpload__existing-section">
+          <div class="proofUpload__section-header">
+            <span class="proofUpload__section-title">
+              <i class="pi pi-folder-open"></i>
+              Existing {{ typeName }} Files ({{ files.length }})
             </span>
           </div>
 
-          <div class="proofUpload__preview-grid">
-            @for (
-              preview of previewImages;
-              track preview.previewUrl;
-              let i = $index
-            ) {
-              <div class="proofUpload__preview-card">
-                <div class="proofUpload__preview-image-wrapper">
-                  @if (preview.file.type === "application/pdf") {
+          @if (isLoadingExistingImages) {
+            <div class="proofUpload__loader-container">
+              <p-progressSpinner
+                [style]="{ width: '40px', height: '40px' }"
+                strokeWidth="4"
+              ></p-progressSpinner>
+              <p class="proofUpload__loader-text">Loading files...</p>
+            </div>
+          } @else {
+            @if (files.length > 0) {
+              <div class="proofUpload__preview-grid">
+                @for (file of files; track file.blobId || file.fileName) {
+                  <div
+                    class="proofUpload__preview-card proofUpload__preview-card--existing"
+                  >
                     <div
-                      class="proofUpload__preview-pdf"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        width: 100%;
-                        height: 100%;
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                      "
+                      class="proofUpload__preview-image-wrapper"
+                      (click)="file.previewUrl ? openViewer(file) : null"
+                      [style.cursor]="file.previewUrl ? 'pointer' : 'default'"
+                      [title]="file.previewUrl ? 'Click to view' : ''"
                     >
-                      <i
-                        class="pi pi-file-pdf"
-                        style="
-                          font-size: 2.5rem;
-                          color: var(--primary-color, #1e3a8a);
+                      @if (file.isPdf) {
+                        <div class="proofUpload__preview-pdf">
+                          <i class="pi pi-file-pdf"></i>
+                        </div>
+                      } @else if (file.previewUrl) {
+                        <img
+                          [src]="file.previewUrl"
+                          [alt]="file.fileName"
+                          class="proofUpload__preview-image"
+                        />
+                      } @else {
+                        <div
+                          class="proofUpload__loader-container"
+                          style="min-height: unset; padding: 1rem;"
+                        >
+                          <p-progressSpinner
+                            [style]="{ width: '24px', height: '24px' }"
+                            strokeWidth="3"
+                          ></p-progressSpinner>
+                        </div>
+                      }
+                      <button
+                        class="proofUpload__preview-remove"
+                        (click)="
+                          $event.stopPropagation(); onDeleteExistingProof(file)
                         "
-                      ></i>
+                        type="button"
+                        [attr.aria-label]="'Delete ' + file.fileName"
+                      >
+                        <i class="pi pi-trash"></i>
+                      </button>
                     </div>
-                  } @else {
-                    <img
-                      [src]="preview.previewUrl"
-                      [alt]="preview.file.name"
-                      class="proofUpload__preview-image"
-                    />
-                  }
 
-                  <button
-                    class="proofUpload__preview-remove"
-                    (click)="removePreviewImage(i)"
-                    type="button"
-                    [attr.aria-label]="'Remove ' + preview.file.name"
-                  >
-                    <i class="pi pi-times"></i>
-                  </button>
-                </div>
-
-                <div class="proofUpload__preview-info">
-                  <span
-                    class="proofUpload__preview-filename"
-                    [title]="preview.file.name"
-                  >
-                    {{ preview.file.name }}
-                  </span>
-                  <span class="proofUpload__file-size">
-                    ({{ formatFileSize(preview.file.size) }})
-                  </span>
-                </div>
+                    <div class="proofUpload__preview-info">
+                      <span
+                        class="proofUpload__preview-filename"
+                        [title]="file.fileName"
+                      >
+                        {{ file.fileName }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="proofUpload__empty-state">
+                <i class="pi pi-inbox"></i>
+                <p>No {{ typeName }} files uploaded yet</p>
               </div>
             }
-          </div>
+          }
         </div>
-      }
-    </div>
-
-    @if (fileValidationError) {
-      <small class="proofUpload__validation-error">
-        {{ fileValidationError }}
-      </small>
-    }
-
-    <!-- Existing Images Section -->
-    <div class="proofUpload__existing-section">
-      <div class="proofUpload__section-header">
-        <span class="proofUpload__section-title">
-          <i class="pi pi-folder-open"></i>
-          Existing ID Proof Files
-        </span>
       </div>
-
-      @if (isLoadingExistingImages) {
-        <div class="proofUpload__loader-container">
-          <p-progressSpinner
-            [style]="{ width: '40px', height: '40px' }"
-            strokeWidth="4"
-          ></p-progressSpinner>
-          <p class="proofUpload__loader-text">Loading files...</p>
-        </div>
-      } @else {
-        @if (
-          uploadedFileUrl && uploadedFileUrl.length > 0 && imageUrl.length > 0
-        ) {
-          <div class="proofUpload__preview-grid">
-            @for (imgUrl of imageUrl; track imgUrl; let i = $index) {
-              <div
-                class="proofUpload__preview-card proofUpload__preview-card--existing"
-              >
-                <div class="proofUpload__preview-image-wrapper">
-                  @if (isPdf(uploadedFileUrl[i])) {
-                    <div
-                      class="proofUpload__preview-pdf"
-                      style="
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        width: 100%;
-                        height: 100%;
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                      "
-                    >
-                      <i
-                        class="pi pi-file-pdf"
-                        style="
-                          font-size: 2.5rem;
-                          color: var(--primary-color, #1e3a8a);
-                        "
-                      ></i>
-                    </div>
-                  } @else {
-                    <img
-                      [src]="imgUrl"
-                      alt="Existing ID proof"
-                      class="proofUpload__preview-image"
-                    />
-                  }
-                  <button
-                    class="proofUpload__preview-remove"
-                    (click)="onDeleteImage(i)"
-                    type="button"
-                    aria-label="Delete existing image"
-                  >
-                    <i class="pi pi-trash"></i>
-                  </button>
-                </div>
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="proofUpload__empty-state">
-            <i class="pi pi-inbox"></i>
-            <p>No existing files</p>
-          </div>
-        }
-      }
-    </div>
-
+    </ng-template>
   </div>
+
   <footer class="proofUpload__actions">
     <app-button
-      buttonLabel="Cancel"
+      [buttonLabel]="hasUploadedSuccessfully && previewImages.length === 0 ? 'Close' : 'Cancel'"
       [buttonVariant]="'outlined'"
       [buttonSize]="'medium'"
       [disabled]="isUploading"
@@ -269,4 +351,43 @@
       </div>
     </div>
   }
+
+  <!-- In-Dialog Image / PDF Viewer Dialog -->
+  <p-dialog
+    [(visible)]="displayViewer"
+    [modal]="true"
+    [header]="viewerTitle"
+    [draggable]="false"
+    [resizable]="false"
+    [maximizable]="true"
+    [dismissableMask]="true"
+    appendTo="body"
+    styleClass="proofUpload__viewer-dialog"
+    (onHide)="closeViewer()"
+  >
+    <div class="proofUpload__viewer-content">
+      @if (isViewerPdf && viewerUrl) {
+        <div class="proofUpload__pdf-container">
+          <ngx-extended-pdf-viewer
+            [src]="viewerUrl"
+            height="100%"
+            [textLayer]="true"
+            [showSidebarButton]="false"
+            [showOpenFileButton]="false"
+            [showPrintButton]="true"
+            [showDownloadButton]="true"
+          >
+          </ngx-extended-pdf-viewer>
+        </div>
+      } @else if (viewerUrl) {
+        <div class="proofUpload__image-container">
+          <img
+            [src]="viewerUrl"
+            [alt]="viewerTitle"
+            class="proofUpload__viewer-image"
+          />
+        </div>
+      }
+    </div>
+  </p-dialog>
 </div>

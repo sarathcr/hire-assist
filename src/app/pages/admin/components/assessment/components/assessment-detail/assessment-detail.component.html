@@ -730,12 +730,13 @@
         tooltipPosition="left"
       >
         <p-button
+          #actionsBtn
           icon="pi pi-bolt"
           label="Actions"
           [outlined]="true"
           severity="secondary"
           [disabled]="isActionsButtonDisabled"
-          (onClick)="openMenu($event, actionsMenu)"
+          (onClick)="openMenu($event, actionsMenu, actionsBtn)"
         />
         <p-menu
           #actionsMenu
@@ -763,7 +764,7 @@
           [hasSearch]="true"
           [parentLoader]="isLoading"
           [alreadySelected]="selectedCandidateIds"
-          [selectionDisabled]="data && !data.isActive"
+          [selectionDisabled]="(data && !data.isActive) || isAllRoundsCompleted"
           (selectedIds)="getSelectedCandidatesOnTable($event)"
           (delete)="deleteCandidate($event)"
           (pageChangeAndSort)="onTablePayloadChange($event)"

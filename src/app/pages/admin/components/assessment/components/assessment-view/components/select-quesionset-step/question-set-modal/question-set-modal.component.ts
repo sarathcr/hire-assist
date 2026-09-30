@@ -88,7 +88,7 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
   }
 
   public onClose() {
-    this.ref.close({ isCreateSuccess: false });
+    this.ref.close({ isCreateSuccess: false, isUpdateSuccess: false });
   }
   // Private Methods
   private setConfigMaps(): void {
@@ -136,7 +136,11 @@ export class QuestionSetModalComponent implements OnInit, OnDestroy {
         detail: 'Updated Question Set Successfully',
       });
       this.questionSetStateService.setUpdateSuccess(true);
-      this.ref.close();
+      this.ref.close({
+        isCreateSuccess: true,
+        isUpdateSuccess: true,
+        data: payload,
+      });
     };
 
     const error = (err: CustomErrorResponse) => {

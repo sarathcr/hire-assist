@@ -9,9 +9,10 @@
       </app-search-bar>
       <p-menu #displayMenu [model]="displayMenuItems" [popup]="true" appendTo="body" (onHide)="onMenuHide(displayMenu)"></p-menu>
       <p-button
+        #filterBtn
         [icon]="'pi pi-sliders-h'"
         [outlined]="!hasActiveDisplayModifiers()"
-        (onClick)="openMenu($event, displayMenu)"
+        (onClick)="openMenu($event, displayMenu, filterBtn)"
         size="small"
         class="coordinator-assessment__settings-btn"
         pTooltip="Filter & Sort"

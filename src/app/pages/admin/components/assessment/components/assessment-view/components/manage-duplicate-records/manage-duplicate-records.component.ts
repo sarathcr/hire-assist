@@ -61,10 +61,15 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   public nonEligibleGroups = computed(() =>
     this.data().filter((g) => g['isNonEligibleGroup']),
   );
-
-  public activeCategory = signal<'duplicate' | 'invalid' | 'noneligible'>(
-    'duplicate',
+  public completedHistoryGroups = computed(() =>
+    this.data().filter(
+      (g) => g['isCompletedHistoryGroup'] || g['isCompletedHistoryRecord'],
+    ),
   );
+
+  public activeCategory = signal<
+    'duplicate' | 'invalid' | 'noneligible' | 'completedHistory'
+  >('duplicate');
 
   // Duplicate Cluster Navigation
   public selectedClusterId = signal<string | null>(null);
@@ -116,14 +121,17 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   public getGroupsForCategory(
-    cat: 'duplicate' | 'invalid' | 'noneligible',
+    cat: 'duplicate' | 'invalid' | 'noneligible' | 'completedHistory',
   ): CandidateData[] {
     if (cat === 'duplicate') return this.duplicateGroups();
     if (cat === 'invalid') return this.invalidGroups();
+    if (cat === 'completedHistory') return this.completedHistoryGroups();
     return this.nonEligibleGroups();
   }
 
-  public setCategory(cat: 'duplicate' | 'invalid' | 'noneligible') {
+  public setCategory(
+    cat: 'duplicate' | 'invalid' | 'noneligible' | 'completedHistory',
+  ) {
     this.activeCategory.set(cat);
     this.selectedPanelId.set(null);
     this.selectedClusterId.set(null);
@@ -140,6 +148,58 @@ export class ManageDuplicateRecordsComponent implements OnInit {
       this.splitPanelList.set([]);
       this.activeGroupId.set(null);
     }
+  }
+
+  public getExistingCandidateData(candidate: CandidateData): CandidateData {
+    if (candidate['existingCandidate']) {
+      return {
+        ...candidate['existingCandidate'],
+        groupId: candidate.groupId,
+        key: candidate.key,
+        candidates: [],
+      };
+    }
+
+    const aadhaar =
+      candidate['aadhaarNumber'] || candidate['Aadhaar Number'] || 'N/A';
+    const name =
+      candidate['existingName'] ||
+      candidate['Candidate Name'] ||
+      candidate['name'] ||
+      'Preserved Historical Profile';
+    const email =
+      candidate['existingEmail'] ||
+      candidate['Email Id'] ||
+      candidate['email'] ||
+      'N/A';
+    const phone =
+      candidate['existingPhone'] ||
+      candidate['Mobile number'] ||
+      candidate['phoneNumber'] ||
+      'N/A';
+
+    return {
+      groupId: candidate.groupId,
+      key: candidate.key,
+      candidates: [],
+      'Candidate Name': name,
+      'Email Id': email,
+      'Mobile number': phone,
+      'Aadhaar Number': aadhaar,
+      'Recruitment Status': 'Completed in History (Preserved)',
+    };
+  }
+
+  public getImportedCandidateData(candidate: CandidateData): CandidateData {
+    if (candidate['importedCandidate']) {
+      return {
+        ...candidate['importedCandidate'],
+        groupId: candidate.groupId,
+        key: candidate.key,
+        candidates: [],
+      };
+    }
+    return candidate;
   }
 
   public splitPanelList = signal<CandidateData[]>([]);
@@ -431,7 +491,9 @@ export class ManageDuplicateRecordsComponent implements OnInit {
     this.data.set(records);
 
     // Determine initial active category
-    if (this.duplicateGroups().length > 0) {
+    if (this.completedHistoryGroups().length > 0) {
+      this.activeCategory.set('completedHistory');
+    } else if (this.duplicateGroups().length > 0) {
       this.activeCategory.set('duplicate');
       this.activeGroupId.set(null);
       this.splitPanelList.set([]);
@@ -586,7 +648,9 @@ export class ManageDuplicateRecordsComponent implements OnInit {
 
     if (groups.length === 0) {
       // Current category is finished, find the next non-empty category
-      if (this.duplicateGroups().length > 0) {
+      if (this.completedHistoryGroups().length > 0) {
+        this.setCategory('completedHistory');
+      } else if (this.duplicateGroups().length > 0) {
         this.setCategory('duplicate');
       } else if (this.invalidGroups().length > 0) {
         this.setCategory('invalid');
