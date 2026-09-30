@@ -431,26 +431,13 @@ export class CoordinatorAssignmentComponent implements OnInit {
       .paginationEntity('InterviewSummary', payload)
       .subscribe({
         next: (res: any) => {
-          const resData = (res.data || [])
-            .filter((item: any) => {
-              const status = item.status?.trim().toLowerCase() || '';
-              const isScheduled =
-                item.isScheduled === true ||
-                item.isScheduled === 1 ||
-                (typeof item.isScheduled === 'string' &&
-                  item.isScheduled.toLowerCase() !== 'false' &&
-                  item.isScheduled.toLowerCase() !== 'not scheduled' &&
-                  item.isScheduled.trim() !== '' &&
-                  item.isScheduled.trim() !== '0');
-              return status === 'scheduled' || isScheduled;
-            })
-            .map((item: InterviewSummary) => {
-              return {
-                ...item,
-                isScheduled: item.isScheduled ? 'Scheduled' : '',
-                isDisabled: !this.isCandidateSelectable(item),
-              };
-            });
+          const resData = (res.data || []).map((item: InterviewSummary) => {
+            return {
+              ...item,
+              isScheduled: item.isScheduled ? 'Scheduled' : '',
+              isDisabled: !this.isCandidateSelectable(item),
+            };
+          });
 
           this.data = { ...res, data: resData };
 
@@ -797,26 +784,13 @@ export class CoordinatorAssignmentComponent implements OnInit {
     this.isCandidateLoading = true;
     this.dataSource1.getData(payload).subscribe({
       next: (response: any) => {
-        const resData = (response?.data || [])
-          .filter((item: any) => {
-            const status = item.status?.trim().toLowerCase() || '';
-            const isScheduled =
-              item.isScheduled === true ||
-              item.isScheduled === 1 ||
-              (typeof item.isScheduled === 'string' &&
-                item.isScheduled.toLowerCase() !== 'false' &&
-                item.isScheduled.toLowerCase() !== 'not scheduled' &&
-                item.isScheduled.trim() !== '' &&
-                item.isScheduled.trim() !== '0');
-            return status === 'scheduled' || isScheduled;
-          })
-          .map((item: any) => {
-            return {
-              ...item,
-              isScheduled: item.isScheduled ? 'Scheduled' : '',
-              isDisabled: !this.isCandidateSelectable(item),
-            };
-          });
+        const resData = (response?.data || []).map((item: any) => {
+          return {
+            ...item,
+            isScheduled: item.isScheduled ? 'Scheduled' : '',
+            isDisabled: !this.isCandidateSelectable(item),
+          };
+        });
 
         this.data = { ...response, data: resData };
         this.isCandidateLoading = false;
