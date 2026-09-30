@@ -651,7 +651,6 @@ export class ImportCandidateListStepComponent implements OnInit {
             this.ref.close();
           }
           let allFailedRecords: unknown[] = [];
-
           // 1. Handle Duplicates
           if (response.duplicateEntries) {
             try {
@@ -666,7 +665,6 @@ export class ImportCandidateListStepComponent implements OnInit {
                 // Check if it's Base64 or raw CSV
                 let csvString = '';
                 try {
-                  // If it looks like Base64 (starts with common CSV header chars in B64 or doesn't have commas)
                   if (
                     !rawDuplicates.includes(',') &&
                     !rawDuplicates.includes('\n')
@@ -715,11 +713,68 @@ export class ImportCandidateListStepComponent implements OnInit {
               if (parsedDuplicates.length > 0) {
                 const groupedDuplicates =
                   groupCandidatesByContact(parsedDuplicates);
-                const taggedDuplicates = groupedDuplicates.map((g) => ({
-                  ...g,
-                  isDuplicateGroup: true,
-                  type: 'Duplicate',
-                }));
+                const taggedDuplicates = groupedDuplicates.map((g) => {
+                  const hasCompletedHistory = g.candidates.some((c: any) => {
+                    const cAadhaar = (c.aadhaarNumber || c['Aadhaar Number'] || '').replace(/\s/g, '');
+                    const existingStore = this.data?.data?.find((d: any) => (d.aadhaarNumber || '').replace(/\s/g, '') === cAadhaar);
+                    const isStoreCompleted = existingStore && (existingStore as any).status?.toLowerCase() === 'completed';
+
+                    return (
+                      c.isCompletedHistory ||
+                      c.isCompletedHistoryRecord ||
+                      c.status?.toLowerCase() === 'completed' ||
+                      c.existingCandidate?.status?.toLowerCase() === 'completed' ||
+                      isStoreCompleted ||
+                      (c.reason && (c.reason.toLowerCase().includes('completed') || c.reason.toLowerCase().includes('history'))) ||
+                      (c.failureReason && (c.failureReason.toLowerCase().includes('completed') || c.failureReason.toLowerCase().includes('history')))
+                    );
+                  });
+
+                  if (hasCompletedHistory) {
+                    const existingCand = g.candidates.find((c: any) => {
+                      const cAadhaar = (c['aadhaarNumber'] || c['Aadhaar Number'] || '').replace(/\s/g, '');
+                      const existingStore = this.data?.data?.find((d: any) => (d['aadhaarNumber'] || '').replace(/\s/g, '') === cAadhaar);
+                      return c['isCompletedHistory'] || c['status']?.toLowerCase() === 'completed' || c['isAlreadyExist'] || c['existingCandidate'] || (existingStore && (existingStore as any)['status']?.toLowerCase() === 'completed');
+                    }) || g.candidates[0];
+
+                    const cAadhaar = (existingCand['aadhaarNumber'] || existingCand['Aadhaar Number'] || '').replace(/\s/g, '');
+                    const matchedStore = this.data?.data?.find((d: any) => (d['aadhaarNumber'] || '').replace(/\s/g, '') === cAadhaar);
+
+                    const existingCandidateObj = existingCand['existingCandidate'] || (matchedStore ? {
+                      name: matchedStore.name,
+                      email: matchedStore.email,
+                      phoneNumber: (matchedStore as any)['phoneNumber'] || (matchedStore as any)['phone'] || 'N/A',
+                      aadhaarNumber: matchedStore.aadhaarNumber,
+                      status: (matchedStore as any)['status'] || 'Completed',
+                      currentLocation: matchedStore.currentLocation
+                    } : existingCand);
+
+                    const importedCand = g.candidates.find((c: any) => c !== existingCand) || g.candidates[1] || g.candidates[0];
+
+                    return {
+                      ...g,
+                      isDuplicateGroup: false,
+                      isCompletedHistoryGroup: true,
+                      type: 'CompletedHistory',
+                      key: 'Completed History',
+                      candidates: [
+                        {
+                          ...importedCand,
+                          isCompletedHistoryRecord: true,
+                          existingCandidate: existingCandidateObj,
+                          importedCandidate: importedCand,
+                          failureReason: 'Candidate has already completed a recruitment in our history. New details cannot be updated.'
+                        }
+                      ]
+                    };
+                  }
+
+                  return {
+                    ...g,
+                    isDuplicateGroup: true,
+                    type: 'Duplicate',
+                  };
+                });
                 allFailedRecords = [...allFailedRecords, ...taggedDuplicates];
               }
             } catch (e) {
@@ -831,11 +886,33 @@ export class ImportCandidateListStepComponent implements OnInit {
                 rowData['aadhaarNumber'] ||
                 'N/A';
 
+              const existingCandFromStore = this.data?.data?.find(c => {
+                const storeAadhaar = (c.aadhaarNumber || '').replace(/\s/g, '');
+                const recordAadhaar = (aadhaarNumber || '').replace(/\s/g, '');
+                return storeAadhaar && storeAadhaar === recordAadhaar;
+              });
+
               const isCompletedHistory =
-                (record as any).isCompletedHistory ||
-                (record.reason &&
-                  (record.reason.toLowerCase().includes('completed') ||
-                    record.reason.toLowerCase().includes('history')));
+                Boolean((record as any).isCompletedHistory) ||
+                Boolean((record as any).isCompletedHistoryRecord) ||
+                (record as any).existingCandidate?.status?.toLowerCase() === 'completed' ||
+                (record as any).status?.toLowerCase() === 'completed' ||
+                (existingCandFromStore && (existingCandFromStore as any).status?.toLowerCase() === 'completed') ||
+                (record.reason && (
+                  record.reason.toLowerCase().includes('completed') ||
+                  record.reason.toLowerCase().includes('history') ||
+                  record.reason.toLowerCase().includes('already completed') ||
+                  record.reason.toLowerCase().includes('previous recruitment')
+                ));
+
+              const existingCandidateObj = (record as any).existingCandidate || (existingCandFromStore ? {
+                name: existingCandFromStore.name,
+                email: existingCandFromStore.email,
+                phoneNumber: (existingCandFromStore as any).phoneNumber || (existingCandFromStore as any).phone || 'N/A',
+                aadhaarNumber: existingCandFromStore.aadhaarNumber,
+                status: (existingCandFromStore as any).status || 'Completed',
+                currentLocation: existingCandFromStore.currentLocation
+              } : undefined);
 
               const normalizedData = {
                 ...rowData,
@@ -850,8 +927,14 @@ export class ImportCandidateListStepComponent implements OnInit {
                 'Aadhaar Number': aadhaarNumber,
                 isNonEligibleRecord: !isCompletedHistory,
                 isCompletedHistoryRecord: isCompletedHistory,
-                existingCandidate: (record as any).existingCandidate,
-                importedCandidate: (record as any).importedCandidate,
+                existingCandidate: existingCandidateObj,
+                importedCandidate: (record as any).importedCandidate || {
+                  name,
+                  email,
+                  phoneNumber: phone,
+                  aadhaarNumber,
+                  ...rowData
+                },
                 failureReason:
                   record.reason ||
                   (isCompletedHistory
@@ -904,6 +987,7 @@ export class ImportCandidateListStepComponent implements OnInit {
         },
       });
   }
+
   public addNewCandidate() {
     this.ref = this.dialog.open(CandidateDialogComponent, {
       data: {
@@ -928,6 +1012,29 @@ export class ImportCandidateListStepComponent implements OnInit {
         const next = (res: any) => {
           this.isLoading = false;
           if (res && typeof res === 'object' && res.name) {
+            const isCompletedHistory =
+              res.isCompletedHistory ||
+              res.status?.toLowerCase() === 'completed' ||
+              (res.reason && (res.reason.toLowerCase().includes('completed') || res.reason.toLowerCase().includes('history')));
+
+            if (isCompletedHistory) {
+              const modalData: DialogData = {
+                title: 'Candidate History Protected',
+                message: `A candidate with Aadhaar Number <strong style="color: #0f172a;">${res.aadhaarNumber}</strong> has already completed a recruitment process in our history. New details cannot be updated and historical data is preserved.`,
+                isChoice: false,
+                isHtml: true,
+                acceptButtonText: 'OK',
+              };
+              this.ref = this.dialog.open(DialogComponent, {
+                data: modalData,
+                header: 'Recruitment History Protected',
+                width: '450px',
+                modal: true,
+                templates: { footer: DialogFooterComponent },
+              });
+              return;
+            }
+
             const isNameMismatch = res.name?.trim().toLowerCase() !== result.name?.trim().toLowerCase();
             const isEmailMismatch = res.email?.trim().toLowerCase() !== result.email?.trim().toLowerCase();
             const isPhoneMismatch = (res.phoneNumber || '').trim() !== (result.phoneNumber || '').trim();

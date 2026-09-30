@@ -1595,6 +1595,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         label: 'Assign to Batch',
         icon: 'pi pi-users',
         disabled:
+          this.roundStatus ||
           !hasSelection ||
           anyCompleted ||
           anyScheduled ||
@@ -1612,6 +1613,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         label: 'Assign to Panel',
         icon: 'pi pi-user-plus',
         disabled:
+          this.roundStatus ||
           !hasSelection ||
           anyCompleted ||
           anySelected ||
@@ -1628,6 +1630,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       label: 'Schedule',
       icon: 'pi pi-calendar-plus',
       disabled:
+        this.roundStatus ||
         !hasSelection ||
         anyCompleted ||
         anyScheduled ||
@@ -1645,14 +1648,14 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     items.push({
       label: 'Select Candidate',
       icon: 'pi pi-check-circle',
-      disabled: !hasSelection || (!allCompleted && !allRejected),
+      disabled: this.roundStatus || !hasSelection || (!allCompleted && !allRejected),
       command: () => this.onSelectCandidates(),
     });
 
     items.push({
       label: 'Reject Candidate',
       icon: 'pi pi-times-circle',
-      disabled: !hasSelection || (!allCompleted && !allSelected && !allQuit),
+      disabled: this.roundStatus || !hasSelection || (!allCompleted && !allSelected && !allQuit),
       command: () => this.onRejectCandidates(),
     });
 
@@ -1672,7 +1675,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   public hasAnyAvailableActionInRound(): boolean {
     if (!this.data || !this.data.isActive) return false;
-    if (this.roundStatus || this.isAllRoundsCompleted) return false;
+    if (this.isAllRoundsCompleted) return false;
     const candidates = this.tableData?.data;
     if (!candidates || candidates.length === 0) return false;
 
@@ -1684,6 +1687,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     return candidates.some((c: any) => {
       const status = c.status?.toLowerCase() || '';
       const isScheduled = !!c.isScheduled;
+
+      if (this.roundStatus) {
+        return hasNextRound && status === 'selected' && !isScheduled;
+      }
 
       // 1. Can assign to batch (Aptitude & not scheduled & not in terminal/active state)
       if (
@@ -1733,7 +1740,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     if (!this.data || !this.data.isActive) {
       return true;
     }
-    if (this.roundStatus || this.isAllRoundsCompleted) {
+    if (this.isAllRoundsCompleted) {
       return true;
     }
     if (!this.tableData?.data || this.tableData.data.length === 0) {
@@ -1758,7 +1765,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     if (this.isAllRoundsCompleted) {
       return 'All recruitment rounds are completed';
     }
-    if (this.roundStatus) {
+    if (!this.tableData?.data || this.tableData.data.length === 0) {
+      return 'No candidates in this round';
+    }
+    if (this.roundStatus && !this.hasAnyAvailableActionInRound()) {
       return 'Current round is completed';
     }
     if (!this.tableData?.data || this.tableData.data.length === 0) {

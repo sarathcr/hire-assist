@@ -164,6 +164,7 @@ export class ResetPasswordChangeComponent implements OnInit {
   }
 
   public backToLogin(): void {
+    this.resetPasswordFormGroup.reset();
     this.router.navigate(['/auth/login']);
   }
 
@@ -172,8 +173,12 @@ export class ResetPasswordChangeComponent implements OnInit {
       this.messageService.add({
         severity: 'success',
         summary: 'Success',
-        detail: 'Successfully changed your password',
+        detail: 'Successfully changed your password. Redirecting to login...',
       });
+      this.resetPasswordFormGroup.reset();
+      setTimeout(() => {
+        this.router.navigate(['/auth/login']);
+      }, 1500);
     }
     this.isLoading = false;
   }

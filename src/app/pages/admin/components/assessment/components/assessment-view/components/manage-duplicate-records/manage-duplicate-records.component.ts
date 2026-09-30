@@ -152,11 +152,28 @@ export class ManageDuplicateRecordsComponent implements OnInit {
 
   public getExistingCandidateData(candidate: CandidateData): CandidateData {
     if (candidate['existingCandidate']) {
+      const ex = candidate['existingCandidate'];
+      const name = ex['name'] || ex['Candidate Name'] || ex['fullname'] || 'N/A';
+      const email = ex['email'] || ex['Email Id'] || ex['Email address'] || 'N/A';
+      const phone = ex['phoneNumber'] || ex['Mobile number'] || ex['phone'] || 'N/A';
+      const aadhaar = ex['aadhaarNumber'] || ex['Aadhaar Number'] || candidate['aadhaarNumber'] || candidate['Aadhaar Number'] || 'N/A';
+      const dob = ex['dob'] || ex['Date of Birth'] || 'N/A';
+      const gender = ex['gender'] || ex['Gender'] || 'N/A';
+      const location = ex['currentLocation'] || ex['Current Location'] || ex['location'] || 'N/A';
+
       return {
-        ...candidate['existingCandidate'],
+        ...ex,
         groupId: candidate.groupId,
         key: candidate.key,
         candidates: [],
+        'Candidate Name': name,
+        'Email Id': email,
+        'Mobile number': phone,
+        'Aadhaar Number': aadhaar,
+        'Date of Birth': dob,
+        'Gender': gender,
+        'Current Location': location,
+        'Recruitment Status': ex['status'] || 'Completed in History (Preserved)',
       };
     }
 
@@ -164,19 +181,22 @@ export class ManageDuplicateRecordsComponent implements OnInit {
       candidate['aadhaarNumber'] || candidate['Aadhaar Number'] || 'N/A';
     const name =
       candidate['existingName'] ||
-      candidate['Candidate Name'] ||
-      candidate['name'] ||
+      candidate['originalName'] ||
+      candidate['registeredName'] ||
       'Preserved Historical Profile';
     const email =
       candidate['existingEmail'] ||
-      candidate['Email Id'] ||
-      candidate['email'] ||
+      candidate['originalEmail'] ||
+      candidate['registeredEmail'] ||
       'N/A';
     const phone =
       candidate['existingPhone'] ||
-      candidate['Mobile number'] ||
-      candidate['phoneNumber'] ||
+      candidate['originalPhone'] ||
+      candidate['registeredPhone'] ||
       'N/A';
+    const dob = candidate['existingDob'] || candidate['originalDob'] || 'N/A';
+    const gender = candidate['existingGender'] || candidate['originalGender'] || 'N/A';
+    const location = candidate['existingLocation'] || candidate['originalLocation'] || 'N/A';
 
     return {
       groupId: candidate.groupId,
@@ -186,20 +206,62 @@ export class ManageDuplicateRecordsComponent implements OnInit {
       'Email Id': email,
       'Mobile number': phone,
       'Aadhaar Number': aadhaar,
+      'Date of Birth': dob,
+      'Gender': gender,
+      'Current Location': location,
       'Recruitment Status': 'Completed in History (Preserved)',
     };
   }
 
   public getImportedCandidateData(candidate: CandidateData): CandidateData {
     if (candidate['importedCandidate']) {
+      const im = candidate['importedCandidate'];
+      const name = im['name'] || im['Candidate Name'] || im['fullname'] || 'N/A';
+      const email = im['email'] || im['Email Id'] || im['Email address'] || 'N/A';
+      const phone = im['phoneNumber'] || im['Mobile number'] || im['phone'] || 'N/A';
+      const aadhaar = im['aadhaarNumber'] || im['Aadhaar Number'] || candidate['aadhaarNumber'] || candidate['Aadhaar Number'] || 'N/A';
+      const dob = im['dob'] || im['Date of Birth'] || 'N/A';
+      const gender = im['gender'] || im['Gender'] || 'N/A';
+      const location = im['currentLocation'] || im['Current Location'] || im['location'] || 'N/A';
+
       return {
-        ...candidate['importedCandidate'],
+        ...im,
         groupId: candidate.groupId,
         key: candidate.key,
         candidates: [],
+        'Candidate Name': name,
+        'Email Id': email,
+        'Mobile number': phone,
+        'Aadhaar Number': aadhaar,
+        'Date of Birth': dob,
+        'Gender': gender,
+        'Current Location': location,
+        'Import Status': 'Incoming CSV Details (Blocked)',
       };
     }
-    return candidate;
+
+    const name = candidate['name'] || candidate['Candidate Name'] || 'N/A';
+    const email = candidate['email'] || candidate['Email Id'] || 'N/A';
+    const phone = candidate['phoneNumber'] || candidate['Mobile number'] || candidate['phone'] || 'N/A';
+    const aadhaar = candidate['aadhaarNumber'] || candidate['Aadhaar Number'] || 'N/A';
+    const dob = candidate['dob'] || candidate['Date of Birth'] || 'N/A';
+    const gender = candidate['gender'] || candidate['Gender'] || 'N/A';
+    const location = candidate['currentLocation'] || candidate['Current Location'] || 'N/A';
+
+    return {
+      ...candidate,
+      groupId: candidate.groupId,
+      key: candidate.key,
+      candidates: [],
+      'Candidate Name': name,
+      'Email Id': email,
+      'Mobile number': phone,
+      'Aadhaar Number': aadhaar,
+      'Date of Birth': dob,
+      'Gender': gender,
+      'Current Location': location,
+      'Import Status': 'Incoming CSV Details (Blocked)',
+    };
   }
 
   public splitPanelList = signal<CandidateData[]>([]);
@@ -290,6 +352,7 @@ export class ManageDuplicateRecordsComponent implements OnInit {
   }
 
   public onSubmit() {
+    if (this.activeCategory() === 'completedHistory') return;
     if (!this.isSelectedCandidateValid()) return;
     const selectedId = this.selectedPanelId();
     if (!selectedId) return;
@@ -302,13 +365,14 @@ export class ManageDuplicateRecordsComponent implements OnInit {
         break;
       }
     }
-    if (!selectedCandidate) return;
+    if (!selectedCandidate || selectedCandidate['isCompletedHistoryRecord'] || selectedCandidate['isCompletedHistoryGroup']) return;
 
     this.isLoading.set(true);
     this.updateCandidateData(selectedCandidate);
   }
 
   public onSaveRecord(candidate: CandidateData, groupId: string) {
+    if (candidate['isCompletedHistoryRecord'] || candidate['isCompletedHistoryGroup']) return;
     this.activeGroupId.set(groupId);
     this.selectedPanelId.set(candidate.panelId ?? null);
 

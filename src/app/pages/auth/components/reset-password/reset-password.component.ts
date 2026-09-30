@@ -156,12 +156,14 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   }
 
   public backToLogin(): void {
+    this.resetFormGroup.reset();
     this.router.navigate(['/auth/login']);
   }
 
   private handleResetPasswordSuccess(res: any): void {
     this.isEmailSent = true;
     this.isLoading = false;
+    this.resetFormGroup.reset();
     
     const cooldownUntil = new Date().getTime() + 60000;
     localStorage.setItem('resetPasswordCooldown', cooldownUntil.toString());
