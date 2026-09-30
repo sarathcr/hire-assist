@@ -126,7 +126,13 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
   }
 
   public get existingFilesCount(): number {
-    return this.existingProofs.length;
+    if (this.activeTab === this.AADHAAR_TYPE) {
+      return this.aadhaarFiles.length;
+    }
+    if (this.activeTab === this.PAN_TYPE) {
+      return this.panFiles.length;
+    }
+    return this.otherFiles.length;
   }
 
   public get totalFilesCount(): number {
@@ -378,9 +384,12 @@ export class UploadIdProofDialogComponent implements OnInit, OnDestroy {
         return;
       }
 
+      const activeTypeId = Number(this.activeTab);
       const isExistingDuplicate =
         this.existingProofs?.some(
-          (f) => f.fileName.toLowerCase() === file.name.toLowerCase(),
+          (f) =>
+            f.attachmentTypeId === activeTypeId &&
+            f.fileName.toLowerCase() === file.name.toLowerCase(),
         ) ?? false;
 
       if (isExistingDuplicate) {
