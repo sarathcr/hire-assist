@@ -49,6 +49,7 @@ import {
   InterviewPanels,
   InterviewPanelsResponse,
 } from '../../../../models/interview-panels.model';
+import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { CoordinatorPanelBridgeService } from '../../../../services/coordinator-panel-bridge.service';
 const candidateTable: TableColumnsData = {
   columns: [
@@ -432,10 +433,19 @@ export class CoordinatorAssignmentComponent implements OnInit {
       .subscribe({
         next: (res: any) => {
           const resData = (res.data || []).map((item: InterviewSummary) => {
+            const statusLower = item.status?.trim().toLowerCase() || '';
+            const statusIdVal = (item as any).statusId ?? (item as any).statusID;
+            const isStarted =
+              statusLower === 'active' ||
+              statusLower === 'in progress' ||
+              statusLower === 'in-progress' ||
+              statusIdVal === StatusEnum.Active;
+
             return {
               ...item,
               isScheduled: item.isScheduled ? 'Scheduled' : '',
               isDisabled: !this.isCandidateSelectable(item),
+              disabledTooltip: isStarted ? 'Interview is ongoing' : undefined,
             };
           });
 
@@ -531,6 +541,15 @@ export class CoordinatorAssignmentComponent implements OnInit {
     this.isScheduling = true;
 
     const selectedCandidate = this.selectedCandidatesIds[0];
+    if (!this.isCandidateSelectable(selectedCandidate)) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Panel cannot be assigned because the candidate interview has already started or completed.',
+      });
+      return;
+    }
+
     const selectedPanel = this.selectedPanelIds[0];
     const selectedInterviewerIds =
       selectedPanel.interviewers?.map((i: any) => i.id) ?? [];
@@ -785,10 +804,19 @@ export class CoordinatorAssignmentComponent implements OnInit {
     this.dataSource1.getData(payload).subscribe({
       next: (response: any) => {
         const resData = (response?.data || []).map((item: any) => {
+          const statusLower = item.status?.trim().toLowerCase() || '';
+          const statusIdVal = item.statusId ?? item.statusID;
+          const isStarted =
+            statusLower === 'active' ||
+            statusLower === 'in progress' ||
+            statusLower === 'in-progress' ||
+            statusIdVal === StatusEnum.Active;
+
           return {
             ...item,
             isScheduled: item.isScheduled ? 'Scheduled' : '',
             isDisabled: !this.isCandidateSelectable(item),
+            disabledTooltip: isStarted ? 'Interview is ongoing' : undefined,
           };
         });
 
@@ -862,6 +890,15 @@ export class CoordinatorAssignmentComponent implements OnInit {
     if (currentStep === 0) {
       if (this.selectedCandidatesIds.length > 0) {
         const candidate = this.selectedCandidatesIds[0];
+        if (!this.isCandidateSelectable(candidate)) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Warning',
+            detail: 'Panel cannot be changed because the interview has already started or completed.',
+          });
+          return;
+        }
+
         const isAlreadyScheduled =
           candidate.status?.toLowerCase() === 'scheduled' ||
           candidate.status?.toLowerCase() === 'assigned' ||
@@ -977,11 +1014,25 @@ export class CoordinatorAssignmentComponent implements OnInit {
    */
   private isCandidateSelectable(candidate: any): boolean {
     const status = candidate?.status?.trim().toLowerCase() || '';
-    // Selected, Rejected, and Completed should be disabled
+    const statusId = candidate?.statusId ?? candidate?.statusID;
     return !(
+      status === 'active' ||
+      status === 'in progress' ||
+      status === 'in-progress' ||
+      status === 'onreview' ||
+      status === 'on review' ||
       status === 'completed' ||
       status === 'selected' ||
-      status === 'rejected'
+      status === 'rejected' ||
+      status === 'terminated' ||
+      status === 'quit' ||
+      statusId === StatusEnum.Active ||
+      statusId === StatusEnum.OnReview ||
+      statusId === StatusEnum.Completed ||
+      statusId === StatusEnum.Selected ||
+      statusId === StatusEnum.Rejected ||
+      statusId === StatusEnum.Terminated ||
+      statusId === StatusEnum.Quit
     );
   }
 

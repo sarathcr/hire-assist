@@ -427,11 +427,10 @@
           <td
             style="width: 4rem; min-width: 4rem; max-width: 4rem"
             [pTooltip]="
-              (selectionDisabled() ||
-                product.isSelectionDisabled ||
-                product.isDisabled) &&
-              product.disabledReason
-                ? product.disabledReason
+              selectionDisabled() ||
+              product.isSelectionDisabled ||
+              product.isDisabled
+                ? (product.disabledReason || getTooltipText(product))
                 : ''
             "
             tooltipPosition="right"

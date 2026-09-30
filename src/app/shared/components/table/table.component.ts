@@ -32,6 +32,7 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { PopoverModule } from 'primeng/popover';
 import { Tooltip } from 'primeng/tooltip';
+import { StatusEnum } from '../../enums/status.enum';
 import { debounceTime, Subject } from 'rxjs';
 import {
   PaginatedData,
@@ -253,26 +254,48 @@ export class TableComponent<
     this.lastClickTime = now;
     this.dropdownManager.closeActive();
     if (product.isDisabled) {
-      const status =
-        product?.status || (product?.isScheduled ? 'Scheduled' : '');
-      const isPanel = !!(
-        product?.panelName ||
-        product?.panel ||
-        product?.interviewers !== undefined
+      const status = product?.status || (product?.isScheduled ? 'Scheduled' : '');
+      const statusLower = status.trim().toLowerCase();
+      const statusIdVal = product?.statusId ?? product?.statusID;
+      const isStarted =
+        statusLower === 'active' ||
+        statusLower === 'in progress' ||
+        statusLower === 'in-progress' ||
+        statusIdVal === 1 ||
+        statusIdVal === StatusEnum.Active;
+
+      const isCandidate = !!(
+        product?.candidateName ||
+        product?.candidateId ||
+        product?.email ||
+        product?.candidateEmail ||
+        (product?.name && product?.interviewers === undefined)
       );
+
       const isEmptyPanel =
-        product?.interviewers && product.interviewers.length === 0;
+        product?.interviewers && Array.isArray(product.interviewers) && product.interviewers.length === 0;
+
+      let detailMsg = '';
+      if (isStarted) {
+        detailMsg = 'Interview is ongoing for this candidate.';
+      } else if (product.disabledTooltip) {
+        detailMsg = product.disabledTooltip;
+      } else if (isEmptyPanel) {
+        detailMsg = 'This panel has no interviewers assigned and cannot be selected.';
+      } else if (isCandidate) {
+        detailMsg = status
+          ? `This candidate is already ${status} and cannot be selected.`
+          : 'This candidate is currently disabled and cannot be selected.';
+      } else {
+        detailMsg = status
+          ? `This panel is already ${status} and cannot be selected.`
+          : 'This panel is currently disabled and cannot be selected.';
+      }
 
       this.messageService.add({
         severity: 'warn',
         summary: 'Read-only',
-        detail: isEmptyPanel
-          ? 'This panel has no interviewers assigned and cannot be selected.'
-          : isPanel
-            ? `This panel is already ${status} and cannot be selected.`
-            : status
-              ? `This candidate is already ${status} and cannot be selected.`
-              : 'This candidate is currently disabled and cannot be selected.',
+        detail: detailMsg,
       });
     } else {
       this.view.emit(product);
@@ -381,9 +404,22 @@ export class TableComponent<
 
   public getTooltipText(product: any): string {
     if (product.isDisabled) {
-      const status = product?.status?.toLowerCase() || '';
+      if (product.disabledTooltip) {
+        return product.disabledTooltip;
+      }
+      const status = product?.status?.trim().toLowerCase() || '';
+      const statusId = product?.statusId ?? product?.statusID;
       if (product?.interviewers && product.interviewers.length === 0) {
         return 'This panel has no interviewers assigned and cannot be selected.';
+      }
+      if (
+        status === 'active' ||
+        status === 'in progress' ||
+        status === 'in-progress' ||
+        statusId === 1 ||
+        statusId === StatusEnum.Active
+      ) {
+        return 'Interview is ongoing';
       }
       if (
         status === 'selected' ||

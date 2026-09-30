@@ -793,6 +793,32 @@ export class InterviewerFeedbackComponent
         this.responseData.timerHour = res.timerHour;
         this.durationSeconds = this.convertTimerHourToSeconds(res.timerHour);
       }
+
+      // Mark candidate status as Active (1) if it is currently unstarted / scheduled
+      const currentStatusId = (res as any).statusId ?? (res as any).statusID;
+      if (
+        currentStatusId !== StatusEnum.Active &&
+        currentStatusId !== StatusEnum.OnReview &&
+        currentStatusId !== StatusEnum.Completed &&
+        currentStatusId !== StatusEnum.Selected &&
+        currentStatusId !== StatusEnum.Rejected &&
+        currentStatusId !== StatusEnum.Terminated &&
+        currentStatusId !== StatusEnum.Quit &&
+        this.candidateid &&
+        this.assessmentId &&
+        this.assessmentRoundId
+      ) {
+        const statusPayload = [
+          {
+            candidateId: this.candidateid,
+            assessmentRoundId: Number(this.assessmentRoundId),
+            isActive: true,
+            statusId: StatusEnum.Active,
+            assessmentId: Number(this.assessmentId),
+          },
+        ];
+        this.interviewService.updateEntity('InterviewStatus', statusPayload).subscribe();
+      }
     };
     const error = () => {
       this.messageService.add({

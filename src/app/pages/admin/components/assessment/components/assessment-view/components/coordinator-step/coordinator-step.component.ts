@@ -155,6 +155,17 @@ export class CoordinatorStepComponent implements OnInit, OnDestroy {
     return isAllSelected || isMaxRows;
   }
 
+  public get hasAptitudeRound(): boolean {
+    if (!this.assessmentRounds || this.assessmentRounds.length === 0) {
+      return false;
+    }
+    return this.assessmentRounds.some(
+      (round: RoundModel) =>
+        round.roundTypeId === 1 ||
+        (round.round && round.round.toLowerCase().includes('aptitude')),
+    );
+  }
+
   constructor(
     private readonly fb: FormBuilder,
     public messageService: MessageService,

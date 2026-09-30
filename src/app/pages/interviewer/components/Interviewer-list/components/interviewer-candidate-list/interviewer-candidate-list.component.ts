@@ -18,6 +18,7 @@ import {
 } from '../../../../../../shared/models/table.models';
 import { InterviewByPanel } from '../../../../../admin/models/assessment-schedule.model';
 import { InterviewService } from '../../../../../admin/services/interview.service';
+import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { InterviewerCandidateListSkeletonComponent } from './interviewer-candidate-list.skeleton';
 import { CardModule } from 'primeng/card';
 import { BadgeModule } from 'primeng/badge';
@@ -183,9 +184,35 @@ export class InterviewerCandidateListComponent implements OnInit {
     const basePath = this.router.url.includes('/admin/')
       ? 'admin/interviews'
       : 'interviewer';
-    this.router.navigate([
-      `${basePath}/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
-    ]);
+
+    const candidateIdVal = data.email || (data as any).candidateId || (data.id ? String(data.id) : '');
+    if (candidateIdVal && data.assessemntRoundId && this.assessmentId) {
+      const payload = [
+        {
+          candidateId: candidateIdVal,
+          assessmentRoundId: Number(data.assessemntRoundId),
+          isActive: true,
+          statusId: StatusEnum.Active,
+          assessmentId: Number(this.assessmentId),
+        },
+      ];
+      this.interviewService.updateEntity('InterviewStatus', payload).subscribe({
+        next: () => {
+          this.router.navigate([
+            `${basePath}/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+          ]);
+        },
+        error: () => {
+          this.router.navigate([
+            `${basePath}/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+          ]);
+        },
+      });
+    } else {
+      this.router.navigate([
+        `${basePath}/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+      ]);
+    }
   }
 
   // Private Methods

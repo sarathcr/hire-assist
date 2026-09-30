@@ -14,12 +14,14 @@
       </div>
     </div>
   </div>
-  <div class="coordinator__info-alert">
-    <i class="pi pi-info-circle"></i>
-    <span>
-      <strong>Note:</strong> Aptitude Round is automatically managed and does not require a specific coordinator to assign panel and interviewers.
-    </span>
-  </div>
+  @if (hasAptitudeRound) {
+    <div class="coordinator__info-alert">
+      <i class="pi pi-info-circle"></i>
+      <span>
+        Aptitude rounds are automatically managed by the system and do not require coordinator or panel assignments.
+      </span>
+    </div>
+  }
   @if (coordinatorData) {
     <form [formGroup]="fGroup" (ngSubmit)="onSubmit()">
       <div

@@ -24,6 +24,7 @@ import {
   InterviewerPanelDetails,
 } from '../../../admin/models/assessment-schedule.model';
 import { InterviewService } from '../../../admin/services/interview.service';
+import { StatusEnum } from '../../../../shared/enums/status.enum';
 import { InterviewerPanelsSkeletonComponent } from './interviewer-recruitment-panels-skeleton.component';
 
 const panelTableColumns: TableColumnsData = {
@@ -229,14 +230,40 @@ export class InterviewerRecruitmentPanelsComponent implements OnInit {
     });
   }
 
-  /** Navigate to the feedback/interview page. */
+  /** Navigate to the feedback/interview page and update candidate status to Active. */
   public onStartInterview(data: InterviewByPanel, panelId: number): void {
     const basePath = this.router.url.includes('/admin/')
       ? 'admin/interviews'
       : 'interviewer';
-    this.router.navigate([
-      `${basePath}/recruitments/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
-    ]);
+
+    const candidateIdVal = data.email || (data as any).candidateId || (data.id ? String(data.id) : '');
+    if (candidateIdVal && data.assessemntRoundId && this.assessmentId) {
+      const payload = [
+        {
+          candidateId: candidateIdVal,
+          assessmentRoundId: Number(data.assessemntRoundId),
+          isActive: true,
+          statusId: StatusEnum.Active,
+          assessmentId: Number(this.assessmentId),
+        },
+      ];
+      this.interviewService.updateEntity('InterviewStatus', payload).subscribe({
+        next: () => {
+          this.router.navigate([
+            `${basePath}/recruitments/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+          ]);
+        },
+        error: () => {
+          this.router.navigate([
+            `${basePath}/recruitments/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+          ]);
+        },
+      });
+    } else {
+      this.router.navigate([
+        `${basePath}/recruitments/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+      ]);
+    }
   }
 
   /** Returns all rows for a given panelId (used for metadata chips). */

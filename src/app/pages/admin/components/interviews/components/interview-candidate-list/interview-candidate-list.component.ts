@@ -261,9 +261,34 @@ export class InterviewCandidateListComponent implements OnInit {
   }
 
   public onStartInterview(data: InterviewByPanel): void {
-    this.router.navigate([
-      `admin/interviews/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
-    ]);
+    const candidateIdVal = data.email || (data as any).candidateId || (data.id ? String(data.id) : '');
+    if (candidateIdVal && data.assessemntRoundId && this.assessmentId) {
+      const payload = [
+        {
+          candidateId: candidateIdVal,
+          assessmentRoundId: Number(data.assessemntRoundId),
+          isActive: true,
+          statusId: StatusEnum.Active,
+          assessmentId: Number(this.assessmentId),
+        },
+      ];
+      this.interviewService.updateEntity('InterviewStatus', payload).subscribe({
+        next: () => {
+          this.router.navigate([
+            `admin/interviews/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+          ]);
+        },
+        error: () => {
+          this.router.navigate([
+            `admin/interviews/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+          ]);
+        },
+      });
+    } else {
+      this.router.navigate([
+        `admin/interviews/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+      ]);
+    }
   }
 
   public currentHistoryPanelName: string | null = null;
