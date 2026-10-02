@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
@@ -94,7 +94,7 @@ type TableDataItem = Omit<InterviewByPanel, 'id'> & { id: string };
   templateUrl: './interviewer-candidate-list.component.html',
   styleUrl: './interviewer-candidate-list.component.scss',
 })
-export class InterviewerCandidateListComponent implements OnInit {
+export class InterviewerCandidateListComponent implements OnInit, OnDestroy {
   public data!: PaginatedData<InterviewByPanel>;
   public columns: TableColumnsData = tableColumns;
   public isInitialLoad = true;
@@ -105,6 +105,7 @@ export class InterviewerCandidateListComponent implements OnInit {
   public todayInterviews: InterviewByPanel[] = [];
   public previousInterviews: InterviewByPanel[] = [];
   public upcomingInterviews: InterviewByPanel[] = [];
+  private pollIntervalId: any;
   public tableData: PaginatedData<TableDataItem> = {
     pageNumber: 1,
     pageSize: 5,
@@ -159,6 +160,32 @@ export class InterviewerCandidateListComponent implements OnInit {
     this.setPaginationEndpoint();
     this.getCurrentRouteId();
     this.getPaginatedCandidateData(new PaginatedPayload());
+
+    this.pollIntervalId = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        this.getPaginatedCandidateData(new PaginatedPayload(), true);
+      }
+    }, 30000);
+  }
+
+  private lastFocusFetchTime = 0;
+
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      const now = Date.now();
+      if (now - this.lastFocusFetchTime < 5000) return;
+      this.lastFocusFetchTime = now;
+      setTimeout(() => {
+        this.getPaginatedCandidateData(new PaginatedPayload(), true);
+      }, 300);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollIntervalId) {
+      clearInterval(this.pollIntervalId);
+    }
   }
 
   // Public Methods
@@ -185,32 +212,38 @@ export class InterviewerCandidateListComponent implements OnInit {
       ? 'admin/interviews'
       : 'interviewer';
 
-    const candidateIdVal = data.email || (data as any).candidateId || (data.id ? String(data.id) : '');
-    if (candidateIdVal && data.assessemntRoundId && this.assessmentId) {
+    const candidateIdVal = (data as any).candidateId || data.email || (data.id ? String(data.id) : '');
+    const roundId = (data as any).assessmentRoundId ?? data.assessemntRoundId;
+    if (candidateIdVal && roundId && this.assessmentId) {
       const payload = [
         {
           candidateId: candidateIdVal,
-          assessmentRoundId: Number(data.assessemntRoundId),
+          assessmentRoundId: Number(roundId),
           isActive: true,
-          statusId: StatusEnum.Active,
+          statusId: StatusEnum.InterviewStarted,
           assessmentId: Number(this.assessmentId),
         },
       ];
       this.interviewService.updateEntity('InterviewStatus', payload).subscribe({
         next: () => {
           this.router.navigate([
-            `${basePath}/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+            `${basePath}/${this.assessmentId}/${roundId}/${data.id}/${data.email}`,
           ]);
         },
-        error: () => {
-          this.router.navigate([
-            `${basePath}/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
-          ]);
+        error: (err: CustomErrorResponse) => {
+          const detailMsg = err?.error?.type || err?.error?.message || 'Candidate status was modified by another user.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Cannot Start Interview',
+            detail: detailMsg,
+            life: 5000,
+          });
+          this.getPaginatedCandidateData(new PaginatedPayload(), true);
         },
       });
     } else {
       this.router.navigate([
-        `${basePath}/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+        `${basePath}/${this.assessmentId}/${roundId}/${data.id}/${data.email}`,
       ]);
     }
   }
@@ -229,7 +262,7 @@ export class InterviewerCandidateListComponent implements OnInit {
     this.panelId = Number(panel);
   }
 
-  private getPaginatedCandidateData(payload: PaginatedPayload) {
+  private getPaginatedCandidateData(payload: PaginatedPayload, isSilent = false) {
     this.filterMap = {
       ...this.filterMap,
       PanelId: this.panelId,

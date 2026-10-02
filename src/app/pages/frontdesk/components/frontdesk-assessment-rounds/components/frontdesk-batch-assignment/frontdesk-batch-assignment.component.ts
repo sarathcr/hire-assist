@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AccordionModule, AccordionTabOpenEvent } from 'primeng/accordion';
 import { MenuItem, MessageService } from 'primeng/api';
@@ -76,6 +76,7 @@ const aptitudeTableColumns: TableColumnsData = {
         { label: 'Completed', value: 'Completed' },
         { label: 'Rejected', value: 'Rejected' },
         { label: 'Active', value: 'Active' },
+        { label: 'Interview Started', value: 'Interview Started' },
         { label: 'Absent', value: 'Absent' },
         { label: 'Quit', value: 'Quit' },
         { label: 'Not Attended', value: 'Not Attended' },
@@ -159,6 +160,7 @@ const nonAptitudeTableColumns: TableColumnsData = {
         { label: 'Completed', value: 'Completed' },
         { label: 'Rejected', value: 'Rejected' },
         { label: 'Active', value: 'Active' },
+        { label: 'Interview Started', value: 'Interview Started' },
         { label: 'Absent', value: 'Absent' },
         { label: 'Quit', value: 'Quit' },
         { label: 'Not Attended', value: 'Not Attended' },
@@ -252,7 +254,7 @@ export interface NonAptitudeCandidate {
   styleUrl: './frontdesk-batch-assignment.component.scss',
   providers: [TableDataSourceService],
 })
-export class FrontdeskBatchAssignmentComponent implements OnInit {
+export class FrontdeskBatchAssignmentComponent implements OnInit, OnDestroy {
   public sidebarConfig!: MenuItem[];
   public selectedView: 0 | 1 = 0;
   /** Columns for aptitude (batch) view */
@@ -270,6 +272,7 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
   private ref: DynamicDialogRef | undefined;
   public isLoading: boolean = true;
   public loadingBatches: Record<string, boolean> = {};
+  private pollIntervalId: any;
 
   /** null = still detecting, true = aptitude (batch), false = non-aptitude */
   public isAptitudeRound: boolean | null = null;
@@ -299,6 +302,43 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
     this.setPaginationEndpoint();
     this.getCurrentRouteIds();
     this.detectRoundType();
+
+    // Auto-refresh candidate list every 30 seconds if tab is visible
+    this.pollIntervalId = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        this.refreshActiveViews(true);
+      }
+    }, 30000);
+  }
+
+  private lastFocusFetchTime = 0;
+
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      const now = Date.now();
+      if (now - this.lastFocusFetchTime < 5000) return;
+      this.lastFocusFetchTime = now;
+      setTimeout(() => {
+        this.refreshActiveViews(true);
+      }, 300);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollIntervalId) {
+      clearInterval(this.pollIntervalId);
+    }
+  }
+
+  private refreshActiveViews(isSilent = false): void {
+    if (this.isAptitudeRound) {
+      Object.keys(this.candidatesByBatch).forEach((bId) => {
+        this.refreshData(bId, isSilent);
+      });
+    } else {
+      this.refreshData('flat_view', isSilent);
+    }
   }
 
   public onButtonClick($event: ButtonAction, batchId: string) {
@@ -343,13 +383,15 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       this.refreshData(batchId);
     };
 
-    const error = (error: CustomErrorResponse) => {
+    const error = (err: CustomErrorResponse) => {
       this.loadingBatches[batchId] = false;
+      const detailMsg = err.error?.type || err.error?.message || 'Action failed due to candidate status update.';
       this.messageService.add({
         severity: 'error',
-        summary: 'Error',
-        detail: error.error.type,
+        summary: 'Action Failed',
+        detail: detailMsg,
       });
+      this.refreshData(batchId);
     };
     this.assessmentService
       .markasPresent(this.markAsPresentRequest)
@@ -392,12 +434,14 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
         }
       };
 
-      const error = (error: CustomErrorResponse) => {
+      const error = (err: CustomErrorResponse) => {
+        const detailMsg = err.error?.type || err.error?.message || 'Action failed due to candidate status update.';
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: error.error.type,
+          summary: 'Action Failed',
+          detail: detailMsg,
         });
+        this.refreshData(batchId);
       };
 
       this.assessmentService
@@ -465,7 +509,12 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
           if (currentRound) {
             this.currentRoundName = currentRound.name;
             const roundName = currentRound.name?.toLowerCase() || '';
-            const isAptitude = roundName.includes('aptitude');
+            const roundTypeId = Number(currentRound.roundTypeId || 0);
+
+            // roundTypeId 1 = Online Aptitude Test, 2 = Offline Panel Interview
+            const isAptitude =
+              roundTypeId === 1 ||
+              (roundTypeId !== 2 && roundName.includes('aptitude'));
 
             if (isAptitude) {
               this.isAptitudeRound = true;
@@ -563,8 +612,10 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
    * Loads all candidates for a non-aptitude round using the PaginatedCandidates endpoint.
    * BatchId is specifically excluded from this request.
    */
-  public loadNonAptitudeCandidates(payload: PaginatedPayload): void {
-    this.isNonAptitudeLoading = true;
+  public loadNonAptitudeCandidates(payload: PaginatedPayload, isSilent = false): void {
+    if (!isSilent) {
+      this.isNonAptitudeLoading = true;
+    }
     payload.filterMap = {
       ...payload.filterMap,
       assessmentId: this.assessmentId,
@@ -582,10 +633,14 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
             ...res,
             data: res.data.map((candidate) => this.mapCandidateData(candidate)),
           };
-          this.isNonAptitudeLoading = false;
+          if (!isSilent) {
+            this.isNonAptitudeLoading = false;
+          }
         },
         error: (err: CustomErrorResponse) => {
-          this.isNonAptitudeLoading = false;
+          if (!isSilent) {
+            this.isNonAptitudeLoading = false;
+          }
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -661,17 +716,19 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
   /**
    * Refreshes the candidate list for a specific batch or round.
    */
-  private refreshData(id: string): void {
+  private refreshData(id: string, isSilent = false): void {
     const payload = new PaginatedPayload();
     if (this.isAptitudeRound && id !== 'flat_view') {
-      this.loadData(payload, id);
+      this.loadData(payload, id, isSilent);
     } else {
-      this.loadNonAptitudeCandidates(payload);
+      this.loadNonAptitudeCandidates(payload, isSilent);
     }
   }
 
-  private loadData(payload: PaginatedPayload, batchId: string): void {
-    this.loadingBatches[batchId] = true;
+  private loadData(payload: PaginatedPayload, batchId: string, isSilent = false): void {
+    if (!isSilent) {
+      this.loadingBatches[batchId] = true;
+    }
     payload.filterMap = {
       ...payload.filterMap,
       assessmentId: this.assessmentId,
@@ -681,7 +738,11 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
 
     this.dataSourceService
       .getData(payload)
-      .pipe(finalize(() => (this.loadingBatches[batchId] = false)))
+      .pipe(finalize(() => {
+        if (!isSilent) {
+          this.loadingBatches[batchId] = false;
+        }
+      }))
       .subscribe({
         next: (response: PaginatedData<Candidate>) => {
           const updatedRes: PaginatedData<Candidate> = {
@@ -703,9 +764,19 @@ export class FrontdeskBatchAssignmentComponent implements OnInit {
       statusLower === 'completed' ||
       statusLower === 'selected' ||
       statusLower === 'rejected' ||
-      statusLower === 'quit'
+      statusLower === 'quit' ||
+      statusLower === 'interview started' ||
+      statusLower === 'interviewstarted' ||
+      statusLower === 'on review' ||
+      statusLower === 'onreview' ||
+      statusLower === 'saved' ||
+      statusLower === 'terminated' ||
+      candidate.statusId === StatusEnum.InterviewStarted ||
+      candidate.statusId === StatusEnum.OnReview ||
+      candidate.statusId === StatusEnum.Saved ||
+      candidate.statusId === StatusEnum.Terminated
     ) {
-      // Cannot change status anymore for completed/selected/rejected assessments
+      // Cannot change status anymore for completed/selected/rejected/started assessments
       return {
         ...candidate,
         visibleButtonIndices: [3],

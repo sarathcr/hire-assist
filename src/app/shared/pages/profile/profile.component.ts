@@ -1,4 +1,4 @@
-import { UpperCasePipe, DatePipe, CommonModule } from '@angular/common';
+import { DatePipe, CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -38,7 +38,6 @@ import { DialogData } from '../../models/dialog.models';
     SkeletonModule,
     TooltipModule,
     TimelineModule,
-    UpperCasePipe,
     DatePipe,
   ],
   templateUrl: './profile.component.html',
@@ -75,9 +74,18 @@ export class ProfileComponent extends BaseComponent implements OnInit {
     this.fGroup = buildFormGroup(this.ProfileFormData);
   }
   ngOnInit(): void {
+    this.profileImageUrl = this.storeService.getProfileImageUrl() || '';
     this.getProfileDetails();
     this.setConfigMaps();
     this.loadUserRole();
+  }
+
+  public onProfileImageError(): void {
+    this.profileImageUrl = '';
+  }
+
+  public get userInitial(): string {
+    return (this.profileDetailsDataSource?.name?.charAt(0) || 'U').toUpperCase();
   }
 
   private loadUserRole(): void {

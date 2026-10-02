@@ -594,7 +594,7 @@
                     severity="warn"
                     pTooltip="View history"
                     tooltipPosition="bottom"
-                    [disabled]="product.isSelf || product.isDisabled"
+                    [disabled]="product.isSelf || (product.isDisabled && !isAbsentCandidate(product))"
                     (onClick)="history.emit(product)"
                     (keydown.enter)="
                       onDelete(product.id); $event.preventDefault()
@@ -736,7 +736,7 @@
                             [plain]="true"
                             [disabled]="
                               (product.disabledButtonIndices?.includes(i) ||
-                                product.isDisabled ||
+                                (product.isDisabled && !isAbsentCandidate(product)) ||
                                 product.isSelf ||
                                 product.isActionsDisabled) ??
                               false
@@ -761,7 +761,7 @@
                   [text]="true"
                   [plain]="true"
                   [disabled]="
-                    product.isDisabled ||
+                    (product.isDisabled && !isAbsentCandidate(product)) ||
                     product.isSelf ||
                     product.isActionsDisabled
                   "

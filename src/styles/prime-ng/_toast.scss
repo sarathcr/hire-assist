@@ -3,12 +3,44 @@
   z-index: 10000 !important; // Much higher than header z-index: 9
   position: fixed !important; // Ensure fixed positioning
   pointer-events: none !important; // Allow clicks through container
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+
+  &.p-toast-top-left,
+  &.p-toast-bottom-left {
+    align-items: flex-start !important;
+
+    p-toastitem,
+    .p-toast-message {
+      margin-left: 0 !important;
+      margin-right: auto !important;
+    }
+  }
+
+  &.p-toast-top-center,
+  &.p-toast-bottom-center {
+    align-items: center !important;
+
+    p-toastitem,
+    .p-toast-message {
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+  }
+
+  p-toastitem {
+    display: flex !important;
+    justify-content: flex-end !important;
+    width: 100% !important;
+  }
 
   .p-toast-message {
     max-width: 100%;
     word-wrap: break-word;
     overflow-wrap: break-word;
     pointer-events: auto !important; // Restore clicks on messages
+    margin-left: auto !important;
 
     .p-toast-summary,
     .p-toast-detail {
@@ -33,9 +65,10 @@
 @media screen and (max-width: 1024px) {
   .p-toast {
     max-width: calc(100vw - 32px) !important;
-    width: calc(100vw - 32px) !important;
-    left: 16px !important;
+    width: auto !important;
+    width: fit-content !important;
     right: 16px !important;
+    left: auto !important;
     z-index: 10000 !important; // Much higher than header z-index: 9
     position: fixed !important; // Ensure fixed positioning
     top: 90px !important; // Position below header with extra margin (66px header + 24px spacing)
@@ -56,7 +89,8 @@
       right: auto !important;
       transform: translateX(-50%) !important; // Only transform for centering
       max-width: calc(100vw - 32px) !important;
-      width: calc(100vw - 32px) !important;
+      width: auto !important;
+      width: fit-content !important;
     }
 
     // For top-left position
@@ -69,8 +103,9 @@
 
     .p-toast-message {
       max-width: 100% !important;
-      width: 100% !important;
-      margin: 0 0 12px 0 !important;
+      width: auto !important;
+      width: fit-content !important;
+      margin: 0 0 12px auto !important;
 
       .p-toast-summary,
       .p-toast-detail {
@@ -97,15 +132,14 @@
       max-width: calc(
         100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)
       ) !important;
-      width: calc(
-        100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)
-      ) !important;
+      width: auto !important;
+      width: fit-content !important;
       position: fixed !important; // Critical for iOS
       z-index: 10000 !important; // Ensure highest z-index
       // Calculate top position: header height (66px) + safe area top + spacing (24px)
       top: calc(66px + env(safe-area-inset-top) + 24px) !important;
-      left: calc(16px + env(safe-area-inset-left)) !important;
       right: calc(16px + env(safe-area-inset-right)) !important;
+      left: auto !important;
       transform: none !important; // Reset transforms
       -webkit-transform: translateZ(
         0
@@ -134,9 +168,8 @@
         max-width: calc(
           100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)
         ) !important;
-        width: calc(
-          100vw - 32px - env(safe-area-inset-left) - env(safe-area-inset-right)
-        ) !important;
+        width: auto !important;
+        width: fit-content !important;
       }
 
       // For top-left position on iOS
@@ -164,9 +197,10 @@
 
   .p-toast {
     max-width: calc(100vw - 24px) !important;
-    width: calc(100vw - 24px) !important;
-    left: 12px !important;
+    width: auto !important;
+    width: fit-content !important;
     right: 12px !important;
+    left: auto !important;
     z-index: 10000 !important; // Much higher than header z-index: 9
     position: fixed !important; // Ensure fixed positioning
     top: 90px !important; // Position below header with extra margin
@@ -187,7 +221,8 @@
       right: auto !important;
       transform: translateX(-50%) !important; // Only transform for centering
       max-width: calc(100vw - 24px) !important;
-      width: calc(100vw - 24px) !important;
+      width: auto !important;
+      width: fit-content !important;
     }
 
     // For top-left position
@@ -199,7 +234,11 @@
     }
 
     .p-toast-message {
+      max-width: 100% !important;
+      width: auto !important;
+      width: fit-content !important;
       padding: 12px 16px !important;
+      margin-left: auto !important;
 
       .p-toast-summary {
         font-size: 14px;
@@ -220,15 +259,14 @@
       max-width: calc(
         100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)
       ) !important;
-      width: calc(
-        100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)
-      ) !important;
+      width: auto !important;
+      width: fit-content !important;
       position: fixed !important; // Critical for iOS
       z-index: 10000 !important; // Ensure highest z-index
       // Calculate top position: header height (66px) + safe area top + spacing (24px)
       top: calc(66px + env(safe-area-inset-top) + 24px) !important;
-      left: calc(12px + env(safe-area-inset-left)) !important;
       right: calc(12px + env(safe-area-inset-right)) !important;
+      left: auto !important;
       transform: none !important; // Reset transforms
       -webkit-transform: translateZ(
         0
@@ -257,9 +295,8 @@
         max-width: calc(
           100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)
         ) !important;
-        width: calc(
-          100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right)
-        ) !important;
+        width: auto !important;
+        width: fit-content !important;
       }
 
       // For top-left position on iOS small screens
@@ -272,3 +309,4 @@
     }
   }
 }
+

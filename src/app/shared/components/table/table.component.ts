@@ -8,6 +8,7 @@ import {
   Inject,
   Input,
   input,
+  Optional,
   output,
   PLATFORM_ID,
   signal,
@@ -15,6 +16,9 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FilterMatchMode, MessageService, SelectItem } from 'primeng/api';
+import { DialogService } from 'primeng/dynamicdialog';
+import { DialogComponent } from '../dialog/dialog.component';
+import { DialogFooterComponent } from '../dialog-footer/dialog-footer.component';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
 import { ChipModule } from 'primeng/chip';
@@ -61,6 +65,7 @@ export const uniqueStatuses = [
   { label: 'Completed', value: 'Completed' },
   { label: 'Rejected', value: 'Rejected' },
   { label: 'Active', value: 'Active' },
+  { label: 'Interview Started', value: 'Interview Started' },
   { label: 'Terminated', value: 'Terminated' },
   { label: 'Quit', value: 'Quit' },
   { label: 'On Review', value: 'On Review' },
@@ -246,6 +251,22 @@ export class TableComponent<
   private tooltipTimeout: any = null;
   private clickTimeout: any = null;
   private lastClickTime = 0;
+
+  public isAbsentCandidate(product: any): boolean {
+    if (!product) return false;
+    const status =
+      product?.status || (product?.isScheduled ? 'Scheduled' : '');
+    const statusLower = status.trim().toLowerCase();
+    const statusIdVal = product?.statusId ?? product?.statusID;
+    return (
+      statusLower === 'absent' ||
+      statusLower === 'not attended' ||
+      statusLower === 'notattended' ||
+      statusIdVal === StatusEnum.NotAttended ||
+      statusIdVal === 4
+    );
+  }
+
   public onRowClick(product: any): void {
     const now = Date.now();
     if (now - this.lastClickTime < 400) {
@@ -254,9 +275,43 @@ export class TableComponent<
     this.lastClickTime = now;
     this.dropdownManager.closeActive();
     if (product.isDisabled) {
-      const status = product?.status || (product?.isScheduled ? 'Scheduled' : '');
+      const status =
+        product?.status || (product?.isScheduled ? 'Scheduled' : '');
       const statusLower = status.trim().toLowerCase();
       const statusIdVal = product?.statusId ?? product?.statusID;
+      const isAbsent = this.isAbsentCandidate(product);
+
+      if (isAbsent && this.dialogService) {
+        const candidateName =
+          product?.candidateName ||
+          product?.fullName ||
+          product?.name ||
+          'Candidate';
+        this.dialogService.open(DialogComponent, {
+          data: {
+            title: 'Candidate Marked as Absent',
+            message: `Candidate "${candidateName}" is marked as absent. Batch assignment, panel assignment, and scheduling can only be performed after marking the candidate as present at Frontdesk.`,
+            isChoice: false,
+            acceptButtonText: 'OK',
+          },
+          showHeader: false,
+          styleClass: 'standard-dialog-wrapper',
+          maximizable: false,
+          width: '450px',
+          modal: true,
+
+          focusOnShow: false,
+          breakpoints: {
+            '960px': '75vw',
+            '640px': '90vw',
+          },
+          templates: {
+            footer: DialogFooterComponent,
+          },
+        });
+        return;
+      }
+
       const isStarted =
         statusLower === 'active' ||
         statusLower === 'in progress' ||
@@ -273,7 +328,9 @@ export class TableComponent<
       );
 
       const isEmptyPanel =
-        product?.interviewers && Array.isArray(product.interviewers) && product.interviewers.length === 0;
+        product?.interviewers &&
+        Array.isArray(product.interviewers) &&
+        product.interviewers.length === 0;
 
       let detailMsg = '';
       if (isStarted) {
@@ -281,7 +338,8 @@ export class TableComponent<
       } else if (product.disabledTooltip) {
         detailMsg = product.disabledTooltip;
       } else if (isEmptyPanel) {
-        detailMsg = 'This panel has no interviewers assigned and cannot be selected.';
+        detailMsg =
+          'This panel has no interviewers assigned and cannot be selected.';
       } else if (isCandidate) {
         detailMsg = status
           ? `This candidate is already ${status} and cannot be selected.`
@@ -605,6 +663,7 @@ export class TableComponent<
     @Inject(PLATFORM_ID) private readonly platformId: object,
     private readonly messageService: MessageService,
     private readonly dropdownManager: DropdownManagerService,
+    @Optional() private readonly dialogService?: DialogService,
   ) {
     super();
     effect(() => {
@@ -881,9 +940,13 @@ export class TableComponent<
     }
 
     const scrollContainer = this.getScrollContainer();
-    const savedTableScrollTop = scrollContainer ? scrollContainer.scrollTop : null;
+    const savedTableScrollTop = scrollContainer
+      ? scrollContainer.scrollTop
+      : null;
     const savedWindowScrollY = isPlatformBrowser(this.platformId)
-      ? window.scrollY || window.pageYOffset || document.documentElement.scrollTop
+      ? window.scrollY ||
+        window.pageYOffset ||
+        document.documentElement.scrollTop
       : 0;
 
     // Normalize newSelection to array (PrimeNG emits object for single selection, array for multiple)
@@ -922,10 +985,17 @@ export class TableComponent<
     this.selectedIds.emit(selectedAcrossPages);
 
     const restoreScroll = () => {
-      if (scrollContainer && savedTableScrollTop !== null && savedTableScrollTop > 0) {
+      if (
+        scrollContainer &&
+        savedTableScrollTop !== null &&
+        savedTableScrollTop > 0
+      ) {
         scrollContainer.scrollTop = savedTableScrollTop;
       }
-      if (savedWindowScrollY > 0 && Math.abs((window.scrollY || 0) - savedWindowScrollY) > 5) {
+      if (
+        savedWindowScrollY > 0 &&
+        Math.abs((window.scrollY || 0) - savedWindowScrollY) > 5
+      ) {
         window.scrollTo({ top: savedWindowScrollY, behavior: 'instant' });
       }
     };

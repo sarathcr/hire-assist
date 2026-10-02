@@ -44,6 +44,10 @@ export class DropDownComponent implements OnInit {
     });
   }
 
+  onImageError(): void {
+    this.profileImageUrl.set(undefined);
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent) {
     if (!this.dropdownEl()?.nativeElement.contains(event.target)) {

@@ -4,8 +4,9 @@ import { StoreService } from '../services/store.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { map } from 'rxjs';
+import { OptionsMap } from '../models/app-state.models';
 
-export const collectionResolver: ResolveFn<[]> = () => {
+export const collectionResolver: ResolveFn<OptionsMap> = () => {
   const storeService = inject(StoreService);
   const http = inject(HttpClient);
   const { collectionUrl } = environment;
@@ -13,7 +14,7 @@ export const collectionResolver: ResolveFn<[]> = () => {
   storeService.setIsLoading(true);
   const url = `${collectionUrl}/api/collection`;
 
-  return http.get<[]>(url).pipe(
+  return http.get<OptionsMap>(url).pipe(
     map((collection) => {
       storeService.setCollection(collection);
       storeService.setIsLoading(false);

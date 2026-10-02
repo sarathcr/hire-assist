@@ -202,12 +202,26 @@
       flex-direction: column;
       gap: 10px;
 
-      > * {
+      > *,
+      span,
+      app-button,
+      p-fileUpload {
         width: 100% !important;
         display: block !important;
       }
+    }
+  }
 
-      span {
+  &__tooltip-wrapper {
+    display: inline-flex;
+    align-items: center;
+
+    @media (max-width: 960px) {
+      width: 100% !important;
+      display: block !important;
+
+      app-button,
+      .candidate__action-btn {
         width: 100% !important;
         display: block !important;
       }
@@ -218,7 +232,7 @@
     display: inline-flex;
     align-items: center;
 
-    @media (max-width: 768px) {
+    @media (max-width: 960px) {
       width: 100% !important;
       display: block !important;
     }
@@ -229,7 +243,7 @@
         display: inline-flex;
         align-items: center;
 
-        @media (max-width: 768px) {
+        @media (max-width: 960px) {
           display: block !important;
           width: 100% !important;
         }
@@ -261,7 +275,7 @@
           transform: translateY(0);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 960px) {
           width: 100% !important;
           height: 40px !important;
           display: flex !important;
@@ -276,12 +290,13 @@
     display: inline-flex;
     align-items: center;
 
-    @media (max-width: 768px) {
+    @media (max-width: 960px) {
       width: 100% !important;
       display: block !important;
     }
 
     ::ng-deep {
+      .btn,
       .p-button {
         height: 38px !important;
         padding: 0 18px !important;
@@ -308,7 +323,7 @@
           transform: translateY(0);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 960px) {
           width: 100% !important;
           height: 40px !important;
           display: flex !important;

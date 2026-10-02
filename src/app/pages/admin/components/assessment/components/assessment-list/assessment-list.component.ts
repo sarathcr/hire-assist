@@ -508,11 +508,17 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
     };
 
     const error = (error: CustomErrorResponse) => {
+      const detailMsg =
+        error?.error?.type ||
+        error?.error?.message ||
+        error?.error?.errorValue ||
+        'Cannot inactivate recruitment while candidate interviews or assessments are in progress.';
       this.messageService.add({
         severity: 'error',
-        summary: 'Error',
-        detail: error?.error?.type || 'Failed to update recruitment',
+        summary: 'Cannot Inactivate Recruitment',
+        detail: detailMsg,
       });
+      this.reloadPaginatedData();
       this.isLoading = false;
     };
     this.assessmentService
@@ -532,15 +538,17 @@ export class AssessmentListComponent extends BaseComponent implements OnInit {
       this.isLoading = false;
     };
     const error = (error: CustomErrorResponse) => {
+      const detailMsg =
+        error?.error?.type ||
+        error?.error?.message ||
+        error?.error?.errorValue ||
+        'Cannot delete recruitment while candidate interviews or assessments are in progress.';
       this.messageService.add({
         severity: 'error',
-        summary: 'Error',
-        detail:
-          error.error?.type ||
-          error.error?.message ||
-          error.error?.errorValue ||
-          'Cannot delete this recruitment because it is referenced in the recruitment steps.',
+        summary: 'Cannot Delete Recruitment',
+        detail: detailMsg,
       });
+      this.reloadPaginatedData();
       this.isLoading = false;
     };
 

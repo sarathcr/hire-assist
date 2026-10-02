@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, Inject, OnInit } from '@angular/core';
+import {
+  Component,
+  HostListener,
+  Inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { AccordionModule } from 'primeng/accordion';
@@ -14,6 +20,8 @@ import { CommonModule } from '@angular/common';
 import { DividerModule } from 'primeng/divider';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ReassignPanelComponent } from '../reassign-panel/reassign-panel.component';
+import { DialogComponent } from '../../../../../../shared/components/dialog/dialog.component';
+import { DialogFooterComponent } from '../../../../../../shared/components/dialog-footer/dialog-footer.component';
 
 import { TableDataSourceService } from '../../../../../../shared/components/table/table-data-source.service';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
@@ -133,7 +141,7 @@ type payload = Record<string, any>;
   templateUrl: './coordinator-assignment.component.html',
   styleUrl: './coordinator-assignment.component.scss',
 })
-export class CoordinatorAssignmentComponent implements OnInit {
+export class CoordinatorAssignmentComponent implements OnInit, OnDestroy {
   // Public Properties
 
   public data!: PaginatedData<InterviewSummary>;
@@ -193,6 +201,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
   public candidateAssignedPanelId: string | null = null;
 
   private ref: DynamicDialogRef | undefined;
+  private pollIntervalId: any;
+  private lastFocusFetchTime = 0;
 
   constructor(
     public dialog: DialogService,
@@ -224,6 +234,47 @@ export class CoordinatorAssignmentComponent implements OnInit {
     };
     this.getPaginatedCandidateData(this.combinedPayloadData);
     this.getPaginatedPanelData();
+
+    // Auto-refresh candidate & panel lists every 30 seconds if tab is visible
+    this.pollIntervalId = setInterval(() => {
+      if (
+        typeof document !== 'undefined' &&
+        document.visibilityState === 'visible'
+      ) {
+        this.refreshActiveViews(true);
+      }
+    }, 30000);
+  }
+
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    if (
+      typeof document !== 'undefined' &&
+      document.visibilityState === 'visible'
+    ) {
+      const now = Date.now();
+      if (now - this.lastFocusFetchTime < 5000) return;
+      this.lastFocusFetchTime = now;
+      setTimeout(() => {
+        this.refreshActiveViews(true);
+      }, 300);
+    }
+  }
+
+  public refreshActiveViews(isSilent = false): void {
+    if (this.combinedPayloadData) {
+      this.getPaginatedCandidateData(this.combinedPayloadData, isSilent);
+    }
+    this.getPaginatedPanelData(isSilent);
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollIntervalId) {
+      clearInterval(this.pollIntervalId);
+    }
+    if (this.ref) {
+      this.ref.close();
+    }
   }
 
   // Public Methods
@@ -264,8 +315,26 @@ export class CoordinatorAssignmentComponent implements OnInit {
     }
     // Map IDs to full candidate objects
     if (selectedIds.length > 0 && this.data?.data) {
-      const candidate = this.data.data.find((c) => c.id === selectedIds[0].id);
+      const selectedIdStr = String(selectedIds[0].id);
+      const candidate = this.data.data.find(
+        (c: any) =>
+          String(c.id) === selectedIdStr ||
+          String(c.candidateId) === selectedIdStr ||
+          String(c.interviewId) === selectedIdStr,
+      );
       if (candidate) {
+        const statusLower = candidate.status?.trim().toLowerCase() || '';
+        const statusIdVal =
+          (candidate as any).statusId ?? (candidate as any).statusID;
+        const isAbsent =
+          statusLower === 'absent' ||
+          statusLower === 'not attended' ||
+          statusLower === 'notattended' ||
+          statusIdVal === StatusEnum.NotAttended;
+
+        if (isAbsent) {
+          this.showAbsentCandidateDialog(candidate.name || 'Candidate');
+        }
         this.selectedCandidatesIds = [candidate];
         this.selectedCandidate = [String(candidate.id)]; // Persist selection
         this.getInterviewPanel(Number(candidate.interviewId || candidate.id));
@@ -294,6 +363,33 @@ export class CoordinatorAssignmentComponent implements OnInit {
       // If we are currently on a later step (which shouldn't happen via this method normally, but for safety)
       // logic remains same.
     }
+  }
+
+  public showAbsentCandidateDialog(names: string): void {
+    const modalData = {
+      title: 'Candidate Marked as Absent',
+      message: `Candidate "${names}" is marked as absent. Panel assignment and scheduling can only be performed after marking the candidate as present at Frontdesk.`,
+      isChoice: false,
+      acceptButtonText: 'OK',
+      CloseButtonText: 'Close',
+    };
+
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      showHeader: false,
+      styleClass: 'standard-dialog-wrapper',
+      maximizable: false,
+      width: '450px',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
   }
   public getInterviewPanel(InterviewId: number) {
     this.coordinatorPanelBridgeService
@@ -343,9 +439,14 @@ export class CoordinatorAssignmentComponent implements OnInit {
       );
 
       // Allow selection if it's the candidate's currently assigned panel in DB
-      const isAlreadyAssignedToCurrent = this.candidateAssignedPanelId && String(selectedId) === String(this.candidateAssignedPanelId);
+      const isAlreadyAssignedToCurrent =
+        this.candidateAssignedPanelId &&
+        String(selectedId) === String(this.candidateAssignedPanelId);
 
-      if (panel?.status?.toLowerCase() === 'assigned' && !isAlreadyAssignedToCurrent) {
+      if (
+        panel?.status?.toLowerCase() === 'assigned' &&
+        !isAlreadyAssignedToCurrent
+      ) {
         const pName =
           panel?.name ||
           (panel as any)?.panelName ||
@@ -398,7 +499,10 @@ export class CoordinatorAssignmentComponent implements OnInit {
         (p) => String(p.id) === String(panelId),
       );
       if (panel) {
-        if (this.candidateAssignedPanelId && String(panel.id) === String(this.candidateAssignedPanelId)) {
+        if (
+          this.candidateAssignedPanelId &&
+          String(panel.id) === String(this.candidateAssignedPanelId)
+        ) {
           panel.status = 'Assigned';
         }
         (panel as any).isDisabled = false;
@@ -417,7 +521,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
     }
   }
 
-  public getPaginatedCandidateData(data: payload) {
+  public getPaginatedCandidateData(data: payload, isSilent = false) {
     const payload = {
       multiSortedColumns: [],
       filterMap: data || {},
@@ -427,44 +531,81 @@ export class CoordinatorAssignmentComponent implements OnInit {
       },
     };
 
-    this.isCandidateLoading = true;
+    if (!isSilent) {
+      this.isCandidateLoading = true;
+    }
     this.interviewService
       .paginationEntity('InterviewSummary', payload)
+      .pipe(
+        finalize(() => {
+          if (!isSilent) {
+            this.isCandidateLoading = false;
+          }
+        }),
+      )
       .subscribe({
         next: (res: any) => {
           const resData = (res.data || []).map((item: InterviewSummary) => {
             const statusLower = item.status?.trim().toLowerCase() || '';
-            const statusIdVal = (item as any).statusId ?? (item as any).statusID;
+            const statusIdVal =
+              (item as any).statusId ?? (item as any).statusID;
+            const isAbsent =
+              statusLower === 'absent' ||
+              statusLower === 'not attended' ||
+              statusLower === 'notattended' ||
+              statusIdVal === StatusEnum.NotAttended;
+            // 'Interview Started' = interviewer clicked Start Interview → disable row
+            // 'Active' = candidate arrived in round, no panel yet → leave selectable
             const isStarted =
-              statusLower === 'active' ||
+              statusLower === 'interview started' ||
+              statusLower === 'onreview' ||
+              statusLower === 'on review' ||
               statusLower === 'in progress' ||
               statusLower === 'in-progress' ||
-              statusIdVal === StatusEnum.Active;
+              statusIdVal === StatusEnum.InterviewStarted ||
+              statusIdVal === StatusEnum.OnReview;
 
             return {
               ...item,
               isScheduled: item.isScheduled ? 'Scheduled' : '',
               isDisabled: !this.isCandidateSelectable(item),
-              disabledTooltip: isStarted ? 'Interview is ongoing' : undefined,
+              disabledTooltip: isAbsent
+                ? 'Candidate is marked as absent'
+                : isStarted
+                  ? 'Interview is ongoing'
+                  : undefined,
             };
           });
 
           this.data = { ...res, data: resData };
+
+          if (this.selectedCandidate.length > 0) {
+            const currentSelectedIdStr = String(this.selectedCandidate[0]);
+            const updatedCandidate = resData.find(
+              (c: any) =>
+                String(c.id) === currentSelectedIdStr ||
+                String(c.candidateId) === currentSelectedIdStr ||
+                String(c.interviewId) === currentSelectedIdStr,
+            );
+            if (updatedCandidate) {
+              this.selectedCandidatesIds = [updatedCandidate];
+            }
+          }
 
           this.isCompleteDisabled = this.data.data.some(
             (candidate: InterviewSummary) =>
               candidate.status === 'Pending' ||
               (candidate as any).isScheduled === false,
           );
-          this.isCandidateLoading = false;
         },
         error: () => {
-          this.isCandidateLoading = false;
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Error in getting Candidate Details.',
-          });
+          if (!isSilent) {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Error in getting Candidate Details.',
+            });
+          }
         },
       });
   }
@@ -505,8 +646,13 @@ export class CoordinatorAssignmentComponent implements OnInit {
                 (item as any).panelName ||
                 (item as any).panel ||
                 (item as any).title,
-              panelDescription: item.panelDescription || (item as any).description,
-              status: (this.candidateAssignedPanelId && String(item.id) === String(this.candidateAssignedPanelId)) ? 'Assigned' : ((item as any).originalStatus || item.status),
+              panelDescription:
+                item.panelDescription || (item as any).description,
+              status:
+                this.candidateAssignedPanelId &&
+                String(item.id) === String(this.candidateAssignedPanelId)
+                  ? 'Assigned'
+                  : (item as any).originalStatus || item.status,
               isDisabled: !this.isPanelSelectable(item),
             };
           });
@@ -545,7 +691,8 @@ export class CoordinatorAssignmentComponent implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Error',
-        detail: 'Panel cannot be assigned because the candidate interview has already started or completed.',
+        detail:
+          'Panel cannot be assigned because the candidate interview has already started or completed.',
       });
       return;
     }
@@ -557,15 +704,23 @@ export class CoordinatorAssignmentComponent implements OnInit {
     const payload: InterviewPanels = {
       panel: selectedPanel.panelName,
       assessmentId: this.assessmentId,
-      interviewId: Number(selectedCandidate.interviewId || selectedCandidate.id),
+      interviewId: Number(
+        selectedCandidate.interviewId || selectedCandidate.id,
+      ),
       panelId: selectedPanel.id,
       interviewers: selectedInterviewerIds,
     };
-    this.getInterviewPanels(String(selectedCandidate.interviewId || selectedCandidate.id), payload);
+    this.getInterviewPanels(
+      String(selectedCandidate.interviewId || selectedCandidate.id),
+      payload,
+    );
   }
 
   public editPanel(panelData: any) {
-    if (panelData?.status?.toLowerCase() === 'assigned' || panelData?.originalStatus?.toLowerCase() === 'assigned') {
+    if (
+      panelData?.status?.toLowerCase() === 'assigned' ||
+      panelData?.originalStatus?.toLowerCase() === 'assigned'
+    ) {
       return;
     }
     this.fGroup?.get('panels')?.setValidators(Validators.required);
@@ -604,14 +759,21 @@ export class CoordinatorAssignmentComponent implements OnInit {
     this.ref.onClose.subscribe((formData: interviewerEditResponse) => {
       if (formData?.panels && formData?.interviewers?.length) {
         // Optimistically update the panel in memory so the table updates instantly without skeleton loading
-        const allInterviewers = (this.storeService.getCollection()?.['interviewers'] as any[]) || [];
+        const allInterviewers =
+          (this.storeService.getCollection()?.['interviewers'] as any[]) || [];
         const matchedInterviewers = allInterviewers.filter((u: any) =>
           formData.interviewers.includes(u.id),
         );
-        const interviewersList = matchedInterviewers.length > 0
-          ? matchedInterviewers
-          : formData.interviewers.map((id: any) => ({ id, name: String(id) }));
-        const interviewerNames = interviewersList.map((u: any) => u.name).join(', ');
+        const interviewersList =
+          matchedInterviewers.length > 0
+            ? matchedInterviewers
+            : formData.interviewers.map((id: any) => ({
+                id,
+                name: String(id),
+              }));
+        const interviewerNames = interviewersList
+          .map((u: any) => u.name)
+          .join(', ');
 
         if (this.panelData?.data) {
           const panel = this.panelData.data.find(
@@ -623,7 +785,10 @@ export class CoordinatorAssignmentComponent implements OnInit {
             (panel as any).isDisabled = !this.isPanelSelectable(panel);
             this.panelData = { ...this.panelData };
           }
-          if (this.lastSelectedPanelId && String(this.lastSelectedPanelId) === String(formData.panels)) {
+          if (
+            this.lastSelectedPanelId &&
+            String(this.lastSelectedPanelId) === String(formData.panels)
+          ) {
             this.updateSelectedPanelFromData(this.lastSelectedPanelId);
           }
         }
@@ -799,42 +964,78 @@ export class CoordinatorAssignmentComponent implements OnInit {
     this.dataSource2.setEndpoint(`${INTERVIEW_URL}/panel/activePanelSummary`);
   }
 
-  private loadCandidateData(payload: PaginatedPayload): void {
-    this.isCandidateLoading = true;
+  private loadCandidateData(payload: PaginatedPayload, isSilent = false): void {
+    if (!isSilent) {
+      this.isCandidateLoading = true;
+    }
     this.dataSource1.getData(payload).subscribe({
       next: (response: any) => {
         const resData = (response?.data || []).map((item: any) => {
           const statusLower = item.status?.trim().toLowerCase() || '';
           const statusIdVal = item.statusId ?? item.statusID;
+          const isAbsent =
+            statusLower === 'absent' ||
+            statusLower === 'not attended' ||
+            statusLower === 'notattended' ||
+            statusIdVal === StatusEnum.NotAttended;
+          // 'Interview Started' = interviewer clicked Start Interview → disable row
           const isStarted =
-            statusLower === 'active' ||
+            statusLower === 'interview started' ||
+            statusLower === 'onreview' ||
+            statusLower === 'on review' ||
             statusLower === 'in progress' ||
             statusLower === 'in-progress' ||
-            statusIdVal === StatusEnum.Active;
+            statusIdVal === StatusEnum.InterviewStarted ||
+            statusIdVal === StatusEnum.OnReview;
 
           return {
             ...item,
             isScheduled: item.isScheduled ? 'Scheduled' : '',
             isDisabled: !this.isCandidateSelectable(item),
-            disabledTooltip: isStarted ? 'Interview is ongoing' : undefined,
+            disabledTooltip: isAbsent
+              ? 'Candidate is marked as absent'
+              : isStarted
+                ? 'Interview is ongoing'
+                : undefined,
           };
         });
 
         this.data = { ...response, data: resData };
-        this.isCandidateLoading = false;
+
+        if (this.selectedCandidate.length > 0) {
+          const currentSelectedIdStr = String(this.selectedCandidate[0]);
+          const updatedCandidate = resData.find(
+            (c: any) =>
+              String(c.id) === currentSelectedIdStr ||
+              String(c.candidateId) === currentSelectedIdStr ||
+              String(c.interviewId) === currentSelectedIdStr,
+          );
+          if (updatedCandidate) {
+            this.selectedCandidatesIds = [updatedCandidate];
+          }
+        }
+        if (!isSilent) {
+          this.isCandidateLoading = false;
+        }
       },
       error: () => {
-        this.isCandidateLoading = false;
+        if (!isSilent) {
+          this.isCandidateLoading = false;
+        }
       },
     });
   }
-  private loadPanelData(payload: PaginatedPayload): void {
-    this.isPanelLoading = true;
+  private loadPanelData(payload: PaginatedPayload, isSilent = false): void {
+    if (!isSilent) {
+      this.isPanelLoading = true;
+    }
     this.dataSource2
       .getData(payload)
       .pipe(
         finalize(() => {
-          this.isPanelLoading = false;
+          if (!isSilent) {
+            this.isPanelLoading = false;
+          }
         }),
       )
       .subscribe({
@@ -852,8 +1053,13 @@ export class CoordinatorAssignmentComponent implements OnInit {
                 (item as any).panelName ||
                 (item as any).panel ||
                 (item as any).title,
-              panelDescription: item.panelDescription || (item as any).description,
-              status: (this.candidateAssignedPanelId && String(item.id) === String(this.candidateAssignedPanelId)) ? 'Assigned' : (item.originalStatus || item.status),
+              panelDescription:
+                item.panelDescription || (item as any).description,
+              status:
+                this.candidateAssignedPanelId &&
+                String(item.id) === String(this.candidateAssignedPanelId)
+                  ? 'Assigned'
+                  : item.originalStatus || item.status,
               isDisabled: !this.isPanelSelectable(item),
             };
           });
@@ -865,11 +1071,13 @@ export class CoordinatorAssignmentComponent implements OnInit {
           }
         },
         error: () => {
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: 'Error in getting Panel Details.',
-          });
+          if (!isSilent) {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Error',
+              detail: 'Error in getting Panel Details.',
+            });
+          }
         },
       });
   }
@@ -891,11 +1099,30 @@ export class CoordinatorAssignmentComponent implements OnInit {
       if (this.selectedCandidatesIds.length > 0) {
         const candidate = this.selectedCandidatesIds[0];
         if (!this.isCandidateSelectable(candidate)) {
-          this.messageService.add({
-            severity: 'warn',
-            summary: 'Warning',
-            detail: 'Panel cannot be changed because the interview has already started or completed.',
-          });
+          const statusLower = candidate?.status?.trim().toLowerCase() || '';
+          const statusIdVal =
+            (candidate as any)?.statusId ?? (candidate as any)?.statusID;
+          const isAbsent =
+            statusLower === 'absent' ||
+            statusLower === 'not attended' ||
+            statusLower === 'notattended' ||
+            statusIdVal === StatusEnum.NotAttended;
+
+          if (isAbsent) {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Warning',
+              detail:
+                'Panel cannot be assigned to an absent candidate. Only present candidates can be assigned.',
+            });
+          } else {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Warning',
+              detail:
+                'Panel cannot be changed because the interview has already started or completed.',
+            });
+          }
           return;
         }
 
@@ -1015,8 +1242,10 @@ export class CoordinatorAssignmentComponent implements OnInit {
   private isCandidateSelectable(candidate: any): boolean {
     const status = candidate?.status?.trim().toLowerCase() || '';
     const statusId = candidate?.statusId ?? candidate?.statusID;
+    // 'Active' = candidate arrived in panel round, waiting for panel assignment → SELECTABLE
+    // 'Interview Started' = interviewer has begun the session → BLOCKED
     return !(
-      status === 'active' ||
+      status === 'interview started' ||
       status === 'in progress' ||
       status === 'in-progress' ||
       status === 'onreview' ||
@@ -1026,13 +1255,17 @@ export class CoordinatorAssignmentComponent implements OnInit {
       status === 'rejected' ||
       status === 'terminated' ||
       status === 'quit' ||
-      statusId === StatusEnum.Active ||
+      status === 'absent' ||
+      status === 'not attended' ||
+      status === 'notattended' ||
+      statusId === StatusEnum.InterviewStarted ||
       statusId === StatusEnum.OnReview ||
       statusId === StatusEnum.Completed ||
       statusId === StatusEnum.Selected ||
       statusId === StatusEnum.Rejected ||
       statusId === StatusEnum.Terminated ||
-      statusId === StatusEnum.Quit
+      statusId === StatusEnum.Quit ||
+      statusId === StatusEnum.NotAttended
     );
   }
 
@@ -1048,7 +1281,10 @@ export class CoordinatorAssignmentComponent implements OnInit {
    * Panels in "Assigned" status should be blocked, except if it is the currently selected candidate's assigned panel in DB
    */
   private isPanelSelectable(panel: any): boolean {
-    if (this.candidateAssignedPanelId && String(panel.id) === String(this.candidateAssignedPanelId)) {
+    if (
+      this.candidateAssignedPanelId &&
+      String(panel.id) === String(this.candidateAssignedPanelId)
+    ) {
       return true;
     }
     const status = panel.originalStatus || panel.status;
@@ -1063,7 +1299,11 @@ export class CoordinatorAssignmentComponent implements OnInit {
       this.panelData.data.forEach((p) => {
         const origStatus = (p as any).originalStatus || p.status;
         (p as any).originalStatus = origStatus;
-        p.status = (this.candidateAssignedPanelId && String(p.id) === String(this.candidateAssignedPanelId)) ? 'Assigned' : origStatus;
+        p.status =
+          this.candidateAssignedPanelId &&
+          String(p.id) === String(this.candidateAssignedPanelId)
+            ? 'Assigned'
+            : origStatus;
         (p as any).isDisabled = !this.isPanelSelectable(p);
       });
       this.panelData = { ...this.panelData };
@@ -1078,7 +1318,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       assessmentId: String(this.assessmentId),
       candidateIds: [String(candidate.id)],
       assessmentRoundId: this.assessmentRoundId,
-      scheduledDate: new Date().toISOString()
+      scheduledDate: new Date().toISOString(),
     };
     this.assessmentService.createEntity(payload, 'schedule').subscribe({
       next: () => {
@@ -1087,7 +1327,7 @@ export class CoordinatorAssignmentComponent implements OnInit {
       error: () => {
         // Run callback as fallback so flow is not interrupted
         callback();
-      }
+      },
     });
   }
 }

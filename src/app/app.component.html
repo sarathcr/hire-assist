@@ -1,4 +1,4 @@
-<p-toast>
+<p-toast [life]="5000">
   <ng-template let-message pTemplate="message">
     <span class="p-toast-message-icon pi" [class.pi-info-circle]="message.severity === 'info'" [class.pi-exclamation-triangle]="message.severity === 'warn'" [class.pi-times-circle]="message.severity === 'error'" [class.pi-check-circle]="message.severity === 'success'"></span>
     <div class="p-toast-message-text">

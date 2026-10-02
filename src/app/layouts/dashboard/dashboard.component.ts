@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, DestroyRef, ChangeDetectorRef } from '@angular/core';
+import { of, timeout, catchError } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -64,24 +65,36 @@ export class DashboardComponent implements OnInit {
   private loadProfileImageIfNeeded(): void {
     if (!this.storeService.getProfileImageUrl() && !this.storeService.getIsLoadingProfileImage()) {
       this.storeService.setIsLoadingProfileImage(true);
-      this.profileServices.GetProfileDetails().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-        next: (res) => {
-          if (res.profilePhoto?.id && res.profilePhoto?.attachmentType) {
-            this.profileServices.GetPhotoUrl(res.profilePhoto.id, res.profilePhoto.attachmentType)
-              .pipe(takeUntilDestroyed(this.destroyRef))
-              .subscribe({
-                next: (urlRes) => {
-                  this.storeService.setProfileImageUrl(urlRes.url);
-                  this.storeService.setIsLoadingProfileImage(false);
-                },
-                error: () => this.storeService.setIsLoadingProfileImage(false)
-              });
-          } else {
-            this.storeService.setIsLoadingProfileImage(false);
-          }
-        },
-        error: () => this.storeService.setIsLoadingProfileImage(false)
-      });
+      this.profileServices.GetProfileDetails()
+        .pipe(
+          timeout(5000),
+          catchError(() => of(null as any)),
+          takeUntilDestroyed(this.destroyRef),
+        )
+        .subscribe({
+          next: (res) => {
+            if (res && res.profilePhoto?.id && res.profilePhoto?.attachmentType) {
+              this.profileServices.GetPhotoUrl(res.profilePhoto.id, res.profilePhoto.attachmentType)
+                .pipe(
+                  timeout(5000),
+                  catchError(() => of(null as any)),
+                  takeUntilDestroyed(this.destroyRef),
+                )
+                .subscribe({
+                  next: (urlRes) => {
+                    if (urlRes?.url) {
+                      this.storeService.setProfileImageUrl(urlRes.url);
+                    }
+                    this.storeService.setIsLoadingProfileImage(false);
+                  },
+                  error: () => this.storeService.setIsLoadingProfileImage(false),
+                });
+            } else {
+              this.storeService.setIsLoadingProfileImage(false);
+            }
+          },
+          error: () => this.storeService.setIsLoadingProfileImage(false),
+        });
     }
   }
 

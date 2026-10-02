@@ -159,10 +159,10 @@
   <div class="assessment__actionButtons">
     <div class="assessment__actionButtons_review-skip-button">
       <app-button [buttonLabel]="'Mark as Review'" [buttonVariant]="'outlined'" [disabled]="isSaving"
-        [isLoading]="isSaving" (btnClick)="onReviewBtnClick()"></app-button>
+        [isLoading]="savingAction === 'review'" (btnClick)="onReviewBtnClick()"></app-button>
       <app-button [buttonLabel]="'Quit'" [buttonVariant]="'outlined'" [buttonSeverity]="'danger'" [disabled]="isSaving"
-        [isLoading]="isSaving" (btnClick)="onQuitBtnClick()"></app-button>
-      <app-button [buttonLabel]="'Skip'" [buttonVariant]="'outlined'" [disabled]="isSaving" [isLoading]="isSaving"
+        [isLoading]="false" (btnClick)="onQuitBtnClick()"></app-button>
+      <app-button [buttonLabel]="'Skip'" [buttonVariant]="'outlined'" [disabled]="isSaving" [isLoading]="savingAction === 'skip'"
         (btnClick)="onSkipBtnClick()"></app-button>
     </div>
 
@@ -171,10 +171,10 @@
       data.questions.indexOf(activeQuestion) + 1 === data.questions.length
       ) {
       <app-button [buttonLabel]="'Finish'" [disabled]="!isAnswerValid() || isSaving || isSubmitting"
-        [isLoading]="isSaving || isSubmitting" (btnClick)="onFinishBtnClick()"></app-button>
+        [isLoading]="savingAction === 'finish' || isSubmitting" (btnClick)="onFinishBtnClick()"></app-button>
       } @else {
       <app-button [buttonLabel]="'Save & Next'" [disabled]="!isAnswerValid() || isSaving"
-        [isLoading]="isSaving" (btnClick)="onSaveBtnClick()"></app-button>
+        [isLoading]="savingAction === 'save'" (btnClick)="onSaveBtnClick()"></app-button>
       }
     </div>
   </div>

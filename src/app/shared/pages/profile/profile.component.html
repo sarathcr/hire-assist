@@ -28,10 +28,15 @@
               <p-skeleton shape="circle" width="120px" height="120px" />
             </div>
           } @else if (profileImageUrl) {
-            <img class="profile__avatar-img" [src]="profileImageUrl" alt="Profile photo" />
+            <img
+              class="profile__avatar-img"
+              [src]="profileImageUrl"
+              alt="Profile photo"
+              (error)="onProfileImageError()"
+            />
           } @else {
             <div class="profile__avatar-initials">
-              {{ profileDetailsDataSource.name.charAt(0) | uppercase }}
+              {{ userInitial }}
             </div>
           }
           <div class="profile__avatar-ring"></div>

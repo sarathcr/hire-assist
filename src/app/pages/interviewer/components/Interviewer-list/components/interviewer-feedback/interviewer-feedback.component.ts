@@ -794,9 +794,10 @@ export class InterviewerFeedbackComponent
         this.durationSeconds = this.convertTimerHourToSeconds(res.timerHour);
       }
 
-      // Mark candidate status as Active (1) if it is currently unstarted / scheduled
+      // Mark candidate status as InterviewStarted (17) if it is currently unstarted / scheduled
       const currentStatusId = (res as any).statusId ?? (res as any).statusID;
       if (
+        currentStatusId !== StatusEnum.InterviewStarted &&
         currentStatusId !== StatusEnum.Active &&
         currentStatusId !== StatusEnum.OnReview &&
         currentStatusId !== StatusEnum.Completed &&
@@ -813,7 +814,7 @@ export class InterviewerFeedbackComponent
             candidateId: this.candidateid,
             assessmentRoundId: Number(this.assessmentRoundId),
             isActive: true,
-            statusId: StatusEnum.Active,
+            statusId: StatusEnum.InterviewStarted,
             assessmentId: Number(this.assessmentId),
           },
         ];

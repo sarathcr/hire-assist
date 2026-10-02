@@ -261,32 +261,33 @@ export class InterviewCandidateListComponent implements OnInit {
   }
 
   public onStartInterview(data: InterviewByPanel): void {
-    const candidateIdVal = data.email || (data as any).candidateId || (data.id ? String(data.id) : '');
-    if (candidateIdVal && data.assessemntRoundId && this.assessmentId) {
+    const candidateIdVal = (data as any).candidateId || data.email || (data.id ? String(data.id) : '');
+    const roundId = (data as any).assessmentRoundId ?? data.assessemntRoundId;
+    if (candidateIdVal && roundId && this.assessmentId) {
       const payload = [
         {
           candidateId: candidateIdVal,
-          assessmentRoundId: Number(data.assessemntRoundId),
+          assessmentRoundId: Number(roundId),
           isActive: true,
-          statusId: StatusEnum.Active,
+          statusId: StatusEnum.InterviewStarted,
           assessmentId: Number(this.assessmentId),
         },
       ];
       this.interviewService.updateEntity('InterviewStatus', payload).subscribe({
         next: () => {
           this.router.navigate([
-            `admin/interviews/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+            `admin/interviews/${this.assessmentId}/${roundId}/${data.id}/${data.email}`,
           ]);
         },
         error: () => {
           this.router.navigate([
-            `admin/interviews/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+            `admin/interviews/${this.assessmentId}/${roundId}/${data.id}/${data.email}`,
           ]);
         },
       });
     } else {
       this.router.navigate([
-        `admin/interviews/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+        `admin/interviews/${this.assessmentId}/${roundId}/${data.id}/${data.email}`,
       ]);
     }
   }

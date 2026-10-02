@@ -97,6 +97,7 @@ export class CandidateTestComponent
   // Public
   public isLoading = true;
   public isSaving = false;
+  public savingAction: 'review' | 'skip' | 'save' | 'finish' | null = null;
   public isSubmitting = false;
   public isFullScreen = false;
   public isNavigationIntercepted = false;
@@ -255,7 +256,7 @@ export class CandidateTestComponent
         severity: 'warn',
         summary: 'Warning',
         detail: 'The Windows/Command/Super key is disabled during the assessment.',
-        life: 3000
+        life: 5000
       });
       if (this.everEnteredFullScreen && !this.isSubmitting && !this.isTestEnded) {
         this.handleViolation();
@@ -380,24 +381,28 @@ export class CandidateTestComponent
 
   public onReviewBtnClick() {
     if (this.isSaving) return;
+    this.savingAction = 'review';
     this.handleAnswer(3).subscribe({
       next: () => {
         // Navigation happens in handleAnswer after save completes
       },
       error: () => {
         this.isSaving = false;
+        this.savingAction = null;
       },
     });
   }
 
   public onSkipBtnClick() {
     if (this.isSaving) return;
+    this.savingAction = 'skip';
     this.handleAnswer(5).subscribe({
       next: () => {
         // Navigation happens in handleAnswer after save completes
       },
       error: () => {
         this.isSaving = false;
+        this.savingAction = null;
       },
     });
   }
@@ -444,18 +449,21 @@ export class CandidateTestComponent
 
   public onSaveBtnClick() {
     if (this.isSaving) return;
+    this.savingAction = 'save';
     this.handleAnswer(6).subscribe({
       next: () => {
         // Navigation happens in handleAnswer after save completes
       },
       error: () => {
         this.isSaving = false;
+        this.savingAction = null;
       },
     });
   }
 
   public onFinishBtnClick() {
     if (this.isSaving || this.isSubmitting) return;
+    this.savingAction = 'finish';
     this.handleAnswer(6).subscribe({
       next: () => {
         // After save completes, submit the test
@@ -463,6 +471,7 @@ export class CandidateTestComponent
       },
       error: () => {
         this.isSaving = false;
+        this.savingAction = null;
       },
     });
   }
@@ -578,6 +587,7 @@ export class CandidateTestComponent
     return this.saveOrUpdateCandidateAnswer(payload).pipe(
       switchMap(() => {
         this.isSaving = false;
+        this.savingAction = null;
         if (!skipNavigation) {
           this.handleQuestionNavigation();
         }

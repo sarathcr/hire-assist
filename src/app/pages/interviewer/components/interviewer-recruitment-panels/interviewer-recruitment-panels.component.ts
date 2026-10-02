@@ -63,6 +63,7 @@ const panelTableColumns: TableColumnsData = {
         { label: 'Pending', value: 'Pending' },
         { label: 'Completed', value: 'Completed' },
         { label: 'On Review', value: 'On Review' },
+        { label: 'Interview Started', value: 'Interview Started' },
         { label: 'Selected', value: 'Selected' },
         { label: 'Rejected', value: 'Rejected' },
         { label: 'Not Attended', value: 'Not Attended' },
@@ -236,32 +237,33 @@ export class InterviewerRecruitmentPanelsComponent implements OnInit {
       ? 'admin/interviews'
       : 'interviewer';
 
-    const candidateIdVal = data.email || (data as any).candidateId || (data.id ? String(data.id) : '');
-    if (candidateIdVal && data.assessemntRoundId && this.assessmentId) {
+    const candidateIdVal = (data as any).candidateId || data.email || (data.id ? String(data.id) : '');
+    const roundId = (data as any).assessmentRoundId ?? data.assessemntRoundId;
+    if (candidateIdVal && roundId && this.assessmentId) {
       const payload = [
         {
           candidateId: candidateIdVal,
-          assessmentRoundId: Number(data.assessemntRoundId),
+          assessmentRoundId: Number(roundId),
           isActive: true,
-          statusId: StatusEnum.Active,
+          statusId: StatusEnum.InterviewStarted,
           assessmentId: Number(this.assessmentId),
         },
       ];
       this.interviewService.updateEntity('InterviewStatus', payload).subscribe({
         next: () => {
           this.router.navigate([
-            `${basePath}/recruitments/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+            `${basePath}/recruitments/${this.assessmentId}/${roundId}/${data.id}/${data.email}`,
           ]);
         },
         error: () => {
           this.router.navigate([
-            `${basePath}/recruitments/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+            `${basePath}/recruitments/${this.assessmentId}/${roundId}/${data.id}/${data.email}`,
           ]);
         },
       });
     } else {
       this.router.navigate([
-        `${basePath}/recruitments/${this.assessmentId}/${data.assessemntRoundId}/${data.id}/${data.email}`,
+        `${basePath}/recruitments/${this.assessmentId}/${roundId}/${data.id}/${data.email}`,
       ]);
     }
   }

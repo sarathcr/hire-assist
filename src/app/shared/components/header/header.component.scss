@@ -92,8 +92,12 @@
     gap: var(--spacing-20);
   }
   &__avatar {
-    width: var(--spacing-50);
+    min-width: var(--spacing-50);
     height: var(--spacing-50);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
     // Removed overflow: hidden to allow dropdown flyout to be visible
     img {
       width: 44px;

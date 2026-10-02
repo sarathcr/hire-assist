@@ -1359,7 +1359,7 @@ export class QuestionFormModalComponent
       summary,
       detail,
       sticky: false,
-      life: 3000,
+      life: 5000,
     });
   }
 

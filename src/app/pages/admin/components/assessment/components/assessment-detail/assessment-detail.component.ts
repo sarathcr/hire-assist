@@ -248,6 +248,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     private readonly dropdownManager: DropdownManagerService,
   ) {}
 
+  private pollIntervalId: any;
+  private lastFocusFetchTime = 0;
+
   // LifeCycle Hooks
   ngOnInit(): void {
     const routeId = this.activatedRoute.snapshot.paramMap.get('id');
@@ -259,6 +262,24 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       this.updateActionItems();
     }
     this.setSidebarConfig();
+
+    this.pollIntervalId = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible' && this.filterMap) {
+        this.getPaginatedCandidateData(this.filterMap, true);
+      }
+    }, 30000);
+  }
+
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible' && this.filterMap) {
+      const now = Date.now();
+      if (now - this.lastFocusFetchTime < 5000) return;
+      this.lastFocusFetchTime = now;
+      setTimeout(() => {
+        this.getPaginatedCandidateData(this.filterMap, true);
+      }, 300);
+    }
   }
 
   private loadAssignmentData(): void {
@@ -290,6 +311,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.ref) {
       this.ref.close();
+    }
+    if (this.pollIntervalId) {
+      clearInterval(this.pollIntervalId);
     }
   }
 
@@ -444,7 +468,37 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   public getSelectedCandidatesOnTable(candidates: any[]): void {
-    this.selectedCandidateIds = candidates.map((c) => c.id);
+    const prevSelectedIds = (this.selectedCandidateIds || []).map((id) =>
+      String(id),
+    );
+    const newSelectedIds = (candidates || []).map((c) => String(c.id));
+    this.selectedCandidateIds = newSelectedIds;
+
+    const fullTableCandidates = this.tableData?.data || [];
+
+    const newlySelectedIds = newSelectedIds.filter(
+      (id) => !prevSelectedIds.includes(id),
+    );
+
+    const newlySelectedAbsentCandidates = fullTableCandidates.filter(
+      (c: any) => {
+        const matchesSelection = newlySelectedIds.some(
+          (id) =>
+            String(c.id) === id ||
+            String(c.candidateId) === id ||
+            String(c.interviewId) === id,
+        );
+        return matchesSelection && this.isCandidateAbsent(c);
+      },
+    );
+
+    if (newlySelectedAbsentCandidates.length > 0) {
+      const names = newlySelectedAbsentCandidates
+        .map((c: any) => c.name || c.candidateName || c.fullName || 'Candidate')
+        .join(', ');
+      this.showAbsentCandidateDialog(names);
+    }
+
     this.updateActionItems();
   }
 
@@ -568,6 +622,61 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     }
   }
 
+  public isCandidateAbsent(candidate: any): boolean {
+    if (!candidate) return false;
+    const statusLower = candidate.status?.trim().toLowerCase() || '';
+    const statusIdVal = candidate.statusId ?? candidate.statusID;
+    return (
+      statusLower === 'absent' ||
+      statusLower === 'not attended' ||
+      statusLower === 'notattended' ||
+      statusIdVal === StatusEnum.NotAttended
+    );
+  }
+
+  public isCandidateInterviewStarted(candidate: any): boolean {
+    if (!candidate) return false;
+    const statusLower = candidate.status?.trim().toLowerCase() || '';
+    const statusIdVal = candidate.statusId ?? candidate.statusID;
+    return (
+      statusLower === 'interview started' ||
+      statusLower === 'interviewstarted' ||
+      statusLower === 'onreview' ||
+      statusLower === 'on review' ||
+      statusLower === 'in progress' ||
+      statusLower === 'in-progress' ||
+      statusIdVal === StatusEnum.InterviewStarted ||
+      statusIdVal === StatusEnum.OnReview
+    );
+  }
+
+  public showAbsentCandidateDialog(names: string): void {
+    const modalData = {
+      title: 'Candidate Marked as Absent',
+      message: `Candidate "${names}" is marked as absent. Batch assignment, panel assignment, and scheduling can only be performed after marking the candidate as present at Frontdesk.`,
+      isChoice: false,
+      acceptButtonText: 'OK',
+      CloseButtonText: 'Close',
+    };
+
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      showHeader: false,
+      styleClass: 'standard-dialog-wrapper',
+      maximizable: false,
+      width: '450px',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+  }
+
   public onAssignToPanel(): void {
     if (this.selectedCandidateIds.length === 0) return;
     if (this.selectedCandidateIds.length > 1) {
@@ -583,6 +692,30 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       (c: any) => c.id === this.selectedCandidateIds[0],
     );
     if (!selectedCandidate) return;
+
+    if (this.isCandidateAbsent(selectedCandidate)) {
+      const name =
+        selectedCandidate.name ||
+        selectedCandidate.candidateName ||
+        selectedCandidate.fullName ||
+        'Candidate';
+      this.showAbsentCandidateDialog(name);
+      return;
+    }
+
+    if (this.isCandidateInterviewStarted(selectedCandidate)) {
+      const name =
+        selectedCandidate.name ||
+        selectedCandidate.candidateName ||
+        selectedCandidate.fullName ||
+        'Candidate';
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: `Interview for candidate "${name}" has already started. Panel cannot be modified until completion.`,
+      });
+      return;
+    }
 
     this.ref = this.dialog.open(SelectPanelDailogComponent, {
       data: {
@@ -611,6 +744,46 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   private onAssignToBatch(candidate: any): void {
+    const candidateIds = candidate?.id
+      ? [String(candidate.id)]
+      : this.selectedCandidateIds;
+
+    const candidatesToCheck =
+      this.tableData?.data?.filter(
+        (c: any) =>
+          candidateIds.includes(String(c.id)) ||
+          candidateIds.includes(String(c.candidateId)) ||
+          candidateIds.includes(String(c.interviewId)),
+      ) || [];
+
+    const absentCandidates = candidatesToCheck.filter((c: any) =>
+      this.isCandidateAbsent(c),
+    );
+
+    if (absentCandidates.length > 0) {
+      const names = absentCandidates
+        .map((c: any) => c.name || c.candidateName || c.fullName || 'Candidate')
+        .join(', ');
+      this.showAbsentCandidateDialog(names);
+      return;
+    }
+
+    const startedCandidates = candidatesToCheck.filter((c: any) =>
+      this.isCandidateInterviewStarted(c),
+    );
+
+    if (startedCandidates.length > 0) {
+      const names = startedCandidates
+        .map((c: any) => c.name || c.candidateName || c.fullName || 'Candidate')
+        .join(', ');
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: `Interview has already started for candidate(s) "${names}". Batch assignment cannot be modified until completion.`,
+      });
+      return;
+    }
+
     this.isLoading = true;
     const batchesPayload = new PaginatedPayload();
     batchesPayload.pagination.pageSize = -1;
@@ -643,7 +816,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         finalize(() => {
           this.isLoading = false;
           this.cdr.detectChanges();
-        })
+        }),
       )
       .subscribe({
         next: ({ batchesRes, questionSetsRes }: any) => {
@@ -652,11 +825,16 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             this.messageService.add({
               severity: 'warn',
               summary: 'No Batches Available',
-              detail: 'All active batches are assigned to other recruitments. No batches are currently available to assign.',
+              detail:
+                'All active batches are assigned to other recruitments. No batches are currently available to assign.',
             });
             return;
           }
-          this.openAssignToBatchDialog(candidate, of(batchesRes), of(questionSetsRes));
+          this.openAssignToBatchDialog(
+            candidate,
+            of(batchesRes),
+            of(questionSetsRes),
+          );
         },
         error: () => {
           this.messageService.add({
@@ -760,11 +938,40 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       : [candidateIdStr];
 
     const candidatesToCheck =
-      this.tableData?.data?.filter((c: any) =>
-        candidateIds.includes(String(c.id)) ||
-        candidateIds.includes(String(c.candidateId)) ||
-        candidateIds.includes(String(c.interviewId)),
+      this.tableData?.data?.filter(
+        (c: any) =>
+          candidateIds.includes(String(c.id)) ||
+          candidateIds.includes(String(c.candidateId)) ||
+          candidateIds.includes(String(c.interviewId)),
       ) || [];
+
+    const absentCandidates = candidatesToCheck.filter((c: any) =>
+      this.isCandidateAbsent(c),
+    );
+
+    if (absentCandidates.length > 0) {
+      const names = absentCandidates
+        .map((c: any) => c.name || c.candidateName || c.fullName || 'Candidate')
+        .join(', ');
+      this.showAbsentCandidateDialog(names);
+      return;
+    }
+
+    const startedCandidates = candidatesToCheck.filter((c: any) =>
+      this.isCandidateInterviewStarted(c),
+    );
+
+    if (startedCandidates.length > 0) {
+      const names = startedCandidates
+        .map((c: any) => c.name || c.candidateName || c.fullName || 'Candidate')
+        .join(', ');
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: `Interview has already started for candidate(s) "${names}". Schedule cannot be modified until completion.`,
+      });
+      return;
+    }
 
     if (this.isAptitudeRound()) {
       const missingBatch = candidatesToCheck.some(
@@ -943,15 +1150,22 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             this.handleScheduleMismatch(errorBody);
             return;
           }
+          const rawMsg =
+            err.error?.type ||
+            err.error?.message ||
+            'Failed to schedule interviews';
+          const detailMsg = String(rawMsg)
+            .replace(/^(Invalid data\s*:\s*|Invalid data\s+|InvalidData\s*:\s*|Validation Error\s*:\s*|Error\s*:\s*)/i, '')
+            .replace(/!\s*$/, '')
+            .trim();
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail:
-              err.error?.type ||
-              err.error?.message ||
-              'Failed to schedule interviews',
+            detail: detailMsg,
+            life: 5000,
           });
           this.ref?.close();
+          this.getPaginatedCandidateData(this.filterMap, true);
         },
       });
   }
@@ -1065,9 +1279,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               item.status?.toLowerCase() === 'on review'
                 ? 'N/A'
                 : (item.score === 0 || item.score === '0') &&
-                  !['completed', 'selected', 'rejected'].includes(
-                    item.status?.toLowerCase() || '',
-                  )
+                    !['completed', 'selected', 'rejected'].includes(
+                      item.status?.toLowerCase() || '',
+                    )
                   ? 'N/A'
                   : item.score === 0 || item.score === '0'
                     ? item.score
@@ -1387,15 +1601,31 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             const isSystemStatus =
               item.action === 'Status Updated' ||
               item.action === 'On Review' ||
+              item.action === 'Interview Started' ||
               item.action === 'Interview Completed' ||
-              (item.details && item.details.toLowerCase().includes('interview status is updated'));
+              (item.details &&
+                item.details
+                  .toLowerCase()
+                  .includes('interview status is updated'));
 
             let user =
               item.action === 'Score Added' && this.currentHistoryPanelName
                 ? this.currentHistoryPanelName
                 : item.changedByName;
-            if (isSystemStatus && (item.currentValue === '3' || item.currentValue === '7' || (item.details && item.details.toLowerCase().includes('interview status is updated')))) {
-              user = (item.changedByName && item.changedByName !== 'System') ? item.changedByName : (this.currentHistoryPanelName || 'Interview Panel');
+            if (
+              isSystemStatus &&
+              (item.currentValue === '3' ||
+                item.currentValue === '7' ||
+                item.currentValue === '17' ||
+                (item.details &&
+                  item.details
+                    .toLowerCase()
+                    .includes('interview status is updated')))
+            ) {
+              user =
+                item.changedByName && item.changedByName !== 'System'
+                  ? item.changedByName
+                  : this.currentHistoryPanelName || 'Interview Panel';
             }
 
             return {
@@ -1418,7 +1648,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   private formatAction(action: string): string {
     if (!action) return 'Unknown';
     if (action.toLowerCase() === 'rescheduled') return 'Scheduled';
-    if (action.toLowerCase() === 'interview completed') return 'Interview Completed';
+    if (action.toLowerCase() === 'interview completed')
+      return 'Interview Completed';
+    if (action.toLowerCase() === 'interview started')
+      return 'Interview Started';
     return action
       .replace(/([a-z])([A-Z])/g, '$1 $2')
       .replace(/\s+/g, ' ')
@@ -1435,6 +1668,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       case 'scheduled':
       case 'rescheduled':
         return 'pi pi-calendar';
+      case 'interview started':
+        return 'pi pi-play';
       case 'pending':
       case 'on review':
         return 'pi pi-clock';
@@ -1569,6 +1804,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       );
     });
 
+    const anyAbsent = selectedCandidates.some((c: any) =>
+      this.isCandidateAbsent(c),
+    );
+
     const anyMissingBatch =
       isAptitude &&
       selectedCandidates.some(
@@ -1603,7 +1842,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           anyRejected ||
           anyOnReview ||
           anyQuit ||
-          anyTerminated,
+          anyTerminated ||
+          anyAbsent,
         command: () => this.onAssignToBatch({ id: '' }), // Passing empty id as it's bulk/header action
       });
     }
@@ -1621,6 +1861,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           anyOnReview ||
           anyQuit ||
           anyTerminated ||
+          anyAbsent ||
           this.selectedCandidateIds.length > 1,
         command: () => this.onAssignToPanel(),
       });
@@ -1639,6 +1880,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         anyOnReview ||
         anyQuit ||
         anyTerminated ||
+        anyAbsent ||
         anyMissingBatch ||
         anyMissingPanel,
       command: () =>
@@ -1648,14 +1890,18 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     items.push({
       label: 'Select Candidate',
       icon: 'pi pi-check-circle',
-      disabled: this.roundStatus || !hasSelection || (!allCompleted && !allRejected),
+      disabled:
+        this.roundStatus || !hasSelection || (!allCompleted && !allRejected),
       command: () => this.onSelectCandidates(),
     });
 
     items.push({
       label: 'Reject Candidate',
       icon: 'pi pi-times-circle',
-      disabled: this.roundStatus || !hasSelection || (!allCompleted && !allSelected && !allQuit),
+      disabled:
+        this.roundStatus ||
+        !hasSelection ||
+        (!allCompleted && !allSelected && !allQuit),
       command: () => this.onRejectCandidates(),
     });
 
@@ -1692,27 +1938,78 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         return hasNextRound && status === 'selected' && !isScheduled;
       }
 
-      // 1. Can assign to batch (Aptitude & not scheduled & not in terminal/active state)
+      // 1. Can assign to batch (Aptitude & not scheduled & not in terminal/active/absent/started state)
       if (
         isAptitude &&
         !isScheduled &&
-        !['completed', 'selected', 'rejected', 'on review', 'quit', 'terminated'].includes(status)
+        ![
+          'completed',
+          'selected',
+          'rejected',
+          'on review',
+          'onreview',
+          'interview started',
+          'interviewstarted',
+          'in progress',
+          'in-progress',
+          'quit',
+          'terminated',
+          'absent',
+          'not attended',
+          'notattended',
+        ].includes(status) &&
+        !this.isCandidateAbsent(c) &&
+        !this.isCandidateInterviewStarted(c)
       ) {
         return true;
       }
 
-      // 2. Can assign to panel (Panel & not in terminal/active state)
+      // 2. Can assign to panel (Panel & not in terminal/active/absent/started state)
       if (
         isPanel &&
-        !['completed', 'selected', 'rejected', 'on review', 'quit', 'terminated'].includes(status)
+        ![
+          'completed',
+          'selected',
+          'rejected',
+          'on review',
+          'onreview',
+          'interview started',
+          'interviewstarted',
+          'in progress',
+          'in-progress',
+          'quit',
+          'terminated',
+          'absent',
+          'not attended',
+          'notattended',
+        ].includes(status) &&
+        !this.isCandidateAbsent(c) &&
+        !this.isCandidateInterviewStarted(c)
       ) {
         return true;
       }
 
-      // 3. Can schedule (not scheduled & not in terminal/active state)
+      // 3. Can schedule (not scheduled & not in terminal/active/absent/started state)
       if (
         !isScheduled &&
-        !['completed', 'selected', 'rejected', 'on review', 'quit', 'terminated'].includes(status)
+        ![
+          'completed',
+          'selected',
+          'rejected',
+          'on review',
+          'onreview',
+          'interview started',
+          'interviewstarted',
+          'in progress',
+          'in-progress',
+          'quit',
+          'terminated',
+          'absent',
+          'not attended',
+          'notattended',
+        ].includes(status) &&
+        !this.isCandidateAbsent(c) &&
+        !this.isCandidateInterviewStarted(c)
       ) {
         return true;
       }
@@ -2112,8 +2409,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       .subscribe({ next, error });
   }
 
-  private getPaginatedCandidateData(payload: FilterMap): void {
-    this.isLoading = true;
+  private getPaginatedCandidateData(payload: FilterMap, isSilent = false): void {
+    if (!isSilent) {
+      this.isLoading = true;
+    }
     const paginatedPayload = new PaginatedPayload();
     const filterMapCopy = { ...payload };
 
@@ -2135,7 +2434,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       .paginationEntity<any>('InterviewSummary', paginatedPayload)
       .pipe(
         finalize(() => {
-          this.isLoading = false;
+          if (!isSilent) {
+            this.isLoading = false;
+          }
           this.cdr.detectChanges();
         }),
       )
@@ -2153,9 +2454,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                 item.status?.toLowerCase() === 'on review'
                   ? 'N/A'
                   : (item.score === 0 || item.score === '0') &&
-                    !['completed', 'selected', 'rejected'].includes(
-                      item.status?.toLowerCase() || '',
-                    )
+                      !['completed', 'selected', 'rejected'].includes(
+                        item.status?.toLowerCase() || '',
+                      )
                     ? 'N/A'
                     : item.score === 0 || item.score === '0'
                       ? item.score
@@ -2199,10 +2500,27 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
                       1: 'Recruitment is inactive/completed, you can only view the recruitment.',
                     }
                   : {},
-              disabledReason:
-                (this.data && !this.data.isActive) || this.isAllRoundsCompleted
-                  ? 'Recruitment is inactive/completed, you can only view the recruitment.'
-                  : '',
+              isDisabled:
+                (this.data && !this.data.isActive) ||
+                this.isAllRoundsCompleted ||
+                this.isCandidateAbsent(item) ||
+                this.isCandidateInterviewStarted(item),
+              disabledTooltip: this.isCandidateAbsent(item)
+                ? `Candidate "${item.candidateName || item.fullName || item.name || 'Unknown'}" is marked as absent and cannot be selected.`
+                : this.isCandidateInterviewStarted(item)
+                  ? `Interview for candidate "${item.candidateName || item.fullName || item.name || 'Unknown'}" has already started.`
+                  : (this.data && !this.data.isActive) ||
+                      this.isAllRoundsCompleted
+                    ? 'Recruitment is inactive/completed, you can only view the recruitment.'
+                    : '',
+              disabledReason: this.isCandidateAbsent(item)
+                ? `Candidate "${item.candidateName || item.fullName || item.name || 'Unknown'}" is marked as absent and cannot be selected.`
+                : this.isCandidateInterviewStarted(item)
+                  ? `Interview for candidate "${item.candidateName || item.fullName || item.name || 'Unknown'}" has already started.`
+                  : (this.data && !this.data.isActive) ||
+                      this.isAllRoundsCompleted
+                    ? 'Recruitment is inactive/completed, you can only view the recruitment.'
+                    : '',
             })),
           };
         },
@@ -2277,7 +2595,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       error: () => {
         this.isOverviewLoading = false;
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 

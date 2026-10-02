@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, computed, input, OnInit, ViewChild } from '@angular/core';
+import { Component, computed, HostListener, input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
@@ -130,7 +130,7 @@ const tableColumns: TableColumnsData = {
   styleUrl: './import-candidate-list-step.component.scss',
   providers: [TableDataSourceService],
 })
-export class ImportCandidateListStepComponent implements OnInit {
+export class ImportCandidateListStepComponent implements OnInit, OnDestroy {
   @ViewChild(TableComponent) tableComponent!: TableComponent<any>;
 
   public url = `${ASSESSMENT_URL}/candidates/all`;
@@ -183,6 +183,8 @@ export class ImportCandidateListStepComponent implements OnInit {
   private questionSets!: QuestionSetModel[];
   private ref: DynamicDialogRef | undefined;
   private candidateApplicationQuestions!: CandidateApplicationQuestions[];
+  private pollIntervalId: any;
+  private lastFocusFetchTime = 0;
 
   constructor(
     private readonly assessmentService: AssessmentService,
@@ -202,6 +204,40 @@ export class ImportCandidateListStepComponent implements OnInit {
     this.getAllCandidates(new PaginatedPayload());
     this.getAllQuestionSets(new PaginatedPayload());
     this.getAllCandidatesApplicationQuestions();
+
+    this.pollIntervalId = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        const payload = new PaginatedPayload();
+        if (this.data) {
+          payload.pagination.pageNumber = this.data.pageNumber || 1;
+          payload.pagination.pageSize = this.data.pageSize || 10;
+        }
+        this.getAllCandidates(payload, true, true);
+      }
+    }, 30000);
+  }
+
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      const now = Date.now();
+      if (now - this.lastFocusFetchTime < 5000) return;
+      this.lastFocusFetchTime = now;
+      setTimeout(() => {
+        const payload = new PaginatedPayload();
+        if (this.data) {
+          payload.pagination.pageNumber = this.data.pageNumber || 1;
+          payload.pagination.pageSize = this.data.pageSize || 10;
+        }
+        this.getAllCandidates(payload, true, true);
+      }, 300);
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollIntervalId) {
+      clearInterval(this.pollIntervalId);
+    }
   }
 
   public onButtonClick(event: any) {
@@ -267,11 +303,18 @@ export class ImportCandidateListStepComponent implements OnInit {
       }
     });
   }
-  public getAllCandidates(payload: PaginatedPayload, clearLoading = false) {
-    this.isLoading = true;
+  public getAllCandidates(payload: PaginatedPayload, clearLoading = false, isSilent = false) {
+    if (!isSilent) {
+      this.isLoading = true;
+    }
     payload.filterMap = {
+      ...payload.filterMap,
       assessmentId: Number(this.assessmentId()),
     };
+    if (this.data && payload.pagination.pageNumber === 1 && this.data.pageNumber > 1) {
+      payload.pagination.pageNumber = this.data.pageNumber;
+      payload.pagination.pageSize = this.data.pageSize || payload.pagination.pageSize;
+    }
     const next = (res: PaginatedData<CandidateModel>) => {
       this.data = {
         ...res,
@@ -288,15 +331,15 @@ export class ImportCandidateListStepComponent implements OnInit {
         this.updateAlreadySelectedCandidates();
       }
       this.skipAutoSelection = false;
-      if (clearLoading) {
-        this.isLoading = false;
-      } else {
+      if (!isSilent) {
         this.isLoading = false;
       }
     };
 
     const error = (error: CustomErrorResponse) => {
-      this.isLoading = false;
+      if (!isSilent) {
+        this.isLoading = false;
+      }
       this.errorMessage(error);
     };
     this.candidateService
@@ -1269,13 +1312,14 @@ export class ImportCandidateListStepComponent implements OnInit {
                     severity: 'warn',
                     summary: 'Scheduling Mismatch',
                     detail: `Some candidates could not be scheduled because their date falls outside their batch window: ${names}`,
-                    life: 8000
+                    life: 5000
                   });
                 } else {
                   this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
                     detail: 'Scheduling failed.',
+                    life: 5000,
                   });
                 }
               } else {
@@ -1283,6 +1327,7 @@ export class ImportCandidateListStepComponent implements OnInit {
                   severity: 'success',
                   summary: 'Success',
                   detail: 'Candidate enrolled to the recruitment cycle successfully',
+                  life: 5000,
                 });
                 this.alreadySelectedCandidates = [];
                 this.selectedUsers = [];
@@ -1292,7 +1337,27 @@ export class ImportCandidateListStepComponent implements OnInit {
             },
             error: (error: CustomErrorResponse) => {
               this.isLoading = false;
-              this.errorMessage(error);
+              const rawMsg =
+                error?.error?.type ||
+                error?.error?.message ||
+                error?.error?.errorValue ||
+                'Scheduling failed.';
+              const detailMsg = String(rawMsg)
+                .replace(/^(Invalid data\s*:\s*|Invalid data\s+|InvalidData\s*:\s*|Validation Error\s*:\s*|Error\s*:\s*)/i, '')
+                .replace(/!\s*$/, '')
+                .trim();
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Scheduling Failed',
+                detail: detailMsg,
+                life: 5000,
+              });
+              const currentPayload = new PaginatedPayload();
+              if (this.data) {
+                currentPayload.pagination.pageNumber = this.data.pageNumber || 1;
+                currentPayload.pagination.pageSize = this.data.pageSize || 10;
+              }
+              this.getAllCandidates(currentPayload, true, true);
             },
           });
         }

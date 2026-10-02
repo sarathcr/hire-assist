@@ -14,6 +14,8 @@ export interface DialogData {
   isHtml?: boolean;
   acceptButtonText?: string;
   cancelButtonText?: string;
+  closeButtonText?: string;
+  CloseButtonText?: string;
   disableClose?: boolean;
   closeOnNavigation?: boolean;
   candidateNames?: string[];

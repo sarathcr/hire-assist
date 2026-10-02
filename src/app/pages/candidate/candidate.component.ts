@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DatePipe } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MessageService } from 'primeng/api';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { BaseComponent } from '../../shared/components/base/base.component';
@@ -23,7 +24,7 @@ import { InstructionService } from '../admin/services/instruction.service';
   templateUrl: './candidate.component.html',
   styleUrl: './candidate.component.scss',
 })
-export class CandidateComponent extends BaseComponent implements OnInit {
+export class CandidateComponent extends BaseComponent implements OnInit, OnDestroy {
   public activeAssessments: CandidateAssessment[] = [];
   public previousAssessments: CandidateAssessment[] = [];
   private ref: DynamicDialogRef | undefined;
@@ -33,6 +34,7 @@ export class CandidateComponent extends BaseComponent implements OnInit {
   private instructionCache = new Map<number, AptitudeInstruction>();
   private defaultInstructionCache: AptitudeInstruction | null = null;
   private isOpeningInstruction = false;
+  private pollIntervalId: any;
 
   constructor(
     public dialog: DialogService,
@@ -41,11 +43,11 @@ export class CandidateComponent extends BaseComponent implements OnInit {
     private candidateService: CandidateService,
     private deviceWarningService: DeviceWarningService,
     private instructionService: InstructionService,
+    private messageService: MessageService,
   ) {
     super();
   }
 
-  // LifeCycle Hooks
   // LifeCycle Hooks
   ngOnInit(): void {
     // Listen to query params for changes
@@ -71,11 +73,41 @@ export class CandidateComponent extends BaseComponent implements OnInit {
           }
         }),
     );
+
+    // Auto refresh every 30 seconds if tab is visible
+    this.pollIntervalId = setInterval(() => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        this.loadAssessments(true);
+      }
+    }, 30000);
+  }
+
+  private lastFocusFetchTime = 0;
+
+  @HostListener('window:focus')
+  onWindowFocus(): void {
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      const now = Date.now();
+      if (now - this.lastFocusFetchTime < 5000) return;
+      this.lastFocusFetchTime = now;
+      setTimeout(() => {
+        this.loadAssessments(true);
+      }, 300);
+    }
+  }
+
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
+    if (this.pollIntervalId) {
+      clearInterval(this.pollIntervalId);
+    }
   }
 
   // Private Methods
-  private loadAssessments(): void {
-    this.isLoading = true;
+  private loadAssessments(isSilent = false): void {
+    if (!isSilent) {
+      this.isLoading = true;
+    }
     this.candidateService.getCandidateAssessment().subscribe({
       next: (res: CandidateAssessment[]) => {
         const today = new Date();
@@ -158,11 +190,15 @@ export class CandidateComponent extends BaseComponent implements OnInit {
 
           return comparisonDate < today;
         });
-        this.isLoading = false;
+        if (!isSilent) {
+          this.isLoading = false;
+        }
         this.prefetchInstructions();
       },
       error: () => {
-        this.isLoading = false;
+        if (!isSilent) {
+          this.isLoading = false;
+        }
       },
     });
   }
@@ -204,11 +240,67 @@ export class CandidateComponent extends BaseComponent implements OnInit {
 
   // Public Methods
   public onAssessmentStart(assessment: CandidateAssessment) {
-    this.deviceWarningService.checkDeviceWidth().subscribe((canProceed) => {
-      if (canProceed) {
-        this.openInstructionModal(assessment);
-      }
+    // Perform live re-validation before launching instruction modal
+    this.candidateService.getCandidateAssessment().subscribe({
+      next: (latestList: CandidateAssessment[]) => {
+        const latestAssessment = latestList.find(
+          (a) => a.assessmentId === assessment.assessmentId && (a.assessmentRoundId === assessment.assessmentRoundId || a.round === assessment.round)
+        );
+
+        if (latestAssessment) {
+          const currentStatus = latestAssessment.statusId;
+          if (
+            currentStatus === StatusEnum.NotAttended ||
+            currentStatus === StatusEnum.Quit ||
+            currentStatus === StatusEnum.Completed ||
+            currentStatus === StatusEnum.Selected ||
+            currentStatus === StatusEnum.Rejected ||
+            currentStatus === StatusEnum.Terminated
+          ) {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Assessment Unavailable',
+              detail: `Your status for this assessment has been updated to ${this.getStatusLabel(currentStatus)}. You cannot start this test.`,
+            });
+            this.loadAssessments();
+            return;
+          }
+        }
+
+        this.deviceWarningService.checkDeviceWidth().subscribe((canProceed) => {
+          if (canProceed) {
+            this.openInstructionModal(assessment);
+          }
+        });
+      },
+      error: () => {
+        this.deviceWarningService.checkDeviceWidth().subscribe((canProceed) => {
+          if (canProceed) {
+            this.openInstructionModal(assessment);
+          }
+        });
+      },
     });
+  }
+
+  private getStatusLabel(statusId?: number): string {
+    if (!statusId) return 'Unavailable';
+    switch (statusId) {
+      case StatusEnum.NotAttended:
+        return 'Absent';
+      case StatusEnum.Completed:
+        return 'Completed';
+      case StatusEnum.Quit:
+        return 'Quit';
+      case StatusEnum.Selected:
+        return 'Selected';
+      case StatusEnum.Rejected:
+        return 'Rejected';
+      case StatusEnum.Terminated:
+        return 'Terminated';
+      default:
+        return 'Updated';
+    }
   }
 
   private openInstructionModal(assessment: CandidateAssessment): void {

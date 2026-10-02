@@ -1,18 +1,18 @@
 <footer class="dialog-footer">
   @if (data) {
-    <div class="dialog-footer__btn-wrapper">
-      @if (data.isChoice) {
+    @if (data.isChoice) {
+      <div class="dialog-footer__btn-wrapper">
         <app-button
-          [buttonLabel]="data.cancelButtonText"
+          [buttonLabel]="data.cancelButtonText || 'Cancel'"
           [buttonVariant]="'outlined'"
           (btnClick)="onClose()"
         ></app-button>
-      }
-    </div>
+      </div>
+    }
 
     <div class="dialog-footer__btn-wrapper">
       <app-button
-        [buttonLabel]="data.acceptButtonText"
+        [buttonLabel]="data.acceptButtonText || data.closeButtonText || data.CloseButtonText || 'OK'"
         (btnClick)="onSubmit()"
       ></app-button>
     </div>
