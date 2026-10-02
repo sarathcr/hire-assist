@@ -456,6 +456,7 @@
               [text]="true"
               [rounded]="true"
               [plain]="true"
+              [disabled]="product.isDisabled"
               [icon]="
                 product.isExpanded
                   ? 'pi pi-chevron-down'
@@ -736,7 +737,6 @@
                             [plain]="true"
                             [disabled]="
                               (product.disabledButtonIndices?.includes(i) ||
-                                (product.isDisabled && !isAbsentCandidate(product)) ||
                                 product.isSelf ||
                                 product.isActionsDisabled) ??
                               false
@@ -761,7 +761,6 @@
                   [text]="true"
                   [plain]="true"
                   [disabled]="
-                    (product.isDisabled && !isAbsentCandidate(product)) ||
                     product.isSelf ||
                     product.isActionsDisabled
                   "
