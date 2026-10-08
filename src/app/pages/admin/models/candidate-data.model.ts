@@ -138,6 +138,7 @@ export interface CandidateModel {
   visibleButtonIndices?: number[];
   disabledButtonIndices?: number[];
   previousRecruitmentIds?: number[];
+  hasPrevious?: boolean;
 }
 
 export interface CandidateApplicationQuestions {

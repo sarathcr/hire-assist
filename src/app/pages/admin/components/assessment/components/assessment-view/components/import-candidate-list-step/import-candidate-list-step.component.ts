@@ -61,6 +61,7 @@ const tableColumns: TableColumnsData = {
     {
       field: 'name',
       displayName: 'Name',
+      minWidth: '220px',
       sortedColumn: true,
       hasChip: false,
       hasTextFilter: true,
@@ -1442,10 +1443,12 @@ export class ImportCandidateListStepComponent implements OnInit, OnDestroy {
       }
       return {
         ...candidate,
+        hasPrevious,
+        isAlreadyExist: hasPrevious ? true : candidate.isAlreadyExist,
         currentLocation: candidate.currentLocation || 'N/A',
         visibleButtonIndices,
         disabledButtonIndices,
-        isSelectionDisabled: isEnrolledOrActive ? true : undefined
+        isSelectionDisabled: this.isReadOnly() || isEnrolledOrActive ? true : undefined
       };
     });
   }

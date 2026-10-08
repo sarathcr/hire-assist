@@ -906,6 +906,47 @@ $white: #ffffff;
     &--score {
       // Allow it to fit naturally in the grid if space allows
     }
+
+    &--ip {
+      @media (min-width: 992px) {
+        grid-column: span 2;
+      }
+    }
+  }
+
+  &__ip-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    margin-top: 4px;
+    min-width: 0;
+
+    .ifb__detail-value {
+      white-space: nowrap;
+    }
+  }
+
+  ::ng-deep .ifb__ip-tag,
+  &__ip-tag {
+    white-space: nowrap !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 3px 8px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+    border-radius: 4px !important;
+
+    .p-tag-label {
+      white-space: nowrap !important;
+    }
+
+    .p-tag-icon {
+      font-size: 11px !important;
+      margin-right: 2px !important;
+    }
   }
 
   &__detail-label {
@@ -2139,6 +2180,14 @@ $white: #ffffff;
     display: flex;
     justify-content: center;
     margin: 20px 0;
+  }
+
+  &__report-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
   }
 
   &__report-grid {

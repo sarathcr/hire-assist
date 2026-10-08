@@ -129,6 +129,51 @@
       font-size: var(--font-size-small);
     }
 
+    // Header checkbox disabled state
+    .table__headerCheckbox--disabled {
+      cursor: not-allowed !important;
+
+      p-tableHeaderCheckbox,
+      ::ng-deep p-tableHeaderCheckbox,
+      ::ng-deep .p-checkbox {
+        pointer-events: none !important;
+        cursor: not-allowed !important;
+        opacity: 0.45 !important;
+      }
+    }
+
+    // Row indicator for candidates who attended previous recruitments
+    .p-datatable-tbody > tr.table__row--has-previous {
+      position: relative;
+      transition: background-color 0.15s ease;
+
+      &:not(.p-highlight) {
+        background-color: rgba(99, 102, 241, 0.035) !important;
+
+        &::after {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 4px;
+          background: #6366f1 !important;
+          z-index: 5;
+          border-top-left-radius: 2px;
+          border-bottom-left-radius: 2px;
+        }
+
+        > td {
+          background-color: transparent !important;
+        }
+
+        &:hover,
+        &:hover > td {
+          background-color: rgba(99, 102, 241, 0.075) !important;
+        }
+      }
+    }
+
     // Selection styling with custom left accent
     .p-datatable-tbody > tr.p-highlight {
       position: relative;
@@ -157,7 +202,7 @@
         }
 
         // Highlight tags and badges should stand out
-        .p-tag,
+        .p-tag:not(.table__previous-badge),
         .p-badge {
           .p-tag-label,
           .p-tag-value,
@@ -166,12 +211,71 @@
             color: #ffffff !important;
           }
         }
+
+        .table__previous-badge {
+          background: #e0e7ff !important;
+          border-color: #a5b4fc !important;
+          color: #3730a3 !important;
+
+          i,
+          span {
+            color: #4338ca !important;
+          }
+        }
       }
 
       &:hover,
       &:hover > td {
         // Theme preset handles this, but we can refinement if needed
         background: #bae6fd !important;
+      }
+    }
+
+    // Name cell layout & previous candidate badge
+    .table__name-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .table__name-text {
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .table__previous-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      line-height: 1.2;
+      border-radius: 9999px;
+      background: #eef2ff;
+      color: #4f46e5;
+      border: 1px solid #c7d2fe;
+      cursor: pointer;
+      transition: all 0.15s ease-in-out;
+      white-space: nowrap;
+      user-select: none;
+
+      i {
+        font-size: 0.75rem;
+        color: #6366f1;
+      }
+
+      &:hover {
+        background: #e0e7ff;
+        color: #4338ca;
+        border-color: #a5b4fc;
+        box-shadow: 0 1px 4px rgba(99, 102, 241, 0.25);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
       }
     }
   }

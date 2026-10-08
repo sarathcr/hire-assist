@@ -19,6 +19,19 @@
         </div>
 
         <div class="header-actions">
+            <div class="search-and-clear">
+                <p-iconfield>
+                    <p-inputicon class="pi pi-search"></p-inputicon>
+                    <input
+                        pInputText
+                        type="text"
+                        [(ngModel)]="searchKey"
+                        (input)="onSearch($event)"
+                        placeholder="Search keyword"
+                    />
+                </p-iconfield>
+            </div>
+
             <p-selectButton 
                 [options]="viewOptions" 
                 [(ngModel)]="viewMode" 
@@ -26,7 +39,7 @@
                 optionValue="value"
                 [allowEmpty]="false">
                 <ng-template let-item pTemplate="item">
-                    <i [class]="item.icon"></i>
+                    <i [class]="item.icon + (viewMode === item.value ? ' toggle-icon-active' : ' toggle-icon-inactive')"></i>
                 </ng-template>
             </p-selectButton>
         </div>
@@ -37,23 +50,6 @@
         <div class="content-area">
             <!-- Cards View Container -->
             <div [hidden]="viewMode !== 'cards'">
-                <div class="filters-row">
-                    <div class="search-and-clear">
-                        <p-iconfield iconPosition="right">
-                            <p-inputicon>
-                                <i class="pi pi-search"></i>
-                            </p-inputicon>
-                            <input
-                                pInputText
-                                type="text"
-                                [(ngModel)]="searchKey"
-                                (input)="onSearch($event)"
-                                placeholder="Search keyword"
-                            />
-                        </p-iconfield>
-                    </div>
-                </div>
-
                 @if (isLoading$ | async) {
                     <!-- Skeleton State -->
                     <div class="recruitment-grid">
@@ -150,7 +146,7 @@
                         [tableData]="tableData"
                         [columnsData]="tableColumns"
                         [hasCheckbox]="false"
-                        [hasSearch]="true"
+                        [hasSearch]="false"
                         [parentLoader]="(isLoading$ | async) ?? false"
                         (pageChangeAndSort)="onTablePayloadChange($event)"
                         (view)="onCardClick($event)"

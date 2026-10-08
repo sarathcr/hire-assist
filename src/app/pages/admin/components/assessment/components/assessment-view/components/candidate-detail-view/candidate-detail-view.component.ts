@@ -29,6 +29,8 @@ import { finalize } from 'rxjs/operators';
 import { MessageService } from 'primeng/api';
 import { NgxExtendedPdfViewerModule, pdfDefaultOptions } from 'ngx-extended-pdf-viewer';
 
+import { IpVerificationService } from '../../../../../../../../shared/services/ip-verification.service';
+
 @Component({
   selector: 'app-candidate-detail-view',
   imports: [
@@ -102,6 +104,7 @@ export class CandidateDetailViewComponent
     public assessmentService: AssessmentService,
     public interviewService: InterviewService,
     private messageService: MessageService,
+    public ipVerificationService: IpVerificationService,
   ) {
     super();
     pdfDefaultOptions.disableRange = true;
@@ -472,6 +475,19 @@ export class CandidateDetailViewComponent
     if (!roundName) return false;
     const nameLower = roundName.trim().toLowerCase();
     return nameLower.includes('aptitude') || nameLower.includes('online');
+  }
+
+  public getRoundIpAddress(detail?: any, round?: any): string | null {
+    if (detail?.ipAddress) return detail.ipAddress;
+    if (round?.ipAddress) return round.ipAddress;
+    return null;
+  }
+
+  public getIpMeta(detail?: any, round?: any) {
+    const ip = this.getRoundIpAddress(detail, round);
+    const isIpValidated = detail?.isIpValidated ?? round?.isIpValidated;
+    const ipValidationStatus = detail?.ipValidationStatus ?? round?.ipValidationStatus;
+    return this.ipVerificationService.getIpVerificationMeta(ip, isIpValidated, ipValidationStatus);
   }
 
   public hasValue(value: any): boolean {

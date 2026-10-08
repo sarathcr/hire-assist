@@ -299,6 +299,11 @@
     background: var(--danger-bg);
   }
 
+  &.metric-onhold .metric-icon {
+    color: #b45309;
+    background: #fef3c7;
+  }
+
   &.metric-pipeline .metric-icon {
     color: var(--warning);
     background: var(--warning-bg);
@@ -786,6 +791,11 @@
         color: var(--danger);
       }
 
+      &.status-on-hold {
+        background: #fef3c7;
+        color: #b45309;
+      }
+
       &.status-in-progress {
         background: var(--warning-bg);
         color: var(--warning);
@@ -911,6 +921,12 @@
           &.status-rejected {
             color: var(--danger);
             background: var(--danger-bg);
+            border-color: transparent;
+          }
+
+          &.status-on-hold {
+            color: #b45309;
+            background: #fef3c7;
             border-color: transparent;
           }
         }

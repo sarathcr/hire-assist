@@ -95,6 +95,12 @@
         color: #166534;
       }
 
+      &.status-hold,
+      &.status-on-hold {
+        background-color: #fef3c7;
+        color: #92400e;
+      }
+
       &.status-rejected {
         background-color: #fee2e2;
         color: #991b1b;
@@ -190,6 +196,13 @@
         text-transform: capitalize;
 
         &.status-pending {
+          background-color: #fef3c7;
+          color: #92400e;
+        }
+
+        &.status-on-hold,
+        &.status-hold,
+        &.status-onhold {
           background-color: #fef3c7;
           color: #92400e;
         }

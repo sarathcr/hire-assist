@@ -28,6 +28,7 @@ import { ButtonModule } from 'primeng/button';
 import { Skeleton } from 'primeng/skeleton';
 import { Dialog } from 'primeng/dialog';
 import { SafePipe } from '../../../../../../shared/pipes/safepipe';
+import { IpVerificationService } from '../../../../../../shared/services/ip-verification.service';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { ImageSkeletonComponent } from '../../../../../../shared/components/image/image-skeleton';
@@ -176,6 +177,7 @@ export class InterviewerFeedbackComponent
     public readonly dialog: DialogService,
     private readonly stepsStatusService: StepsStatusService,
     private readonly router: Router,
+    public readonly ipVerificationService: IpVerificationService,
   ) {
     super();
     pdfDefaultOptions.disableRange = true;
@@ -437,6 +439,7 @@ export class InterviewerFeedbackComponent
       [StatusEnum.Saved]: 'Saved',
       [StatusEnum.Completed]: 'Completed',
       [StatusEnum.Selected]: 'Selected',
+      [StatusEnum.OnHold]: 'On Hold',
       [StatusEnum.Rejected]: 'Rejected',
       [StatusEnum.Scheduled]: 'Scheduled',
       [StatusEnum.Paused]: 'Paused',
@@ -461,6 +464,7 @@ export class InterviewerFeedbackComponent
       [StatusEnum.Saved]: 'success',
       [StatusEnum.Completed]: 'success',
       [StatusEnum.Selected]: 'success',
+      [StatusEnum.OnHold]: 'warn',
       [StatusEnum.Rejected]: 'danger',
       [StatusEnum.Scheduled]: 'warn',
       [StatusEnum.Paused]: 'secondary',
@@ -476,6 +480,9 @@ export class InterviewerFeedbackComponent
     const statusLower = status.toLowerCase();
     if (statusLower.includes('selected') || statusLower.includes('completed')) {
       return 'success';
+    }
+    if (statusLower.includes('hold')) {
+      return 'warn';
     }
     if (statusLower.includes('pending') || statusLower.includes('progress')) {
       return 'warn';
@@ -556,6 +563,20 @@ export class InterviewerFeedbackComponent
   ): string | Date | null {
     // Handle date field that may exist in API response but not in TypeScript interface
     return (detail as { date?: string | Date }).date || null;
+  }
+
+  public getRoundIpAddress(detail?: any, round?: any, aptReport?: any): string | null {
+    if (aptReport?.ipAddress) return aptReport.ipAddress;
+    if (detail?.ipAddress) return detail.ipAddress;
+    if (round?.ipAddress) return round.ipAddress;
+    return null;
+  }
+
+  public getIpMeta(detail?: any, round?: any, aptReport?: any) {
+    const ip = this.getRoundIpAddress(detail, round, aptReport);
+    const isIpValidated = aptReport?.isIpValidated ?? detail?.isIpValidated ?? round?.isIpValidated;
+    const ipValidationStatus = aptReport?.ipValidationStatus ?? detail?.ipValidationStatus ?? round?.ipValidationStatus;
+    return this.ipVerificationService.getIpVerificationMeta(ip, isIpValidated, ipValidationStatus);
   }
 
   public getFileUrl(file: FileDto): string {
@@ -802,6 +823,7 @@ export class InterviewerFeedbackComponent
         currentStatusId !== StatusEnum.OnReview &&
         currentStatusId !== StatusEnum.Completed &&
         currentStatusId !== StatusEnum.Selected &&
+        currentStatusId !== StatusEnum.OnHold &&
         currentStatusId !== StatusEnum.Rejected &&
         currentStatusId !== StatusEnum.Terminated &&
         currentStatusId !== StatusEnum.Quit &&
@@ -1685,6 +1707,11 @@ export class InterviewerFeedbackComponent
         next: (res: CandidateAptitudeReport) => {
           this.aptitudeReportMap[roundId] = res;
           this.isReportLoadingMap[roundId] = false;
+          if (round && !round.ipAddress && res?.ipAddress) {
+            round.ipAddress = res.ipAddress;
+            round.isIpValidated = res.isIpValidated;
+            round.ipValidationStatus = res.ipValidationStatus;
+          }
           this.loadReportImagesForRound(res);
         },
         error: () => {

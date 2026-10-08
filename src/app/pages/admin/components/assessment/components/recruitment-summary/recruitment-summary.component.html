@@ -28,13 +28,13 @@
       <p-button 
         *ngIf="!isLoading && summaryData"
         icon="pi pi-download" 
-        label="Export Audit Report" 
+        label="Download Recruitment Summary" 
         [raised]="true"
         severity="contrast"
         [loading]="isExporting"
         (onClick)="exportPdf()">
       </p-button>
-      <p-skeleton *ngIf="isLoading" width="220px" height="2.2rem" styleClass="export-btn-skeleton"></p-skeleton>
+      <p-skeleton *ngIf="isLoading" width="260px" height="2.2rem" styleClass="export-btn-skeleton"></p-skeleton>
     </div>
   </header>
 
@@ -172,7 +172,7 @@
 
       <!-- Quick Metrics Skeleton -->
       <div class="metrics-row">
-        @for (i of [1, 2, 3]; track i) {
+        @for (i of [1, 2, 3, 4]; track i) {
           <div class="metric-card">
             <p-skeleton shape="circle" size="48px" styleClass="flex-shrink-0"></p-skeleton>
             <div class="metric-info" style="width: 100%;">
@@ -306,6 +306,13 @@
           <div class="metric-info">
             <span class="metric-value">{{ summaryData.selected | number }}</span>
             <span class="metric-label">Selected</span>
+          </div>
+        </div>
+        <div class="metric-card metric-onhold">
+          <div class="metric-icon"><i class="pi pi-pause-circle"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ (summaryData.onHold || 0) | number }}</span>
+            <span class="metric-label">On Hold</span>
           </div>
         </div>
         <div class="metric-card metric-rejected">

@@ -53,12 +53,14 @@ export interface Payload {
   answerOptionId: string | number | null;
   statusId: number;
   duration: string;
+  ipAddress?: string;
 }
 export interface CandidateTestTermination {
   candidateId: string;
   assessmentId: number;
   terminatedTime: string;
   timerDuration: string;
+  ipAddress?: string;
 }
 interface CandidateAnswer {
   questionId: number;
@@ -213,6 +215,7 @@ export class CandidateTestComponent
     this.assessmentId = this.candidateInterview.assessment?.assessmentId;
     this.candidateId = this.candidateInterview.assessment?.candidateId;
 
+    this.fetchDeviceIp();
     this.getAllQuestions();
 
     history.pushState(null, '', window.location.href);
@@ -558,6 +561,31 @@ export class CandidateTestComponent
   }
 
   // Private
+  public deviceIpAddress = '';
+
+  private fetchDeviceIp(): void {
+    this.candidatetestservice.getDeviceIp().subscribe({
+      next: (res) => {
+        if (res && res.ip) {
+          this.deviceIpAddress = res.ip;
+          this.saveIpAddressToStorage();
+        }
+      },
+    });
+  }
+
+  private saveIpAddressToStorage(): void {
+    if (this.deviceIpAddress) {
+      if (this.assessmentId && this.candidateId) {
+        localStorage.setItem(`aptitude_ip_${this.assessmentId}_${this.candidateId}`, this.deviceIpAddress);
+      }
+      if (this.candidateId) {
+        localStorage.setItem(`aptitude_ip_${this.candidateId}`, this.deviceIpAddress);
+      }
+      localStorage.setItem('aptitude_ip_latest', this.deviceIpAddress);
+    }
+  }
+
   private handleAnswer(statusId: number, skipNavigation = false): Observable<void> {
     if (this.activeButtonId === null || !this.activeQuestion) {
       return of(void 0);
@@ -581,6 +609,7 @@ export class CandidateTestComponent
       answerOptionId,
       statusId,
       duration: this.timerComponent.getCurrentFormattedTime(),
+      ipAddress: this.deviceIpAddress,
     };
 
     this.isSaving = true;
@@ -1002,12 +1031,14 @@ export class CandidateTestComponent
   private forceSubmitTest(): void {
     this.isSubmitting = true;
     this.exitFullScreenMode();
+    this.saveIpAddressToStorage();
 
     const terminationPayload: CandidateTestTermination = {
       candidateId: this.candidateId,
       assessmentId: this.assessmentId,
       terminatedTime: new Date().toISOString(),
       timerDuration: '00:00:00',
+      ipAddress: this.deviceIpAddress,
     };
 
     this.candidatetestservice
@@ -1127,8 +1158,9 @@ export class CandidateTestComponent
     assessmentId: number,
     assessmentRoundId: number,
   ): Observable<void> {
+    this.saveIpAddressToStorage();
     return this.candidatetestservice
-      .addCandidateScore(assessmentId, assessmentRoundId)
+      .addCandidateScore(assessmentId, assessmentRoundId, this.deviceIpAddress)
       .pipe(
         switchMap((score: number) => {
           const interviewId = this.candidateInterview?.assessment?.interviewId;
@@ -1173,6 +1205,7 @@ export class CandidateTestComponent
 
   private saveTerminationTime(status: number = 11): void {
     if (!this.timerComponent || !this.candidateId || !this.assessmentId) return;
+    this.saveIpAddressToStorage();
     const remainingTime = this.timerComponent.getCurrentFormattedTime();
 
     const payload: CandidateTestTermination = {
@@ -1180,6 +1213,7 @@ export class CandidateTestComponent
       assessmentId: this.assessmentId,
       terminatedTime: new Date().toISOString(),
       timerDuration: remainingTime,
+      ipAddress: this.deviceIpAddress,
     };
 
     this.candidatetestservice
@@ -1374,8 +1408,9 @@ export class CandidateTestComponent
     this.isTestEnded = true;
     this.isSaving = true;
     this.exitFullScreenMode();
+    this.saveIpAddressToStorage();
     this.candidatetestservice
-      .quitAssessment(this.candidateId, this.assessmentId)
+      .quitAssessment(this.candidateId, this.assessmentId, this.deviceIpAddress)
       .subscribe({
         next: () => {
           this.isSaving = false;

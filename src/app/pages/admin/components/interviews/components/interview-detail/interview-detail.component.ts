@@ -19,6 +19,7 @@ import { Message } from 'primeng/message';
 import { TagModule } from 'primeng/tag';
 
 import { Tooltip } from 'primeng/tooltip';
+import { StatusEnum } from '../../../../../../shared/enums/status.enum';
 import { BaseComponent } from '../../../../../../shared/components/base/base.component';
 import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { CustomErrorResponse } from '../../../../../../shared/models/custom-error.models';
@@ -49,6 +50,8 @@ import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { CandidatePayload, CandidateData } from '../../../../models/stepper.model';
 import { PaginatedData } from '../../../../../../shared/models/pagination.models';
 import { FilterMap } from '../../../../../../shared/models/pagination.models';
+
+import { IpVerificationService } from '../../../../../../shared/services/ip-verification.service';
 
 @Component({
   selector: 'app-interview-detail',
@@ -122,6 +125,7 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
     private route: ActivatedRoute,
     private storeService: StoreService,
     public dialog: DialogService,
+    public ipVerificationService: IpVerificationService,
   ) {
     super();
     this.fGroup = buildFormGroup(this.score);
@@ -556,15 +560,30 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
   }
 
   /**
+   * Checks if the candidate is eligible for selection or rejection decision (completed, on hold, or rejected)
+   */
+  public isCandidateStatusEligibleForDecision(): boolean {
+    const s = this.candidateStatus?.toLowerCase();
+    return s === 'completed' || s === 'on hold' || s === 'onhold' || s === 'rejected';
+  }
+
+  /**
+   * Checks if the candidate is eligible to be put on hold (completed, selected, or rejected)
+   */
+  public isCandidateStatusEligibleForHold(): boolean {
+    const s = this.candidateStatus?.toLowerCase();
+    return s === 'completed' || s === 'selected' || s === 'rejected';
+  }
+
+  /**
    * Handles Select Candidate action
    */
   public onSelectCandidate(): void {
-    // Check if candidate status in assessment round table is "Completed"
-    if (!this.isCandidateStatusCompleted()) {
+    if (!this.isCandidateStatusEligibleForDecision()) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
-        detail: 'Candidate status must be "Completed" in the assessment round table before selecting the candidate.',
+        detail: 'Candidate status must be "Completed" or "On Hold" before selecting the candidate.',
       });
       return;
     }
@@ -594,7 +613,50 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
 
     this.ref.onClose.subscribe((result) => {
       if (result) {
-        this.updateCandidateStatus(8, 'selected');
+        this.updateCandidateStatus(StatusEnum.Selected, 'selected');
+      }
+    });
+  }
+
+  /**
+   * Handles On Hold Candidate action
+   */
+  public onHoldCandidate(): void {
+    if (!this.isCandidateStatusEligibleForHold()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Candidate status must be "Completed" before putting on hold.',
+      });
+      return;
+    }
+
+    const modalData: DialogData = {
+      message: `Are you sure you want to put this candidate on hold?`,
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Hold',
+    };
+
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Confirm On Hold',
+      maximizable: false,
+      width: '25vw',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        this.updateCandidateStatus(StatusEnum.OnHold, 'on hold');
       }
     });
   }
@@ -603,12 +665,11 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
    * Handles Reject Candidate action
    */
   public onRejectCandidate(): void {
-    // Check if candidate status in assessment round table is "Completed"
-    if (!this.isCandidateStatusCompleted()) {
+    if (!this.isCandidateStatusEligibleForDecision() && this.candidateStatus?.toLowerCase() !== 'selected') {
       this.messageService.add({
         severity: 'warn',
         summary: 'Warning',
-        detail: 'Candidate status must be "Completed" in the assessment round table before rejecting the candidate.',
+        detail: 'Candidate status must be "Completed", "On Hold", or "Selected" before rejecting the candidate.',
       });
       return;
     }
@@ -638,15 +699,15 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
 
     this.ref.onClose.subscribe((result) => {
       if (result) {
-        this.updateCandidateStatus(9, 'rejected');
+        this.updateCandidateStatus(StatusEnum.Rejected, 'rejected');
       }
     });
   }
 
   /**
    * Updates the candidate status
-   * @param statusId - 8 for Selected, 9 for Rejected
-   * @param actionName - 'selected' or 'rejected' for success messages
+   * @param statusId - StatusEnum value
+   * @param actionName - 'selected', 'on hold', or 'rejected' for success messages
    */
   private updateCandidateStatus(statusId: number, actionName: string): void {
     if (!this.responseData || !this.assessmentRoundId || !this.assessmentId) {
@@ -678,7 +739,9 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
         detail:
           actionName === 'selected'
             ? 'Candidate selected successfully'
-            : 'Candidate rejected successfully',
+            : actionName === 'on hold'
+              ? 'Candidate placed on hold successfully'
+              : 'Candidate rejected successfully',
       });
       // Refresh the candidate details and status to reflect the updated status
       this.getAssessmentDetails(this.requestData);
@@ -696,7 +759,9 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
         detail:
           actionName === 'selected'
             ? 'Failed to select candidate. Please try again.'
-            : 'Failed to reject candidate. Please try again.',
+            : actionName === 'on hold'
+              ? 'Failed to put candidate on hold. Please try again.'
+              : 'Failed to reject candidate. Please try again.',
       });
     };
 
@@ -715,5 +780,18 @@ export class InterviewDetailComponent extends BaseComponent implements OnInit {
     if (!roundName) return false;
     const nameLower = roundName.trim().toLowerCase();
     return nameLower.includes('aptitude') || nameLower.includes('online');
+  }
+
+  public getRoundIpAddress(detail?: any, round?: any): string | null {
+    if (detail?.ipAddress) return detail.ipAddress;
+    if (round?.ipAddress) return round.ipAddress;
+    return null;
+  }
+
+  public getIpMeta(detail?: any, round?: any) {
+    const ip = this.getRoundIpAddress(detail, round);
+    const isIpValidated = detail?.isIpValidated ?? round?.isIpValidated;
+    const ipValidationStatus = detail?.ipValidationStatus ?? round?.ipValidationStatus;
+    return this.ipVerificationService.getIpVerificationMeta(ip, isIpValidated, ipValidationStatus);
   }
 }

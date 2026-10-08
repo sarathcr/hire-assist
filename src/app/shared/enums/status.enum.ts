@@ -13,6 +13,7 @@ export enum StatusEnum {
   Terminated = 12,
   Quit = 13,
   InterviewStarted = 17,
+  OnHold = 18,
 }
 
 export enum AttachmentTypeEnum {

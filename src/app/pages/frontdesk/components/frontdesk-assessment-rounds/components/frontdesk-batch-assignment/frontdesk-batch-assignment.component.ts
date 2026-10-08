@@ -73,6 +73,7 @@ const aptitudeTableColumns: TableColumnsData = {
         { label: 'Scheduled', value: 'Scheduled' },
         { label: 'Assigned', value: 'Assigned' },
         { label: 'Selected', value: 'Selected' },
+        { label: 'On Hold', value: 'On Hold' },
         { label: 'Completed', value: 'Completed' },
         { label: 'Rejected', value: 'Rejected' },
         { label: 'Active', value: 'Active' },
@@ -157,6 +158,7 @@ const nonAptitudeTableColumns: TableColumnsData = {
         { label: 'Scheduled', value: 'Scheduled' },
         { label: 'Assigned', value: 'Assigned' },
         { label: 'Selected', value: 'Selected' },
+        { label: 'On Hold', value: 'On Hold' },
         { label: 'Completed', value: 'Completed' },
         { label: 'Rejected', value: 'Rejected' },
         { label: 'Active', value: 'Active' },
@@ -206,6 +208,7 @@ export interface Candidate {
   toggleTooltipIconIndex?: number;
   visibleButtonIndices?: number[];
   disabledButtonIndices?: number[];
+  disabledButtonTooltips?: string[];
   candidateId?: string;
   isDisabled?: boolean;
   isActionsDisabled?: boolean;
@@ -346,6 +349,26 @@ export class FrontdeskBatchAssignmentComponent implements OnInit, OnDestroy {
       $event.fName === 'Mark as Present' ||
       $event.fName === 'Mark as Absent'
     ) {
+      const statusLower = $event.event.status?.toLowerCase()?.trim() || '';
+      const statusId = $event.event.statusId ?? ($event.event as any).statusID;
+      if (
+        statusLower === 'on hold' ||
+        statusLower === 'onhold' ||
+        statusId === StatusEnum.OnHold ||
+        statusLower === 'completed' ||
+        statusId === StatusEnum.Completed ||
+        statusLower === 'selected' ||
+        statusId === StatusEnum.Selected ||
+        statusLower === 'rejected' ||
+        statusId === StatusEnum.Rejected
+      ) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Action Not Allowed',
+          detail: `Cannot mark candidate as ${$event.fName.toLowerCase().includes('absent') ? 'absent' : 'present'} while candidate status is "${$event.event.status || 'On Hold'}".`,
+        });
+        return;
+      }
       this.markAsPresent($event.event, batchId, $event.fName);
     } else if ($event.fName === 'Assign to another batch') {
       this.assignToAnotherBatch($event.event, batchId);
@@ -369,6 +392,27 @@ export class FrontdeskBatchAssignmentComponent implements OnInit, OnDestroy {
   }
 
   private markAsPresent(candidate: Candidate, batchId: string, event?: string) {
+    const statusLower = candidate.status?.toLowerCase()?.trim() || '';
+    const statusId = candidate.statusId ?? (candidate as any).statusID;
+    if (
+      statusLower === 'on hold' ||
+      statusLower === 'onhold' ||
+      statusId === StatusEnum.OnHold ||
+      statusLower === 'completed' ||
+      statusId === StatusEnum.Completed ||
+      statusLower === 'selected' ||
+      statusId === StatusEnum.Selected ||
+      statusLower === 'rejected' ||
+      statusId === StatusEnum.Rejected
+    ) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Action Not Allowed',
+        detail: `Cannot change attendance status for candidate with status "${candidate.status || 'On Hold'}".`,
+      });
+      return;
+    }
+
     this.markAsPresentRequest = { InterviewsId: candidate.id };
     // Show loading skeleton while API call is in progress
     this.loadingBatches[batchId] = true;
@@ -757,12 +801,15 @@ export class FrontdeskBatchAssignmentComponent implements OnInit, OnDestroy {
   }
 
   private mapCandidateData(candidate: Candidate, batchId?: string): Candidate {
-    const statusLower = candidate.status?.toLowerCase() || '';
+    const statusLower = candidate.status?.toLowerCase()?.trim() || '';
+    const statusId = candidate.statusId ?? (candidate as any).statusID;
 
     // Button indices: 0: Mark as Present, 1: Mark as Absent, 2: Assign to Batch, 3: Upload ID Proof
-    if (
+    const isFinishedOrEvaluated =
       statusLower === 'completed' ||
       statusLower === 'selected' ||
+      statusLower === 'on hold' ||
+      statusLower === 'onhold' ||
       statusLower === 'rejected' ||
       statusLower === 'quit' ||
       statusLower === 'interview started' ||
@@ -771,16 +818,30 @@ export class FrontdeskBatchAssignmentComponent implements OnInit, OnDestroy {
       statusLower === 'onreview' ||
       statusLower === 'saved' ||
       statusLower === 'terminated' ||
-      candidate.statusId === StatusEnum.InterviewStarted ||
-      candidate.statusId === StatusEnum.OnReview ||
-      candidate.statusId === StatusEnum.Saved ||
-      candidate.statusId === StatusEnum.Terminated
-    ) {
-      // Cannot change status anymore for completed/selected/rejected/started assessments
+      statusId === StatusEnum.Completed ||
+      statusId === StatusEnum.Selected ||
+      statusId === StatusEnum.OnHold ||
+      statusId === StatusEnum.Rejected ||
+      statusId === StatusEnum.Quit ||
+      statusId === StatusEnum.InterviewStarted ||
+      statusId === StatusEnum.OnReview ||
+      statusId === StatusEnum.Saved ||
+      statusId === StatusEnum.Terminated;
+
+    if (isFinishedOrEvaluated) {
+      // Cannot change attendance or reassign batch for completed/selected/on hold/rejected assessments
+      const reason =
+        statusLower === 'on hold' || statusId === StatusEnum.OnHold
+          ? 'Candidate status is On Hold'
+          : statusLower === 'completed' || statusId === StatusEnum.Completed
+            ? 'Candidate has completed the interview'
+            : `Candidate status is ${candidate.status || 'already evaluated'}`;
+
       return {
         ...candidate,
         visibleButtonIndices: [3],
-        disabledButtonIndices: this.isAptitudeRound ? [0, 1, 2] : [0, 1],
+        disabledButtonIndices: [0, 1, 2],
+        disabledButtonTooltips: [reason, reason, reason, 'Upload ID Proof'],
       };
     }
 

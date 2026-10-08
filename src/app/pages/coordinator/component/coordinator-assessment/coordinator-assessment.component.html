@@ -9,8 +9,12 @@
           <div class="round-card" (click)="onClickAssessment(assessment.assessmentRoundId)">
             <div class="round-card__header">
               <h3 class="round-card__name">{{ assessment.name }}</h3>
-              @if (assessment.isActive) {
+              @if (isRoundCompleted(assessment)) {
+                <span class="round-card__badge round-card__badge--completed">Completed</span>
+              } @else if (assessment.isActive || isRoundActive(assessment)) {
                 <span class="round-card__badge round-card__badge--active">Active</span>
+              } @else if (isRoundPending(assessment)) {
+                <span class="round-card__badge round-card__badge--pending">Pending</span>
               }
             </div>
 

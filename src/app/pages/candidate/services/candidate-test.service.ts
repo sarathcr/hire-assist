@@ -7,7 +7,9 @@ import { ApiService } from '../../../shared/services/api.service';
 import { StoreService } from '../../../shared/services/store.service';
 import { CandidateTestQuestionSet } from '../models/candidate-test-question-set.model';
 
-interface Payload {
+import { catchError, of } from 'rxjs';
+
+export interface Payload {
   id?: number;
   interviewId: number;
   candidateId: string;
@@ -16,12 +18,14 @@ interface Payload {
   answerOptionId: string | number | null;
   statusId: number;
   duration: string;
+  ipAddress?: string;
 }
 export interface candidateTestTermination {
   candidateId: string;
   assessmentId: number;
   terminatedTime: string;
   timerDuration: string;
+  ipAddress?: string;
 }
 @Injectable({
   providedIn: 'root',
@@ -38,6 +42,13 @@ export class CandidateTestService extends ApiService<any> {
   override getResourceUrl(): string {
     return ASSESSMENT_URL;
     // return apiUrl;
+  }
+
+  public getDeviceIp() {
+    return this.httpClient.get<{ ip: string }>('https://api.ipify.org?format=json').pipe(
+      catchError(() => this.httpClient.get<{ ip: string }>('https://api64.ipify.org?format=json')),
+      catchError(() => of({ ip: '' })),
+    );
   }
 
   public getQuestionSet(assessmentId: number, interviewId: number) {
@@ -68,11 +79,11 @@ export class CandidateTestService extends ApiService<any> {
       // `${this.getResourceUrl()}/api/assessment/candidateAnswer?assessmentId=${assessmentId}&candidateId=${candidateId}`
     );
   }
-  public addCandidateScore(assessmentId: number, assessmentRoundId: number) {
+  public addCandidateScore(assessmentId: number, assessmentRoundId: number, ipAddress?: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return this.httpClient.post<any>(
       `${this.getResourceUrl()}/calculate-score/assessmentId/${assessmentId}/assessmentRoundId/${assessmentRoundId}`,
-      {},
+      { ipAddress },
     );
   }
 
@@ -93,10 +104,10 @@ export class CandidateTestService extends ApiService<any> {
     );
   }
 
-  public quitAssessment(candidateId: string, assessmentId: number) {
+  public quitAssessment(candidateId: string, assessmentId: number, ipAddress?: string) {
     return this.httpClient.put<any>(
       `${this.getResourceUrl()}/quitAssessment/${candidateId}/${assessmentId}`,
-      {},
+      { ipAddress },
     );
   }
 }

@@ -40,6 +40,7 @@
     [loading]="isLoading() && displayData().length === 0"
     [showLoader]="false"
     [selectionMode]="selectionMode"
+    [rowSelectable]="isRowSelectable"
     (selectionChange)="onSelectionChange($event)"
     [alwaysShowPaginator]="true"
   >
@@ -92,17 +93,20 @@
           <th
             scope="col"
             class="table__headerCheckbox"
+            [class.table__headerCheckbox--disabled]="isHeaderCheckboxDisabled()"
             style="width: 4rem; min-width: 4rem; max-width: 4rem"
             [pTooltip]="
-              selectionDisabled()
-                ? 'Recruitment is inactive/completed, you can only view the recruitment.'
+              isHeaderCheckboxDisabled()
+                ? (selectionDisabled()
+                    ? 'Recruitment is inactive/completed, you can only view the recruitment.'
+                    : 'All candidates are disabled and cannot be selected.')
                 : ''
             "
             tooltipPosition="right"
           >
             <p-tableHeaderCheckbox
               (click)="$event.stopPropagation()"
-              [disabled]="selectionDisabled()"
+              [disabled]="isHeaderCheckboxDisabled()"
             />
           </th>
         }
@@ -273,6 +277,7 @@
               }
               @if (headerColumn.filterAlias === "scoreFilter") {
                 <p-columnFilter
+                  type="numeric"
                   field="{{ headerColumn.field }}"
                   display="menu"
                   hideOnClear="true"
@@ -381,7 +386,12 @@
       <tr
         #rowElement
         [ngClass]="{
-          table_isAlready: enableCandidateStyling() && product.isAlreadyExist,
+          table_isAlready:
+            enableCandidateStyling() &&
+            (product.isAlreadyExist || product.hasPrevious),
+          'table__row--has-previous':
+            enableCandidateStyling() &&
+            (product.isAlreadyExist || product.hasPrevious),
           table_isDuplicate: enableCandidateStyling() && product.isDuplicate,
           'table__row--disabled': product.isSelf || product.isDisabled,
           'table__row--batch-assigned':
@@ -389,6 +399,7 @@
           'table__row--not-scheduled':
             enableCandidateStyling() &&
             !product.isAlreadyExist &&
+            !product.hasPrevious &&
             !product.isDuplicate &&
             (!product.batchId ||
               product.batchId === 0 ||
@@ -874,6 +885,31 @@
                   "
                   (onClick)="toggleMask(product, headerColumn.field)"
                 ></p-button>
+              </div>
+            </td>
+          } @else if (headerColumn.field === "name") {
+            <td
+              [style.minWidth]="getColumnMinWidth(headerColumn)"
+              [style.width]="getColumnWidth(headerColumn)"
+            >
+              <div class="table__name-cell">
+                <span class="table__name-text">{{
+                  product[headerColumn.field]
+                }}</span>
+                @if (
+                  enableCandidateStyling() &&
+                  (product.isAlreadyExist || product.hasPrevious)
+                ) {
+                  <span
+                    class="table__previous-badge"
+                    pTooltip="Candidate attended previous recruitment(s). Click to view details."
+                    tooltipPosition="top"
+                    (click)="onPreviousAssessmentClick($event, product)"
+                  >
+                    <i class="pi pi-history"></i>
+                    <span>Previous Candidate</span>
+                  </span>
+                }
               </div>
             </td>
           } @else {

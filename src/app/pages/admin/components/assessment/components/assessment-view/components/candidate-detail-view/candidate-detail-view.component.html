@@ -499,6 +499,43 @@
                                           </div>
                                         </div>
                                       }
+
+                                      <!-- Device IP / IP Address -->
+                                      @if (isAptitudeRound(round)) {
+                                        <div
+                                          class="candidate-detail__detail-item candidate-detail__detail-item--ip"
+                                        >
+                                          <div
+                                            class="candidate-detail__detail-icon"
+                                          >
+                                            <i class="pi pi-desktop"></i>
+                                          </div>
+                                          <div
+                                            class="candidate-detail__detail-content"
+                                          >
+                                            <span
+                                              class="candidate-detail__detail-label"
+                                              >IP Address</span
+                                            >
+                                            @if (getRoundIpAddress(detail, round)) {
+                                              <div class="candidate-detail__ip-wrapper">
+                                                <span
+                                                  class="candidate-detail__detail-value"
+                                                  >{{ getRoundIpAddress(detail, round) }}</span
+                                                >
+                                                <p-tag
+                                                  [value]="getIpMeta(detail, round).label"
+                                                  [severity]="getIpMeta(detail, round).severity"
+                                                  [icon]="getIpMeta(detail, round).icon"
+                                                  styleClass="candidate-detail__ip-tag"
+                                                />
+                                              </div>
+                                            } @else {
+                                              <span class="candidate-detail__detail-value">N/A</span>
+                                            }
+                                          </div>
+                                        </div>
+                                      }
                                     </div>
 
                                     <!-- Aptitude Report Section [V2.1] -->
@@ -516,12 +553,37 @@
                                         </div>
 
                                         @if (showReportMap[getRoundKey(round)] && aptitudeReportMap[getRoundKey(round)]) {
+                                          @if (aptitudeReportMap[getRoundKey(round)]?.ipAddress || getRoundIpAddress(undefined, round)) {
+                                            <div class="candidate-detail__report-meta">
+                                              <p-tag
+                                                [value]="'Device IP: ' + (aptitudeReportMap[getRoundKey(round)]?.ipAddress || getRoundIpAddress(undefined, round))"
+                                                severity="info"
+                                                icon="pi pi-desktop"
+                                                styleClass="candidate-detail__ip-tag"
+                                              />
+                                              <p-tag
+                                                [value]="getIpMeta(undefined, round).label"
+                                                [severity]="getIpMeta(undefined, round).severity"
+                                                [icon]="getIpMeta(undefined, round).icon"
+                                                styleClass="candidate-detail__ip-tag"
+                                              />
+                                            </div>
+                                          } @else {
+                                            <div class="candidate-detail__report-meta">
+                                              <p-tag
+                                                value="Device IP: N/A"
+                                                severity="secondary"
+                                                icon="pi pi-desktop"
+                                                styleClass="candidate-detail__ip-tag"
+                                              />
+                                            </div>
+                                          }
                                           <div class="candidate-detail__report-grid">
                                             @for (ans of aptitudeReportMap[getRoundKey(round)]!.answers; track ans.questionId) {
                                               <!-- Question Card -->
                                               <div class="candidate-detail__question-card">
                                                   <div class="candidate-detail__question-header">
-                                                    <div class="flex flex-column gap-1">
+                                                    <div class="candidate-detail__question-meta">
                                                       @if (ans.questionType) {
                                                         <span class="candidate-detail__question-type">{{ ans.questionType }}</span>
                                                       }

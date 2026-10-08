@@ -191,6 +191,27 @@
                               round.assessmentDetails[0].skipped
                             }}</span>
                           </div>
+                          <div class="interview-detail__round-item">
+                            <span class="interview-detail__round-label"
+                              >IP Address</span
+                            >
+                            @if (getRoundIpAddress(round.assessmentDetails?.[0], round)) {
+                              <div class="flex align-items-center gap-2 mt-1 flex-wrap">
+                                <span class="interview-detail__round-value" [style]="{ 'white-space': 'nowrap' }">{{
+                                  getRoundIpAddress(round.assessmentDetails?.[0], round)
+                                }}</span>
+                                <p-tag
+                                  [value]="getIpMeta(round.assessmentDetails?.[0], round).label"
+                                  [severity]="getIpMeta(round.assessmentDetails?.[0], round).severity"
+                                  [icon]="getIpMeta(round.assessmentDetails?.[0], round).icon"
+                                  styleClass="ifb__ip-tag"
+                                  [style]="{ 'white-space': 'nowrap' }"
+                                />
+                              </div>
+                            } @else {
+                              <span class="interview-detail__round-value">N/A</span>
+                            }
+                          </div>
                         </div>
                       </div>
                     } @else {
@@ -558,15 +579,23 @@
               [icon]="'pi pi-check-square'"
               [buttonSize]="'large'"
               [buttonSeverity]="'success'"
-              [disabled]="!isCandidateStatusCompleted() || isCheckingCandidateStatus"
+              [disabled]="!isCandidateStatusEligibleForDecision() || isCheckingCandidateStatus"
               (btnClick)="onSelectCandidate()"
+            ></app-button>
+            <app-button
+              [buttonLabel]="'On Hold Candidate'"
+              [icon]="'pi pi-pause-circle'"
+              [buttonSize]="'large'"
+              [buttonSeverity]="'warn'"
+              [disabled]="!isCandidateStatusEligibleForHold() || isCheckingCandidateStatus"
+              (btnClick)="onHoldCandidate()"
             ></app-button>
             <app-button
               [buttonLabel]="'Reject Candidate'"
               [icon]="'pi pi-ban'"
               [buttonSize]="'large'"
               [buttonSeverity]="'danger'"
-              [disabled]="!isCandidateStatusCompleted() || isCheckingCandidateStatus"
+              [disabled]="!isCandidateStatusEligibleForDecision() || isCheckingCandidateStatus"
               (btnClick)="onRejectCandidate()"
             ></app-button>
           </div>

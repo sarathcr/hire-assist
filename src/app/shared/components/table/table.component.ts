@@ -62,6 +62,7 @@ export const uniqueStatuses = [
   { label: 'Assigned to Panel', value: 'Assigned to Panel' },
   { label: 'Assigned to Batch', value: 'Assigned to Batch' },
   { label: 'Selected', value: 'Selected' },
+  { label: 'On Hold', value: 'On Hold' },
   { label: 'Completed', value: 'Completed' },
   { label: 'Rejected', value: 'Rejected' },
   { label: 'Active', value: 'Active' },
@@ -86,6 +87,7 @@ export const uniqueStatusesForEnrolled = [
   { label: 'Scheduled', value: 'Scheduled' },
   { label: 'Assigned', value: 'Assigned' },
   { label: 'Selected', value: 'Selected' },
+  { label: 'On Hold', value: 'On Hold' },
   { label: 'Completed', value: 'Completed' },
   { label: 'Rejected', value: 'Rejected' },
   { label: 'Active', value: 'Active' },
@@ -162,6 +164,28 @@ export class TableComponent<
   private readonly persistedSelectedIds = new Set<string>();
   public expandedRows: Record<string, boolean> = {};
   public matchModeOptions: SelectItem[] = matchOptions;
+
+  public isHeaderCheckboxDisabled = computed(() => {
+    if (this.selectionDisabled()) {
+      return true;
+    }
+    const data = this.tableData()?.data;
+    if (!data || data.length === 0) {
+      return true;
+    }
+    const hasAnySelectable = data.some(
+      (item: any) =>
+        !item.isSelf && !item.isDisabled && !item.isSelectionDisabled,
+    );
+    return !hasAnySelectable;
+  });
+
+  public isRowSelectable = (event: { data: any; index: number }): boolean => {
+    if (this.selectionDisabled()) return false;
+    const item = event?.data;
+    if (!item) return false;
+    return !item.isSelf && !item.isDisabled && !item.isSelectionDisabled;
+  };
 
   public getColumnWidth(col: any): string | null {
     if (col.width != null) {
@@ -493,9 +517,6 @@ export class TableComponent<
       return '';
     }
 
-    if (product.isAlreadyExist) {
-      return 'We already have this record in our records.';
-    }
     if (product.isDuplicate) {
       return 'Duplicate records were discovered in the sheet.';
     }
@@ -911,6 +932,10 @@ export class TableComponent<
   public onPreviousAssessment(data: any): void {
     this.previousAssessmentAction.emit(data);
   }
+  public onPreviousAssessmentClick(event: MouseEvent, data: any): void {
+    event.stopPropagation();
+    this.onPreviousAssessment(data);
+  }
   public onStartInterview(data: any): void {
     this.btnClick.emit(data);
   }
@@ -930,8 +955,8 @@ export class TableComponent<
   }
 
   public onSelectionChange(newSelection: any): void {
-    // Block any selection changes when selectionDisabled is true
-    if (this.selectionDisabled()) {
+    // Block any selection changes when selectionDisabled or all items are non-selectable
+    if (this.selectionDisabled() || this.isHeaderCheckboxDisabled()) {
       // Revert to the currently persisted selection so checkboxes snap back
       this.selectedItems = (this.tableData()?.data || []).filter((item) =>
         this.persistedSelectedIds.has(String(item.id)),
@@ -969,7 +994,12 @@ export class TableComponent<
     }
 
     for (const item of selectionArray) {
-      if (item?.id) {
+      if (
+        item?.id &&
+        !item.isSelf &&
+        !item.isDisabled &&
+        !item.isSelectionDisabled
+      ) {
         this.persistedSelectedIds.add(String(item.id));
       }
     }
@@ -1064,6 +1094,9 @@ export class TableComponent<
         return 'success';
       case 'selected':
         return 'info';
+      case 'on hold':
+      case 'onhold':
+        return 'warn';
       case 'rejected':
         return 'danger';
       case 'terminated':

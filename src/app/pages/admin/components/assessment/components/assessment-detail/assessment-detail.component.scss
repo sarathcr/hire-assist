@@ -278,6 +278,17 @@
         color: #d83b01;
       }
     }
+
+    &--amber {
+      .assessment-detail__stat-value {
+        color: #b45309;
+      }
+
+      .assessment-detail__stat-icon {
+        background: #fef3c7;
+        color: #b45309;
+      }
+    }
   }
 
   &__stat-content {

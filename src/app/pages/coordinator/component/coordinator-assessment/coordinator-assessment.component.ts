@@ -7,11 +7,11 @@ import { ConfigMap } from '../../../../shared/utilities/form.utility';
 import { CoordinatorAssessmentRounds } from '../../../admin/models/assessment.model';
 import { AssessmentService } from '../../../admin/services/assessment.service';
 
-import { DatePipe } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-coordinator-assessment',
-  imports: [SkeletonComponent, DatePipe],
+  imports: [SkeletonComponent, DatePipe, CommonModule],
   templateUrl: './coordinator-assessment.component.html',
   styleUrl: './coordinator-assessment.component.scss',
 })
@@ -46,6 +46,55 @@ export class CoordinatorAssessmentComponent
   }
 
   // Public Methods
+  public isRoundCompleted(round: CoordinatorAssessmentRounds | any): boolean {
+    if (!round) return false;
+    const status = (round.status || '').toString().trim().toLowerCase();
+    const roundStatus = (round.roundStatus || '').toString().trim().toLowerCase();
+    const statusId = round.statusId != null ? Number(round.statusId) : null;
+
+    return (
+      status === 'completed' ||
+      status.includes('completed') ||
+      roundStatus === 'completed' ||
+      roundStatus.includes('completed') ||
+      statusId === 3 ||
+      statusId === 7 ||
+      round.isCompleted === true ||
+      round.roundCompleted === true
+    );
+  }
+
+  public isRoundActive(round: CoordinatorAssessmentRounds | any): boolean {
+    if (!round) return false;
+    if (this.isRoundCompleted(round)) return false;
+
+    const status = (round.status || '').toString().trim().toLowerCase();
+    const roundStatus = (round.roundStatus || '').toString().trim().toLowerCase();
+    const statusId = round.statusId != null ? Number(round.statusId) : null;
+
+    return (
+      round.isActive === true ||
+      status === 'active' ||
+      roundStatus === 'active' ||
+      statusId === 1
+    );
+  }
+
+  public isRoundPending(round: CoordinatorAssessmentRounds | any): boolean {
+    if (!round) return false;
+    if (this.isRoundCompleted(round) || this.isRoundActive(round)) return false;
+
+    const status = (round.status || '').toString().trim().toLowerCase();
+    const roundStatus = (round.roundStatus || '').toString().trim().toLowerCase();
+    const statusId = round.statusId != null ? Number(round.statusId) : null;
+
+    return (
+      status === 'pending' ||
+      roundStatus === 'pending' ||
+      statusId === 2
+    );
+  }
+
   public onClickAssessment(assessmentRoundId: number): void {
     if (assessmentRoundId > 0) {
       if (this.router.url.includes('/admin/coordinator')) {

@@ -28,6 +28,9 @@ export interface PreviousInterview {
   interviewId?: number;
   attemptNumber?: number;
   isTerminated?: boolean;
+  ipAddress?: string;
+  isIpValidated?: boolean;
+  ipValidationStatus?: string;
 }
 
 export interface Feedback {
@@ -73,6 +76,9 @@ export interface AssessmentDetails {
   interviewerName: string;
   totalScore: number;
   outofScore: number;
+  ipAddress?: string;
+  isIpValidated?: boolean;
+  ipValidationStatus?: string;
 }
 
 export interface AccordionData {
@@ -152,6 +158,9 @@ export interface InterviewerRefreshRequest {
 export interface CandidateAptitudeReport {
   candidateId: string;
   candidateName: string;
+  ipAddress?: string;
+  isIpValidated?: boolean;
+  ipValidationStatus?: string;
   answers: QuestionAnswerDetail[];
 }
 

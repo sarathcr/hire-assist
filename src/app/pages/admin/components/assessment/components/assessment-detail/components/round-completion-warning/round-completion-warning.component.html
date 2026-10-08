@@ -15,7 +15,8 @@
         <p>
           There are <strong>{{ candidates.length }} candidate{{ candidates.length > 1 ? 's' : '' }}</strong> 
           with pending actions. All candidates must be marked as 
-          <span class="status-badge status-selected">Selected</span> or 
+          <span class="status-badge status-selected">Selected</span>, 
+          <span class="status-badge status-hold">On Hold</span>, or 
           <span class="status-badge status-rejected">Rejected</span>.
         </p>
       } @else if (warningType === 'unscheduled') {

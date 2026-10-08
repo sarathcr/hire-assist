@@ -334,6 +334,28 @@
                               }}</span>
                             </div>
                           }
+                          @if (isAptitudeRound(round)) {
+                            <div class="ifb__detail-item ifb__detail-item--ip">
+                              <span class="ifb__detail-label"
+                                ><i class="pi pi-desktop"></i>IP Address</span
+                              >
+                              @if (getRoundIpAddress(detail, round)) {
+                                <div class="ifb__ip-wrapper">
+                                  <span class="ifb__detail-value">{{
+                                    getRoundIpAddress(detail, round)
+                                  }}</span>
+                                  <p-tag
+                                    [value]="getIpMeta(detail, round).label"
+                                    [severity]="getIpMeta(detail, round).severity"
+                                    [icon]="getIpMeta(detail, round).icon"
+                                    styleClass="ifb__ip-tag"
+                                  />
+                                </div>
+                              } @else {
+                                <span class="ifb__detail-value">N/A</span>
+                              }
+                            </div>
+                          }
                         </div>
 
                         <!-- Aptitude Report Section [V2.1] -->
@@ -359,6 +381,31 @@
                             </div>
 
                             @if (showReportMap[round.assessmentRoundId] && aptitudeReportMap[round.assessmentRoundId]) {
+                              @if (getRoundIpAddress(undefined, round, aptitudeReportMap[round.assessmentRoundId])) {
+                                <div class="ifb__report-meta mb-3">
+                                  <p-tag
+                                    [value]="'Device IP: ' + getRoundIpAddress(undefined, round, aptitudeReportMap[round.assessmentRoundId])"
+                                    severity="info"
+                                    icon="pi pi-desktop"
+                                    styleClass="ifb__ip-tag"
+                                  />
+                                  <p-tag
+                                    [value]="getIpMeta(undefined, round, aptitudeReportMap[round.assessmentRoundId]).label"
+                                    [severity]="getIpMeta(undefined, round, aptitudeReportMap[round.assessmentRoundId]).severity"
+                                    [icon]="getIpMeta(undefined, round, aptitudeReportMap[round.assessmentRoundId]).icon"
+                                    styleClass="ifb__ip-tag"
+                                  />
+                                </div>
+                              } @else {
+                                <div class="ifb__report-meta mb-3">
+                                  <p-tag
+                                    value="Device IP: N/A"
+                                    severity="secondary"
+                                    icon="pi pi-desktop"
+                                    styleClass="ifb__ip-tag"
+                                  />
+                                </div>
+                              }
                               <div class="ifb__report-grid">
                                 @for (
                                   ans of aptitudeReportMap[round.assessmentRoundId]!.answers;

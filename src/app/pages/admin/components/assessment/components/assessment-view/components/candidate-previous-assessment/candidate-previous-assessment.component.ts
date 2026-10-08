@@ -9,6 +9,8 @@ import { CandidateDetailPreviousAssessmentSkeletonComponent } from '../candidate
 import { EmptyStateComponent } from '../../../../../../../../shared/components/empty-state/empty-state/empty-state.component';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
+import { IpVerificationService } from '../../../../../../../../shared/services/ip-verification.service';
 
 @Component({
   selector: 'app-candidate-previous-assessment',
@@ -20,6 +22,7 @@ import { ButtonModule } from 'primeng/button';
     EmptyStateComponent,
     CardModule,
     ButtonModule,
+    TagModule,
   ],
   templateUrl: './candidate-previous-assessment.component.html',
   styleUrl: './candidate-previous-assessment.component.scss',
@@ -33,7 +36,8 @@ export class CandidatePreviousAssessmentComponent extends BaseComponent implemen
   constructor(
     public activatedRoute: ActivatedRoute,
     public interviewService: InterviewService,
-    private router: Router
+    private router: Router,
+    public ipVerificationService: IpVerificationService,
   ) {
     super();
   }
@@ -73,6 +77,19 @@ export class CandidatePreviousAssessmentComponent extends BaseComponent implemen
     if (!roundName) return false;
     const nameLower = roundName.trim().toLowerCase();
     return nameLower.includes('aptitude') || nameLower.includes('online');
+  }
+
+  public getRoundIpAddress(detail?: any, round?: any): string | null {
+    if (detail?.ipAddress) return detail.ipAddress;
+    if (round?.ipAddress) return round.ipAddress;
+    return null;
+  }
+
+  public getIpMeta(detail?: any, round?: any) {
+    const ip = this.getRoundIpAddress(detail, round);
+    const isIpValidated = detail?.isIpValidated ?? round?.isIpValidated;
+    const ipValidationStatus = detail?.ipValidationStatus ?? round?.ipValidationStatus;
+    return this.ipVerificationService.getIpVerificationMeta(ip, isIpValidated, ipValidationStatus);
   }
 
   public navigateBack(): void {

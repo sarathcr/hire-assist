@@ -178,13 +178,18 @@ export class PreviousRecruitmentListComponent extends BaseComponent implements O
     this.router.navigate([`admin/recruitments/schedule/${this.recruitmentId}`]);
   }
 
-  public getStatusSeverity(status: string): any {
+  public getStatusSeverity(
+    status?: string | null
+  ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
     switch (status?.toLowerCase()) {
-      case 'selected': return 'success';
-      case 'rejected': return 'danger';
-      case 'in-progress': return 'info';
-      case 'completed': return 'success';
-      default: return 'warn';
+      case 'active':
+        return 'success';
+      case 'inactive':
+        return 'secondary';
+      case 'completed':
+        return 'info';
+      default:
+        return 'secondary';
     }
   }
 

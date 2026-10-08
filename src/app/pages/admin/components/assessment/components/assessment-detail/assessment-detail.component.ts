@@ -154,6 +154,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   public summaryStats: Record<string, number> = {
     total: 0,
     selected: 0,
+    onHold: 0,
     rejected: 0,
     pending: 0,
   };
@@ -169,6 +170,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       label: 'Selected',
       icon: 'pi pi-check-circle',
       colorClass: 'green',
+    },
+    {
+      key: 'onHold',
+      label: 'On Hold',
+      icon: 'pi pi-pause-circle',
+      colorClass: 'amber',
     },
     {
       key: 'rejected',
@@ -1448,7 +1455,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           if (currentRound) {
             const pendingCandidates = allCandidates.filter((c: any) => {
               const status = c.status?.toLowerCase();
-              return status !== 'selected' && status !== 'rejected';
+              return status !== 'selected' && status !== 'rejected' && status !== 'on hold' && status !== 'onhold';
             });
 
             if (pendingCandidates.length > 0) {
@@ -1774,6 +1781,12 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       selectedCandidates.every(
         (c: any) => c.status?.toLowerCase() === 'rejected',
       );
+    const allOnHold =
+      selectedCandidates.length > 0 &&
+      selectedCandidates.every((c: any) => {
+        const s = c.status?.toLowerCase();
+        return s === 'on hold' || s === 'onhold';
+      });
     const allQuit =
       selectedCandidates.length > 0 &&
       selectedCandidates.every((c: any) => c.status?.toLowerCase() === 'quit');
@@ -1787,6 +1800,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const anyRejected = selectedCandidates.some(
       (c: any) => c.status?.toLowerCase() === 'rejected',
     );
+    const anyOnHold = selectedCandidates.some((c: any) => {
+      const s = c.status?.toLowerCase();
+      return s === 'on hold' || s === 'onhold';
+    });
     const anyQuit = selectedCandidates.some(
       (c: any) => c.status?.toLowerCase() === 'quit',
     );
@@ -1840,6 +1857,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           anyScheduled ||
           anySelected ||
           anyRejected ||
+          anyOnHold ||
           anyOnReview ||
           anyQuit ||
           anyTerminated ||
@@ -1858,6 +1876,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           anyCompleted ||
           anySelected ||
           anyRejected ||
+          anyOnHold ||
           anyOnReview ||
           anyQuit ||
           anyTerminated ||
@@ -1877,6 +1896,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         anyScheduled ||
         anySelected ||
         anyRejected ||
+        anyOnHold ||
         anyOnReview ||
         anyQuit ||
         anyTerminated ||
@@ -1891,17 +1911,29 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       label: 'Select Candidate',
       icon: 'pi pi-check-circle',
       disabled:
-        this.roundStatus || !hasSelection || (!allCompleted && !allRejected),
+        (!allOnHold && this.roundStatus) ||
+        !hasSelection ||
+        (!allCompleted && !allRejected && !allOnHold),
       command: () => this.onSelectCandidates(),
+    });
+
+    items.push({
+      label: 'On Hold Candidate',
+      icon: 'pi pi-pause-circle',
+      disabled:
+        this.roundStatus ||
+        !hasSelection ||
+        (!allCompleted && !allSelected && !allRejected),
+      command: () => this.onHoldCandidates(),
     });
 
     items.push({
       label: 'Reject Candidate',
       icon: 'pi pi-times-circle',
       disabled:
-        this.roundStatus ||
+        (!allOnHold && this.roundStatus) ||
         !hasSelection ||
-        (!allCompleted && !allSelected && !allQuit),
+        (!allCompleted && !allSelected && !allQuit && !allOnHold),
       command: () => this.onRejectCandidates(),
     });
 
@@ -1935,7 +1967,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
       const isScheduled = !!c.isScheduled;
 
       if (this.roundStatus) {
-        return hasNextRound && status === 'selected' && !isScheduled;
+        if (hasNextRound && status === 'selected' && !isScheduled) return true;
+        if (['on hold', 'onhold'].includes(status)) return true;
+        return false;
       }
 
       // 1. Can assign to batch (Aptitude & not scheduled & not in terminal/active/absent/started state)
@@ -1946,6 +1980,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           'completed',
           'selected',
           'rejected',
+          'on hold',
+          'onhold',
           'on review',
           'onreview',
           'interview started',
@@ -1971,6 +2007,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           'completed',
           'selected',
           'rejected',
+          'on hold',
+          'onhold',
           'on review',
           'onreview',
           'interview started',
@@ -1996,6 +2034,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           'completed',
           'selected',
           'rejected',
+          'on hold',
+          'onhold',
           'on review',
           'onreview',
           'interview started',
@@ -2014,17 +2054,22 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         return true;
       }
 
-      // 4. Can select candidate (completed or rejected)
-      if (['completed', 'rejected'].includes(status)) {
+      // 4. Can select candidate (completed, rejected, or on hold)
+      if (['completed', 'rejected', 'on hold', 'onhold'].includes(status)) {
         return true;
       }
 
-      // 5. Can reject candidate (completed, selected, or quit)
-      if (['completed', 'selected', 'quit'].includes(status)) {
+      // 5. Can put candidate on hold (completed, selected, or rejected)
+      if (['completed', 'selected', 'rejected'].includes(status)) {
         return true;
       }
 
-      // 6. Can move to next round (selected & not already scheduled for next round)
+      // 6. Can reject candidate (completed, selected, quit, or on hold)
+      if (['completed', 'selected', 'quit', 'on hold', 'onhold'].includes(status)) {
+        return true;
+      }
+
+      // 7. Can move to next round (selected & not already scheduled for next round)
       if (hasNextRound && status === 'selected' && !isScheduled) {
         return true;
       }
@@ -2149,6 +2194,39 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  public onHoldCandidates(): void {
+    if (this.selectedCandidateIds.length === 0) return;
+
+    const modalData = {
+      message: `Are you sure you want to put the ${this.selectedCandidateIds.length} selected candidate(s) on hold?`,
+      isChoice: true,
+      cancelButtonText: 'Cancel',
+      acceptButtonText: 'Hold',
+    };
+
+    this.ref = this.dialog.open(DialogComponent, {
+      data: modalData,
+      header: 'Confirm On Hold',
+      maximizable: false,
+      width: '400px',
+      modal: true,
+      focusOnShow: false,
+      breakpoints: {
+        '960px': '75vw',
+        '640px': '90vw',
+      },
+      templates: {
+        footer: DialogFooterComponent,
+      },
+    });
+
+    this.ref.onClose.subscribe((result) => {
+      if (result) {
+        this.updateBulkCandidateStatus(StatusEnum.OnHold, 'on hold');
+      }
+    });
+  }
+
   private updateBulkCandidateStatus(
     statusId: number,
     actionName: string,
@@ -2180,7 +2258,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         detail:
           actionName === 'selected'
             ? 'Selected candidate(s) successfully'
-            : 'Rejected candidate(s) successfully',
+            : actionName === 'on hold'
+              ? 'Candidate(s) placed on hold successfully'
+              : 'Rejected candidate(s) successfully',
       });
       // Clear selections
       this.selectedCandidateIds = [];
@@ -2198,7 +2278,9 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         detail:
           actionName === 'selected'
             ? 'Failed to select candidate(s). Please try again.'
-            : 'Failed to reject candidate(s). Please try again.',
+            : actionName === 'on hold'
+              ? 'Failed to put candidate(s) on hold. Please try again.'
+              : 'Failed to reject candidate(s). Please try again.',
       });
     };
 
@@ -2549,6 +2631,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             selected: summary.totalSelected || 0,
             rejected: summary.totalRejected || 0,
             pending: summary.totalPending || 0,
+            onHold: summary.totalOnHold || 0,
           };
           this.hasSelectedCandidates =
             Number(this.summaryStats['selected']) > 0;
@@ -2561,6 +2644,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
             const selected = round.selected || 0;
             const rejected = round.rejected || 0;
             const pending = round.pending || 0;
+            const onHold = round.onHold || 0;
 
             // Calculate completion percentage based on attended vs invited/totalScheduled
             const completionPercentage =
@@ -2581,6 +2665,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               selected: selected,
               rejected: rejected,
               pending: pending,
+              onHold: onHold,
               scheduled: round.scheduled || 0,
               totalScheduled: round.totalScheduled || 0,
               isAllScheduled:

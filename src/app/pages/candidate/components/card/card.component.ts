@@ -48,6 +48,7 @@ export class CardComponent implements OnInit, OnDestroy {
     // 1. Handle completed/previous
     if (
       this.statusId() == this.status.Completed ||
+      this.statusId() == this.status.OnHold ||
       this.isPreviousAssessment()
     ) {
       if (
@@ -154,6 +155,9 @@ export class CardComponent implements OnInit, OnDestroy {
   private getStatusLabel(statusId: number): string {
     if (statusId === this.status.NotAttended) {
       return 'Not Attended';
+    }
+    if (statusId === this.status.OnHold) {
+      return 'On Hold';
     }
     return StatusEnum[statusId] || 'Unknown';
   }

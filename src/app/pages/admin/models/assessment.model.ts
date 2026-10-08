@@ -182,6 +182,9 @@ export interface CoordinatorAssessmentRounds {
   endDateTime: string;
   isActive: boolean;
   createdAt: string;
+  status?: string;
+  roundStatus?: string;
+  isCompleted?: boolean;
 }
 
 export interface FileDto {

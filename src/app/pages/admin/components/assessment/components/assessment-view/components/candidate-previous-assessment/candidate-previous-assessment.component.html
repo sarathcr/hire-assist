@@ -144,6 +144,33 @@
                                     }}</span
                                   >
                                 </div>
+                                <div
+                                  class="candidate-detail__detail-item col-6 md:col-4 mb-3"
+                                >
+                                  <span
+                                    class="candidate-detail__detail-label text-500 block text-sm mb-1"
+                                    >IP Address</span
+                                  >
+                                  @if (getRoundIpAddress(round.assessmentDetails[0], round)) {
+                                    <div class="flex align-items-center gap-2 mt-1 flex-wrap">
+                                      <span
+                                        class="candidate-detail__detail-value font-medium"
+                                        [style]="{ 'white-space': 'nowrap' }"
+                                        >{{
+                                          getRoundIpAddress(round.assessmentDetails[0], round)
+                                        }}</span
+                                      >
+                                      <p-tag
+                                        [value]="getIpMeta(round.assessmentDetails[0], round).label"
+                                        [severity]="getIpMeta(round.assessmentDetails[0], round).severity"
+                                        [icon]="getIpMeta(round.assessmentDetails[0], round).icon"
+                                        [style]="{ 'white-space': 'nowrap' }"
+                                      />
+                                    </div>
+                                  } @else {
+                                    <span class="candidate-detail__detail-value font-medium">N/A</span>
+                                  }
+                                </div>
                               </div>
                             </div>
                           } @else {

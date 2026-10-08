@@ -116,7 +116,8 @@ export class CandidateComponent extends BaseComponent implements OnInit, OnDestr
           const isFinished =
             a.statusId == StatusEnum.Completed ||
             a.statusId == StatusEnum.Quit ||
-            a.statusId == StatusEnum.Selected;
+            a.statusId == StatusEnum.Selected ||
+            a.statusId == StatusEnum.OnHold;
 
           if (isFinished) return false;
 
@@ -164,7 +165,8 @@ export class CandidateComponent extends BaseComponent implements OnInit, OnDestr
           const isFinished =
             a.statusId == StatusEnum.Completed ||
             a.statusId == StatusEnum.Quit ||
-            a.statusId == StatusEnum.Selected;
+            a.statusId == StatusEnum.Selected ||
+            a.statusId == StatusEnum.OnHold;
 
           if (isFinished) return true;
 
@@ -254,6 +256,7 @@ export class CandidateComponent extends BaseComponent implements OnInit, OnDestr
             currentStatus === StatusEnum.Quit ||
             currentStatus === StatusEnum.Completed ||
             currentStatus === StatusEnum.Selected ||
+            currentStatus === StatusEnum.OnHold ||
             currentStatus === StatusEnum.Rejected ||
             currentStatus === StatusEnum.Terminated
           ) {
@@ -294,6 +297,8 @@ export class CandidateComponent extends BaseComponent implements OnInit, OnDestr
         return 'Quit';
       case StatusEnum.Selected:
         return 'Selected';
+      case StatusEnum.OnHold:
+        return 'On Hold';
       case StatusEnum.Rejected:
         return 'Rejected';
       case StatusEnum.Terminated:

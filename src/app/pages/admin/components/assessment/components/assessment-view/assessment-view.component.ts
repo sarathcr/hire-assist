@@ -845,15 +845,24 @@ export class AssessmentViewComponent
     return null;
   }
 
+  public get isAssessmentCompletedOrInactive(): boolean {
+    if (!this.assessment) return false;
+    return (
+      !this.assessment.isActive ||
+      this.assessment.status?.toLowerCase() === 'completed' ||
+      this.assessment.statusId === StatusEnum.Completed
+    );
+  }
+
   public get isSchedulingConfigReadOnly(): boolean {
-    if (this.assessment && !this.assessment.isActive) {
+    if (this.isAssessmentCompletedOrInactive) {
       return true;
     }
     return this.stepsLoaded && this.stepsStatus?.schedule === 'Completed';
   }
 
   public get isCandidateSchedulingReadOnly(): boolean {
-    if (this.assessment && !this.assessment.isActive) {
+    if (this.isAssessmentCompletedOrInactive) {
       return true;
     }
     const areAllRoundsFinished =
@@ -891,7 +900,7 @@ export class AssessmentViewComponent
 
   @HostListener('document:mouseover', ['$event'])
   public onMouseOver(event: MouseEvent): void {
-    if (!this.assessment || this.assessment.isActive) {
+    if (!this.isAssessmentCompletedOrInactive) {
       this.showHoverTooltip = false;
       return;
     }
