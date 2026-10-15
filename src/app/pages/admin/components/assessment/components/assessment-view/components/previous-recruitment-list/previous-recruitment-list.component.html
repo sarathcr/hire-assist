@@ -159,7 +159,8 @@
                 <app-pagination
                     [dataSource]="dataSource"
                     [totalRecords]="totalRecords"
-                    [filterMap]="{ candidateId: candidateId, searchKey: searchKey }"
+                    [filterMap]="filterMap"
+                    [rows]="pageSize"
                 ></app-pagination>
             </div>
         </div>

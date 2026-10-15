@@ -105,7 +105,11 @@ export class BreadcrumbService {
     route: ActivatedRouteSnapshot,
     breadcrumbs: MenuItem[],
   ): void {
-    if (!route.routeConfig?.path?.startsWith('candidateDetail')) {
+    const path = route.routeConfig?.path;
+    const isCandidateDetail = path?.startsWith('candidateDetail');
+    const isPreviousRecruitments = path?.startsWith('previous-recruitments');
+
+    if (!isCandidateDetail && !isPreviousRecruitments) {
       return;
     }
 
@@ -115,6 +119,7 @@ export class BreadcrumbService {
     }
 
     const isFromSchedule =
+      isPreviousRecruitments ||
       route.queryParamMap.get('breadcrumbSource') === 'schedule';
 
     breadcrumbs.push({

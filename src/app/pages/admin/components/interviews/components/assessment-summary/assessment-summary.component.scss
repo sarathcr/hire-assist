@@ -1,6 +1,10 @@
 .assessment-summary {
   &__title {
-    color: var(--color-grey);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    letter-spacing: -0.025em;
+    margin: 0 0 16px 0;
   }
   &__wrapper {
     height: calc(100vh - 230px);

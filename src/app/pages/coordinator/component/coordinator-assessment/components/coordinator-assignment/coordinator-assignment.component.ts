@@ -354,7 +354,9 @@ export class CoordinatorAssignmentComponent implements OnInit, OnDestroy {
           this.lastSelectedPanelId = null;
           this.candidateAssignedPanelId = null;
           this.remapPanelData();
-          this.completedSteps = this.completedSteps.filter((step) => step !== 0);
+          this.completedSteps = this.completedSteps.filter(
+            (step) => step !== 0,
+          );
           return;
         }
 
@@ -619,9 +621,15 @@ export class CoordinatorAssignmentComponent implements OnInit, OnDestroy {
                 String(c.candidateId) === currentSelectedIdStr ||
                 String(c.interviewId) === currentSelectedIdStr,
             );
-            if (updatedCandidate && this.isCandidateSelectable(updatedCandidate)) {
+            if (
+              updatedCandidate &&
+              this.isCandidateSelectable(updatedCandidate)
+            ) {
               this.selectedCandidatesIds = [updatedCandidate];
-            } else if (updatedCandidate && !this.isCandidateSelectable(updatedCandidate)) {
+            } else if (
+              updatedCandidate &&
+              !this.isCandidateSelectable(updatedCandidate)
+            ) {
               this.selectedCandidatesIds = [];
               this.selectedCandidate = [];
             }
@@ -1086,9 +1094,15 @@ export class CoordinatorAssignmentComponent implements OnInit, OnDestroy {
               String(c.candidateId) === currentSelectedIdStr ||
               String(c.interviewId) === currentSelectedIdStr,
           );
-          if (updatedCandidate && this.isCandidateSelectable(updatedCandidate)) {
+          if (
+            updatedCandidate &&
+            this.isCandidateSelectable(updatedCandidate)
+          ) {
             this.selectedCandidatesIds = [updatedCandidate];
-          } else if (updatedCandidate && !this.isCandidateSelectable(updatedCandidate)) {
+          } else if (
+            updatedCandidate &&
+            !this.isCandidateSelectable(updatedCandidate)
+          ) {
             this.selectedCandidatesIds = [];
             this.selectedCandidate = [];
           }

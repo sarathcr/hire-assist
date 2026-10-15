@@ -16,6 +16,7 @@ import { KeyValueMap } from '../../models/common.models';
 import { BaseComponent } from '../base/base.component';
 import { debounceTime, Subject } from 'rxjs';
 import { SkeletonModule } from 'primeng/skeleton';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-pagination',
@@ -53,20 +54,19 @@ export class PaginationComponent
     });
     this.subscriptionList.push(sub);
     this.search$.subscribe(() => {
-      // Only load if initial load has already happened (prevents duplicate initial load)
-      if (this.hasInitialLoad) {
-        this.loadDataSource(); // Debounced search
-      }
+      this.loadDataSource();
     });
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes && changes['filterMap']) {
+      const curr = changes['filterMap'].currentValue || {};
+      const prev = changes['filterMap'].previousValue;
       if (changes['filterMap'].firstChange) {
-        this.filterState = { ...changes['filterMap'].currentValue };
-      } else {
-        const searchFilterMap = changes['filterMap'].currentValue;
-        this.onSearch(searchFilterMap);
+        this.filterState = { ...this.filterState, ...curr };
+      } else if (!_.isEqual(prev, curr)) {
+        this.filterState = {};
+        this.onSearch(curr);
       }
     }
 
@@ -77,11 +77,18 @@ export class PaginationComponent
     }
 
     if (changes && changes['forceUpdate']) {
+      if (this.dataSource) {
+        this.dataSource.lastPayload = null as any;
+      }
       this.search.next();
     }
   }
 
   ngAfterViewInit() {
+    if (this.dataSource?.lastPayload) {
+      this.hasInitialLoad = true;
+      return;
+    }
     // Only load on initial view init, skip if already loaded
     if (!this.hasInitialLoad) {
       // Clear any existing timeout
@@ -106,18 +113,29 @@ export class PaginationComponent
 
   private loadDataSource() {
     const payload = this.getPayloadData();
+    if (_.isEqual(this.dataSource?.lastPayload, payload)) {
+      return;
+    }
     this.dataSource.loadPaginatedData(payload);
   }
 
   private getPayloadData(): PaginatedDataPayload {
     const pageNumber = Math.floor(this.first / this.rows) + 1;
 
+    const baseFilter =
+      this.filterMap && Object.keys(this.filterMap).length > 0
+        ? this.filterMap
+        : (this.dataSource?.lastPayload?.filterMap || {});
+
     const filterPayload: PaginatedDataPayload = {
       sortedColumn: {
         direction: this.sortRef?.direction || '',
         active: this.sortRef?.active || '',
       },
-      filterMap: this.filterState,
+      filterMap: {
+        ...baseFilter,
+        ...(this.filterState || {}),
+      },
       pagination: {
         pageNumber,
         pageSize: this.rows,
@@ -130,7 +148,9 @@ export class PaginationComponent
 
   public onSearch(searchFilterMap: KeyValueMap<string>) {
     if ((searchFilterMap as unknown as Event)?.type === 'change') return;
-    this.filterState = { ...searchFilterMap };
+    const merged = { ...this.filterState, ...searchFilterMap };
+    if (_.isEqual(this.filterState, merged)) return;
+    this.filterState = merged;
     this.first = 0;
     this.search.next();
   }

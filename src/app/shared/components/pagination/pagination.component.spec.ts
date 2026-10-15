@@ -131,6 +131,19 @@ describe('PaginationComponent', () => {
     expect(component.onSearch).toHaveBeenCalledWith({ name: 'Test' });
   });
 
+  it('should NOT call onSearch on filterMap reference change if contents are equal (ngOnChanges)', () => {
+    spyOn(component, 'onSearch');
+    component.ngOnChanges({
+      filterMap: {
+        currentValue: { name: 'Test' },
+        previousValue: { name: 'Test' },
+        firstChange: false,
+        isFirstChange: () => false,
+      },
+    });
+    expect(component.onSearch).not.toHaveBeenCalled();
+  });
+
   it('should trigger search if forceUpdate changes (ngOnChanges)', () => {
     // @ts-expect-error: access to protected/private method for testing
     const searchSpy = spyOn((component as PaginationComponent).search, 'next');

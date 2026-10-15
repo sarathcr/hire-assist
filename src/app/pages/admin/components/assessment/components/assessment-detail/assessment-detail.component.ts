@@ -2626,24 +2626,31 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         if (res) {
           // Use the exact nested structure provided by the backend
           const summary = res.overallSummary || {};
+          const rounds = res.roundWisePerformance || [];
+          const allRoundsCompleted =
+            rounds.length > 0 &&
+            rounds.every(
+              (r: any) => r.status?.toLowerCase() === 'completed',
+            );
+
           this.summaryStats = {
             total: summary.totalCandidates || 0,
             selected: summary.totalSelected || 0,
             rejected: summary.totalRejected || 0,
-            pending: summary.totalPending || 0,
+            pending: allRoundsCompleted ? 0 : summary.totalPending || 0,
             onHold: summary.totalOnHold || 0,
           };
           this.hasSelectedCandidates =
             Number(this.summaryStats['selected']) > 0;
 
           // Map the roundWisePerformance array
-          const rounds = res.roundWisePerformance || [];
           this.roundPerformanceData = rounds.map((round: any) => {
+            const isCompleted = round.status?.toLowerCase() === 'completed';
             const attended = round.attended || 0;
             const invited = round.invited || round.totalScheduled || 0;
             const selected = round.selected || 0;
             const rejected = round.rejected || 0;
-            const pending = round.pending || 0;
+            const pending = isCompleted ? 0 : round.pending || 0;
             const onHold = round.onHold || 0;
 
             // Calculate completion percentage based on attended vs invited/totalScheduled
