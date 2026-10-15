@@ -2646,16 +2646,38 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
           // Map the roundWisePerformance array
           this.roundPerformanceData = rounds.map((round: any) => {
             const isCompleted = round.status?.toLowerCase() === 'completed';
+            const totalCandidates =
+              round.totalCandidates ??
+              round.invited ??
+              round.totalScheduled ??
+              0;
             const attended = round.attended || 0;
-            const invited = round.invited || round.totalScheduled || 0;
             const selected = round.selected || 0;
             const rejected = round.rejected || 0;
-            const pending = isCompleted ? 0 : round.pending || 0;
             const onHold = round.onHold || 0;
+            const scheduled = round.scheduled || 0;
+            const pending = isCompleted ? 0 : round.pending || 0;
 
-            // Calculate completion percentage based on attended vs invited/totalScheduled
+            // Extract absent from backend if available, or compute fallback based on round state
+            const absent =
+              round.absent !== undefined
+                ? round.absent
+                : isCompleted
+                  ? Math.max(
+                      0,
+                      totalCandidates -
+                        (selected + rejected + onHold + pending),
+                    )
+                  : Math.max(
+                      0,
+                      totalCandidates - attended - scheduled - pending,
+                    );
+
+            // Calculate completion percentage based on attended vs totalCandidates
             const completionPercentage =
-              invited > 0 ? Math.round((attended / invited) * 100) : 0;
+              totalCandidates > 0
+                ? Math.round((attended / totalCandidates) * 100)
+                : 0;
 
             return {
               name: round.roundName,
@@ -2669,15 +2691,18 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               statLabel: 'Attendance Rate',
               statValue: `${completionPercentage}%`,
               progress: completionPercentage,
+              attended: attended,
+              totalCandidates: totalCandidates,
               selected: selected,
               rejected: rejected,
+              absent: absent,
               pending: pending,
               onHold: onHold,
-              scheduled: round.scheduled || 0,
-              totalScheduled: round.totalScheduled || 0,
+              scheduled: scheduled,
+              totalScheduled: round.totalScheduled || totalCandidates,
               isAllScheduled:
-                (round.scheduled || 0) === (round.totalScheduled || 0) &&
-                round.totalScheduled > 0,
+                scheduled === (round.totalScheduled || totalCandidates) &&
+                totalCandidates > 0,
             };
           });
         }

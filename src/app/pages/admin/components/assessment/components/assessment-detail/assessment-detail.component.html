@@ -244,7 +244,13 @@
       <ng-template #roundCardTemplate let-round>
         <div class="round-card">
           <div class="round-card__header">
-            <h4 class="round-card__title">{{ round.name }}</h4>
+            <div class="round-card__header-info">
+              <h4 class="round-card__title">{{ round.name }}</h4>
+              <span class="round-card__candidate-tag">
+                <i class="pi pi-users"></i>
+                {{ round.totalCandidates }} {{ round.totalCandidates === 1 ? 'Candidate Enrolled' : 'Candidates Enrolled' }}
+              </span>
+            </div>
             <span class="round-card__badge" [ngClass]="round.statusClass">{{
               round.status
             }}</span>
@@ -257,6 +263,7 @@
               </span>
               <span class="round-card__stat-value">
                 {{ round.statValue }}
+                <span class="round-card__stat-fraction">({{ round.attended }}/{{ round.totalCandidates }} attended)</span>
               </span>
             </div>
 
@@ -270,34 +277,67 @@
             <div class="round-card__inner-grid">
               <div
                 class="round-card__mini-stat round-card__mini-stat--selected"
+                pTooltip="Candidates selected in this round"
+                tooltipPosition="top"
               >
-                <span class="round-card__mini-label">SELECTED</span>
+                <div class="round-card__mini-header">
+                  <span class="round-card__mini-label">SELECTED</span>
+                  <i class="pi pi-check"></i>
+                </div>
                 <span class="round-card__mini-value">{{ round.selected }}</span>
               </div>
+
               <div
                 class="round-card__mini-stat round-card__mini-stat--rejected"
+                pTooltip="Candidates rejected in this round"
+                tooltipPosition="top"
               >
-                <span class="round-card__mini-label">REJECTED</span>
+                <div class="round-card__mini-header">
+                  <span class="round-card__mini-label">REJECTED</span>
+                  <i class="pi pi-times"></i>
+                </div>
                 <span class="round-card__mini-value">{{ round.rejected }}</span>
+              </div>
+
+              <div
+                class="round-card__mini-stat round-card__mini-stat--on-hold"
+                pTooltip="Candidates kept on hold in this round"
+                tooltipPosition="top"
+              >
+                <div class="round-card__mini-header">
+                  <span class="round-card__mini-label">ON HOLD</span>
+                  <i class="pi pi-pause-circle"></i>
+                </div>
+                <span class="round-card__mini-value">{{ round.onHold }}</span>
+              </div>
+
+              <div
+                class="round-card__mini-stat round-card__mini-stat--absent"
+                pTooltip="Candidates absent / not attended"
+                tooltipPosition="top"
+              >
+                <div class="round-card__mini-header">
+                  <span class="round-card__mini-label">ABSENT</span>
+                  <i class="pi pi-user-minus"></i>
+                </div>
+                <span class="round-card__mini-value">{{ round.absent }}</span>
               </div>
             </div>
           </div>
 
           <div class="round-card__footer">
             <div class="round-card__footer-item">
-              <span class="round-card__footer-label">PENDING</span>
-              <span class="round-card__footer-value">{{ round.pending }}</span>
+              <span class="round-card__footer-label">TOTAL ENROLLED</span>
+              <span class="round-card__footer-value round-card__footer-value--total">
+                <i class="pi pi-users text-blue-600"></i>
+                {{ round.totalCandidates }}
+              </span>
             </div>
             <div class="round-card__footer-item round-card__footer-item--right">
-              <span class="round-card__footer-label">SCHEDULED</span>
-              <span
-                class="round-card__footer-value"
-                [ngClass]="{
-                  'text-orange':
-                    !round.isAllScheduled && round.scheduled !== '-',
-                }"
-              >
-                {{ round.scheduled }}
+              <span class="round-card__footer-label">ATTENDED</span>
+              <span class="round-card__footer-value">
+                <i class="pi pi-check-circle text-green-600"></i>
+                {{ round.attended }} / {{ round.totalCandidates }}
               </span>
             </div>
           </div>
