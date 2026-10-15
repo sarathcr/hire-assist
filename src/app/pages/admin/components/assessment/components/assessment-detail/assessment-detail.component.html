@@ -109,13 +109,17 @@
     @if (isOverviewLoading) {
       <!-- Overall Summary Skeleton -->
       <div class="assessment-detail__overview-section">
-        <h3 class="assessment-detail__overview-subtitle">Overall Summary</h3>
+        <div class="assessment-detail__overview-subtitle-row">
+          <h3 class="assessment-detail__overview-subtitle">Overall Summary</h3>
+          <p-skeleton width="11rem" height="1.8rem" borderRadius="9999px" />
+        </div>
         <div class="assessment-detail__stats-grid">
           @for (i of [1, 2, 3, 4]; track i) {
             <div class="assessment-detail__stat-card skeleton-card">
               <div class="assessment-detail__stat-content">
-                <p-skeleton width="6rem" height="0.8rem" marginBottom="1rem" />
-                <p-skeleton width="4rem" height="2rem" />
+                <p-skeleton width="6rem" height="0.8rem" marginBottom="0.6rem" />
+                <p-skeleton width="4rem" height="1.8rem" marginBottom="0.4rem" />
+                <p-skeleton width="7rem" height="0.7rem" />
               </div>
               <p-skeleton shape="circle" size="3.5rem" />
             </div>
@@ -175,12 +179,20 @@
     } @else {
       <!-- Overall Summary Section -->
       <div class="assessment-detail__overview-section">
-        <h3 class="assessment-detail__overview-subtitle">Overall Summary</h3>
+        <div class="assessment-detail__overview-subtitle-row">
+          <h3 class="assessment-detail__overview-subtitle">Overall Summary</h3>
+          <span class="assessment-detail__overview-total-pill">
+            <i class="pi pi-users"></i>
+            {{ summaryStats['total'] }} {{ summaryStats['total'] === 1 ? 'Candidate Enrolled' : 'Candidates Enrolled' }}
+          </span>
+        </div>
         <div class="assessment-detail__stats-grid">
           @for (stat of statCardsConfig; track stat.key) {
             <div
               class="assessment-detail__stat-card"
               [ngClass]="'assessment-detail__stat-card--' + stat.colorClass"
+              [pTooltip]="stat.tooltip"
+              tooltipPosition="top"
             >
               <div class="assessment-detail__stat-content">
                 <span class="assessment-detail__stat-label">{{
@@ -188,6 +200,9 @@
                 }}</span>
                 <span class="assessment-detail__stat-value">
                   {{ summaryStats[stat.key] | number }}
+                </span>
+                <span class="assessment-detail__stat-ratio">
+                  {{ summaryStats[stat.key] }} of {{ summaryStats['total'] }} ({{ getStatPercentage(stat.key) }}%)
                 </span>
               </div>
               <div class="assessment-detail__stat-icon">
@@ -541,7 +556,7 @@
           </div>
         </div>
 
-        <!-- PHASE 4: SELECT / REJECT -->
+        <!-- PHASE 4: EVALUATE (SELECT / ON HOLD / REJECT) -->
         <div class="flow-step flow-step--decision">
           <div class="flow-step__top">
             <div class="flow-step__icon-wrapper">
@@ -550,15 +565,21 @@
             <span class="flow-step__number">Phase 4</span>
           </div>
           <div class="flow-step__content">
-            <h4 class="flow-step__title">Select / Reject</h4>
+            <h4 class="flow-step__title">Evaluate Candidates</h4>
             <ul class="flow-step__instructions">
-              <li>Review test score reports in the candidate table.</li>
+              <li>Review test score reports and completion metrics in the candidate table.</li>
               <li>
-                Use **Actions** dropdown to **Select** or **Reject** candidates.
+                Use the <strong>Actions</strong> dropdown to mark candidates as
+                <strong>Select Candidate</strong>, <strong>On Hold Candidate</strong>, or
+                <strong>Reject Candidate</strong>.
               </li>
               <li>
-                Use the **Unlock** action (available only if candidate test is
-                terminated) to reset the test for technical retries.
+                Place candidates <strong>On Hold</strong> if they need borderline score review,
+                additional evaluation, or deferred decision.
+              </li>
+              <li>
+                Use the <strong>Unlock</strong> action (available if a test terminated prematurely)
+                to reset and allow technical retries.
               </li>
             </ul>
           </div>
@@ -605,13 +626,16 @@
             <ul class="flow-step__instructions">
               <li>
                 Click <strong>Complete Round</strong> in the footer to finalize
-                the current round.
+                evaluations for the current round.
               </li>
               <li>
-                All selected candidates must be scheduled to the next round (if
+                All <strong>Selected</strong> candidates must be scheduled to the next round (if
                 a next round exists).
               </li>
-              <li>All other candidates must be rejected.</li>
+              <li>
+                Remaining candidates should be <strong>Rejected</strong>, marked <strong>Absent</strong>,
+                or kept <strong>On Hold</strong>.
+              </li>
             </ul>
           </div>
         </div>
@@ -677,7 +701,7 @@
           </div>
         </div>
 
-        <!-- PHASE 4: SELECT / REJECT -->
+        <!-- PHASE 4: EVALUATE (SELECT / ON HOLD / REJECT) -->
         <div class="flow-step flow-step--decision">
           <div class="flow-step__top">
             <div class="flow-step__icon-wrapper">
@@ -686,12 +710,17 @@
             <span class="flow-step__number">Phase 4</span>
           </div>
           <div class="flow-step__content">
-            <h4 class="flow-step__title">Select / Reject</h4>
+            <h4 class="flow-step__title">Evaluate Candidates</h4>
             <ul class="flow-step__instructions">
-              <li>Review live evaluation reports in candidate table.</li>
+              <li>Review interview scoring, panel notes, and live feedback in the candidate table.</li>
               <li>
-                Mark candidate as <strong>Selected</strong> or
-                <strong>Rejected</strong> from the Actions dropdown.
+                Use the <strong>Actions</strong> dropdown to mark candidates as
+                <strong>Select Candidate</strong>, <strong>On Hold Candidate</strong>, or
+                <strong>Reject Candidate</strong>.
+              </li>
+              <li>
+                Place candidates <strong>On Hold</strong> for secondary panel reviews,
+                tie-breaker evaluations, or pending hiring deliberations.
               </li>
             </ul>
           </div>
@@ -738,13 +767,16 @@
             <ul class="flow-step__instructions">
               <li>
                 Click <strong>Complete Round</strong> in the footer to finalize
-                the current round.
+                evaluations for the current round.
               </li>
               <li>
-                All selected candidates must be scheduled to the next round (if
+                All <strong>Selected</strong> candidates must be scheduled to the next round (if
                 a next round exists).
               </li>
-              <li>All other candidates must be rejected.</li>
+              <li>
+                Remaining candidates should be <strong>Rejected</strong>, marked <strong>Absent</strong>,
+                or kept <strong>On Hold</strong>.
+              </li>
             </ul>
           </div>
         </div>

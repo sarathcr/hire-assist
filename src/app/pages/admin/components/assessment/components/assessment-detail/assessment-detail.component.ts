@@ -156,38 +156,36 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     selected: 0,
     onHold: 0,
     rejected: 0,
-    pending: 0,
+    absent: 0,
   };
   public statCardsConfig = [
-    {
-      key: 'total',
-      label: 'Total Candidates',
-      icon: 'pi pi-users',
-      colorClass: 'blue',
-    },
     {
       key: 'selected',
       label: 'Selected',
       icon: 'pi pi-check-circle',
       colorClass: 'green',
+      tooltip: 'Candidates selected in final round / hired',
     },
     {
       key: 'onHold',
       label: 'On Hold',
       icon: 'pi pi-pause-circle',
       colorClass: 'amber',
+      tooltip: 'Candidates currently placed on hold',
     },
     {
       key: 'rejected',
       label: 'Rejected',
       icon: 'pi pi-times-circle',
       colorClass: 'red',
+      tooltip: 'Candidates rejected across recruitment',
     },
     {
-      key: 'pending',
-      label: 'Pending Actions',
-      icon: 'pi pi-clock',
-      colorClass: 'orange',
+      key: 'absent',
+      label: 'Absent',
+      icon: 'pi pi-user-minus',
+      colorClass: 'slate',
+      tooltip: 'Candidates who did not attend',
     },
   ];
   public roundPerformanceData: any[] = [];
@@ -2633,12 +2631,34 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               (r: any) => r.status?.toLowerCase() === 'completed',
             );
 
+          // In recruitment, only candidates selected in the final round are selected overall.
+          // Intermediate round selections simply advance candidates to subsequent rounds.
+          const finalRound = rounds.length > 0 ? rounds[rounds.length - 1] : null;
+          const finalRoundSelected = finalRound ? (finalRound.selected ?? 0) : 0;
+          const overallSelected =
+            finalRound !== null ? finalRoundSelected : (summary.totalSelected || 0);
+
+          const totalCandidates = summary.totalCandidates || 0;
+          const totalRejected = summary.totalRejected || 0;
+          const totalOnHold = summary.totalOnHold || 0;
+
+          // Absent fallback if backend hasn't been deployed yet
+          const totalAbsent =
+            summary.totalAbsent !== undefined
+              ? summary.totalAbsent
+              : rounds.length > 0 && rounds[0].absent !== undefined
+                ? rounds[0].absent
+                : Math.max(
+                    0,
+                    totalCandidates - (overallSelected + totalRejected + totalOnHold),
+                  );
+
           this.summaryStats = {
-            total: summary.totalCandidates || 0,
-            selected: summary.totalSelected || 0,
-            rejected: summary.totalRejected || 0,
-            pending: allRoundsCompleted ? 0 : summary.totalPending || 0,
-            onHold: summary.totalOnHold || 0,
+            total: totalCandidates,
+            selected: overallSelected,
+            rejected: totalRejected,
+            onHold: totalOnHold,
+            absent: totalAbsent,
           };
           this.hasSelectedCandidates =
             Number(this.summaryStats['selected']) > 0;
@@ -2714,6 +2734,13 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       },
     });
+  }
+
+  public getStatPercentage(key: string): number {
+    const total = this.summaryStats['total'] || 0;
+    if (total <= 0) return 0;
+    const value = this.summaryStats[key] || 0;
+    return Math.round((value / total) * 100);
   }
 
   private setSidebarConfig(): void {

@@ -202,9 +202,13 @@
   // ============================================
   &__stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--spacing-20);
     margin: 0;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
 
     @media (max-width: 640px) {
       grid-template-columns: 1fr;
@@ -289,12 +293,30 @@
         color: #b45309;
       }
     }
+
+    &--slate {
+      .assessment-detail__stat-value {
+        color: #475569;
+      }
+
+      .assessment-detail__stat-icon {
+        background: #f1f5f9;
+        color: #475569;
+      }
+    }
   }
 
   &__stat-content {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-4);
+  }
+
+  &__stat-ratio {
+    font-size: 11px;
+    font-weight: 500;
+    color: #64748b;
+    margin-top: 2px;
   }
 
   &__stat-label {
@@ -354,6 +376,31 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-25);
+  }
+
+  &__overview-subtitle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__overview-total-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1e40af;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    padding: 4px 12px;
+    border-radius: 9999px;
+
+    i {
+      font-size: 12px;
+      color: #2563eb;
+    }
   }
 
   &__overview-subtitle {
