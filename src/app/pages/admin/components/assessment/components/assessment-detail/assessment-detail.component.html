@@ -111,7 +111,7 @@
       <div class="assessment-detail__overview-section">
         <div class="assessment-detail__overview-subtitle-row">
           <h3 class="assessment-detail__overview-subtitle">Overall Summary</h3>
-          <p-skeleton width="11rem" height="1.8rem" borderRadius="9999px" />
+          <p-skeleton width="7rem" height="1.6rem" borderRadius="9999px" />
         </div>
         <div class="assessment-detail__stats-grid">
           @for (i of [1, 2, 3, 4]; track i) {
@@ -183,7 +183,7 @@
           <h3 class="assessment-detail__overview-subtitle">Overall Summary</h3>
           <span class="assessment-detail__overview-total-pill">
             <i class="pi pi-users"></i>
-            {{ summaryStats['total'] }} {{ summaryStats['total'] === 1 ? 'Candidate Enrolled' : 'Candidates Enrolled' }}
+            <span>{{ summaryStats['total'] }} <span class="overview-total-text">Candidates </span>Enrolled</span>
           </span>
         </div>
         <div class="assessment-detail__stats-grid">
@@ -263,7 +263,7 @@
               <h4 class="round-card__title">{{ round.name }}</h4>
               <span class="round-card__candidate-tag">
                 <i class="pi pi-users"></i>
-                {{ round.totalCandidates }} {{ round.totalCandidates === 1 ? 'Candidate Enrolled' : 'Candidates Enrolled' }}
+                <span>{{ round.totalCandidates }} <span class="round-tag-text">Candidates </span>Enrolled</span>
               </span>
             </div>
             <span class="round-card__badge" [ngClass]="round.statusClass">{{
