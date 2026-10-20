@@ -59,10 +59,13 @@ export class UserDialogComponent implements OnInit {
   ngOnInit(): void {
     this.optionsMap =
       this.storeService.getCollection() as unknown as OptionsMap;
-    this.roles = this.optionsMap['roles'] as unknown as Option[];
-    this.departments = this.optionsMap['departments'] as unknown as Option[];
+    this.roles = (this.optionsMap?.['roles'] as unknown as Option[]) || [];
+    this.departments = (this.optionsMap?.['departments'] as unknown as Option[]) || [];
 
     this.roleAccessData = this.config.data;
+
+    this.setConfigMaps();
+    this.setOptions();
 
     if (this.config.header != 'Create User') {
       this.isEditMode = true;
@@ -77,8 +80,6 @@ export class UserDialogComponent implements OnInit {
     }
 
     this.fGroup.updateValueAndValidity();
-    this.setConfigMaps();
-    this.setOptions();
   }
 
   // Private
@@ -115,14 +116,41 @@ export class UserDialogComponent implements OnInit {
   public replaceRoleAndDepartmentNamesWithCodes(
     user: RolesAccess,
   ): RolesAccess {
-    const updatedRoles = user.roles?.map((label) => {
-      const role = this.roles?.find((r) => r.label === label);
+    const updatedRoles = user.roles?.map((label: any) => {
+      const cleanLabel =
+        typeof label === 'string'
+          ? label.trim().toLowerCase().replace(/[\s_]+/g, '')
+          : String(label);
+
+      const role = this.roles?.find((r: any) => {
+        const cleanOptionLabel =
+          typeof r.label === 'string'
+            ? r.label.trim().toLowerCase().replace(/[\s_]+/g, '')
+            : '';
+        return (
+          r.label === label ||
+          (cleanLabel && cleanOptionLabel === cleanLabel) ||
+          r.value === label ||
+          String(r.value) === String(label)
+        );
+      });
+
       return role ? role.value : label;
     });
 
+    const cleanDept =
+      typeof user.department === 'string'
+        ? user.department.trim().toLowerCase().replace(/[\s_]+/g, '')
+        : '';
     const updatedDepartment = this.departments?.find(
-      (r) => r.label === user.department,
-    )?.value;
+      (r: any) =>
+        r.label === user.department ||
+        (cleanDept &&
+          typeof r.label === 'string' &&
+          r.label.trim().toLowerCase().replace(/[\s_]+/g, '') === cleanDept) ||
+        r.value === user.department ||
+        String(r.value) === String(user.department),
+    )?.value ?? user.department;
 
     return {
       ...user,
@@ -132,22 +160,43 @@ export class UserDialogComponent implements OnInit {
   }
 
   private setOptions() {
-    (this.configMap['department'] as CustomSelectConfig).options = this
-      .optionsMap['departments'] as unknown as Option[];
+    (this.configMap['department'] as CustomSelectConfig).options = (this
+      .optionsMap?.['departments'] as unknown as Option[]) || [];
 
     const userRole = this.storeService.getUserRole() || [];
     const isSuperAdmin = userRole.includes('superadmin');
+    const allRoles = (this.optionsMap?.['roles'] as unknown as Option[]) || [];
 
-    (this.configMap['roles'] as CustomSelectConfig).options = (
-      this.optionsMap['roles'] as unknown as Option[]
-    ).filter((role) => {
+    (this.configMap['roles'] as CustomSelectConfig).options = allRoles.filter((role) => {
       // Exclude Candidate ('5')
-      if (role.value === '5') {
+      if (String(role.value) === '5') {
         return false;
       }
       // If the current user is not a superadmin, also exclude Super Admin role ('2')
-      if (!isSuperAdmin && (role.value === '2' || role.label?.toLowerCase()?.replace(/\s+/g, '') === 'superadmin')) {
-        return false;
+      if (
+        !isSuperAdmin &&
+        (String(role.value) === '2' ||
+          role.label?.toLowerCase()?.replace(/[\s_]+/g, '') === 'superadmin')
+      ) {
+        // Retain the role if the user being edited already has it so the chip renders properly
+        const userRoles = this.roleAccessData?.roles || [];
+        const hasThisRole = userRoles.some((r: any) => {
+          const clean =
+            typeof r === 'string'
+              ? r.trim().toLowerCase().replace(/[\s_]+/g, '')
+              : String(r);
+          return (
+            clean === 'superadmin' ||
+            clean === 'super_admin' ||
+            r === '2' ||
+            r === 2 ||
+            r === role.value ||
+            String(r) === String(role.value)
+          );
+        });
+        if (!hasThisRole) {
+          return false;
+        }
       }
       return true;
     });

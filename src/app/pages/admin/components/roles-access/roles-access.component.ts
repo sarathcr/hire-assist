@@ -232,6 +232,26 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     if ((userData as any).isSelf) {
       return;
     }
+
+    const currentUserRole = this.storeService.getUserRole() || [];
+    const isCurrentUserSuperAdmin = currentUserRole.includes('superadmin');
+    const isTargetSuperAdmin = userData.roles?.some((role: any) => {
+      const normalized =
+        typeof role === 'string'
+          ? role.trim().toLowerCase().replace(/[\s_]+/g, '')
+          : String(role);
+      return normalized === 'superadmin' || normalized === '2' || role === 2;
+    });
+
+    if (isTargetSuperAdmin && !isCurrentUserSuperAdmin) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Only super admin can edit role of another super admin.',
+      });
+      return;
+    }
+
     this.ref = this.dialog.open(UserDialogComponent, {
       data: userData,
       header: 'Update User',
@@ -433,10 +453,31 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     if (event.isSelf) {
       return;
     }
+
+    if (fName === 'Edit') {
+      const currentUserRole = this.storeService.getUserRole() || [];
+      const isCurrentUserSuperAdmin = currentUserRole.includes('superadmin');
+      const isTargetSuperAdmin = event?.roles?.some((role: any) => {
+        const normalized =
+          typeof role === 'string'
+            ? role.trim().toLowerCase().replace(/[\s_]+/g, '')
+            : String(role);
+        return normalized === 'superadmin' || normalized === '2' || role === 2;
+      });
+
+      if (isTargetSuperAdmin && !isCurrentUserSuperAdmin) {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'Only super admin can edit role of another super admin.',
+        });
+        return;
+      }
+      this.editUser(event);
+      return;
+    }
+
     switch (fName) {
-      case 'Edit':
-        this.editUser(event);
-        break;
       case 'History':
         this.viewHistory(event.id);
         break;
@@ -707,6 +748,49 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     this.loadData(payload);
   }
 
+  private formatUserData(data: any[]): any[] {
+    const currentUserRole = this.storeService.getUserRole() || [];
+    const isCurrentUserSuperAdmin = currentUserRole.includes('superadmin');
+
+    return (data || []).map((item: any) => {
+      const rawRoles = item.roles
+        ? (Array.isArray(item.roles) ? item.roles : item.roles.split(','))
+            .map((r: any) => (typeof r === 'string' ? r.trim() : r))
+            .filter((r: any) => r !== undefined && r !== null && r !== '')
+        : [];
+
+      const isTargetSuperAdmin = rawRoles.some((role: any) => {
+        const normalized =
+          typeof role === 'string'
+            ? role.trim().toLowerCase().replace(/[\s_]+/g, '')
+            : String(role);
+        return normalized === 'superadmin' || normalized === '2' || role === 2;
+      });
+
+      const isSelf =
+        item.email === this.currentUser?.id ||
+        item.id === this.currentUser?.id;
+
+      const disabledButtonIndices: number[] = [];
+      const disabledButtonTooltips: string[] = ['', ''];
+
+      // Non-superadmin cannot edit a Super Admin
+      if (!isCurrentUserSuperAdmin && isTargetSuperAdmin) {
+        disabledButtonIndices.push(0);
+        disabledButtonTooltips[0] =
+          'Only super admin can edit role of another super admin';
+      }
+
+      return {
+        ...item,
+        roles: rawRoles,
+        isSelf,
+        disabledButtonIndices,
+        disabledButtonTooltips,
+      };
+    });
+  }
+
   public getAllUsers(payload: PaginatedPayload) {
     this.isManualRefresh = true;
     this.isLoading = true;
@@ -725,13 +809,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (res: any) => {
-          const formattedData = res.data.map((item: any) => ({
-            ...item,
-            roles: item.roles ? item.roles.split(',') : [],
-            isSelf:
-              item.email === this.currentUser.id ||
-              item.id === this.currentUser.id,
-          }));
+          const formattedData = this.formatUserData(res?.data);
           this.data = { ...res, data: formattedData };
         },
         error: (err: any) => {
@@ -761,13 +839,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       .getData(payloadData)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe((response: any) => {
-        const formattedData = response.data.map((item: any) => ({
-          ...item,
-          roles: item.roles ? item.roles.split(',') : [],
-          isSelf:
-            item.email === this.currentUser.id ||
-            item.id === this.currentUser.id,
-        }));
+        const formattedData = this.formatUserData(response?.data);
         this.data = { ...response, data: formattedData };
       });
   }
