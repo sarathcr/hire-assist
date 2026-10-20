@@ -70,7 +70,10 @@ export class UserDialogComponent implements OnInit {
         this.roleAccessData,
       );
       this.fGroup.patchValue(updatedUser);
-      this.initialFormValues = JSON.parse(JSON.stringify(this.fGroup.value));
+      this.fGroup.get('name')?.disable();
+      this.fGroup.get('email')?.disable();
+      this.fGroup.get('department')?.disable();
+      this.initialFormValues = JSON.parse(JSON.stringify(this.fGroup.getRawValue()));
     }
 
     this.fGroup.updateValueAndValidity();
@@ -86,14 +89,14 @@ export class UserDialogComponent implements OnInit {
 
   public isFormChanged(): boolean {
     if (!this.isEditMode) return true;
-    return JSON.stringify(this.fGroup.value) !== JSON.stringify(this.initialFormValues);
+    return JSON.stringify(this.fGroup.getRawValue()) !== JSON.stringify(this.initialFormValues);
   }
 
   public onSubmit() {
     this.fGroup.markAllAsTouched();
     const isFormValid = this.fGroup.valid;
     if (isFormValid) {
-      const result = { ...this.fGroup.value };
+      const result = { ...this.fGroup.getRawValue() };
       if (result.name) {
         result.name = result.name.trim();
       }

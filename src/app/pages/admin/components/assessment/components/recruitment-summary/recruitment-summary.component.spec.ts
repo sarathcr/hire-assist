@@ -95,7 +95,7 @@ describe('RecruitmentSummaryComponent', () => {
 
     expect(component.downloadBlob).toHaveBeenCalledWith(
       dummyBlob,
-      jasmine.stringMatching(/Audit_Report.*\.pdf/)
+      jasmine.stringMatching(/Recruitment_Summary.*\.pdf/)
     );
   });
 
@@ -113,5 +113,19 @@ describe('RecruitmentSummaryComponent', () => {
     expect(result).toBeTrue();
     expect(mockCanShare).toHaveBeenCalled();
     expect(mockShare).toHaveBeenCalled();
+  });
+
+  it('should return appropriate downloadButtonLabel for desktop, mobile, and small mobile', () => {
+    component.isMobileView = false;
+    component.isSmallMobileView = false;
+    expect(component.downloadButtonLabel).toBe('Download Recruitment Summary');
+
+    component.isMobileView = true;
+    component.isSmallMobileView = false;
+    expect(component.downloadButtonLabel).toBe('Download Summary');
+
+    component.isMobileView = true;
+    component.isSmallMobileView = true;
+    expect(component.downloadButtonLabel).toBe('Download');
   });
 });

@@ -38,12 +38,6 @@ describe('DashboardComponent', () => {
         routerLinkActiveOptions: { exact: false },
       },
       {
-        label: 'Roles & Access',
-        icon: 'pi pi-users',
-        routerLink: ['/admin/roles-access'],
-        routerLinkActiveOptions: { exact: true },
-      },
-      {
         label: 'Settings',
         icon: 'pi pi-cog',
         routerLink: ['/admin/settings'],
@@ -70,12 +64,6 @@ describe('DashboardComponent', () => {
         icon: 'pi pi-calendar',
         routerLink: ['/admin/interviews'],
         routerLinkActiveOptions: { exact: false },
-      },
-      {
-        label: 'Roles & Access',
-        icon: 'pi pi-users',
-        routerLink: ['/admin/roles-access'],
-        routerLinkActiveOptions: { exact: true },
       },
       {
         label: 'Settings',

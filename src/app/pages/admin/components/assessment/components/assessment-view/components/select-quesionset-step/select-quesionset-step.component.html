@@ -52,14 +52,18 @@
                 </div>
               </p-accordion-header>
               <p-accordion-content>
-                <!-- Dynamic Aptitude Instructions Bar -->
-                <div class="QuestionSet__instruction-bar">
+                <div class="QuestionSet__instruction-bar"
+                     [class.QuestionSet__instruction-bar--required]="!getRoundInstructionId(round.assessmentRoundId ?? 0)">
                   <div class="QuestionSet__instruction-bar-info">
                     <div class="QuestionSet__instruction-icon">
                       <i class="pi pi-file-check"></i>
                     </div>
                     <div class="QuestionSet__instruction-text">
-                      <span class="QuestionSet__instruction-title">Aptitude Test Instructions</span>
+                      <span class="QuestionSet__instruction-title">
+                        Aptitude Test Instructions
+                        <span class="QuestionSet__required-asterisk">*</span>
+                        <span class="QuestionSet__required-badge">Required</span>
+                      </span>
                       <span class="QuestionSet__instruction-subtitle">
                         Candidate instructions for this round. Select an existing template or customize/version it.
                       </span>
@@ -77,7 +81,14 @@
                         placeholder="Select instructions..."
                         [disabled]="isReadOnly() || isAssigningInstruction.get(round.assessmentRoundId ?? 0) === true"
                         styleClass="QuestionSet__instruction-select"
+                        [class.ng-invalid]="!getRoundInstructionId(round.assessmentRoundId ?? 0)"
                       ></p-select>
+                      @if (!getRoundInstructionId(round.assessmentRoundId ?? 0)) {
+                        <small class="QuestionSet__instruction-required-msg">
+                          <i class="pi pi-exclamation-circle"></i>
+                          <span>Instruction set is required to complete this step.</span>
+                        </small>
+                      }
                     </div>
 
                     <button
@@ -96,7 +107,7 @@
                       class="p-button p-button-outlined p-button-primary p-button-sm QuestionSet__instruction-btn"
                       (click)="onCustomizeRoundInstruction(round.assessmentRoundId ?? 0)"
                       [disabled]="isReadOnly()"
-                      pTooltip="Customize & save as a new version for this round"
+                      pTooltip="Customize &amp; save as a new version for this round"
                       tooltipPosition="top"
                     >
                       <i class="pi pi-copy"></i>

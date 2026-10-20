@@ -318,9 +318,8 @@ export class AssessmentViewComponent
       this.stepsStatusService.stepCompleted$.subscribe((assessmentId) => {
         if (assessmentId === this.assessmentId) {
           this.hasModifiedQuestionSetAfterComplete = false;
-          if (this.activeStep === 0) {
-            this.assessmentRounds = [];
-          }
+          this.isQuestionSetIncomplete = false;
+          this.assessmentRounds = [];
           this.moveToNextStep();
         }
       });
@@ -382,7 +381,8 @@ export class AssessmentViewComponent
       const comp = this.questionSetStepComponent;
       
       const isIncomplete =
-        this.isQuestionSetIncomplete || (comp && comp.hasIncompleteQuestionSets);
+        this.isQuestionSetIncomplete ||
+        (comp && (comp.hasIncompleteQuestionSets || !comp.hasAllInstructionsAssigned));
 
       // 1. Block forward navigation if server-side check or live check says sets are incomplete
       if (this.hasOnlineAptitudeRound && isIncomplete) {
@@ -432,6 +432,19 @@ export class AssessmentViewComponent
               severity: 'warn',
               summary: 'Warning',
               detail: 'Please create at least one question set for every assessment round and add questions before proceeding.',
+            });
+          }
+          return;
+        }
+
+        // 3. Block FORWARD navigation if rounds are missing instructions
+        if (step > 1 && !comp.hasAllInstructionsAssigned) {
+          if (canShowWarning) {
+            this.lastStepWarningTime = now;
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Warning',
+              detail: 'Please select test instructions for every assessment round before proceeding.',
             });
           }
           return;
@@ -495,7 +508,9 @@ export class AssessmentViewComponent
     // If question set is incomplete, block any step beyond index 1
     const isQuestionSetIncomplete =
       this.isQuestionSetIncomplete ||
-      (this.questionSetStepComponent && this.questionSetStepComponent.hasIncompleteQuestionSets);
+      (this.questionSetStepComponent &&
+        (this.questionSetStepComponent.hasIncompleteQuestionSets ||
+          !this.questionSetStepComponent.hasAllInstructionsAssigned));
     if (isQuestionSetIncomplete && stepIndex > 1) {
       return false;
     }
@@ -568,8 +583,8 @@ export class AssessmentViewComponent
       ? of(providedStatus) 
       : this.stepsStatusService.getAssessmentStepsStatus(this.assessmentId);
 
-    // Load rounds from API only if not loaded yet or active step is 0 (Rounds)
-    const roundsObs: Observable<RoundModel[]> = (this.assessmentRounds.length > 0 && this.activeStep !== 0)
+    // Load rounds from API only if not loaded yet or active step is past rounds & question sets
+    const roundsObs: Observable<RoundModel[]> = (this.assessmentRounds.length > 0 && this.activeStep > 1)
       ? of(this.assessmentRounds)
       : this.assessmentScheduleService.GetAssessmentRound(this.assessmentId).pipe(
           catchError(() => of([]))
@@ -610,7 +625,11 @@ export class AssessmentViewComponent
                 return !createdSets.some((qs) => qs.assessmentRoundId === rId);
               });
 
-              if (hasMissingSet || createdSets.length === 0) {
+              const hasMissingInstruction = aptitudeRounds.some((round) => {
+                return !round.instructionId || round.instructionId <= 0;
+              });
+
+              if (hasMissingSet || hasMissingInstruction || createdSets.length === 0) {
                 return of(true);
               }
 
@@ -678,6 +697,7 @@ export class AssessmentViewComponent
           index === 1 &&
           (this.isQuestionSetIncomplete ||
             this.questionSetStepComponent?.hasIncompleteQuestionSets ||
+            !this.questionSetStepComponent?.hasAllInstructionsAssigned ||
             this.hasModifiedQuestionSetAfterComplete ||
             this.questionSetStepComponent?.isDirty)
         ) {
@@ -748,7 +768,24 @@ export class AssessmentViewComponent
 
 
   public moveToNextStep(): void {
-    this.loadStepsStatus(true);
+    if (!this.completedSteps.includes(this.activeStep)) {
+      this.completedSteps.push(this.activeStep);
+    }
+    this.assessmentRounds = [];
+    this.isQuestionSetIncomplete = false;
+
+    const currentConfig = this.filteredStepConfig;
+    const currentItemIndex = currentConfig.findIndex((s) => s.index === this.activeStep);
+    let nextStepIndex: number | null = null;
+    if (currentItemIndex !== -1 && currentItemIndex + 1 < currentConfig.length) {
+      nextStepIndex = currentConfig[currentItemIndex + 1].index;
+    }
+
+    if (nextStepIndex !== null) {
+      this.setActiveStep(nextStepIndex);
+    }
+
+    this.loadStepsStatus(nextStepIndex === null);
   }
 
   public isStepEnabled(stepIndex: number): boolean {
@@ -762,7 +799,9 @@ export class AssessmentViewComponent
     // If question set is incomplete, block all steps after index 1
     const isQuestionSetIncomplete =
       this.isQuestionSetIncomplete ||
-      (this.questionSetStepComponent && this.questionSetStepComponent.hasIncompleteQuestionSets);
+      (this.questionSetStepComponent &&
+        (this.questionSetStepComponent.hasIncompleteQuestionSets ||
+          !this.questionSetStepComponent.hasAllInstructionsAssigned));
     if (isQuestionSetIncomplete && stepIndex > 1) {
       return false;
     }

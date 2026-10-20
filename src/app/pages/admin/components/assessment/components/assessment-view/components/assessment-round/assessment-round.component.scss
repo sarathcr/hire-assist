@@ -495,12 +495,13 @@
 
   &__create-button {
     ::ng-deep .p-button {
-      background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
-      border: none;
+      background: var(--primary-color, #1565c0) !important;
+      border: none !important;
+      color: #ffffff !important;
 
       &:hover:not(:disabled) {
-        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        background: #1976d2 !important;
+        box-shadow: 0 4px 12px rgba(21, 101, 192, 0.35) !important;
       }
     }
   }
@@ -524,12 +525,13 @@
       }
 
       .p-button {
-        background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 100%);
-        border: none;
+        background: var(--primary-color, #1565c0) !important;
+        border: none !important;
+        color: #ffffff !important;
 
         &:hover:not(:disabled) {
-          background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+          background: #1976d2 !important;
+          box-shadow: 0 4px 12px rgba(21, 101, 192, 0.35) !important;
         }
       }
     }

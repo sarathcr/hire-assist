@@ -296,21 +296,40 @@
 
     &_filters {
       display: flex;
-      gap: 1rem;
+      align-items: center;
+      gap: 0.5rem;
+
+      @media (max-width: 768px) {
+        width: 100%;
+      }
 
       @media (max-width: 470px) {
         flex-direction: column;
-        width: 100%;
+        align-items: stretch;
       }
     }
 
     &_search {
       justify-content: flex-end;
+      flex: 1;
+
+      @media (max-width: 768px) {
+        flex: 1;
+        min-width: 0;
+
+        ::ng-deep {
+          .p-inputtext,
+          input {
+            width: 100% !important;
+          }
+        }
+      }
     }
 
     &_clear {
       display: flex;
       justify-content: flex-start;
+      flex-shrink: 0;
 
       p-button {
         width: auto;
@@ -326,11 +345,6 @@
     }
   }
 
-  @media screen and (max-width: 470px) {
-    &__globalFilters > div {
-      width: 100%;
-    }
-  }
 
   @media screen and (max-width: 768px) {
     ::ng-deep {
@@ -350,9 +364,30 @@
       align-items: flex-start;
       gap: 0.5rem;
 
+      // The projected ng-content wrapper (e.g. Import CSV button)
+      > div:first-child {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+
+        ::ng-deep {
+          app-button,
+          .roles-access__button {
+            width: 100%;
+            display: flex;
+            margin: 0;
+            padding: 0;
+
+            .p-button {
+              width: 100% !important;
+              justify-content: center !important;
+            }
+          }
+        }
+      }
+
       &_search,
       &_clear {
-        width: 100%;
         justify-content: space-between;
 
         ::ng-deep {
@@ -362,6 +397,10 @@
             padding: 0.4rem 0.75rem;
           }
         }
+      }
+
+      &_filters {
+        width: 100%;
       }
     }
 

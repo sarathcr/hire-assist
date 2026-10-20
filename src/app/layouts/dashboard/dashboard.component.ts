@@ -114,13 +114,6 @@ export class DashboardComponent implements OnInit {
         routerLinkActiveOptions: { exact: false },
         tooltip: 'Recruitments',
       },
-      {
-        label: 'Roles & Access',
-        icon: 'pi pi-users',
-        routerLink: ['/admin/roles-access'],
-        routerLinkActiveOptions: { exact: true },
-        tooltip: 'Roles & Access',
-      },
     ];
     if (userRole.includes('interviewer')) {
       links.push({

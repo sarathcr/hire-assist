@@ -25,12 +25,13 @@ describe('SettingsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have 3 settings menu groups with 6 items in total', () => {
+  it('should have 3 settings menu groups with correct items', () => {
     expect(component.settingsMenuItems.length).toBe(3);
     expect(component.settingsMenuItems[0].label).toBe('Assessment');
-    expect(component.settingsMenuItems[0].items?.length).toBe(2);
+    expect(component.settingsMenuItems[0].items?.length).toBe(3);
     expect(component.settingsMenuItems[0].items?.[0].label).toBe('Questions');
     expect(component.settingsMenuItems[0].items?.[1].label).toBe('Question Types');
+    expect(component.settingsMenuItems[0].items?.[2].label).toBe('Aptitude Test Instructions');
 
     expect(component.settingsMenuItems[1].label).toBe('Interview Management');
     expect(component.settingsMenuItems[1].items?.length).toBe(3);
@@ -39,8 +40,9 @@ describe('SettingsComponent', () => {
     expect(component.settingsMenuItems[1].items?.[2].label).toBe('Panel Assignment');
 
     expect(component.settingsMenuItems[2].label).toBe('Organization');
-    expect(component.settingsMenuItems[2].items?.length).toBe(1);
-    expect(component.settingsMenuItems[2].items?.[0].label).toBe('Departments');
+    expect(component.settingsMenuItems[2].items?.length).toBe(2);
+    expect(component.settingsMenuItems[2].items?.[0].label).toBe('Roles & Access');
+    expect(component.settingsMenuItems[2].items?.[1].label).toBe('Departments');
   });
 
   it('should have Questions (index 0) active by default', () => {
@@ -68,8 +70,12 @@ describe('SettingsComponent', () => {
     expect(component.activeMenuItem).toBe(4);
     expect(component.pageTitle).toBe('Assign Panel');
 
-    (component as any).updateActiveMenuItem('/admin/settings/departments');
+    (component as any).updateActiveMenuItem('/admin/settings/roles-access');
     expect(component.activeMenuItem).toBe(5);
+    expect(component.pageTitle).toBe('Roles and Access');
+
+    (component as any).updateActiveMenuItem('/admin/settings/departments');
+    expect(component.activeMenuItem).toBe(6);
     expect(component.pageTitle).toBe('Departments');
   });
 });

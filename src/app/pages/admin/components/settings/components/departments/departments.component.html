@@ -16,13 +16,6 @@
     (pageChangeAndSort)="onTablePayloadChange($event)"
     (buttonClick)="onButtonClick($event)"
   >
-    <div class="department__button">
-      <app-button
-        [buttonLabel]="'New'"
-        icon="pi pi-plus"
-        (btnClick)="addNewDepartment()"
-      ></app-button>
-    </div>
   </app-table>
   <app-history-drawer
     [(visible)]="visible"

@@ -1083,7 +1083,7 @@ export class ImportCandidateListStepComponent implements OnInit, OnDestroy {
             const isEmailMismatch = res.email?.trim().toLowerCase() !== result.email?.trim().toLowerCase();
             const isPhoneMismatch = (res.phoneNumber || '').trim() !== (result.phoneNumber || '').trim();
             const isGenderMismatch = (res.gender || '').trim().toLowerCase() !== (result.gender || '').trim().toLowerCase();
-            const isDobMismatch = res.dob !== result.dob;
+            const isDobMismatch = (res.dob ? res.dob.toString().split('T')[0].trim() : '') !== (result.dob ? result.dob.toString().split('T')[0].trim() : '');
 
             const modalData: DialogData = {
               message: `
@@ -1169,6 +1169,14 @@ export class ImportCandidateListStepComponent implements OnInit, OnDestroy {
             this.ref.onClose.subscribe((accept) => {
               if (accept) {
                 this.isLoading = true;
+                if (res) {
+                  if (res.name) result.name = res.name;
+                  if (res.email) result.email = res.email;
+                  if (res.phoneNumber) result.phoneNumber = res.phoneNumber;
+                  if (res.gender) result.gender = res.gender;
+                  if (res.dob) result.dob = res.dob;
+                  if (res.currentLocation) result.currentLocation = res.currentLocation;
+                }
                 result.bypassMismatchCheck = true;
                 this.candidateService.createEntity(result).subscribe({
                   next: () => {

@@ -172,7 +172,25 @@ export class CandidateDialogComponent implements OnInit {
       if (Object.prototype.hasOwnProperty.call(formValue, key)) {
         let value = formValue[key];
         if (key === 'dob' && value) {
-          value = new Date(value).toISOString().split('T')[0];
+          if (value instanceof Date) {
+            const year = value.getFullYear();
+            const month = String(value.getMonth() + 1).padStart(2, '0');
+            const day = String(value.getDate()).padStart(2, '0');
+            value = `${year}-${month}-${day}`;
+          } else if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+              value = trimmed;
+            } else {
+              const d = new Date(trimmed);
+              if (!isNaN(d.getTime())) {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                value = `${year}-${month}-${day}`;
+              }
+            }
+          }
         }
 
         candidatePayload[key === 'phone' ? 'phoneNumber' : key] = value;

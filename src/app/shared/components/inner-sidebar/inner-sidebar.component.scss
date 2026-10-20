@@ -385,9 +385,17 @@
     }
   }
 
+  p-menu {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
   @media (max-width: 1200px) {
     width: 100% !important;
     max-width: 100% !important;
+    min-width: 0 !important;
     box-sizing: border-box;
     padding: 8px 10px;
     border-radius: 12px;
@@ -401,21 +409,41 @@
     .inner-sidebar__skeleton-list {
       display: flex !important;
       flex-direction: row !important;
+      flex-wrap: nowrap !important;
       overflow-x: auto !important;
+      overflow-y: hidden !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
       gap: 8px !important;
-      padding: 2px 0 !important;
+      padding: 2px 0 6px 0 !important;
       -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      width: max-content;
-      min-width: 100%;
+      overscroll-behavior-x: contain;
+      touch-action: pan-x;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
 
       &::-webkit-scrollbar {
-        display: none;
+        height: 4px;
+        display: block;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+
+        &:hover {
+          background: #94a3b8;
+        }
       }
     }
 
     .inner-sidebar__skeleton-item {
-      flex-shrink: 0;
+      flex-shrink: 0 !important;
       padding: 7px 14px !important;
       border-radius: 20px !important;
       background: #f8fafc;
@@ -438,26 +466,55 @@
       }
     }
 
+    p-menu {
+      display: block !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+    }
+
     ::ng-deep {
       .p-menu {
-        width: 100%;
-        max-width: 100%;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior-x: contain;
+        touch-action: pan-x;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 transparent;
+
+        &::-webkit-scrollbar {
+          height: 4px;
+          display: block;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 4px;
+
+          &:hover {
+            background: #94a3b8;
+          }
+        }
       }
 
       .p-menu-list {
         display: flex !important;
         flex-direction: row !important;
-        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        width: max-content !important;
+        min-width: 100% !important;
         gap: 8px !important;
-        padding: 2px 0 !important;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        width: max-content;
-        min-width: 100%;
-
-        &::-webkit-scrollbar {
-          display: none;
-        }
+        padding: 2px 2px 6px 2px !important;
+        margin: 0 !important;
+        overflow: visible !important;
       }
 
       .p-menu-submenu-label {
@@ -465,15 +522,16 @@
       }
 
       .p-menu-item {
-        flex-shrink: 0;
+        flex-shrink: 0 !important;
+        margin: 0 !important;
       }
 
       .p-menu-item-link {
-        flex-shrink: 0;
+        flex-shrink: 0 !important;
         padding: 7px 14px !important;
         border-radius: 20px !important;
         font-size: 13px !important;
-        white-space: nowrap;
+        white-space: nowrap !important;
         background: #f8fafc;
         border: 1px solid #e2e8f0;
 

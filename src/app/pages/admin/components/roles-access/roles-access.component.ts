@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MessageService } from 'primeng/api';
+import { DialogModule } from 'primeng/dialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { finalize } from 'rxjs';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
@@ -62,9 +64,9 @@ const tableColumns: TableColumnsData = {
       field: 'button',
       displayName: 'Actions',
       fieldType: FieldType.Action,
-      buttonIcons: ['pi pi-pencil', 'pi pi-trash', 'pi pi-history'],
-      buttonLabels: ['Edit', 'Delete', 'History'],
-      buttonTooltips: ['Edit', 'Delete', 'History'],
+      buttonIcons: ['pi pi-pencil', 'pi pi-history'],
+      buttonLabels: ['Edit', 'History'],
+      buttonTooltips: ['Edit', 'History'],
       sortedColumn: false,
       hasChip: false,
       width: 1,
@@ -74,13 +76,20 @@ const tableColumns: TableColumnsData = {
 };
 @Component({
   selector: 'app-roles-access',
-  imports: [TableComponent, ButtonComponent, HistoryDrawerComponent],
+  imports: [
+    CommonModule,
+    TableComponent,
+    ButtonComponent,
+    HistoryDrawerComponent,
+    DialogModule,
+  ],
   providers: [TableDataSourceService],
   templateUrl: './roles-access.component.html',
   styleUrl: './roles-access.component.scss',
 })
 export class RolesAccessComponent implements OnInit, OnDestroy {
   @ViewChild(TableComponent) tableComponent!: TableComponent<any>;
+  @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
 
   public data!: any;
   public columns: TableColumnsData = tableColumns;
@@ -95,6 +104,18 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public visible = false;
   public historyEvents: any[] = [];
   public historyLoading = false;
+
+  public showConfirmUploadModal = false;
+  public selectedCsvFile: File | null = null;
+  public selectedCsvFileName = '';
+  public selectedCsvFileSize = '';
+
+  public showErrorModal = false;
+  public errorModalTitle = '';
+  public errorModalSubtitle = '';
+  public errorModalItems: string[] = [];
+  public errorModalRawMessage = '';
+  public errorModalTip: string | null = null;
 
   constructor(
     public dialog: DialogService,
@@ -416,15 +437,159 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
       case 'Edit':
         this.editUser(event);
         break;
-      case 'Delete':
-        this.deleteUser(event.id);
-        break;
       case 'History':
         this.viewHistory(event.id);
         break;
       default:
         break;
     }
+  }
+
+  public onCsvFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input?.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Invalid File',
+        detail: 'Please select a valid CSV (.csv) file.',
+      });
+      input.value = '';
+      return;
+    }
+
+    this.selectedCsvFile = file;
+    this.selectedCsvFileName = file.name;
+    this.selectedCsvFileSize = this.formatFileSize(file.size);
+    this.showConfirmUploadModal = true;
+  }
+
+  public cancelCsvUpload() {
+    this.showConfirmUploadModal = false;
+    this.selectedCsvFile = null;
+    if (this.fileInputRef?.nativeElement) {
+      this.fileInputRef.nativeElement.value = '';
+    }
+  }
+
+  public proceedWithCsvUpload() {
+    this.showConfirmUploadModal = false;
+    if (!this.selectedCsvFile) {
+      return;
+    }
+
+    const fileToUpload = this.selectedCsvFile;
+    this.isLoading = true;
+    this.userService.importUsers(fileToUpload).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        this.selectedCsvFile = null;
+        if (this.fileInputRef?.nativeElement) {
+          this.fileInputRef.nativeElement.value = '';
+        }
+        const createdCount = res?.createdCount ?? 0;
+        const updatedCount = res?.updatedCount ?? 0;
+        const deactivatedCount = res?.deactivatedCount ?? 0;
+        const total = res?.totalProcessed ?? (createdCount + updatedCount);
+
+        let detailMsg = `Successfully imported ${total} user${total > 1 ? 's' : ''} (${createdCount} created, ${updatedCount} updated`;
+        if (deactivatedCount > 0) {
+          detailMsg += `, ${deactivatedCount} removed`;
+        }
+        detailMsg += ').';
+
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Import Successful',
+          detail: detailMsg,
+        });
+        this.collectionService.getCollection(true);
+        this.getAllUsers(this.currentPayload);
+      },
+      error: (err: any) => {
+        this.isLoading = false;
+        this.selectedCsvFile = null;
+        if (this.fileInputRef?.nativeElement) {
+          this.fileInputRef.nativeElement.value = '';
+        }
+        const rawError =
+          err?.error?.errorValue ||
+          err?.error?.type ||
+          err?.error?.message ||
+          err?.message ||
+          'Failed to import users from CSV.';
+        this.handleImportError(rawError);
+      },
+    });
+  }
+
+  public handleImportError(rawError: string) {
+    let cleaned = (rawError || '').replace(/^\[\d+\]\s*(Invalid data\s*)?/i, '').trim();
+    if (cleaned.endsWith('!') && !cleaned.includes('\n')) {
+      cleaned = cleaned.substring(0, cleaned.length - 1).trim();
+    }
+
+    const lines = cleaned.split('\n');
+    const bulletItems: string[] = [];
+    const nonBulletLines: string[] = [];
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith('•') || trimmed.startsWith('-')) {
+        bulletItems.push(trimmed.replace(/^[•\-]\s*/, '').trim());
+      } else if (trimmed.length > 0) {
+        nonBulletLines.push(trimmed);
+      }
+    }
+
+    const lowerText = cleaned.toLowerCase();
+    if (lowerText.includes('active recruitment') || lowerText.includes('participating in active recruitments')) {
+      this.errorModalTitle = 'Active Recruitment Conflict';
+      this.errorModalSubtitle =
+        nonBulletLines[0] ||
+        'The uploaded CSV is missing user(s) currently assigned to active recruitments in the system:';
+      this.errorModalItems = bulletItems;
+      this.errorModalTip =
+        'These users cannot be removed while participating in active recruitments. Please ensure all active recruitment interviewers, coordinators, panel members, and front desk staff are included in your CSV file before re-uploading.';
+      this.errorModalRawMessage = bulletItems.length === 0 ? cleaned : '';
+    } else if (lowerText.includes('validation failed') || lowerText.includes('validation error')) {
+      this.errorModalTitle = 'CSV Validation Failed';
+      this.errorModalSubtitle =
+        nonBulletLines[0] ||
+        'The uploaded CSV contains validation errors. Please resolve them and try again:';
+      this.errorModalItems = bulletItems;
+      this.errorModalTip =
+        'Required columns are "First Name" (or Name) and "Email". Each row must contain a valid email address and non-empty name (max 150 characters).';
+      this.errorModalRawMessage = bulletItems.length === 0 ? cleaned : '';
+    } else {
+      this.errorModalTitle = 'Import Failed';
+      this.errorModalSubtitle =
+        nonBulletLines[0] || 'An error occurred while importing users from CSV:';
+      this.errorModalItems = bulletItems;
+      this.errorModalRawMessage = bulletItems.length === 0 ? cleaned : '';
+      this.errorModalTip = null;
+    }
+
+    this.showErrorModal = true;
+  }
+
+  public closeErrorModal() {
+    this.showErrorModal = false;
+    this.errorModalItems = [];
+    this.errorModalRawMessage = '';
+    this.errorModalTip = null;
+  }
+
+  public formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   }
 
   public getSelectedItems(selectedUsersIds: RolesAccess[]) {

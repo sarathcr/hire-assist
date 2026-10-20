@@ -175,8 +175,8 @@ export const routes: Routes = [
       },
       {
         path: 'roles-access',
-        component: RolesAccessComponent,
-        data: { breadcrumb: 'Roles & Access' }
+        redirectTo: 'settings/roles-access',
+        pathMatch: 'full',
       },
       {
         path: 'settings',
@@ -199,6 +199,11 @@ export const routes: Routes = [
             path: 'batches',
             component: BatchesComponent,
             data: { breadcrumb: 'Batches' }
+          },
+          {
+            path: 'roles-access',
+            component: RolesAccessComponent,
+            data: { breadcrumb: 'Roles & Access' },
           },
           { path: 'departments', component: DepartmentsComponent, data: { breadcrumb: 'Departments' } },
           { path: 'panels', component: PanelsComponent, data: { breadcrumb: 'Panels' } },

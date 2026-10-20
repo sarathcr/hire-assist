@@ -1,26 +1,29 @@
 <div class="roles-access">
-  <h1>Roles and Access</h1>
+  <h1 class="roles-access__title">Roles and Access</h1>
 
   <app-table
     [tableData]="data"
     [columnsData]="columns"
     [hasSearch]="true"
+    [hasCheckbox]="false"
     [parentLoader]="isLoading"
-    [alreadySelected]="selectedUsers"
     (edit)="editUser($event)"
-    (delete)="deleteUser($event)"
-    (selectedIds)="getSelectedItems($event)"
     (pageChangeAndSort)="onTablePayloadChange($event)"
     (history)="viewHistory($event)"
     (buttonClick)="onButtonClick($event)"
   >
     <div class="roles-access__button">
-      <app-button [buttonLabel]="'New'" [icon]="'pi pi-plus'" (btnClick)="AddNewUser()"></app-button>
+      <input
+        #fileInput
+        type="file"
+        accept=".csv"
+        (change)="onCsvFileSelected($event)"
+        style="display: none"
+      />
       <app-button
-        [buttonLabel]="'Delete All'"
-        [buttonSeverity]="'danger'"
-        [disabled]="!selectedUsers || selectedUsers.length === 0"
-        (btnClick)="deleteSelectedUsers()"
+        [buttonLabel]="'Import CSV'"
+        [icon]="'pi pi-upload'"
+        (btnClick)="fileInput.click()"
       ></app-button>
     </div>
   </app-table>
@@ -31,4 +34,133 @@
     [loading]="historyLoading"
     (visibleChange)="visible = $event"
   ></app-history-drawer>
+
+  <!-- Re-upload CSV Warning Confirmation Modal -->
+  <p-dialog
+    [(visible)]="showConfirmUploadModal"
+    [modal]="true"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [focusOnShow]="false"
+    header="Confirm User List Synchronization"
+    styleClass="roles-access__confirm-dialog"
+    [style]="{ width: '560px', maxWidth: '96vw' }"
+    [breakpoints]="{ '960px': '75vw', '640px': '92vw', '480px': '96vw', '360px': '98vw' }"
+    [contentStyle]="{ 'max-height': '65vh', 'overflow-y': 'auto' }"
+  >
+    <div class="confirm-modal-body">
+      <div class="confirm-modal-banner">
+        <div class="confirm-modal-banner__icon-wrap">
+          <i class="pi pi-exclamation-triangle"></i>
+        </div>
+        <div class="confirm-modal-banner__text">
+          <h3>Synchronize Users via CSV?</h3>
+          <p>
+            Uploading this file will synchronize the portal user directory with the uploaded CSV list.
+          </p>
+        </div>
+      </div>
+
+      <div class="confirm-modal-file" *ngIf="selectedCsvFile" [title]="selectedCsvFileName">
+        <i class="pi pi-file"></i>
+        <span class="file-name">{{ selectedCsvFileName }}</span>
+        <span class="file-size">({{ selectedCsvFileSize }})</span>
+      </div>
+
+      <div class="confirm-modal-rules">
+        <div class="rule-item rule-item--update">
+          <i class="pi pi-check-circle"></i>
+          <div>
+            <strong>Add & Update:</strong> New users will be created; existing users will be updated with department and designation.
+          </div>
+        </div>
+        <div class="rule-item rule-item--protected">
+          <i class="pi pi-shield"></i>
+          <div>
+            <strong>Protected Accounts:</strong> Super Admins and Candidates are preserved and will not be removed.
+          </div>
+        </div>
+        <div class="rule-item rule-item--deactivate">
+          <i class="pi pi-info-circle"></i>
+          <div>
+            <strong>Deactivation:</strong> Active organization users not present in this file will be deactivated/removed.
+          </div>
+        </div>
+        <div class="rule-item rule-item--active-check">
+          <i class="pi pi-lock"></i>
+          <div>
+            <strong>Active Recruitment Guard:</strong> Users assigned to active recruitments cannot be removed. If any are missing, the import will be rejected.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <app-button
+        buttonLabel="Cancel"
+        buttonVariant="outlined"
+        (btnClick)="cancelCsvUpload()"
+      ></app-button>
+      <app-button
+        buttonLabel="Proceed & Import"
+        icon="pi pi-upload"
+        [isLoading]="isLoading"
+        (btnClick)="proceedWithCsvUpload()"
+      ></app-button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Error Modal for Active Recruitment Conflicts and Validation Errors -->
+  <p-dialog
+    [(visible)]="showErrorModal"
+    [modal]="true"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [focusOnShow]="false"
+    [header]="errorModalTitle"
+    styleClass="roles-access__error-dialog"
+    [style]="{ width: '600px', maxWidth: '96vw' }"
+    [breakpoints]="{ '960px': '75vw', '640px': '92vw', '480px': '96vw', '360px': '98vw' }"
+    [contentStyle]="{ 'max-height': '65vh', 'overflow-y': 'auto' }"
+  >
+    <div class="error-modal-body">
+      <div class="error-modal-banner">
+        <div class="error-modal-banner__icon-wrap">
+          <i class="pi pi-times-circle"></i>
+        </div>
+        <div class="error-modal-banner__text">
+          <h3>{{ errorModalTitle }}</h3>
+          <p>{{ errorModalSubtitle }}</p>
+        </div>
+      </div>
+
+      <div class="error-modal-items" *ngIf="errorModalItems && errorModalItems.length > 0">
+        <div class="error-list-container">
+          <div class="error-item" *ngFor="let item of errorModalItems">
+            <i class="pi pi-exclamation-circle error-item__icon"></i>
+            <span class="error-item__text">{{ item }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="error-modal-raw" *ngIf="errorModalRawMessage && (!errorModalItems || errorModalItems.length === 0)">
+        <p>{{ errorModalRawMessage }}</p>
+      </div>
+
+      <div class="error-modal-tip" *ngIf="errorModalTip">
+        <i class="pi pi-info-circle"></i>
+        <span>{{ errorModalTip }}</span>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <app-button
+        buttonLabel="Close"
+        buttonVariant="outlined"
+        (btnClick)="closeErrorModal()"
+      ></app-button>
+    </ng-template>
+  </p-dialog>
 </div>

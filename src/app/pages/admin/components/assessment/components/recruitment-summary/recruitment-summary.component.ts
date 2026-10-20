@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { AccordionModule } from 'primeng/accordion';
 import { Location } from '@angular/common';
@@ -68,6 +68,28 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   public fallbackIdProofs: Record<string, any[]> = {};
   public isFallbackLoading: Record<string, boolean> = {};
 
+  // Responsive Button Label State
+  public isMobileView = typeof window !== 'undefined' ? window.innerWidth <= 640 : false;
+  public isSmallMobileView = typeof window !== 'undefined' ? window.innerWidth <= 480 : false;
+
+  public get downloadButtonLabel(): string {
+    if (this.isSmallMobileView) {
+      return 'Download';
+    }
+    if (this.isMobileView) {
+      return 'Download Summary';
+    }
+    return 'Download Recruitment Summary';
+  }
+
+  @HostListener('window:resize')
+  public checkScreenSize(): void {
+    if (typeof window !== 'undefined') {
+      this.isMobileView = window.innerWidth <= 640;
+      this.isSmallMobileView = window.innerWidth <= 480;
+    }
+  }
+
   constructor(
     private location: Location,
     private route: ActivatedRoute,
@@ -78,6 +100,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.checkScreenSize();
     this.route.params.subscribe((params) => {
       if (params['id']) {
         this.assessmentId = +params['id'];
@@ -523,7 +546,10 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   }
 
   public async downloadPdf(): Promise<void> {
-    const filename = `Audit_Report_${this.summaryData?.recruitmentName || 'Summary'}.pdf`;
+    const recruitmentName = this.summaryData?.recruitmentName?.trim();
+    const filename = recruitmentName
+      ? `Recruitment_Summary_${recruitmentName}.pdf`
+      : 'Recruitment_Summary.pdf';
     if (this.currentPdfBlob) {
       await this.downloadBlob(this.currentPdfBlob, filename);
     } else if (this.pdfUrlString) {
@@ -585,7 +611,10 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
         this.pdfUrlString = URL.createObjectURL(safeBlob);
       }
 
-      const filename = `Audit_Report_${this.summaryData?.recruitmentName || 'Summary'}.pdf`;
+      const recruitmentName = this.summaryData?.recruitmentName?.trim();
+      const filename = recruitmentName
+        ? `Recruitment_Summary_${recruitmentName}.pdf`
+        : 'Recruitment_Summary.pdf';
       const downloadHandled = await this.downloadBlob(blob, filename);
 
       if (!downloadHandled && this.isIOSDevice()) {
@@ -593,7 +622,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
         this.showPdfModal = true;
         this.messageService.add({
           severity: 'info',
-          summary: 'Audit Report Ready',
+          summary: 'Recruitment Summary Ready',
           detail: 'Tap Download to save the document to your iPhone.',
         });
       }
@@ -602,7 +631,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
       this.messageService.add({
         severity: 'error',
         summary: 'Export Failed',
-        detail: 'Failed to export audit report. Please try again.',
+        detail: 'Failed to export recruitment summary. Please try again.',
       });
     } finally {
       this.isExporting = false;

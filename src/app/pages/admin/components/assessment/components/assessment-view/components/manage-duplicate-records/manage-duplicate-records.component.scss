@@ -521,14 +521,15 @@
   border: 1px solid transparent;
 
   &--primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: var(--primary-color, #1565c0);
+    border: none;
     color: #ffffff;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 4px 10px rgba(21, 101, 192, 0.2);
 
     &:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      box-shadow: 0 6px 14px rgba(21, 101, 192, 0.35);
+      background: #1976d2;
     }
 
     &:disabled {

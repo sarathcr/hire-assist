@@ -204,7 +204,7 @@ export class SelectQuesionsetStepComponent
   }
 
   public notifyStatusChange(): void {
-    const isIncomplete = this.hasIncompleteQuestionSets || !this.hasAllRoundsConfigured;
+    const isIncomplete = this.hasIncompleteQuestionSets || !this.hasAllRoundsConfigured || !this.hasAllInstructionsAssigned;
     const isModified = this.isModified;
     this.incompleteChange.emit(isIncomplete);
     this.stepStateChange.emit({ isIncomplete, isModified });
@@ -728,7 +728,6 @@ export class SelectQuesionsetStepComponent
         }
       });
 
-      this.applyDefaultInstructions();
 
       const activeIds = new Set(res.data.map((qs) => qs.id.toString()));
       for (const id of this.questionSetAccordionData.keys()) {
@@ -1298,8 +1297,8 @@ export class SelectQuesionsetStepComponent
               for (const data of this.questionSetAccordionData.values()) {
                 data.originalSelectedIds = [...(data.selectedIds || [])];
               }
-              this.stepsStatusService.notifyStepCompleted(assessmentId);
               this.notifyStatusChange();
+              this.stepsStatusService.notifyStepCompleted(assessmentId);
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
@@ -1313,8 +1312,8 @@ export class SelectQuesionsetStepComponent
               for (const data of this.questionSetAccordionData.values()) {
                 data.originalSelectedIds = [...(data.selectedIds || [])];
               }
-              this.stepsStatusService.notifyStepCompleted(assessmentId);
               this.notifyStatusChange();
+              this.stepsStatusService.notifyStepCompleted(assessmentId);
               this.messageService.add({
                 severity: 'success',
                 summary: 'Success',
@@ -1367,30 +1366,11 @@ export class SelectQuesionsetStepComponent
               }
             }
           });
-          this.applyDefaultInstructions();
           this.cdr.markForCheck();
         },
       });
   }
 
-  private applyDefaultInstructions(): void {
-    if (!this.defaultInstructionId) return;
-
-    for (const round of this.assessmentRounds) {
-      const roundId = round.assessmentRoundId ?? round.id ?? 0;
-      if (roundId > 0 && !this.roundInstructionMap.has(roundId)) {
-        const initialId = round.instructionId ?? this.defaultInstructionId;
-        if (initialId) {
-          this.roundInstructionMap.set(roundId, initialId);
-          round.instructionId = initialId;
-          this.instructionService
-            .assignInstructionToRound({ assessmentRoundId: roundId, instructionId: initialId })
-            .pipe(catchError(() => of(false)))
-            .subscribe();
-        }
-      }
-    }
-  }
 
   public loadInstructions(callback?: () => void): void {
     this.instructionService.getInstructions(true).subscribe({
@@ -1407,7 +1387,6 @@ export class SelectQuesionsetStepComponent
           this.defaultInstructionId = instructions[0].id;
         }
 
-        this.applyDefaultInstructions();
 
         if (callback) callback();
         this.cdr.markForCheck();
@@ -1418,17 +1397,19 @@ export class SelectQuesionsetStepComponent
     });
   }
 
+
   public getRoundInstructionId(roundId: number): number | null {
     if (this.roundInstructionMap.has(roundId)) {
-      return this.roundInstructionMap.get(roundId) ?? null;
+      const mappedId = this.roundInstructionMap.get(roundId);
+      return mappedId && mappedId > 0 ? mappedId : null;
     }
     const targetRound = this.assessmentRounds.find(
       (r) => (r.assessmentRoundId || r.id) === roundId,
     );
-    if (targetRound?.instructionId) {
+    if (targetRound?.instructionId && targetRound.instructionId > 0) {
       return targetRound.instructionId;
     }
-    return this.defaultInstructionId ?? null;
+    return null;
   }
 
   public onRoundInstructionChange(roundId: number, instructionId: number): void {
@@ -1639,6 +1620,20 @@ export class SelectQuesionsetStepComponent
     return roundIdsWithSets.size === allRoundIds.size;
   }
 
+  /**
+   * Returns true if every assessment round has an instruction set selected.
+   * Instruction set is mandatory before completing the step.
+   */
+  public get hasAllInstructionsAssigned(): boolean {
+    if (this.assessmentRounds.length === 0) return true;
+    return this.assessmentRounds.every((round) => {
+      const roundId = round.assessmentRoundId ?? 0;
+      if (roundId <= 0) return true;
+      const instructionId = this.getRoundInstructionId(roundId);
+      return instructionId != null && instructionId > 0;
+    });
+  }
+
   public get isDirty(): boolean {
     if (this.isModified) return true;
 
@@ -1662,6 +1657,7 @@ export class SelectQuesionsetStepComponent
     const status = this.stepStatus();
 
     if (!isValid) return false;
+    if (!this.hasAllInstructionsAssigned) return false;
 
     // If step is already completed, it only stays enabled if there are new changes (isDirty) or modifications in session
     if (status === 'Completed') {

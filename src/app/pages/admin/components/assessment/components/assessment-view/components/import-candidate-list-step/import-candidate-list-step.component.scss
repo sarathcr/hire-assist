@@ -140,7 +140,7 @@
         border-radius: 8px;
         font-size: 13px;
         font-weight: 600;
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        background: var(--primary-color, #1565c0);
         border: none;
         color: #ffffff;
         transition: all 0.2s ease;
@@ -155,8 +155,8 @@
         }
 
         &:hover:not(:disabled) {
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+          background: #1976d2;
+          box-shadow: 0 4px 12px rgba(21, 101, 192, 0.35);
           transform: translateY(-1px);
         }
 

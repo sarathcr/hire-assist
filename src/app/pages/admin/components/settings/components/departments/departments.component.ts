@@ -15,7 +15,6 @@ import {
   setSavedPayload,
 } from '../../../../../../shared/models/pagination.models';
 import {
-  FieldType,
   PaginatedDataActions,
   TableColumnsData,
 } from '../../../../../../shared/models/table.models';
@@ -35,8 +34,6 @@ import { finalize } from 'rxjs/operators';
 import { ASSESSMENT_URL } from '../../../../../../shared/constants/api';
 import { DialogData } from '../../../../../../shared/models/dialog.models';
 import { TableComponent } from '../../../../../../shared/components/table/table.component';
-
-import { ButtonComponent } from '../../../../../../shared/components/button/button.component';
 import { HistoryDrawerComponent } from '../../../../../../shared/components/history-drawer/history-drawer.component';
 const tableColumns: TableColumnsData = {
   columns: [
@@ -66,23 +63,13 @@ const tableColumns: TableColumnsData = {
       filterAlias: 'selectFilter',
       hasMultiStatus: false,
     },
-    {
-      field: 'button',
-      displayName: 'Actions',
-      fieldType: FieldType.Action,
-      buttonIcons: ['pi pi-pencil', 'pi pi-trash', 'pi pi-history'],
-      buttonLabels: ['Edit', 'Delete', 'History'],
-      buttonTooltips: ['Edit', 'Delete', 'History'],
-      sortedColumn: false,
-      hasChip: false,
-    },
   ],
-  displayedColumns: ['name', 'description', 'active', 'actions'],
+  displayedColumns: ['name', 'description', 'active'],
 };
 
 @Component({
   selector: 'app-departments',
-  imports: [TableComponent, ButtonComponent, HistoryDrawerComponent],
+  imports: [TableComponent, HistoryDrawerComponent],
   providers: [TableDataSourceService],
   templateUrl: './departments.component.html',
   styleUrl: './departments.component.scss',

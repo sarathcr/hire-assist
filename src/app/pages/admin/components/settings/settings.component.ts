@@ -41,7 +41,7 @@ export class SettingsComponent implements OnInit {
           icon: 'pi pi-book',
           route: '/admin/settings/instructions',
           routerLink: ['/admin/settings/instructions'],
-          index: 6,
+          index: 7,
         },
       ],
     },
@@ -75,11 +75,18 @@ export class SettingsComponent implements OnInit {
       label: 'Organization',
       items: [
         {
+          label: 'Roles & Access',
+          icon: 'pi pi-users',
+          route: '/admin/settings/roles-access',
+          routerLink: ['/admin/settings/roles-access'],
+          index: 5,
+        },
+        {
           label: 'Departments',
           icon: 'pi pi-building',
           route: '/admin/settings/departments',
           routerLink: ['/admin/settings/departments'],
-          index: 5,
+          index: 6,
         },
       ],
     },
@@ -100,10 +107,13 @@ export class SettingsComponent implements OnInit {
 
   private updateActiveMenuItem(url: string): void {
     if (url.includes('/admin/settings/instructions')) {
-      this.activeMenuItem = 6;
+      this.activeMenuItem = 7;
       this.pageTitle = 'Aptitude Test Instructions';
-    } else if (url.includes('/admin/settings/departments')) {
+    } else if (url.includes('/admin/settings/roles-access')) {
       this.activeMenuItem = 5;
+      this.pageTitle = 'Roles and Access';
+    } else if (url.includes('/admin/settings/departments')) {
+      this.activeMenuItem = 6;
       this.pageTitle = 'Departments';
     } else if (url.includes('/admin/settings/panel-assignment')) {
       this.activeMenuItem = 4;

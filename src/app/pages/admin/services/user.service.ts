@@ -33,4 +33,8 @@ export class UserService extends ApiService<any> {
   public getUserHistory(userId: string) {
     return this.httpClient.get<any[]>(`${this.getResourceUrl()}/history/${userId}`);
   }
+
+  public importUsers(file: File) {
+    return this.uploadFileAndReturnData<any>(file, 'import');
+  }
 }

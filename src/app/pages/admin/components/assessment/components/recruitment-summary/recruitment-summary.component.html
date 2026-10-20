@@ -22,15 +22,17 @@
         label="Preview" 
         [outlined]="true"
         severity="secondary"
+        class="preview-btn"
         [loading]="isPreviewing"
         (onClick)="previewPdf()">
       </p-button>
       <p-button 
         *ngIf="!isLoading && summaryData"
         icon="pi pi-download" 
-        label="Download Recruitment Summary" 
+        [label]="downloadButtonLabel" 
         [raised]="true"
-        severity="contrast"
+        severity="primary"
+        class="download-summary-btn"
         [loading]="isExporting"
         (onClick)="exportPdf()">
       </p-button>
@@ -44,7 +46,7 @@
     [modal]="true" 
     [maximizable]="true"
     styleClass="recruitment-summary__pdf-dialog"
-    header="Audit Report Preview"
+    header="Recruitment Summary Preview"
   >
     
     <div *ngIf="pdfUrlString" class="pdf-viewer-container" style="height: 100%; width: 100%;">
