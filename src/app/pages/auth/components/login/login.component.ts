@@ -118,10 +118,20 @@ export class LoginComponent implements OnInit {
     if (res) {
       const userRole = getTokenPayloadData(res.accessToken, TokenField.Role);
 
-      this.navigateToUserDashboard(userRole);
-      // Reset collection timestamp and fetch fresh collections on login
-      this.collectionService.getCollection();
-      // Profile image will be loaded by dashboard component
+      const navigated = this.navigateToUserDashboard(userRole);
+      if (navigated) {
+        // Reset collection timestamp and fetch fresh collections on login
+        this.collectionService.getCollection();
+        // Profile image will be loaded by dashboard component
+      } else {
+        this.isLoading = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Access Denied',
+          detail:
+            'No active role assigned to this user. Please contact your administrator.',
+        });
+      }
     }
   }
 
@@ -135,7 +145,7 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  private navigateToUserDashboard(userRole: number[]): void {
+  private navigateToUserDashboard(userRole: any): boolean {
     const routes: Record<number, string> = {
       [RolesEnum.SuperAdmin]: '/admin/dashboard',
       [RolesEnum.Admin]: '/admin/dashboard',
@@ -154,8 +164,40 @@ export class LoginComponent implements OnInit {
       RolesEnum.Candidate,
     ];
 
-    const matchedRole = priority.find((r) => userRole.includes(r));
+    const rolesList = Array.isArray(userRole)
+      ? userRole
+      : userRole !== null && userRole !== undefined && userRole !== ''
+        ? [userRole]
+        : [];
 
-    if (matchedRole) this.router.navigateByUrl(routes[matchedRole]);
+    const normalizedRoles: number[] = rolesList
+      .map((r: any) => {
+        if (typeof r === 'number') return r;
+        const num = Number(r);
+        if (!isNaN(num) && num > 0) return num;
+        if (typeof r === 'string') {
+          const clean = r.trim().toLowerCase().replace(/[\s_]+/g, '');
+          const roleMap: Record<string, RolesEnum> = {
+            superadmin: RolesEnum.SuperAdmin,
+            admin: RolesEnum.Admin,
+            interviewer: RolesEnum.Interviewer,
+            coordinator: RolesEnum.Coordinator,
+            frontdesk: RolesEnum.FrontDesk,
+            candidate: RolesEnum.Candidate,
+          };
+          return roleMap[clean];
+        }
+        return undefined;
+      })
+      .filter((r): r is RolesEnum => r !== undefined);
+
+    const matchedRole = priority.find((r) => normalizedRoles.includes(r));
+
+    if (matchedRole && routes[matchedRole]) {
+      this.router.navigateByUrl(routes[matchedRole]);
+      return true;
+    }
+
+    return false;
   }
 }
