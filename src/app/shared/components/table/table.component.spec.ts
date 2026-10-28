@@ -202,6 +202,277 @@ describe('TableComponent', () => {
     expect(emitted.filterMap['status']).toContain('OR != pending');
   });
 
+  it('should show warning toast and not apply filter when column filter contains only empty spaces', () => {
+    const messageService = TestBed.inject(MessageService);
+    const messageSpy = spyOn(messageService, 'add');
+    const emitSpy = spyOn(component.pageChangeAndSort, 'emit');
+
+    const event = {
+      filters: {
+        name: [{ value: '   ', matchMode: 'contains', operator: 'and' }],
+      },
+    };
+
+    component.onFilterApplied(event);
+
+    expect(messageSpy).toHaveBeenCalledWith({
+      severity: 'warn',
+      summary: 'Warning',
+      detail: 'Empty spaces are not allowed in column filters.',
+    });
+    expect(emitSpy).not.toHaveBeenCalled();
+    expect(component['appliedFilters']['name']).toBeUndefined();
+  });
+
+  it('should revert table filters to previous valid filters when empty spaces filter is attempted', () => {
+    const messageService = TestBed.inject(MessageService);
+    spyOn(messageService, 'add');
+
+    // Apply valid filter first
+    const validEvent = {
+      filters: {
+        status: [{ value: 'active', matchMode: 'equals', operator: 'and' }],
+      },
+    };
+    component.onFilterApplied(validEvent);
+
+    // Try applying empty spaces filter on name
+    const invalidEvent = {
+      filters: {
+        status: [{ value: 'active', matchMode: 'equals', operator: 'and' }],
+        name: [{ value: '   ', matchMode: 'contains', operator: 'and' }],
+      },
+    };
+    component.onFilterApplied(invalidEvent);
+
+    expect(component['appliedFilters']['name']).toBeUndefined();
+    expect(component['appliedFilters']['status']).toBeDefined();
+    expect(component.table.filters['name']).toEqual([
+      { value: null, matchMode: 'contains', operator: 'and' },
+    ]);
+    expect(component.table.filters['status']).toBeDefined();
+  });
+
+  it('should reset column filter to fresh single rule when closed without applied filters', () => {
+    component.table.filters = {
+      name: [
+        { value: 'data', matchMode: 'contains', operator: 'and' },
+        { value: null, matchMode: 'contains', operator: 'and' },
+      ],
+    };
+
+    component.onColumnFilterHide('name');
+
+    expect(component.table.filters['name'].length).toBe(1);
+    expect(component.table.filters['name'][0].value).toBeNull();
+  });
+
+  it('should reset table filters and show warning toast when column filter validation fails with empty spaces', () => {
+    const messageService = TestBed.inject(MessageService);
+    const messageSpy = spyOn(messageService, 'add');
+
+    component.table.filters = {
+      name: [
+        { value: 'data', matchMode: 'contains', operator: 'and' },
+        { value: '   ', matchMode: 'contains', operator: 'and' },
+      ],
+    };
+
+    const invalidEvent = {
+      filters: {
+        name: [
+          { value: 'data', matchMode: 'contains', operator: 'and' },
+          { value: '   ', matchMode: 'contains', operator: 'and' },
+        ],
+      },
+    };
+    component.onFilterApplied(invalidEvent);
+
+    expect(messageSpy).toHaveBeenCalledWith({
+      severity: 'warn',
+      summary: 'Warning',
+      detail: 'Empty spaces are not allowed in column filters.',
+    });
+    // Table filter is reset so when opened again it is fresh
+    expect(component.table.filters['name'].length).toBe(1);
+    expect(component.table.filters['name'][0].value).toBeNull();
+  });
+
+  it('should clear inputs on opening column filter when unapplied', () => {
+    component.table.filters = {
+      name: [
+        { value: 'unapplied text', matchMode: 'contains', operator: 'and' },
+        { value: '   ', matchMode: 'contains', operator: 'and' },
+      ],
+    };
+
+    const mockFilter = {
+      field: 'name',
+      cd: { markForCheck: jasmine.createSpy('markForCheck') },
+    } as any;
+
+    component.onColumnFilterShow(mockFilter, 'name');
+
+    expect(component.table.filters['name'].length).toBe(1);
+    expect(component.table.filters['name'][0].value).toBeNull();
+    expect(mockFilter.cd.markForCheck).toHaveBeenCalled();
+  });
+
+  it('should prevent typing leading space and multiple spaces between words in onTextFilterKeydown', () => {
+    const mockInput = document.createElement('input');
+    mockInput.value = '';
+    mockInput.selectionStart = 0;
+    mockInput.selectionEnd = 0;
+
+    const eventLeading = new KeyboardEvent('keydown', { key: ' ' });
+    Object.defineProperty(eventLeading, 'target', { value: mockInput });
+    const preventSpy1 = spyOn(eventLeading, 'preventDefault');
+    component.onTextFilterKeydown(eventLeading);
+    expect(preventSpy1).toHaveBeenCalled();
+
+    // After typing a word and a space
+    mockInput.value = 'hello ';
+    mockInput.selectionStart = 6;
+    mockInput.selectionEnd = 6;
+
+    const eventConsecutive = new KeyboardEvent('keydown', { key: ' ' });
+    Object.defineProperty(eventConsecutive, 'target', { value: mockInput });
+    const preventSpy2 = spyOn(eventConsecutive, 'preventDefault');
+    component.onTextFilterKeydown(eventConsecutive);
+    expect(preventSpy2).toHaveBeenCalled();
+
+    // Normal space between words should be allowed
+    mockInput.value = 'hello';
+    mockInput.selectionStart = 5;
+    mockInput.selectionEnd = 5;
+
+    const eventNormal = new KeyboardEvent('keydown', { key: ' ' });
+    Object.defineProperty(eventNormal, 'target', { value: mockInput });
+    const preventSpy3 = spyOn(eventNormal, 'preventDefault');
+    component.onTextFilterKeydown(eventNormal);
+    expect(preventSpy3).not.toHaveBeenCalled();
+  });
+
+  it('should prevent typing leading space and multiple spaces between words in onSearchKeydown', () => {
+    const mockInput = document.createElement('input');
+    mockInput.value = 'developer ';
+    mockInput.selectionStart = 10;
+    mockInput.selectionEnd = 10;
+
+    const eventConsecutive = new KeyboardEvent('keydown', { key: ' ' });
+    Object.defineProperty(eventConsecutive, 'target', { value: mockInput });
+    const preventSpy = spyOn(eventConsecutive, 'preventDefault');
+    component.onSearchKeydown(eventConsecutive);
+    expect(preventSpy).toHaveBeenCalled();
+  });
+
+  it('should sanitize pasted text in onTextFilterPaste', () => {
+    const constraint = { value: '' };
+    const mockInput = document.createElement('input');
+    mockInput.value = '';
+    mockInput.selectionStart = 0;
+    mockInput.selectionEnd = 0;
+
+    const mockClipboard = {
+      getData: () => '   hello    world   ',
+    };
+    const pasteEvent = {
+      preventDefault: jasmine.createSpy('preventDefault'),
+      clipboardData: mockClipboard,
+      target: mockInput,
+    } as unknown as ClipboardEvent;
+
+    component.onTextFilterPaste(pasteEvent, constraint);
+
+    expect(pasteEvent.preventDefault).toHaveBeenCalled();
+    expect(constraint.value).toBe('hello world ');
+    expect(mockInput.value).toBe('hello world ');
+  });
+
+  it('should show warning toast when filter contains multiple spaces between words', () => {
+    const messageService = TestBed.inject(MessageService);
+    const messageSpy = spyOn(messageService, 'add');
+
+    const event = {
+      filters: {
+        name: [{ value: 'John  Doe', matchMode: 'contains', operator: 'and' }],
+      },
+    };
+
+    component.onFilterApplied(event);
+
+    expect(messageSpy).toHaveBeenCalledWith({
+      severity: 'warn',
+      summary: 'Warning',
+      detail: 'Multiple spaces between words are not allowed in column filters.',
+    });
+  });
+
+  it('should not process lazy load when event filters contain empty spaces', () => {
+    const emitSpy = spyOn(component.pageChangeAndSort, 'emit');
+    component.isFirstLazyLoad = false;
+
+    const event = {
+      first: 0,
+      rows: 10,
+      filters: {
+        name: [{ value: '   ', matchMode: 'contains', operator: 'and' }],
+      },
+    };
+
+    component.onLazyLoad(event);
+    expect(emitSpy).not.toHaveBeenCalled();
+  });
+
+  it('should trim leading spaces and consecutive spaces in onTextFilterInput', () => {
+    const constraint = { value: '' };
+    const mockInput = document.createElement('input');
+    mockInput.value = '   developer';
+    const event = { target: mockInput } as unknown as Event;
+
+    component.onTextFilterInput(event, constraint);
+
+    expect(constraint.value).toBe('developer');
+    expect(mockInput.value).toBe('developer');
+  });
+
+  it('should show warning toast and not apply filter when column filter text starts with space', () => {
+    const messageService = TestBed.inject(MessageService);
+    const messageSpy = spyOn(messageService, 'add');
+    const emitSpy = spyOn(component.pageChangeAndSort, 'emit');
+
+    const event = {
+      filters: {
+        name: [{ value: ' John', matchMode: 'contains', operator: 'and' }],
+      },
+    };
+
+    component.onFilterApplied(event);
+
+    expect(messageSpy).toHaveBeenCalledWith({
+      severity: 'warn',
+      summary: 'Warning',
+      detail: 'Filter text cannot start with a space.',
+    });
+    expect(emitSpy).not.toHaveBeenCalled();
+    expect(component['appliedFilters']['name']).toBeUndefined();
+  });
+
+  it('should format valid search values when applied', () => {
+    const emitSpy = spyOn(component.pageChangeAndSort, 'emit');
+
+    const event = {
+      filters: {
+        name: [{ value: 'John Doe', matchMode: 'contains', operator: 'and' }],
+      },
+    };
+
+    component.onFilterApplied(event);
+
+    const emitted = emitSpy.calls.mostRecent().args[0];
+    expect(emitted.filterMap['name']).toContain('like %John Doe%');
+  });
+
   it('should emit correct pagination values from lazy load', () => {
     const emitSpy = spyOn(component.pageChangeAndSort, 'emit');
 

@@ -11,8 +11,10 @@ import {
   Optional,
   output,
   PLATFORM_ID,
+  QueryList,
   signal,
   ViewChild,
+  ViewChildren,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FilterMatchMode, MessageService, SelectItem } from 'primeng/api';
@@ -29,7 +31,7 @@ import { InputText, InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule } from 'primeng/paginator';
 import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
-import { Table, TableModule } from 'primeng/table';
+import { ColumnFilter, Table, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
@@ -138,6 +140,8 @@ export class TableComponent<
   @Input() onLoadQuestionImage?: (id: number) => void;
   @Input() onLoadOptionImage?: (id: number) => void;
   @ViewChild('dt') table!: Table;
+  @ViewChildren(ColumnFilter) public columnFilters!: QueryList<ColumnFilter>;
+  public activeColumnFilter: ColumnFilter | null = null;
   @Input() hasCheckbox = true;
   @Input() fillHeight = false;
   public isFirstLazyLoad = true;
@@ -870,6 +874,27 @@ export class TableComponent<
     this.edit.emit(data);
   }
 
+  public onSearchKeydown(event: KeyboardEvent): void {
+    if (event.key === ' ') {
+      const input = event.target as HTMLInputElement;
+      const start = input.selectionStart ?? 0;
+      const end = input.selectionEnd ?? 0;
+      const val = input.value || '';
+      if (start === 0 && end === 0) {
+        event.preventDefault();
+        return;
+      }
+      if (start > 0 && val[start - 1] === ' ') {
+        event.preventDefault();
+        return;
+      }
+      if (start === end && start < val.length && val[start] === ' ') {
+        event.preventDefault();
+        return;
+      }
+    }
+  }
+
   public onSearch(event: any): void {
     this.dropdownManager.closeActive();
     const target = event.target as HTMLInputElement;
@@ -879,18 +904,93 @@ export class TableComponent<
     }
 
     this.internalIsLoading.set(true);
-    this.searchValue = event.target.value ?? '';
+    let val = event.target.value ?? '';
+    // Prevent consecutive spaces and leading spaces
+    val = val.replace(/\s{2,}/g, ' ').replace(/ {2,}/g, ' ');
+    if (val.startsWith(' ')) {
+      val = val.trimStart();
+    }
+    if (target) {
+      target.value = val;
+    }
+    this.searchValue = val;
+
     const payload: PaginatedPayload = { ...this.globalPayload };
 
-    if (this.searchValue) {
+    const trimmedSearch = this.searchValue.trim();
+    if (trimmedSearch) {
       this.isAnyFilterActive = true;
-      payload.filterMap['searchKey'] = this.searchValue;
+      payload.filterMap['searchKey'] = trimmedSearch;
     } else {
       delete payload.filterMap['searchKey'];
       this.isAnyFilterActive = this.activeFilters.size > 0;
     }
 
     this.searchSubject.next(payload);
+  }
+
+  public onTextFilterKeydown(event: KeyboardEvent): void {
+    if (event.key === ' ') {
+      const input = event.target as HTMLInputElement;
+      const start = input.selectionStart ?? 0;
+      const end = input.selectionEnd ?? 0;
+      const val = input.value || '';
+
+      if (start === 0 && end === 0) {
+        event.preventDefault();
+        return;
+      }
+      if (start > 0 && val[start - 1] === ' ') {
+        event.preventDefault();
+        return;
+      }
+      if (start === end && start < val.length && val[start] === ' ') {
+        event.preventDefault();
+        return;
+      }
+    }
+  }
+
+  public onTextFilterInput(event: Event, filterConstraint: any): void {
+    const input = event.target as HTMLInputElement;
+    let val = input.value || '';
+    const cursor = input.selectionStart ?? val.length;
+
+    val = val.replace(/\s{2,}/g, ' ').replace(/ {2,}/g, ' ');
+    if (val.startsWith(' ')) {
+      val = val.trimStart();
+    }
+
+    if (input.value !== val) {
+      input.value = val;
+      const newCursor = Math.min(cursor, val.length);
+      input.setSelectionRange(newCursor, newCursor);
+    }
+    filterConstraint.value = val;
+  }
+
+  public onTextFilterPaste(event: ClipboardEvent, filterConstraint: any): void {
+    event.preventDefault();
+    const clipboardData = event.clipboardData?.getData('text') || '';
+    const input = event.target as HTMLInputElement;
+    const start = input.selectionStart ?? 0;
+    const end = input.selectionEnd ?? 0;
+    const currentVal = input.value || '';
+
+    const sanitizedPaste = clipboardData.replace(/\s+/g, ' ');
+    const before = currentVal.substring(0, start);
+    const after = currentVal.substring(end);
+
+    let newVal = before + sanitizedPaste + after;
+    newVal = newVal.replace(/\s{2,}/g, ' ').replace(/ {2,}/g, ' ');
+    if (newVal.startsWith(' ')) {
+      newVal = newVal.trimStart();
+    }
+
+    input.value = newVal;
+    filterConstraint.value = newVal;
+    const newCursor = Math.min(newVal.length, (before + sanitizedPaste).length);
+    input.setSelectionRange(newCursor, newCursor);
   }
 
   public onDelete(id: string): void {
@@ -1121,6 +1221,7 @@ export class TableComponent<
     this.appliedFilters = {};
     this.isAnyFilterActive = false;
     this.table.clear();
+    this.resetTableFilters();
     const payload: PaginatedPayload = new PaginatedPayload();
     this.globalPayload = payload;
     this.lastPaginationCall = null;
@@ -1137,6 +1238,25 @@ export class TableComponent<
     }
 
     const eventFilters = structuredClone(event.filters || {});
+
+    const filterValidation = this.hasLeadingOrEmptySpaceFilter(eventFilters);
+    if (filterValidation.hasError) {
+      let detailMsg = 'Empty spaces are not allowed in column filters.';
+      if (filterValidation.isLeadingSpace) {
+        detailMsg = 'Filter text cannot start with a space.';
+      } else if (filterValidation.isMultipleSpaces) {
+        detailMsg = 'Multiple spaces between words are not allowed in column filters.';
+      }
+
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: detailMsg,
+      });
+
+      this.resetTableFilters();
+      return;
+    }
 
     if (!this.hasValidFilters(eventFilters)) {
       if (Object.keys(this.appliedFilters).length > 0) {
@@ -1166,6 +1286,13 @@ export class TableComponent<
   public onLazyLoad(event: any): void {
     if (this.isFirstLazyLoad) {
       this.isFirstLazyLoad = false;
+      return;
+    }
+
+    if (
+      event?.filters &&
+      this.hasLeadingOrEmptySpaceFilter(event.filters).hasError
+    ) {
       return;
     }
 
@@ -1242,13 +1369,219 @@ export class TableComponent<
     );
   }
 
+  private resetTableFilters(): void {
+    if (!this.table || !this.table.filters) {
+      return;
+    }
+
+    Object.keys(this.table.filters).forEach((field) => {
+      if (this.appliedFilters && this.appliedFilters[field]) {
+        this.table.filters[field] = structuredClone(this.appliedFilters[field]);
+      } else {
+        const existing: any = this.table.filters[field];
+        let defaultMatchMode = FilterMatchMode.CONTAINS;
+        let defaultOperator = 'and';
+
+        if (Array.isArray(existing) && existing.length > 0) {
+          defaultMatchMode = existing[0]?.matchMode || FilterMatchMode.CONTAINS;
+          defaultOperator = existing[0]?.operator || 'and';
+        } else if (existing && typeof existing === 'object') {
+          defaultMatchMode = existing.matchMode || FilterMatchMode.CONTAINS;
+        }
+
+        this.table.filters[field] = [
+          {
+            value: null,
+            matchMode: defaultMatchMode,
+            operator: defaultOperator,
+          },
+        ];
+      }
+    });
+
+    const columns = this.columnsData()?.columns || [];
+    columns.forEach((col: any) => {
+      const field = col.field;
+      if (field && !this.table.filters[field]) {
+        this.table.filters[field] = [
+          {
+            value: null,
+            matchMode: FilterMatchMode.CONTAINS,
+            operator: 'and',
+          },
+        ];
+      }
+    });
+  }
+
+  private clearInvalidConstraintValues(filters: Record<string, any>): void {
+    if (!this.table?.filters) {
+      return;
+    }
+
+    Object.keys(filters).forEach((field) => {
+      const tableMeta: any = this.table.filters[field];
+      if (Array.isArray(tableMeta)) {
+        tableMeta.forEach((c: any) => {
+          if (typeof c?.value === 'string') {
+            if (c.value.trim().length === 0) {
+              c.value = null;
+            } else if (c.value.startsWith(' ')) {
+              c.value = c.value.trimStart();
+            }
+          }
+        });
+      } else if (tableMeta && typeof tableMeta === 'object') {
+        const val = tableMeta.value;
+        if (typeof val === 'string') {
+          if (val.trim().length === 0) {
+            tableMeta.value = null;
+          } else if (val.startsWith(' ')) {
+            tableMeta.value = val.trimStart();
+          }
+        }
+      }
+    });
+  }
+
+  public onColumnFilterShow(cf: ColumnFilter, field?: string): void {
+    this.activeColumnFilter = cf;
+    const targetField = field || cf?.field;
+    if (targetField && this.table?.filters) {
+      if (this.appliedFilters && this.appliedFilters[targetField]) {
+        this.table.filters[targetField] = structuredClone(
+          this.appliedFilters[targetField],
+        );
+      } else {
+        const existing: any = this.table.filters[targetField];
+        let defaultMatchMode = FilterMatchMode.CONTAINS;
+        let defaultOperator = 'and';
+
+        if (Array.isArray(existing) && existing.length > 0) {
+          defaultMatchMode = existing[0]?.matchMode || FilterMatchMode.CONTAINS;
+          defaultOperator = existing[0]?.operator || 'and';
+        } else if (existing && typeof existing === 'object') {
+          defaultMatchMode = existing.matchMode || FilterMatchMode.CONTAINS;
+        }
+
+        this.table.filters[targetField] = [
+          {
+            value: null,
+            matchMode: defaultMatchMode,
+            operator: defaultOperator,
+          },
+        ];
+      }
+      (cf as any).cd?.markForCheck();
+    }
+  }
+
+  public onColumnFilterHide(field?: string): void {
+    if (this.activeColumnFilter?.field === field || !field) {
+      this.activeColumnFilter = null;
+    }
+
+    if (!this.table?.filters) {
+      return;
+    }
+
+    if (field) {
+      if (this.appliedFilters && this.appliedFilters[field]) {
+        this.table.filters[field] = structuredClone(this.appliedFilters[field]);
+      } else {
+        const existing: any = this.table.filters[field];
+        let defaultMatchMode = FilterMatchMode.CONTAINS;
+        let defaultOperator = 'and';
+
+        if (Array.isArray(existing) && existing.length > 0) {
+          defaultMatchMode = existing[0]?.matchMode || FilterMatchMode.CONTAINS;
+          defaultOperator = existing[0]?.operator || 'and';
+        } else if (existing && typeof existing === 'object') {
+          defaultMatchMode = existing.matchMode || FilterMatchMode.CONTAINS;
+        }
+
+        this.table.filters[field] = [
+          {
+            value: null,
+            matchMode: defaultMatchMode,
+            operator: defaultOperator,
+          },
+        ];
+      }
+    } else {
+      this.resetTableFilters();
+    }
+  }
+
+  private hasLeadingOrEmptySpaceFilter(filters: Record<string, any>): {
+    hasError: boolean;
+    isLeadingSpace?: boolean;
+    isEmptySpace?: boolean;
+    isMultipleSpaces?: boolean;
+  } {
+    if (!filters) {
+      return { hasError: false };
+    }
+
+    let isLeading = false;
+    let isEmpty = false;
+    let isMultiple = false;
+
+    const checkValue = (val: any) => {
+      if (typeof val === 'string' && val.length > 0) {
+        if (val.trim().length === 0) {
+          isEmpty = true;
+        } else if (val.startsWith(' ')) {
+          isLeading = true;
+        } else if (/ {2,}/.test(val) || /\s{2,}/.test(val)) {
+          isMultiple = true;
+        }
+      }
+    };
+
+    for (const field of Object.keys(filters)) {
+      const filterMeta = filters[field];
+      if (Array.isArray(filterMeta)) {
+        for (const c of filterMeta) {
+          checkValue(c?.value);
+          if (Array.isArray(c?.value)) {
+            c.value.forEach(checkValue);
+          }
+        }
+      } else if (filterMeta && typeof filterMeta === 'object') {
+        checkValue(filterMeta.value);
+        if (Array.isArray(filterMeta.value)) {
+          filterMeta.value.forEach(checkValue);
+        }
+      }
+    }
+
+    return {
+      hasError: isEmpty || isLeading || isMultiple,
+      isLeadingSpace: isLeading,
+      isEmptySpace: isEmpty,
+      isMultipleSpaces: isMultiple,
+    };
+  }
+
   private hasValidFilters(filters: Record<string, any>): boolean {
     return Object.keys(filters).some((field) => {
       const filterMeta = filters[field];
       if (Array.isArray(filterMeta) && filterMeta.length > 0) {
         return filterMeta.some(
           (c: any) =>
-            c.value !== null && c.value !== undefined && c.value !== '',
+            c.value !== null &&
+            c.value !== undefined &&
+            c.value !== '' &&
+            (typeof c.value !== 'string' || c.value.trim() !== ''),
+        );
+      } else if (filterMeta && typeof filterMeta === 'object') {
+        return (
+          filterMeta.value !== null &&
+          filterMeta.value !== undefined &&
+          filterMeta.value !== '' &&
+          (typeof filterMeta.value !== 'string' ||
+            filterMeta.value.trim() !== '')
         );
       }
       return false;
@@ -1333,7 +1666,11 @@ export class TableComponent<
 
         if (Array.isArray(constraints) && constraints.length > 0) {
           const validConstraints = constraints.filter(
-            (c) => c.value !== null && c.value !== undefined && c.value !== '',
+            (c) =>
+              c.value !== null &&
+              c.value !== undefined &&
+              c.value !== '' &&
+              (typeof c.value !== 'string' || c.value.trim() !== ''),
           );
 
           if (validConstraints.length > 0) {
@@ -1342,9 +1679,13 @@ export class TableComponent<
               .map((constraint, index) => {
                 const operator =
                   constraint.operator?.toUpperCase() === 'OR' ? 'OR' : 'AND';
+                const trimmedValue =
+                  typeof constraint.value === 'string'
+                    ? constraint.value.trim()
+                    : constraint.value;
                 const condition = this.mapMatchModeToOperator(
                   constraint.matchMode,
-                  constraint.value,
+                  trimmedValue,
                 );
                 return index === 0 ? condition : `${operator} ${condition}`;
               })
@@ -1356,8 +1697,9 @@ export class TableComponent<
       });
     }
 
-    if (this.searchValue) {
-      payload.filterMap['searchKey'] = this.searchValue;
+    const trimmedSearch = this.searchValue ? this.searchValue.trim() : '';
+    if (trimmedSearch) {
+      payload.filterMap['searchKey'] = trimmedSearch;
     }
 
     return payload;

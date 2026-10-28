@@ -21,8 +21,15 @@
         style="display: none"
       />
       <app-button
+        [buttonLabel]="'Sync OpenOrg'"
+        [icon]="'pi pi-sync'"
+        [isLoading]="isSyncing"
+        (btnClick)="openConfirmSyncModal()"
+      ></app-button>
+      <app-button
         [buttonLabel]="'Import CSV'"
         [icon]="'pi pi-upload'"
+        [buttonVariant]="'outlined'"
         (btnClick)="fileInput.click()"
       ></app-button>
     </div>
@@ -34,6 +41,91 @@
     [loading]="historyLoading"
     (visibleChange)="visible = $event"
   ></app-history-drawer>
+
+  <!-- OpenOrg Synchronization Confirmation Modal -->
+  <p-dialog
+    [(visible)]="showConfirmSyncModal"
+    [modal]="true"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [focusOnShow]="false"
+    header="Authorize OpenOrg Directory Synchronization"
+    styleClass="roles-access__confirm-dialog"
+    [style]="{ width: '580px', maxWidth: '96vw' }"
+    [breakpoints]="{ '960px': '75vw', '640px': '92vw', '480px': '96vw', '360px': '98vw' }"
+    [contentStyle]="{ 'max-height': '72vh', 'overflow-y': 'auto' }"
+  >
+    <div class="confirm-modal-body">
+      <div class="confirm-modal-banner">
+        <div class="confirm-modal-banner__icon-wrap confirm-modal-banner__icon-wrap--sync">
+          <i class="pi pi-shield"></i>
+        </div>
+        <div class="confirm-modal-banner__text">
+          <h3>Permission Request: Launch Sync Runner</h3>
+          <p>
+            HireAssist will synchronize your user accounts, roles, departments, and designations directly with OpenOrg.
+          </p>
+        </div>
+      </div>
+
+      <div class="confirm-modal-notice confirm-modal-notice--info">
+        <i class="pi pi-wifi"></i>
+        <div>
+          <strong>Why is this permission needed?</strong><br />
+          OpenOrg operates securely on the internal office network (<code>192.168.3.75</code>), which external cloud servers cannot reach directly. Continuing authorizes HireAssist to invoke the local sync runner on your machine using your network connection.
+        </div>
+      </div>
+
+      <div class="confirm-modal-rules">
+        <div class="rule-item rule-item--update">
+          <i class="pi pi-check-circle"></i>
+          <div>
+            <strong>Automated Sync:</strong> Fetches all active employees from OpenOrg and provisions or updates their profiles and roles in HireAssist.
+          </div>
+        </div>
+        <div class="rule-item rule-item--protected">
+          <i class="pi pi-shield"></i>
+          <div>
+            <strong>Protected Accounts:</strong> Super Admins and Candidates are preserved and will not be altered.
+          </div>
+        </div>
+        <div class="rule-item rule-item--deactivate">
+          <i class="pi pi-info-circle"></i>
+          <div>
+            <strong>Safe Deactivation:</strong> Organization users no longer active in OpenOrg will be safely deactivated.
+          </div>
+        </div>
+        <div class="rule-item rule-item--active-check">
+          <i class="pi pi-lock"></i>
+          <div>
+            <strong>Active Recruitment Guard:</strong> Users currently assigned to active recruitments will not be removed or interrupted.
+          </div>
+        </div>
+      </div>
+
+      <div class="confirm-modal-notice confirm-modal-notice--warn">
+        <i class="pi pi-exclamation-circle"></i>
+        <div>
+          <strong>Prerequisites:</strong> Please ensure your device is connected to the office network (WiFi/LAN or VPN). When prompted by your browser, click <strong>"Open HireAssist Sync Bridge"</strong>.
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <app-button
+        buttonLabel="Cancel"
+        buttonVariant="outlined"
+        (btnClick)="cancelOpenOrgSync()"
+      ></app-button>
+      <app-button
+        buttonLabel="Authorize & Start Sync"
+        icon="pi pi-sync"
+        [isLoading]="isSyncing"
+        (btnClick)="proceedWithOpenOrgSync()"
+      ></app-button>
+    </ng-template>
+  </p-dialog>
 
   <!-- Re-upload CSV Warning Confirmation Modal -->
   <p-dialog

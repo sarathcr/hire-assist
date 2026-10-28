@@ -371,8 +371,7 @@
         padding: 0;
 
         ::ng-deep {
-          app-button,
-          .roles-access__button {
+          app-button {
             width: 100%;
             display: flex;
             margin: 0;
@@ -381,6 +380,27 @@
             .p-button {
               width: 100% !important;
               justify-content: center !important;
+              white-space: nowrap !important;
+            }
+          }
+
+          .roles-access__button {
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+            margin: 0 !important;
+            padding: 0 !important;
+
+            app-button {
+              width: 100% !important;
+              display: flex !important;
+
+              .p-button {
+                width: 100% !important;
+                justify-content: center !important;
+                white-space: nowrap !important;
+              }
             }
           }
         }

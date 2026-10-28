@@ -74,6 +74,7 @@
                   pInputText
                   type="text"
                   [(ngModel)]="searchValue"
+                  (keydown)="onSearchKeydown($event)"
                   (input)="onSearch($event)"
                   placeholder="Search keyword"
                 />
@@ -159,10 +160,13 @@
             @if (headerColumn.hasTextFilter) {
               @if (headerColumn.filterAlias === "textFilter") {
                 <p-columnFilter
+                  #cf
                   type="text"
                   field="{{ headerColumn.field }}"
                   display="menu"
                   hideOnClear="true"
+                  (onShow)="onColumnFilterShow(cf, headerColumn.field)"
+                  (onHide)="onColumnFilterHide(headerColumn.field)"
                 >
                   <ng-template pTemplate="filtericon">
                     @if (activeFilters.has(headerColumn.field)) {
@@ -171,13 +175,33 @@
                       <i class="pi pi-filter"></i>
                     }
                   </ng-template>
+                  <ng-template
+                    pTemplate="filter"
+                    let-filterConstraint="filterConstraint"
+                    let-filter="filterCallback"
+                  >
+                    <input
+                      pInputText
+                      type="text"
+                      [ngModel]="filterConstraint.value"
+                      (keydown)="onTextFilterKeydown($event)"
+                      (input)="onTextFilterInput($event, filterConstraint)"
+                      (paste)="onTextFilterPaste($event, filterConstraint)"
+                      (keydown.enter)="filter(filterConstraint.value)"
+                      placeholder="Search"
+                      class="p-inputtext w-full"
+                    />
+                  </ng-template>
                 </p-columnFilter>
               }
               @if (headerColumn.filterAlias === "selectFilter") {
                 <p-columnFilter
+                  #cf
                   field="{{ headerColumn.field }}"
                   display="menu"
                   hideOnClear="true"
+                  (onShow)="onColumnFilterShow(cf, headerColumn.field)"
+                  (onHide)="onColumnFilterHide(headerColumn.field)"
                   [matchMode]="
                     headerColumn.hasMultiStatus ? undefined : 'equals'
                   "
@@ -209,9 +233,12 @@
               }
               @if (headerColumn.filterAlias === "selectFilterSchedule") {
                 <p-columnFilter
+                  #cf
                   field="{{ headerColumn.field }}"
                   display="menu"
                   hideOnClear="true"
+                  (onShow)="onColumnFilterShow(cf, headerColumn.field)"
+                  (onHide)="onColumnFilterHide(headerColumn.field)"
                   [matchMode]="
                     headerColumn.hasMultiStatus ? undefined : 'equals'
                   "
@@ -243,9 +270,12 @@
               }
               @if (headerColumn.filterAlias === "selectFilterEnrolled") {
                 <p-columnFilter
+                  #cf
                   field="{{ headerColumn.field }}"
                   display="menu"
                   hideOnClear="true"
+                  (onShow)="onColumnFilterShow(cf, headerColumn.field)"
+                  (onHide)="onColumnFilterHide(headerColumn.field)"
                   [matchMode]="
                     headerColumn.hasMultiStatus ? undefined : 'equals'
                   "
@@ -277,10 +307,13 @@
               }
               @if (headerColumn.filterAlias === "scoreFilter") {
                 <p-columnFilter
+                  #cf
                   type="numeric"
                   field="{{ headerColumn.field }}"
                   display="menu"
                   hideOnClear="true"
+                  (onShow)="onColumnFilterShow(cf, headerColumn.field)"
+                  (onHide)="onColumnFilterHide(headerColumn.field)"
                 >
                   <ng-template pTemplate="filtericon">
                     @if (activeFilters.has(headerColumn.field)) {
@@ -301,7 +334,7 @@
                       [ngModel]="filterConstraint.value"
                       (ngModelChange)="
                         onScoreFilterChange(
-                          $event,
+                           $event,
                           filterConstraint,
                           scoreInput
                         )
@@ -322,9 +355,12 @@
               }
               @if (headerColumn.filterAlias === "statusFilter") {
                 <p-columnFilter
+                  #cf
                   [field]="headerColumn.field"
                   display="menu"
                   hideOnClear="true"
+                  (onShow)="onColumnFilterShow(cf, headerColumn.field)"
+                  (onHide)="onColumnFilterHide(headerColumn.field)"
                   [matchMode]="
                     headerColumn.hasMultiStatus ? undefined : 'equals'
                   "
@@ -362,11 +398,14 @@
               }
               @if (headerColumn.filterAlias === "dateFilter") {
                 <p-columnFilter
+                  #cf
                   type="date"
                   field="date"
                   display="menu"
                   class="ml-auto"
                   hideOnClear="true"
+                  (onShow)="onColumnFilterShow(cf, headerColumn.field)"
+                  (onHide)="onColumnFilterHide(headerColumn.field)"
                   ><ng-template pTemplate="filtericon">
                     @if (activeFilters.has(headerColumn.field)) {
                       <i class="pi pi-filter-fill"></i>

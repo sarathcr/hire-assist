@@ -105,6 +105,9 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public historyEvents: any[] = [];
   public historyLoading = false;
 
+  public isSyncing = false;
+  public showConfirmSyncModal = false;
+
   public showConfirmUploadModal = false;
   public selectedCsvFile: File | null = null;
   public selectedCsvFileName = '';
@@ -566,6 +569,75 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         this.handleImportError(rawError);
       },
     });
+  }
+
+  
+  public openConfirmSyncModal() {
+    this.showConfirmSyncModal = true;
+  }
+
+  public cancelOpenOrgSync() {
+    this.showConfirmSyncModal = false;
+  }
+
+  public proceedWithOpenOrgSync() {
+    this.showConfirmSyncModal = false;
+    this.isSyncing = true;
+
+    const resourceUrl = this.userService.getResourceUrl();
+    const pushUrl = resourceUrl + '/sync-openorg-push';
+
+    // Directly trigger the local sync tool via protocol handler without failed background probes
+    this.launchProtocolSync(pushUrl);
+  }
+
+  private launchProtocolSync(pushUrl: string) {
+    const protocolUrl = 'hireassist://sync?pushUrl=' + encodeURIComponent(pushUrl);
+    window.location.href = protocolUrl;
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Sync Tool Triggered',
+      detail:
+        'Launching local OpenOrg sync tool on your machine. Fetching users from office network and pushing to HireAssist...',
+      life: 6000,
+    });
+
+    setTimeout(() => {
+      this.isSyncing = false;
+      this.collectionService.getCollection(true);
+      this.getAllUsers(this.currentPayload);
+    }, 4500);
+  }
+
+  private handleSyncSuccess(res: any, source: string) {
+    const createdCount = res?.createdCount ?? 0;
+    const updatedCount = res?.updatedCount ?? 0;
+    const deactivatedCount = res?.deactivatedCount ?? 0;
+    const total = res?.totalProcessed ?? (createdCount + updatedCount);
+
+    let detailMsg =
+      'Successfully synchronized ' +
+      total +
+      ' user' +
+      (total > 1 ? 's' : '') +
+      ' from OpenOrg (' +
+      createdCount +
+      ' created, ' +
+      updatedCount +
+      ' updated';
+    if (deactivatedCount > 0) {
+      detailMsg += ', ' + deactivatedCount + ' deactivated';
+    }
+    detailMsg += ').';
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'OpenOrg Sync Successful (' + source + ')',
+      detail: detailMsg,
+    });
+    this.collectionService.getCollection(true);
+    this.getAllUsers(this.currentPayload);
   }
 
   public handleImportError(rawError: string) {

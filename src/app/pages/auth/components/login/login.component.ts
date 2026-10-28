@@ -49,22 +49,26 @@ export class LoginComponent implements OnInit {
   public slides: Slide[] = [
     {
       title: 'Streamline Your Hiring Process',
-      description: 'Efficiently manage candidates, interviews, and assessments all in one place.',
+      description:
+        'Efficiently manage candidates, interviews, and assessments all in one place.',
       icon: '👥',
     },
     {
       title: 'Smart Candidate Assessment',
-      description: 'Evaluate candidates with comprehensive tools and real-time analytics.',
+      description:
+        'Evaluate candidates with comprehensive tools and real-time analytics.',
       icon: '📊',
     },
     {
       title: 'Collaborative Interview Management',
-      description: 'Coordinate with your team and schedule interviews seamlessly.',
+      description:
+        'Coordinate with your team and schedule interviews seamlessly.',
       icon: '🤝',
     },
     {
       title: 'Data-Driven Decisions',
-      description: 'Make informed hiring decisions with detailed insights and reports.',
+      description:
+        'Make informed hiring decisions with detailed insights and reports.',
       icon: '📈',
     },
   ];
@@ -176,7 +180,10 @@ export class LoginComponent implements OnInit {
         const num = Number(r);
         if (!isNaN(num) && num > 0) return num;
         if (typeof r === 'string') {
-          const clean = r.trim().toLowerCase().replace(/[\s_]+/g, '');
+          const clean = r
+            .trim()
+            .toLowerCase()
+            .replace(/[\s_]+/g, '');
           const roleMap: Record<string, RolesEnum> = {
             superadmin: RolesEnum.SuperAdmin,
             admin: RolesEnum.Admin,
