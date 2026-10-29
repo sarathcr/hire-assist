@@ -145,7 +145,7 @@ $spacing: (
   gap: clamp(1.5rem, 3vw, 2.5rem);
   // background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.04) 0%, rgba(248, 250, 252, 0) 50%),
   //             radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.04) 0%, rgba(248, 250, 252, 0) 50%);
-  background-color: #f8fafc;
+  background-color: var(--dashboard-main-background-color, #f8fafc);
   background-attachment: fixed;
   font-family:
     "Inter",
@@ -661,7 +661,7 @@ $spacing: (
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: white;
+    background: var(--color-white, white);
     box-shadow:
       0 4px 6px -1px rgba(0, 0, 0, 0.05),
       0 2px 4px -1px rgba(0, 0, 0, 0.03);
@@ -1597,4 +1597,191 @@ $spacing: (
 :host {
   display: block;
   width: 100%;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  .dashboard-container {
+    background-color: var(--dashboard-main-background-color, #0b0f19) !important;
+    color: #f8fafc;
+
+    .dashboard-header {
+      .header-left {
+        .dashboard-title {
+          color: #f8fafc !important;
+        }
+        .dashboard-subtitle {
+          color: #94a3b8 !important;
+        }
+      }
+
+      .header-actions {
+        .date-badge {
+          background: #111827 !important;
+          border-color: #1e293b !important;
+          color: #94a3b8 !important;
+
+          i {
+            color: #60a5fa !important;
+          }
+        }
+      }
+    }
+
+    .quick-actions-section {
+      .quick-action-btn {
+        background: #111827 !important;
+        border-color: #1e293b !important;
+
+        &:hover {
+          background: #151f32 !important;
+          border-color: #334155 !important;
+        }
+
+        .btn-title {
+          color: #f8fafc !important;
+        }
+
+        .btn-subtitle {
+          color: #94a3b8 !important;
+        }
+      }
+    }
+
+    .stat-card-modern {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+
+      &:hover {
+        background: #141d2e !important;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
+      }
+
+      .stat-card-label {
+        color: #94a3b8 !important;
+      }
+
+      .stat-card-number {
+        color: #f8fafc !important;
+      }
+
+      .stat-card-footer {
+        border-top-color: #1e293b !important;
+        color: #94a3b8 !important;
+      }
+    }
+
+    .chart-card {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+
+      .panel-header {
+        border-bottom-color: #1e293b !important;
+
+        .panel-title {
+          color: #f8fafc !important;
+        }
+      }
+
+      .chart-legend {
+        color: #94a3b8 !important;
+      }
+    }
+
+    .activity-feed-card {
+      background: #111827 !important;
+      border: 1px solid #1e293b !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+
+      .panel-header {
+        border-bottom-color: #1e293b !important;
+
+        .panel-title {
+          color: #f8fafc !important;
+        }
+
+        .panel-action {
+          color: #60a5fa !important;
+        }
+      }
+
+      .activity-item {
+        &:hover,
+        &.activity-item-rich:hover {
+          background: #172134 !important;
+        }
+
+        &:not(:last-child)::after {
+          background: #1e293b !important;
+          opacity: 1 !important;
+        }
+
+        .activity-content {
+          .activity-message {
+            color: #f8fafc !important;
+            strong {
+              color: #ffffff !important;
+            }
+          }
+
+          .activity-time {
+            color: #94a3b8 !important;
+          }
+
+          .activity-meta-details .meta-pill {
+            .pill-label {
+              i, .label {
+                color: #94a3b8 !important;
+              }
+            }
+            .val {
+              color: #f8fafc !important;
+            }
+          }
+        }
+      }
+    }
+
+    .activity-item {
+      border-bottom-color: #1e293b !important;
+
+      &:hover {
+        background-color: #151f32 !important;
+      }
+
+      .activity-content {
+        .activity-message {
+          color: #f8fafc !important;
+        }
+
+        .activity-time {
+          color: #64748b !important;
+        }
+
+        .activity-meta-details .meta-pill {
+          .pill-label .label {
+            color: #94a3b8 !important;
+          }
+          .val {
+            color: #f8fafc !important;
+          }
+        }
+      }
+    }
+
+    .empty-state {
+      .empty-icon-wrapper {
+        background: #1e293b !important;
+        color: #94a3b8 !important;
+      }
+      h3 {
+        color: #f8fafc !important;
+      }
+      p {
+        color: #94a3b8 !important;
+      }
+    }
+  }
 }

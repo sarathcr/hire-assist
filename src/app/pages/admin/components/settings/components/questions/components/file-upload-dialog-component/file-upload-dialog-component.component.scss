@@ -282,3 +282,59 @@
     }
   }
 }
+
+
+@media (prefers-color-scheme: dark) {
+  ::ng-deep .fileUpload__dialog {
+    .p-dialog-header {
+      background: #111827 !important;
+      border-bottom-color: #1e293b !important;
+      .p-dialog-title {
+        color: #f8fafc !important;
+      }
+    }
+  }
+
+  .file-upload {
+    background: #0b0f19;
+
+    &__container {
+      background: #0b0f19;
+    }
+
+    &__label {
+      color: #f8fafc !important;
+    }
+
+    &__dropzone {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+
+      &:hover {
+        background: #162032 !important;
+        border-color: #3b82f6 !important;
+      }
+    }
+
+    &__title {
+      color: #f8fafc !important;
+    }
+
+    &__subtitle {
+      color: #94a3b8 !important;
+    }
+
+    &__file-preview {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+    }
+
+    &__file-name {
+      color: #f8fafc !important;
+    }
+
+    &__file-size {
+      color: #94a3b8 !important;
+    }
+  }
+}

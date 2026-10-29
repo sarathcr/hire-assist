@@ -1,4 +1,4 @@
-/* You can add global styles to this file, and also import other style files */
+﻿/* You can add global styles to this file, and also import other style files */
 @use "./styles/main.scss";
 @import url("https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Josefin+Sans:ital,wght@0,100;0,300;0,600;1,400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
@@ -80,8 +80,571 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-white: #000000;
-    --dashboard-main-background-color: #847272;
+    --dashboard-main-background-color: #0b0f19;
+    --card-background: #111827;
+    --card-hover-background: #162032;
+    --surface-border: #1e293b;
+    --surface-border-subtle: rgba(255, 255, 255, 0.08);
+
+    // Map surfaces that use --color-white as background to modern dark slate
+    --color-white: #111827;
+
+    // High-contrast modern typography colors
+    --color-black: #f8fafc;
+    --color-dune: #f1f5f9;
+    --color-davy-grey: #94a3b8;
+    --color-grey: #94a3b8;
+    --color-grey-light: rgba(148, 163, 184, 0.35);
+    --color-seperator: #1e293b;
+
+    // Vibrant modern brand colors in dark theme
+    --primary-color: #3b82f6;
+    --secondary-color: #60a5fa;
+    --background-secondary: rgba(59, 130, 246, 0.16);
+    --background-light-grey: rgba(255, 255, 255, 0.04);
+    --background-blue: #3b82f6;
+    --color-warning-secondary: rgba(245, 158, 11, 0.16);
+    --color-light-green: rgba(16, 185, 129, 0.16);
+    --color-success: #10b981;
+    --color-warn: #f59e0b;
+    --color-danger: #ef4444;
+
+    // Page title
+    --page-title-color: #f8fafc;
+  }
+
+  // Base background and typography
+  body,
+  html {
+    background-color: var(--dashboard-main-background-color, #0b0f19);
+    color: var(--color-black, #f8fafc);
+  }
+
+  // Sleek modern dark scrollbars
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #334155 #0b0f19;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0b0f19;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+    border: 2px solid #0b0f19;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+  }
+
+  // Global Dialogs & Modals
+  .p-dialog {
+    background: #111827 !important;
+    border: 1px solid #1e293b !important;
+    color: #f8fafc !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75) !important;
+  }
+
+  .p-dialog-header {
+    background: #111827 !important;
+    color: #f8fafc !important;
+    border-bottom: 1px solid #1e293b !important;
+    box-shadow: none !important;
+
+    .p-dialog-title {
+      color: #f8fafc !important;
+    }
+
+    .p-dialog-header-actions button {
+      color: #94a3b8 !important;
+      &:hover {
+        background: #1e293b !important;
+        color: #f8fafc !important;
+      }
+    }
+  }
+
+  .p-dialog-content {
+    background: #111827 !important;
+    color: #f1f5f9 !important;
+  }
+
+  .p-dialog-footer {
+    background: #111827 !important;
+    border-top: 1px solid #1e293b !important;
+    box-shadow: none !important;
+  }
+
+  .p-dialog-mask {
+    background-color: rgba(3, 7, 18, 0.75) !important;
+    backdrop-filter: blur(4px) !important;
+  }
+
+  // Global Popovers
+  .p-popover {
+    background: #161f32 !important;
+    border: 1px solid #1e293b !important;
+    color: #f8fafc !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
+
+    .p-popover-content {
+      background: #161f32 !important;
+      color: #f8fafc !important;
+
+      .p-button {
+        color: #e2e8f0 !important;
+
+        &:hover:not(:disabled) {
+          background-color: #1e293b !important;
+          color: #60a5fa !important;
+        }
+      }
+    }
+  }
+
+  // Global Form Inputs
+  .p-inputtext,
+  input.p-inputtext,
+  textarea.p-inputtext,
+  .p-select,
+  .p-multiselect {
+    background: #0d1424 !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+
+    &::placeholder {
+      color: #64748b !important;
+    }
+
+    &:focus,
+    &.p-focus {
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+    }
+  }
+
+  // Floating Labels
+  .p-floatlabel label {
+    color: #94a3b8 !important;
+  }
+
+  .p-floatlabel-on:has(input:focus, .p-inputwrapper-focus) label {
+    color: #60a5fa !important;
+  }
+
+  // PrimeNG Select & MultiSelect Overlays
+  .p-select-overlay,
+  .p-multiselect-overlay,
+  .p-autocomplete-overlay {
+    background: #161f32 !important;
+    border: 1px solid #1e293b !important;
+    color: #f8fafc !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
+
+    .p-select-option,
+    .p-multiselect-option {
+      color: #e2e8f0 !important;
+      border-radius: 6px;
+      margin: 2px 4px;
+
+      &:hover,
+      &.p-focus {
+        background: #1e293b !important;
+        color: #ffffff !important;
+      }
+
+      &.p-select-option-selected,
+      &.p-multiselect-option-selected {
+        background: rgba(59, 130, 246, 0.2) !important;
+        color: #60a5fa !important;
+      }
+    }
+
+    .p-select-header,
+    .p-multiselect-header {
+      background: #161f32 !important;
+      border-bottom: 1px solid #1e293b !important;
+      color: #94a3b8 !important;
+    }
+  }
+
+  // DatePicker Panel
+  .p-datepicker-panel {
+    background: #161f32 !important;
+    border: 1px solid #1e293b !important;
+    color: #f8fafc !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
+
+    .p-datepicker-header {
+      background: #161f32 !important;
+      border-bottom: 1px solid #1e293b !important;
+      color: #f8fafc !important;
+
+      button {
+        color: #94a3b8 !important;
+        &:hover {
+          background: #1e293b !important;
+          color: #f8fafc !important;
+        }
+      }
+    }
+
+    table {
+      th {
+        color: #94a3b8 !important;
+      }
+      td > span {
+        color: #f1f5f9 !important;
+        &:hover {
+          background: #1e293b !important;
+        }
+        &.p-highlight,
+        &.p-datepicker-day-selected {
+          background: #3b82f6 !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4) !important;
+        }
+      }
+    }
+  }
+
+  // Ensure solid buttons have pure white text in dark theme
+  .p-button:not(.p-button-outlined):not(.p-button-text):not(.p-button-secondary) {
+    color: #ffffff !important;
+  }
+
+  // Empty data card
+  .empty-data {
+    background-color: #111827 !important;
+    border-color: #1e293b !important;
+    color: #94a3b8 !important;
+  }
+
+  // Instruction builder theme & icon overlay panels
+  .instruction-theme-select-panel,
+  .instruction-icon-select-panel {
+    background: #161f32 !important;
+    border-color: #1e293b !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6) !important;
+
+    .p-select-option {
+      &:hover,
+      &.p-focus {
+        background: #1e293b !important;
+      }
+      &.p-select-option-selected {
+        background: rgba(59, 130, 246, 0.2) !important;
+        color: #60a5fa !important;
+      }
+    }
+
+    .theme-option-row .theme-option-name,
+    .icon-option-row .icon-option-name {
+      color: #f8fafc !important;
+    }
+
+    .icon-option-row .icon-glyph-badge {
+      background: #1e293b !important;
+      border-color: #334155 !important;
+      color: #94a3b8 !important;
+    }
+  }
+
+  // Global Typography: Headings, Titles & Text visibility
+  h1, h2, h3, h4, h5, h6,
+  .page-title,
+  .settings-page__title,
+  .roles-access__title,
+  .roles-access h1,
+  .dashboard-title,
+  [class*="__title"],
+  [class*="-title"] {
+    color: #f8fafc !important;
+  }
+
+  .dashboard-subtitle,
+  .page-subtitle,
+  [class*="__subtitle"],
+  [class*="-subtitle"] {
+    color: #94a3b8 !important;
+  }
+
+  // Ensure card and content backgrounds are sleek elevated dark slate
+  .settings-page__content,
+  .inner-sidebar,
+  .logs-card,
+  .chart-card,
+  .stat-card-modern,
+  .quick-action-btn,
+  .round-card,
+  [class*="__table-section"],
+  [class*="__rounds-section"] {
+    background: #111827 !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+  }
+
+  .settings-page__sidebar {
+    background: transparent !important;
+  }
+
+  // Table action buttons & ellipsis menu icons
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      color: #f1f5f9 !important;
+      font-weight: 700 !important;
+      background: #111827 !important;
+      border-bottom: 1px solid #1e293b !important;
+
+      p-columnfilter .p-column-filter-menu-button {
+        color: #cbd5e1 !important;
+      }
+    }
+
+    .p-datatable-tbody > tr {
+      background: #111827 !important;
+      & > td {
+        color: #f8fafc !important;
+        border-bottom: 1px solid #1e293b !important;
+      }
+      &:hover {
+        background: #172134 !important;
+      }
+    }
+
+    .pi-ellipsis-v {
+      color: #94a3b8 !important;
+      &:hover {
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  // Button outline styles in dark mode
+  .p-button-outlined,
+  .p-button.p-button-outlined {
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+    background: transparent !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.06) !important;
+      color: #ffffff !important;
+      border-color: #64748b !important;
+    }
+  }
+
+  // Global Menu, PanelMenu, Submenu & Popup Menu Styles
+  .p-menu,
+  .p-menu-overlay,
+  .p-tieredmenu,
+  .p-contextmenu {
+    background: #111827 !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+
+    .p-menu-list,
+    .p-tieredmenu-root-list {
+      background: transparent !important;
+      padding: 4px !important;
+    }
+
+    .p-menu-item-link,
+    .p-menuitem-link {
+      border-radius: 6px !important;
+      color: #e2e8f0 !important;
+      padding: 8px 12px !important;
+      transition: background-color 0.15s ease, color 0.15s ease !important;
+
+      .p-menu-item-label,
+      .p-menuitem-text,
+      .p-menu-item-icon,
+      .p-menuitem-icon {
+        color: #e2e8f0 !important;
+      }
+
+      &:hover,
+      &.p-focus,
+      &:focus {
+        background: #172134 !important;
+        color: #60a5fa !important;
+
+        .p-menu-item-label,
+        .p-menuitem-text,
+        .p-menu-item-icon,
+        .p-menuitem-icon {
+          color: #60a5fa !important;
+        }
+      }
+    }
+
+    .p-menu-submenu-label,
+    .p-submenu-header {
+      background: transparent !important;
+      color: #64748b !important;
+      font-weight: 700 !important;
+    }
+
+    .p-menuitem-separator {
+      border-top: 1px solid #1e293b !important;
+    }
+  }
+
+  // Sidenav link hover states in dark mode
+  .sidebar__nav .p-panelmenu .p-panelmenu-item-link,
+  .sidebar__nav .p-panelmenu .p-panelmenu-header-link {
+    &:hover:not(.p-panelmenu-item-link-active),
+    &:focus:not(.p-panelmenu-item-link-active) {
+      background: #172134 !important;
+      color: #f8fafc !important;
+
+      .p-panelmenu-header-label,
+      .p-panelmenu-item-label,
+      .p-menuitem-text {
+        color: #f8fafc !important;
+      }
+
+      .p-panelmenu-submenu-icon,
+      .p-panelmenu-header-icon,
+      .p-panelmenu-item-icon {
+        color: #60a5fa !important;
+      }
+    }
+  }
+
+  // Activity feed card (Recent Activity)
+  .activity-feed-card {
+    background: #111827 !important;
+    border: 1px solid #1e293b !important;
+    color: #f8fafc !important;
+  }
+
+  // Bottom fixed pagination bars across pages
+  .assessment-list__footer,
+  .coordinator-assessment__footer,
+  .frontdesk-assessment__footer,
+  .interviewer-assessment__footer,
+  [class*="__footer"]:has(app-pagination) {
+    background-color: #0d1322 !important;
+    border-top: 1px solid #1e293b !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  // Dynamic Dialogs & Modals Specificity
+  .instruction-builder-dialog.p-dialog,
+  .choice-dialog.p-dialog,
+  .fileUpload__dialog.p-dialog,
+  .manage-duplicate-records-dialog.p-dialog,
+  .image-preview-dialog.p-dialog,
+  .select-panel-dialog-modal.p-dialog,
+  .user__dialog.p-dialog,
+  .panel-form.p-dialog,
+  .batch-form.p-dialog,
+  .standard-dialog-wrapper .p-dialog,
+  .reassign-dialog-wrapper .p-dialog {
+    background: #111827 !important;
+    border: 1px solid #1e293b !important;
+    color: #f8fafc !important;
+
+    .p-dialog-header {
+      background: #111827 !important;
+      border-bottom: 1px solid #1e293b !important;
+
+      .p-dialog-title {
+        color: #f8fafc !important;
+      }
+    }
+
+    .p-dialog-content {
+      background: #0b0f19 !important;
+      color: #f8fafc !important;
+    }
+
+    .p-dialog-footer {
+      background: #111827 !important;
+      border-top: 1px solid #1e293b !important;
+    }
+  }
+
+  // Dashboard & Recruitment Cards across all modules
+  .recruitment-card {
+    background: #111827 !important;
+    border: 1px solid #1e293b !important;
+    color: #f8fafc !important;
+
+    &:hover {
+      background: #141d2e !important;
+      border-color: #3b82f6 !important;
+      box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    .recruitment-card__title {
+      color: #f8fafc !important;
+    }
+
+    .recruitment-card__meta,
+    .recruitment-card__meta-item,
+    .recruitment-card__stat-label,
+    .recruitment-card__department,
+    .recruitment-card__date {
+      color: #94a3b8 !important;
+    }
+
+    .recruitment-card__stat-value {
+      color: #f8fafc !important;
+    }
+
+    .recruitment-card__progress-bg {
+      background: #1e293b !important;
+    }
+
+    .recruitment-card__footer {
+      background: transparent !important;
+      border-top: 1px solid #1e293b !important;
+    }
+  }
+
+  // Assessment flow containers & sections
+  .assessment-schedule__header-card,
+  .assessment-schedule__content-wrapper,
+  .assessment-round__section,
+  .assessment-round__section-header,
+  .assessment-round,
+  .assessment-detail__stat-card,
+  .assessment-detail__rounds-section,
+  .assessment-detail__table-section,
+  .round-card,
+  .summary-header,
+  .metric-card,
+  .summary-card,
+  .candidate-panel,
+  .select-quesionset-step__accordion-section,
+  .select-quesionset-step__accordion-header,
+  .validation-dashboard,
+  .validation-tabs {
+    background: #111827 !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+  }
+
+  // Settings & instruction builder cards
+  .instruction-dialog,
+  .instruction-dialog__top-bar,
+  .instruction-dialog__footer,
+  .builder-canvas .section-card,
+  .builder-canvas .component-palette,
+  .preview-screen-mockup {
+    background: #111827 !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
   }
 }
 
@@ -351,7 +914,7 @@ app-input-text-iftalabel {
   visibility: visible !important;
   z-index: 11000 !important;
   pointer-events: auto !important;
-  background: #ffffff !important;
+  background: var(--color-white, #ffffff) !important;
 }
 
 // Make date picker inputs show a pointer cursor and be responsive to taps on mobile
@@ -598,4 +1161,3 @@ body:has(.p-dynamicdialog-mask) app-root {
     }
   }
 }
-

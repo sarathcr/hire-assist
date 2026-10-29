@@ -1548,3 +1548,26 @@
   to { transform: rotate(360deg); }
 }
 
+
+@media (prefers-color-scheme: dark) {
+  .candidate-detail {
+    border-color: #1e293b !important;
+
+    &__header,
+    &__section,
+    &__card {
+      border-color: #1e293b !important;
+    }
+
+    &__empty-card-icon-wrapper {
+      background: #1e293b !important;
+    }
+
+    &__viewer-loader,
+    &__viewer-error {
+      background: #111827 !important;
+      border: 1px solid #1e293b !important;
+      color: #f8fafc !important;
+    }
+  }
+}

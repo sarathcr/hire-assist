@@ -72,3 +72,40 @@
     }
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  :host ::ng-deep {
+    .p-breadcrumb {
+      .p-breadcrumb-list {
+        .p-breadcrumb-home-item .p-breadcrumb-item-link,
+        .p-breadcrumb-home .p-breadcrumb-item-link {
+          color: #94a3b8 !important;
+          &:hover {
+            color: #60a5fa !important;
+          }
+        }
+
+        .p-breadcrumb-separator {
+          color: #475569 !important;
+        }
+
+        .p-breadcrumb-item {
+          .p-breadcrumb-item-link {
+            color: #94a3b8;
+            &:hover {
+              color: #60a5fa !important;
+            }
+          }
+
+          &.p-disabled {
+            .p-breadcrumb-item-link,
+            .p-breadcrumb-item-label {
+              color: #f8fafc !important;
+              font-weight: 600 !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -665,3 +665,64 @@
     }
   }
 }
+
+
+@media (prefers-color-scheme: dark) {
+  .question-form {
+    &__container {
+      background: #0b0f19;
+    }
+
+    &__section {
+      background: #111827;
+      border-color: #1e293b;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+      &:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+        border-color: #334155;
+      }
+    }
+
+    &__section-header {
+      background: #162032 !important;
+      border-bottom-color: #1e293b !important;
+    }
+
+    &__section-title {
+      color: #f8fafc !important;
+    }
+
+    &__toggle-label {
+      color: #cbd5e1 !important;
+    }
+
+    &__toggle-group {
+      border-top-color: #1e293b !important;
+    }
+
+    &__option-item {
+      background: #0d1424 !important;
+      border-color: #1e293b !important;
+
+      &:hover {
+        background: #162032 !important;
+        border-color: #3b82f6 !important;
+      }
+    }
+
+    &__add-option {
+      border-top-color: #1e293b !important;
+    }
+
+    &__helper-text {
+      color: #94a3b8 !important;
+    }
+
+    &__footer {
+      background: #111827 !important;
+      border-top-color: #1e293b !important;
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4) !important;
+    }
+  }
+}

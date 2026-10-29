@@ -1,5 +1,5 @@
 .logs-container {
-  background-color: #f8fafc;
+  background-color: var(--dashboard-main-background-color, #f8fafc);
   min-height: calc(100vh - 64px);
 
   .logs-header {
@@ -206,6 +206,36 @@
           padding: 0.75rem 0.5rem !important;
         }
       }
+    }
+  }
+}
+
+
+@media (prefers-color-scheme: dark) {
+  .logs-container {
+    background-color: var(--dashboard-main-background-color, #0b0f19) !important;
+
+    .logs-header {
+      .back-link {
+        color: #94a3b8 !important;
+        &:hover {
+          color: #60a5fa !important;
+        }
+      }
+
+      .page-title {
+        color: #f8fafc !important;
+      }
+
+      .page-subtitle {
+        color: #94a3b8 !important;
+      }
+    }
+
+    .logs-card {
+      background: #111827 !important;
+      border: 1px solid #1e293b !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
     }
   }
 }

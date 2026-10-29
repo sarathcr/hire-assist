@@ -194,3 +194,105 @@
     border-top: 1px solid #f1f5f9;
   }
 }
+@media (prefers-color-scheme: dark) {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background: #0f172a;
+      color: #f1f5f9;
+      font-weight: 700;
+      border-bottom: 1px solid #1e293b;
+
+      .p-sortable-column-icon,
+      p-sorticon,
+      p-sorticon i,
+      p-sorticon svg,
+      .p-datatable-sort-icon {
+        color: #94a3b8 !important;
+        fill: currentColor !important;
+      }
+
+      &:hover {
+        .p-sortable-column-icon,
+        p-sorticon,
+        p-sorticon i,
+        p-sorticon svg,
+        .p-datatable-sort-icon {
+          color: #f8fafc !important;
+        }
+      }
+
+      &.p-datatable-column-sorted {
+        background-color: #172134;
+        color: #60a5fa;
+
+        .p-sortable-column-icon,
+        p-sorticon,
+        p-sorticon i,
+        p-sorticon svg,
+        .p-datatable-sort-icon {
+          color: #3b82f6 !important;
+        }
+      }
+
+      p-columnfilter .p-column-filter-menu-button {
+        color: #94a3b8 !important;
+
+        i,
+        svg {
+          color: #94a3b8 !important;
+        }
+
+        &:hover {
+          background: #1e293b !important;
+          color: #f8fafc !important;
+          i,
+          svg {
+            color: #f8fafc !important;
+          }
+        }
+
+        &.p-column-filter-menu-button-active,
+        &.p-column-filter-menu-button-open {
+          background: rgba(59, 130, 246, 0.2) !important;
+          color: #60a5fa !important;
+          i,
+          svg {
+            color: #60a5fa !important;
+          }
+        }
+      }
+    }
+
+    .p-datatable-tbody > tr {
+      background: #111827;
+
+      &:hover {
+        background: #172134 !important;
+      }
+
+      & > td {
+        border-bottom: 1px solid #1e293b;
+        color: #f8fafc;
+      }
+    }
+
+    .p-datatable-loading-overlay {
+      background: rgba(11, 15, 25, 0.75) !important;
+    }
+  }
+
+  .p-column-filter-overlay {
+    background: #161f32;
+    border: 1px solid #1e293b;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+    color: #f8fafc;
+
+    .p-column-filter-operator {
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .p-column-filter-buttonbar {
+      border-top: 1px solid #1e293b;
+    }
+  }
+}

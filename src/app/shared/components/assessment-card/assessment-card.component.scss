@@ -520,3 +520,96 @@
     }
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  .assessment-card {
+    background: #111827 !important;
+    border: 1px solid #1e293b !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+
+    &:hover {
+      background: #141d2e !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    &__over-title {
+      color: #64748b !important;
+    }
+
+    &__title {
+      color: #f8fafc !important;
+    }
+
+    &__description {
+      color: #94a3b8 !important;
+    }
+
+    &__timeline {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #94a3b8 !important;
+
+      i {
+        color: #60a5fa !important;
+      }
+    }
+
+    &__progress-title {
+      color: #64748b !important;
+    }
+
+    &__progress-value {
+      color: #f1f5f9 !important;
+    }
+
+    ::ng-deep .p-progressbar {
+      background: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    &__footer {
+      border-top: 1px solid #1e293b !important;
+
+      &_rounds__item,
+      &_users__item {
+        color: #cbd5e1 !important;
+      }
+
+      &_users__name {
+        color: #f1f5f9 !important;
+      }
+
+      &_users__role-badge {
+        color: #94a3b8 !important;
+      }
+    }
+
+    ::ng-deep {
+      .assessment-card__kebab {
+        background: rgba(255, 255, 255, 0.06) !important;
+        color: #94a3b8 !important;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.14) !important;
+          color: #f8fafc !important;
+        }
+      }
+
+      .assessment-card__status-tag {
+        &.p-tag-success {
+          background: rgba(59, 130, 246, 0.16) !important;
+          color: #60a5fa !important;
+          border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        }
+        &.p-tag-info {
+          background: rgba(16, 185, 129, 0.16) !important;
+          color: #34d399 !important;
+          border: 1px solid rgba(16, 185, 129, 0.3) !important;
+        }
+        &.p-tag-secondary {
+          background: rgba(239, 68, 68, 0.16) !important;
+          color: #f87171 !important;
+          border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        }
+      }
+    }
+  }
+}

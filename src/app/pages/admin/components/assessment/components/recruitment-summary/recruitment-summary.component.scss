@@ -1877,3 +1877,59 @@
     page-break-inside: avoid;
   }
 }
+
+
+@media (prefers-color-scheme: dark) {
+  .summary-header {
+    background: #111827 !important;
+    border-color: #1e293b !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .metric-card {
+    background: #111827 !important;
+    border-color: #1e293b !important;
+
+    &:hover {
+      background: #162032 !important;
+      border-color: #3b82f6 !important;
+    }
+
+    .metric-icon {
+      background: #1e293b !important;
+      border-color: #334155 !important;
+      color: #60a5fa !important;
+    }
+
+    .metric-value {
+      color: #f8fafc !important;
+    }
+
+    .metric-label {
+      color: #94a3b8 !important;
+    }
+  }
+
+  .summary-card,
+  .round-card,
+  .candidate-card,
+  .stat-card,
+  .summary-content,
+  .candidate-panel {
+    background: #111827 !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+  }
+
+  .summary-title,
+  .section-title,
+  .card-title {
+    color: #f8fafc !important;
+  }
+
+  .summary-subtitle,
+  .section-subtitle,
+  .card-subtitle {
+    color: #94a3b8 !important;
+  }
+}

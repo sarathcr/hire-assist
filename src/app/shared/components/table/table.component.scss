@@ -736,3 +736,112 @@
     table-layout: auto !important;
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  .table {
+    &__row--disabled {
+      background-color: #0f172a !important;
+      td {
+        color: #475569 !important;
+      }
+    }
+
+    ::ng-deep {
+      .p-inputtext {
+        border-color: #1e293b !important;
+        background: #0d1424 !important;
+        color: #f8fafc !important;
+
+        &::placeholder {
+          color: #64748b !important;
+        }
+
+        &:focus {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        }
+      }
+
+      .p-iconfield .p-inputicon {
+        color: #64748b !important;
+      }
+
+      .table__name-text {
+        color: #f8fafc !important;
+      }
+
+      .table__previous-badge {
+        background: rgba(99, 102, 241, 0.16) !important;
+        color: #a5b4fc !important;
+        border-color: rgba(99, 102, 241, 0.35) !important;
+
+        i {
+          color: #a5b4fc !important;
+        }
+
+        &:hover {
+          background: rgba(99, 102, 241, 0.25) !important;
+          color: #c7d2fe !important;
+          box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4) !important;
+        }
+      }
+
+      .p-datatable-tbody > tr.table__row--has-previous:not(.p-highlight) {
+        background-color: rgba(99, 102, 241, 0.08) !important;
+
+        &::after {
+          background: #818cf8 !important;
+        }
+
+        &:hover,
+        &:hover > td {
+          background-color: rgba(99, 102, 241, 0.15) !important;
+        }
+      }
+
+      .p-datatable-tbody > tr.p-highlight {
+        background: rgba(59, 130, 246, 0.15) !important;
+
+        &::after {
+          background: #3b82f6 !important;
+        }
+
+        td {
+          border-bottom: 1px solid #1e293b !important;
+          color: #f8fafc !important;
+
+          .table__previous-badge {
+            background: rgba(99, 102, 241, 0.25) !important;
+            border-color: rgba(99, 102, 241, 0.45) !important;
+            color: #c7d2fe !important;
+
+            i,
+            span {
+              color: #c7d2fe !important;
+            }
+          }
+        }
+
+        &:hover,
+        &:hover > td {
+          background: rgba(59, 130, 246, 0.22) !important;
+        }
+      }
+      .p-button.p-button-plain,
+      .p-button[icon="pi pi-ellipsis-v"],
+      button:has(.pi-ellipsis-v),
+      .pi-ellipsis-v {
+        color: #e2e8f0 !important;
+
+        &:hover:not(:disabled) {
+          background-color: #1e293b !important;
+          color: #60a5fa !important;
+        }
+      }
+
+      .p-datatable-tbody > tr > td {
+        color: #f8fafc !important;
+      }
+    }
+  }
+}

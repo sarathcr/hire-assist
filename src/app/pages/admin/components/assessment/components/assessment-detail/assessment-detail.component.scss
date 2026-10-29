@@ -2223,3 +2223,89 @@
   from { opacity: 0; transform: translate(-50%, -95%); }
   to { opacity: 1; transform: translate(-50%, -100%); }
 }
+@media (prefers-color-scheme: dark) {
+  .assessment-detail {
+    &__stat-card,
+    &__stat-card.skeleton-card {
+      background: #111827 !important;
+      border: 1px solid #1e293b !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+
+      &:hover {
+        background: #141d2e !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6) !important;
+      }
+
+      .assessment-detail__stat-label {
+        color: #94a3b8 !important;
+      }
+
+      .assessment-detail__stat-value {
+        color: #f8fafc !important;
+      }
+    }
+
+    .round-card,
+    .round-card--skeleton {
+      background: #111827 !important;
+      border: 1px solid #1e293b !important;
+      color: #f8fafc !important;
+
+      .round-card__title {
+        color: #f8fafc !important;
+      }
+
+      .round-card__badge {
+        background: rgba(59, 130, 246, 0.16) !important;
+        color: #60a5fa !important;
+      }
+    }
+
+    &__rounds-section {
+      background: #111827 !important;
+      border: 1px solid #1e293b !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    &__rounds-header {
+      border-bottom-color: #1e293b !important;
+    }
+
+    &__rounds-title {
+      color: #f8fafc !important;
+    }
+
+    .tab-button,
+    button.tab-button {
+      background: #111827 !important;
+      border-color: #1e293b !important;
+      color: #94a3b8 !important;
+
+      &:hover {
+        background: #172134 !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+      }
+
+      &--active {
+        background: rgba(59, 130, 246, 0.16) !important;
+        color: #60a5fa !important;
+        border-color: rgba(59, 130, 246, 0.4) !important;
+      }
+    }
+
+    &__table-section {
+      background: #111827 !important;
+      border: 1px solid #1e293b !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    &__table-title {
+      color: #f8fafc !important;
+    }
+
+    &__table-subtitle {
+      color: #94a3b8 !important;
+    }
+  }
+}

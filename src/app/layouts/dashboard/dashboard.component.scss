@@ -15,7 +15,7 @@
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     flex-grow: 1;
-    background-color: #f8fafc;
+    background-color: var(--dashboard-main-background-color, #f8fafc);
     height: calc(100vh - 92px);
     &__content {
       flex-grow: 1;

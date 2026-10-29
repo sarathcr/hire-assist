@@ -15,6 +15,7 @@
     <div class="roles-access__button">
       <input
         #fileInput
+        id="rolesAccessCsvFileInput"
         type="file"
         accept=".csv"
         (change)="onCsvFileSelected($event)"
@@ -255,4 +256,248 @@
       ></app-button>
     </ng-template>
   </p-dialog>
+
+  <!-- One-Time Guided Setup Walkthrough Modal for OpenOrg Connector -->
+  <p-dialog
+    [(visible)]="showBridgeWalkthroughModal"
+    [modal]="true"
+    [closable]="!isSetupInProgress"
+    [closeOnEscape]="false"
+    [dismissableMask]="false"
+    [draggable]="false"
+    [resizable]="false"
+    [focusOnShow]="false"
+    header="One-Time Setup: OpenOrg Connector"
+    styleClass="roles-access__bridge-dialog"
+    [style]="{ width: '640px', maxWidth: '96vw' }"
+    [breakpoints]="{ '960px': '80vw', '640px': '94vw', '480px': '96vw' }"
+    (onHide)="closeBridgeWalkthroughModal()"
+  >
+    <div class="bridge-modal-body">
+      <!-- Banner -->
+      <div class="bridge-modal-banner">
+        <div class="bridge-modal-banner__icon">
+          <i class="pi pi-link"></i>
+        </div>
+        <div class="bridge-modal-banner__text">
+          <h3>Connect to Office Network</h3>
+          <p>
+            OpenOrg runs securely inside your office network (<code>192.168.3.75</code>). A lightweight 1-click background connector bridges users to HireAssist.
+          </p>
+        </div>
+      </div>
+
+      <!-- Error Fallback Card (Shown if any error occurs) -->
+      <div class="bridge-error-card" *ngIf="hasBridgeError || setupStage === 'error'">
+        <div class="bridge-error-card__header">
+          <div class="bridge-error-icon">
+            <i class="pi pi-exclamation-triangle"></i>
+          </div>
+          <div class="bridge-error-text">
+            <h4>Connector Setup Encountered an Issue</h4>
+            <p>{{ bridgeErrorMessage || 'Unable to establish local bridge connection.' }}</p>
+          </div>
+        </div>
+
+        <div class="bridge-csv-suggestion-box">
+          <div class="bridge-csv-suggestion-box__content">
+            <i class="pi pi-file-excel"></i>
+            <div>
+              <strong>Recommended Alternative:</strong>
+              <p>
+                You can synchronize all organization users right now by uploading an OpenOrg CSV file. This bypasses the need for local background tools and works immediately.
+              </p>
+            </div>
+          </div>
+          <div class="bridge-csv-suggestion-actions">
+            <button type="button" class="bridge-primary-csv-btn" (click)="switchToCsvUpload()">
+              <i class="pi pi-upload"></i> Upload OpenOrg CSV Instead
+            </button>
+            <button type="button" class="bridge-secondary-retry-btn" (click)="retryAutomaticSetup()">
+              <i class="pi pi-refresh"></i> Retry Setup
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- OS Switcher Tabs (Only when not actively running or in error) -->
+      <div class="bridge-os-tabs" *ngIf="!isSetupInProgress && !hasBridgeError">
+        <button
+          type="button"
+          class="bridge-os-tab"
+          [class.active]="selectedBridgeOs === 'windows'"
+          (click)="selectedBridgeOs = 'windows'"
+        >
+          <i class="pi pi-microsoft"></i> Windows
+        </button>
+        <button
+          type="button"
+          class="bridge-os-tab"
+          [class.active]="selectedBridgeOs === 'linux'"
+          (click)="selectedBridgeOs = 'linux'"
+        >
+          <i class="pi pi-desktop"></i> Ubuntu / Linux
+        </button>
+      </div>
+
+      <!-- Automated 1-Click Setup Primary Flow -->
+      <div class="bridge-auto-setup-card" *ngIf="setupStage === 'idle' && !hasBridgeError">
+        <div class="bridge-auto-setup-card__header">
+          <div class="bridge-auto-icon">
+            <i class="pi pi-bolt"></i>
+          </div>
+          <div class="bridge-auto-title">
+            <h4>Automatic 1-Click Setup (Recommended)</h4>
+            <p>
+              Downloads, automatically extracts to AppData, and starts the connector silently in the background with zero terminal popups.
+            </p>
+          </div>
+        </div>
+        <button type="button" class="bridge-start-btn" (click)="startAutomaticSetup()">
+          <i class="pi pi-play"></i> Start 1-Click Setup for {{ selectedBridgeOs === 'windows' ? 'Windows' : 'Ubuntu' }}
+        </button>
+
+        <div class="bridge-idle-csv-hint">
+          <span>Prefer not to run local background tools?</span>
+          <button type="button" class="bridge-csv-link-btn" (click)="switchToCsvUpload()">
+            <i class="pi pi-upload"></i> Upload OpenOrg CSV File Instead
+          </button>
+        </div>
+      </div>
+
+      <!-- Setup In-Progress & Visual Progress Bar -->
+      <div class="bridge-progress-card" *ngIf="setupStage !== 'idle' && setupStage !== 'error'">
+        <div class="bridge-progress-card__header">
+          <div class="bridge-progress-spinner" *ngIf="setupStage !== 'connected'">
+            <i class="pi pi-spin pi-spinner"></i>
+          </div>
+          <div class="bridge-progress-spinner bridge-progress-spinner--success" *ngIf="setupStage === 'connected'">
+            <i class="pi pi-check"></i>
+          </div>
+          <div class="bridge-progress-header-text">
+            <h4>
+              <span *ngIf="setupStage === 'downloading'">Downloading 1-Click Installer...</span>
+              <span *ngIf="setupStage === 'extracting'">Activating Background Service...</span>
+              <span *ngIf="setupStage === 'connected'">Connector Ready!</span>
+            </h4>
+            <p>{{ setupStatusText }}</p>
+          </div>
+        </div>
+
+        <div class="bridge-progress-bar-wrap">
+          <div class="bridge-progress-bar" [style.width.%]="setupProgressPercent"></div>
+        </div>
+        <div class="bridge-progress-percent">{{ setupProgressPercent }}% Completed</div>
+
+        <!-- Action instruction when installer is downloaded -->
+        <div class="bridge-action-callout" *ngIf="setupStage === 'extracting'">
+          <i class="pi pi-info-circle"></i>
+          <div *ngIf="selectedBridgeOs === 'windows'">
+            <strong>One click to activate:</strong> Open the downloaded <code>Install-HireAssist-Connector.bat</code> file from your browser downloads. It will silently extract and launch the daemon in the background.
+          </div>
+          <div *ngIf="selectedBridgeOs === 'linux'">
+            <strong>One step to activate:</strong> Run <code>chmod +x install-connector.sh && ./install-connector.sh</code> in terminal. It will extract and start the daemon.
+          </div>
+        </div>
+      </div>
+
+      <!-- Lock Notice: Modal is locked while setup is running -->
+      <div class="bridge-lock-notice" *ngIf="isSetupInProgress && setupStage !== 'connected' && !hasBridgeError">
+        <i class="pi pi-lock"></i>
+        <span>Setup is in progress. Please do not close or navigate away until the connector is activated.</span>
+      </div>
+
+      <!-- Manual Zip Fallback Toggle -->
+      <div class="bridge-manual-toggle" *ngIf="!isSetupInProgress && !hasBridgeError">
+        <button type="button" class="bridge-link-btn" (click)="showManualSteps = !showManualSteps">
+          <i [class]="showManualSteps ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
+          {{ showManualSteps ? 'Hide manual zip package' : 'Or download manual zip package' }}
+        </button>
+      </div>
+
+      <!-- Manual Steps Windows -->
+      <div class="bridge-steps" *ngIf="!isSetupInProgress && !hasBridgeError && showManualSteps && selectedBridgeOs === 'windows'">
+        <div class="bridge-step">
+          <div class="bridge-step__number">1</div>
+          <div class="bridge-step__content">
+            <strong>Download Manual Package</strong>
+            <p>Download the pre-configured zip package for Windows.</p>
+            <a [href]="bridgeDownloadUrlWindows" class="bridge-download-btn" target="_blank">
+              <i class="pi pi-download"></i> Download Windows Connector (.zip)
+            </a>
+          </div>
+        </div>
+
+        <div class="bridge-step">
+          <div class="bridge-step__number">2</div>
+          <div class="bridge-step__content">
+            <strong>Extract and Run</strong>
+            <p>
+              Extract the zip and double-click <code>start-daemon-windows.bat</code>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Manual Steps Linux -->
+      <div class="bridge-steps" *ngIf="!isSetupInProgress && !hasBridgeError && showManualSteps && selectedBridgeOs === 'linux'">
+        <div class="bridge-step">
+          <div class="bridge-step__number">1</div>
+          <div class="bridge-step__content">
+            <strong>Download Manual Package</strong>
+            <p>Download the native connector package for Ubuntu / Debian.</p>
+            <a [href]="bridgeDownloadUrlLinux" class="bridge-download-btn" target="_blank">
+              <i class="pi pi-download"></i> Download Ubuntu Connector (.zip)
+            </a>
+          </div>
+        </div>
+
+        <div class="bridge-step">
+          <div class="bridge-step__number">2</div>
+          <div class="bridge-step__content">
+            <strong>Extract and Run Background Service</strong>
+            <p>Extract the zip, open a terminal in the folder and run:</p>
+            <div class="bridge-code-box">
+              <code>chmod +x *.sh && ./start-daemon-linux.sh</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Status Bar -->
+      <div class="bridge-status-bar" [class.bridge-status-bar--connected]="isBridgeConnected" *ngIf="!hasBridgeError">
+        <div class="status-indicator">
+          <span class="pulse-dot" *ngIf="!isBridgeConnected"></span>
+          <i class="pi pi-check-circle" *ngIf="isBridgeConnected"></i>
+        </div>
+        <div class="status-text">
+          <span *ngIf="!isBridgeConnected">Listening for connector on port 5123... (Sync will start automatically)</span>
+          <span *ngIf="isBridgeConnected"><strong>Connector detected!</strong> Starting synchronization now...</span>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="bridge-modal-footer">
+        <app-button
+          buttonLabel="Upload OpenOrg CSV Instead"
+          icon="pi pi-upload"
+          (btnClick)="switchToCsvUpload()"
+        ></app-button>
+        <app-button
+          *ngIf="isSetupInProgress && !isBridgeConnected"
+          buttonLabel="Cancel Setup"
+          buttonVariant="outlined"
+          (btnClick)="cancelSetup()"
+        ></app-button>
+        <app-button
+          *ngIf="!isSetupInProgress || isBridgeConnected || hasBridgeError"
+          buttonLabel="Close"
+          buttonVariant="outlined"
+          (btnClick)="closeBridgeWalkthroughModal(true)"
+        ></app-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
 </div>

@@ -162,3 +162,11 @@
     }
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  .interviewer-modal {
+    background: #111827 !important;
+    border: 1px solid #1e293b;
+    color: #f8fafc;
+  }
+}

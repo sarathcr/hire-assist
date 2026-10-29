@@ -1894,3 +1894,38 @@
     }
   }
 }
+
+@media (prefers-color-scheme: dark) {
+  .assessment-round__section {
+    background: #111827 !important;
+    border-color: #1e293b !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+
+    &:hover {
+      border-color: #334155 !important;
+    }
+  }
+
+  .assessment-round__section-header {
+    background: #111827 !important;
+    border-bottom-color: #1e293b !important;
+    color: #f8fafc !important;
+  }
+
+  .assessment-round__header-icon {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+  }
+
+  .assessment-round__section__title {
+    color: #f8fafc !important;
+  }
+
+  .assessment-round__section__description {
+    color: #94a3b8 !important;
+  }
+
+  .assessment-round {
+    background: #111827 !important;
+  }
+}
