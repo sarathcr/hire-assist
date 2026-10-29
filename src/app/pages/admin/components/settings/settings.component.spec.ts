@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+﻿import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router, NavigationEnd } from '@angular/router';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { SettingsComponent } from './settings.component';
@@ -74,9 +74,6 @@ describe('SettingsComponent', () => {
     expect(component.activeMenuItem).toBe(5);
     expect(component.pageTitle).toBe('Roles and Access');
 
-    (component as any).updateActiveMenuItem('/admin/settings/departments');
-    expect(component.activeMenuItem).toBe(6);
-    expect(component.pageTitle).toBe('Departments');
   });
 });
 

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+﻿import { CommonModule } from '@angular/common';
 import {
   ChangeDetectorRef,
   Component,
@@ -57,7 +57,7 @@ export class SideNavComponent implements OnChanges, OnInit, OnDestroy {
     { label: 'Batches', icon: 'pi pi-calendar', route: '/admin/settings/batches' },
     { label: 'Panels', icon: 'pi pi-clone', route: '/admin/settings/panels' },
     { label: 'Panel Assignment', icon: 'pi pi-user-plus', route: '/admin/settings/panel-assignment' },
-    { label: 'Departments', icon: 'pi pi-building', route: '/admin/settings/departments' },
+    { label: 'Roles & Access', icon: 'pi pi-users', route: '/admin/settings/roles-access' },
   ];
 
   public isSettingsActive(): boolean {

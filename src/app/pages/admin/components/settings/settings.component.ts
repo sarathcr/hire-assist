@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, DestroyRef } from '@angular/core';
+﻿import { Component, OnInit, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { MenuItem } from 'primeng/api';
@@ -81,13 +81,7 @@ export class SettingsComponent implements OnInit {
           routerLink: ['/admin/settings/roles-access'],
           index: 5,
         },
-        {
-          label: 'Departments',
-          icon: 'pi pi-building',
-          route: '/admin/settings/departments',
-          routerLink: ['/admin/settings/departments'],
-          index: 6,
-        },
+
       ],
     },
   ];
@@ -112,9 +106,7 @@ export class SettingsComponent implements OnInit {
     } else if (url.includes('/admin/settings/roles-access')) {
       this.activeMenuItem = 5;
       this.pageTitle = 'Roles and Access';
-    } else if (url.includes('/admin/settings/departments')) {
-      this.activeMenuItem = 6;
-      this.pageTitle = 'Departments';
+
     } else if (url.includes('/admin/settings/panel-assignment')) {
       this.activeMenuItem = 4;
       this.pageTitle = 'Assign Panel';

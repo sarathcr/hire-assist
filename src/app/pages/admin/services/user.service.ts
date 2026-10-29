@@ -37,8 +37,4 @@ export class UserService extends ApiService<any> {
   public importUsers(file: File) {
     return this.uploadFileAndReturnData<any>(file, 'import');
   }
-
-  public syncOpenOrg() {
-    return this.httpClient.post<any>(`${this.getResourceUrl()}/sync-openorg`, {});
-  }
 }

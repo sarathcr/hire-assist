@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 import { AuthComponent } from './layouts/auth/auth.component';
 import { DashboardComponent } from './layouts/dashboard/dashboard.component';
 import { AdminDashboardComponent } from './pages/admin/components/admin-dashboard/admin-dashboard.component';
@@ -9,7 +9,6 @@ import { RecruitmentSummaryComponent } from './pages/admin/components/assessment
 import { InterviewsComponent } from './pages/admin/components/interviews/interviews.component';
 import { RolesAccessComponent } from './pages/admin/components/roles-access/roles-access.component';
 import { BatchesComponent } from './pages/admin/components/settings/components/batches/batches.component';
-import { DepartmentsComponent } from './pages/admin/components/settings/components/departments/departments.component';
 import { InterviewerPanelAssignmentComponent } from './pages/admin/components/settings/components/interviewer-panel-assignment/interviewer-panel-assignment.component';
 import { PanelsComponent } from './pages/admin/components/settings/components/panels/panels.component';
 import { QuestionsComponent } from './pages/admin/components/settings/components/questions/questions.component';
@@ -205,7 +204,7 @@ export const routes: Routes = [
             component: RolesAccessComponent,
             data: { breadcrumb: 'Roles & Access' },
           },
-          { path: 'departments', component: DepartmentsComponent, data: { breadcrumb: 'Departments' } },
+          { path: 'departments', redirectTo: 'roles-access', pathMatch: 'full' },
           { path: 'panels', component: PanelsComponent, data: { breadcrumb: 'Panels' } },
           {
             path: 'panel-assignment',

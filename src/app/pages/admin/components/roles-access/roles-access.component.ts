@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+﻿/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -105,26 +105,6 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public historyEvents: any[] = [];
   public historyLoading = false;
 
-  public isSyncing = false;
-  public canShowSyncButton = false;
-  public showConfirmSyncModal = false;
-
-  public showBridgeWalkthroughModal = false;
-  public selectedBridgeOs: 'windows' | 'linux' = 'windows';
-  public bridgePollInterval: any = null;
-  public isBridgeConnected = false;
-  public bridgeDownloadUrlWindows = '';
-  public bridgeDownloadUrlLinux = '';
-
-  public isSetupInProgress = false;
-  public setupStage: 'idle' | 'downloading' | 'extracting' | 'connected' | 'error' = 'idle';
-  public setupProgressPercent = 0;
-  public setupStatusText = '';
-  public showManualSteps = false;
-  public hasBridgeError = false;
-  public setupTimeoutTimer: any = null;
-  public bridgeErrorMessage = '';
-
   public showConfirmUploadModal = false;
   public selectedCsvFile: File | null = null;
   public selectedCsvFileName = '';
@@ -148,24 +128,15 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
 
   // LifeCycle Hooks
   ngOnInit(): void {
-    this.canShowSyncButton = this.checkSyncButtonEligibility();
     this.setPaginationEndpoint();
     const initialPayload = getDefaultPayload('RolesAccessComponent');
     this.currentPayload = initialPayload;
     this.getAllUsers(initialPayload);
   }
 
-  @HostListener('window:resize')
-  onWindowResize() {
-    this.canShowSyncButton = this.checkSyncButtonEligibility();
-  }
   ngOnDestroy() {
     if (this.ref) {
       this.ref.close();
-    }
-    if (this.bridgePollInterval) {
-      clearInterval(this.bridgePollInterval);
-      this.bridgePollInterval = null;
     }
   }
   // Public Methods
@@ -562,21 +533,10 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
         if (this.fileInputRef?.nativeElement) {
           this.fileInputRef.nativeElement.value = '';
         }
-        const createdCount = res?.createdCount ?? 0;
-        const updatedCount = res?.updatedCount ?? 0;
-        const deactivatedCount = res?.deactivatedCount ?? 0;
-        const total = res?.totalProcessed ?? (createdCount + updatedCount);
-
-        let detailMsg = `Successfully imported ${total} user${total > 1 ? 's' : ''} (${createdCount} created, ${updatedCount} updated`;
-        if (deactivatedCount > 0) {
-          detailMsg += `, ${deactivatedCount} removed`;
-        }
-        detailMsg += ').';
-
         this.messageService.add({
           severity: 'success',
-          summary: 'Import Successful',
-          detail: detailMsg,
+          summary: 'Success',
+          detail: 'Users Imported successfully',
         });
         this.collectionService.getCollection(true);
         this.getAllUsers(this.currentPayload);
@@ -599,498 +559,6 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   
-  public checkSyncButtonEligibility(): boolean {
-    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-      return false;
-    }
-
-    // 1. Must be desktop width (1024px or higher)
-    const width =
-      window.innerWidth ||
-      document.documentElement?.clientWidth ||
-      document.body?.clientWidth ||
-      0;
-    if (width < 1024) {
-      return false;
-    }
-
-    const ua = (navigator.userAgent || '').toLowerCase();
-    const platform = (navigator.platform || '').toLowerCase();
-    const maxTouchPoints = navigator.maxTouchPoints || 0;
-
-    // 2. Hide on mobile devices
-    const isMobile =
-      /android|webos|iphone|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua);
-    if (isMobile) {
-      return false;
-    }
-
-    // 3. Hide on iPads and tablets (iPadOS 13+ reports MacIntel with touch points)
-    const isTablet =
-      /ipad|tablet/i.test(ua) || (platform.includes('mac') && maxTouchPoints > 1);
-    if (isTablet) {
-      return false;
-    }
-
-    // 4. Hide on macOS (MacBook, iMac, Mac mini, Mac Studio)
-    const isMac =
-      /macintosh|mac os x|mac_powerpc/i.test(ua) || platform.includes('mac');
-    if (isMac) {
-      return false;
-    }
-
-    // 5. Allowed exclusively on Windows and Linux/Ubuntu desktops
-    const isWindows = /win/i.test(ua) || platform.includes('win');
-    const isLinuxOrUbuntu =
-      (/linux|ubuntu|debian|x11/i.test(ua) || platform.includes('linux')) &&
-      !ua.includes('android');
-
-    return isWindows || isLinuxOrUbuntu;
-  }
-
-  public openConfirmSyncModal() {
-    this.showConfirmSyncModal = true;
-  }
-
-  public cancelOpenOrgSync() {
-    this.showConfirmSyncModal = false;
-  }
-
-  public async proceedWithOpenOrgSync() {
-    this.showConfirmSyncModal = false;
-    this.isSyncing = true;
-
-    const resourceUrl = this.userService.getResourceUrl();
-    const pushUrl = resourceUrl + '/sync-openorg-push';
-
-    const isBridgeActive = await this.checkLocalBridgeHealth();
-
-    if (isBridgeActive) {
-      await this.performDirectBridgeSync(pushUrl);
-    } else {
-      this.isSyncing = false;
-      this.selectedBridgeOs = this.detectUserOs();
-      this.openBridgeWalkthroughModal();
-    }
-  }
-
-  private async checkLocalBridgeHealth(): Promise<boolean> {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1200);
-      const res = await fetch('http://127.0.0.1:5123/health', {
-        method: 'GET',
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      const data = await res.json();
-      return data?.status === 'Active';
-    } catch {
-      return false;
-    }
-  }
-
-  private async performDirectBridgeSync(pushUrl: string) {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Connecting to OpenOrg',
-      detail: 'Connecting to OpenOrg inside office network and synchronizing users...',
-      life: 5000,
-    });
-
-    try {
-      const res = await fetch('http://127.0.0.1:5123/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ targetUrl: pushUrl }),
-      });
-
-      if (res.ok) {
-        const json = await res.json();
-        this.handleSyncSuccess(json, 'Local Connector');
-      } else {
-        const errJson = await res.json().catch(() => null);
-        throw new Error(errJson?.detail || 'Sync request failed');
-      }
-    } catch (err) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Falling back to Protocol Sync',
-        detail: 'Direct connection failed. Launching protocol runner...',
-        life: 4000,
-      });
-      this.launchProtocolSync(pushUrl);
-    } finally {
-      this.isSyncing = false;
-    }
-  }
-
-  public detectUserOs(): 'windows' | 'linux' {
-    const ua = (window.navigator?.userAgent || '').toLowerCase();
-    if (ua.includes('linux') || ua.includes('ubuntu') || ua.includes('debian')) {
-      return 'linux';
-    }
-    return 'windows';
-  }
-
-  public openBridgeWalkthroughModal() {
-    this.showBridgeWalkthroughModal = true;
-    this.isBridgeConnected = false;
-    this.isSetupInProgress = false;
-    this.setupStage = 'idle';
-    this.setupProgressPercent = 0;
-    this.setupStatusText = '';
-    this.showManualSteps = false;
-    this.hasBridgeError = false;
-    this.bridgeErrorMessage = '';
-
-    const resourceUrl = this.userService.getResourceUrl();
-    this.bridgeDownloadUrlWindows = `${resourceUrl}/sync-bridge/download?os=windows`;
-    this.bridgeDownloadUrlLinux = `${resourceUrl}/sync-bridge/download?os=linux`;
-
-    this.startBridgePolling();
-  }
-
-  public startBridgePolling(enableTimeout: boolean = false) {
-    if (this.bridgePollInterval) {
-      clearInterval(this.bridgePollInterval);
-    }
-
-    if (enableTimeout) {
-      if (this.setupTimeoutTimer) {
-        clearTimeout(this.setupTimeoutTimer);
-      }
-      this.setupTimeoutTimer = setTimeout(() => {
-        if (!this.isBridgeConnected) {
-          this.hasBridgeError = true;
-          this.setupStage = 'error';
-          this.isSetupInProgress = false;
-          this.bridgeErrorMessage =
-            'Connector setup could not complete automatically (remote server package returned 404). Please use the CSV upload option below.';
-          if (this.bridgePollInterval) {
-            clearInterval(this.bridgePollInterval);
-            this.bridgePollInterval = null;
-          }
-        }
-      }, 15000);
-    }
-
-    this.bridgePollInterval = setInterval(async () => {
-      const active = await this.checkLocalBridgeHealth();
-      if (active) {
-        if (this.setupTimeoutTimer) {
-          clearTimeout(this.setupTimeoutTimer);
-          this.setupTimeoutTimer = null;
-        }
-        clearInterval(this.bridgePollInterval);
-        this.bridgePollInterval = null;
-        this.isBridgeConnected = true;
-        this.hasBridgeError = false;
-        this.setupStage = 'connected';
-        this.setupProgressPercent = 100;
-        this.setupStatusText = 'Connector Activated! Synchronizing users...';
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Connector Ready',
-          detail: 'Local OpenOrg connector detected! Starting synchronization...',
-          life: 3000,
-        });
-
-        setTimeout(() => {
-          this.isSetupInProgress = false;
-          this.showBridgeWalkthroughModal = false;
-          this.proceedWithOpenOrgSync();
-        }, 1200);
-      }
-    }, 1500);
-  }
-
-  public async startAutomaticSetup() {
-    this.isSetupInProgress = true;
-    this.hasBridgeError = false;
-    this.bridgeErrorMessage = '';
-    this.setupStage = 'downloading';
-    this.setupProgressPercent = 25;
-    this.setupStatusText = 'Preparing 1-Click Silent Setup...';
-
-    const os = this.selectedBridgeOs;
-    const resourceUrl = this.userService.getResourceUrl();
-    const downloadUrl = `${resourceUrl}/sync-bridge/download?os=${os}`;
-
-    try {
-      this.setupProgressPercent = 50;
-      this.setupStatusText = 'Generating 1-click silent installer...';
-
-      // Check package reachability
-      try {
-        const checkRes = await fetch(downloadUrl, { method: 'HEAD' });
-        if (checkRes.status === 404) {
-          throw new Error('Connector package is currently not available on the remote server (404 Not Found).');
-        }
-      } catch (checkErr: any) {
-        if (checkErr?.message?.includes('404')) {
-          throw checkErr;
-        }
-        // network or CORS issue on HEAD is ignored, proceed with script generation
-      }
-
-      const { content, fileName, mimeType } = this.generateInstallerScript(os, downloadUrl);
-      const blob = new Blob([content], { type: mimeType });
-
-      this.setupProgressPercent = 85;
-      this.setupStatusText = 'Downloading installer file...';
-
-      const downloadLink = document.createElement('a');
-      downloadLink.href = window.URL.createObjectURL(blob);
-      downloadLink.download = fileName;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      window.URL.revokeObjectURL(downloadLink.href);
-
-      this.setupProgressPercent = 100;
-      this.setupStage = 'extracting';
-      this.setupStatusText =
-        os === 'linux'
-          ? 'Downloaded! Run ./install-connector.sh in terminal. It extracts and starts daemon silently.'
-          : 'Downloaded! Click the downloaded Install-HireAssist-Connector.bat file in your browser downloads to activate.';
-
-      this.startBridgePolling(true);
-    } catch (err: any) {
-      this.hasBridgeError = true;
-      this.bridgeErrorMessage =
-        err?.message || 'Unable to download connector. Please verify your connection or use CSV import.';
-      this.setupStage = 'error';
-      this.isSetupInProgress = false;
-    }
-  }
-
-  public retryAutomaticSetup() {
-    this.hasBridgeError = false;
-    this.bridgeErrorMessage = '';
-    this.startAutomaticSetup();
-  }
-
-  public switchToCsvUpload() {
-    this.closeBridgeWalkthroughModal(true);
-    setTimeout(() => {
-      const fileInput =
-        (document.getElementById('rolesAccessCsvFileInput') as HTMLInputElement) ||
-        (document.querySelector('input[type="file"]') as HTMLInputElement);
-      if (fileInput) {
-        fileInput.click();
-      }
-    }, 200);
-  }
-
-  private generateInstallerScript(
-    os: 'windows' | 'linux',
-    downloadUrl: string
-  ): { content: string; fileName: string; mimeType: string } {
-    if (os === 'linux') {
-      const sh = `#!/bin/bash
-set -e
-echo "======================================================="
-echo "  HireAssist OpenOrg Connector - Automatic Setup (Linux)"
-echo "======================================================="
-
-INSTALL_DIR="\$HOME/.local/share/hireassist/syncbridge"
-ZIP_PATH="/tmp/hireassist-bridge-linux.zip"
-DOWNLOAD_URL="${downloadUrl}"
-
-echo "[1/3] Downloading OpenOrg Connector in background..."
-mkdir -p "\$INSTALL_DIR"
-if ! curl -sSL "\$DOWNLOAD_URL" -o "\$ZIP_PATH"; then
-  echo "[ERROR] Failed to download from server. Please upload users via CSV in the portal."
-  exit 1
-fi
-
-echo "[2/3] Extracting files to \$INSTALL_DIR..."
-unzip -q -o "\$ZIP_PATH" -d "\$INSTALL_DIR"
-rm -f "\$ZIP_PATH"
-
-EXE="\$INSTALL_DIR/HireAssist.SyncBridge"
-if [ ! -f "\$EXE" ]; then
-    EXE="\$INSTALL_DIR/linux-x64/HireAssist.SyncBridge"
-fi
-chmod +x "\$EXE" 2>/dev/null || true
-
-echo "[3/3] Starting background daemon on port 5123..."
-pkill -f "HireAssist.SyncBridge" 2>/dev/null || true
-nohup "\$EXE" > "\$INSTALL_DIR/sync-bridge.log" 2>&1 &
-
-AUTOSTART_DIR="\$HOME/.config/autostart"
-mkdir -p "\$AUTOSTART_DIR"
-cat << EOF > "\$AUTOSTART_DIR/hireassist-syncbridge.desktop"
-[Desktop Entry]
-Type=Application
-Exec=\$EXE
-Hidden=false
-NoDisplay=true
-X-GNOME-Autostart-enabled=true
-Name=HireAssist Sync Bridge
-Comment=Background bridge for HireAssist OpenOrg sync
-EOF
-
-echo ""
-echo "======================================================="
-echo "[SUCCESS] HireAssist Connector is now ACTIVE on port 5123!"
-echo "Return to your browser - the setup will automatically complete."
-echo "======================================================="
-sleep 2
-`;
-      return { content: sh, fileName: 'install-connector.sh', mimeType: 'application/x-sh' };
-    } else {
-      const bat = `@echo off
-setlocal enabledelayedexpansion
-title HireAssist - OpenOrg Connector Silent Setup
-
-echo ========================================================
-echo   HireAssist OpenOrg Connector - Automatic Setup
-echo ========================================================
-echo.
-
-:: 1. Check if executable already exists in local source tree
-set "LOCAL_EXE="
-if exist "%~dp0HireAssist.SyncBridge.exe" set "LOCAL_EXE=%~dp0HireAssist.SyncBridge.exe"
-if exist "%~dp0publish\\HireAssist.SyncBridge.exe" set "LOCAL_EXE=%~dp0publish\\HireAssist.SyncBridge.exe"
-if exist "%USERPROFILE%\\source\\repos\\hireassist.security\\Tools\\HireAssist.SyncBridge\\publish\\HireAssist.SyncBridge.exe" set "LOCAL_EXE=%USERPROFILE%\\source\\repos\\hireassist.security\\Tools\\HireAssist.SyncBridge\\publish\\HireAssist.SyncBridge.exe"
-if exist "%USERPROFILE%\\source\\repos\\hireassist.security\\Tools\\HireAssist.SyncBridge\\HireAssist.SyncBridge.exe" set "LOCAL_EXE=%USERPROFILE%\\source\\repos\\hireassist.security\\Tools\\HireAssist.SyncBridge\\HireAssist.SyncBridge.exe"
-
-if defined LOCAL_EXE (
-    echo [FOUND] Using local connector binary: !LOCAL_EXE!
-    powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-Process -Name 'HireAssist.SyncBridge' -ErrorAction SilentlyContinue | Stop-Process -Force"
-    powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process '!LOCAL_EXE!' -WindowStyle Hidden"
-    echo [SUCCESS] Connector started silently on port 5123.
-    timeout /t 2 >nul
-    exit /b 0
-)
-
-set "INSTALL_DIR=%LOCALAPPDATA%\\HireAssist\\SyncBridge"
-set "ZIP_PATH=%TEMP%\\hireassist-bridge-windows.zip"
-set "DOWNLOAD_URL=${downloadUrl}"
-
-echo [1/3] Downloading OpenOrg Connector in background...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; (New-Object System.Net.WebClient).DownloadFile('%DOWNLOAD_URL%', '%ZIP_PATH%')"
-
-if not exist "%ZIP_PATH%" (
-    echo [ERROR] Failed to download connector package from %DOWNLOAD_URL%.
-    echo Please use the OpenOrg CSV upload feature in the web portal instead.
-    echo.
-    pause
-    exit /b 1
-)
-
-echo [2/3] Extracting files to %INSTALL_DIR%...
-if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Path '%ZIP_PATH%' -DestinationPath '%INSTALL_DIR%' -Force"
-del "%ZIP_PATH%" 2>nul
-
-echo [3/3] Starting background daemon on port 5123...
-set "EXE_PATH=%INSTALL_DIR%\\HireAssist.SyncBridge.exe"
-if not exist "%EXE_PATH%" (
-    set "EXE_PATH=%INSTALL_DIR%\\publish\\HireAssist.SyncBridge.exe"
-)
-
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Get-Process -Name 'HireAssist.SyncBridge' -ErrorAction SilentlyContinue | Stop-Process -Force"
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process '%EXE_PATH%' -WindowStyle Hidden"
-
-reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "HireAssistSyncBridge" /d "\"\"%EXE_PATH%\"\"" /f >nul 2>&1
-
-echo.
-echo ========================================================
-echo [SUCCESS] HireAssist OpenOrg Connector is now ACTIVE!
-echo Return to your browser - the setup will automatically complete.
-echo ========================================================
-timeout /t 3 >nul
-exit /b 0
-`;
-      return { content: bat, fileName: 'Install-HireAssist-Connector.bat', mimeType: 'application/x-bat' };
-    }
-  }
-
-  public cancelSetup() {
-    this.isSetupInProgress = false;
-    this.setupStage = 'idle';
-    if (this.setupTimeoutTimer) {
-      clearTimeout(this.setupTimeoutTimer);
-      this.setupTimeoutTimer = null;
-    }
-    if (this.bridgePollInterval) {
-      clearInterval(this.bridgePollInterval);
-      this.bridgePollInterval = null;
-    }
-  }
-
-  public closeBridgeWalkthroughModal(force: boolean = false) {
-    if (this.isSetupInProgress && !this.isBridgeConnected && !force) {
-      return;
-    }
-    this.showBridgeWalkthroughModal = false;
-    this.isSetupInProgress = false;
-    this.setupStage = 'idle';
-    this.hasBridgeError = false;
-    this.bridgeErrorMessage = '';
-    if (this.setupTimeoutTimer) {
-      clearTimeout(this.setupTimeoutTimer);
-      this.setupTimeoutTimer = null;
-    }
-    if (this.bridgePollInterval) {
-      clearInterval(this.bridgePollInterval);
-      this.bridgePollInterval = null;
-    }
-  }
-
-  private launchProtocolSync(pushUrl: string) {
-    const protocolUrl = 'hireassist://sync?pushUrl=' + encodeURIComponent(pushUrl);
-    window.location.href = protocolUrl;
-
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Sync Tool Triggered',
-      detail:
-        'Launching local OpenOrg sync tool on your machine. Fetching users from office network and pushing to HireAssist...',
-      life: 6000,
-    });
-
-    setTimeout(() => {
-      this.isSyncing = false;
-      this.collectionService.getCollection(true);
-      this.getAllUsers(this.currentPayload);
-    }, 4500);
-  }
-
-  private handleSyncSuccess(res: any, source: string) {
-    const createdCount = res?.createdCount ?? 0;
-    const updatedCount = res?.updatedCount ?? 0;
-    const deactivatedCount = res?.deactivatedCount ?? 0;
-    const total = res?.totalProcessed ?? (createdCount + updatedCount);
-
-    let detailMsg =
-      'Successfully synchronized ' +
-      total +
-      ' user' +
-      (total > 1 ? 's' : '') +
-      ' from OpenOrg (' +
-      createdCount +
-      ' created, ' +
-      updatedCount +
-      ' updated';
-    if (deactivatedCount > 0) {
-      detailMsg += ', ' + deactivatedCount + ' deactivated';
-    }
-    detailMsg += ').';
-
-    this.messageService.add({
-      severity: 'success',
-      summary: 'OpenOrg Sync Successful (' + source + ')',
-      detail: detailMsg,
-    });
-    this.collectionService.getCollection(true);
-    this.getAllUsers(this.currentPayload);
-  }
-
   public handleImportError(rawError: string) {
     let cleaned = (rawError || '').replace(/^\[\d+\]\s*(Invalid data\s*)?/i, '').trim();
     if (cleaned.endsWith('!') && !cleaned.includes('\n')) {
@@ -1114,8 +582,9 @@ exit /b 0
     if (lowerText.includes('active recruitment') || lowerText.includes('participating in active recruitments')) {
       this.errorModalTitle = 'Active Recruitment Conflict';
       this.errorModalSubtitle =
-        nonBulletLines[0] ||
-        'The uploaded CSV is missing user(s) currently assigned to active recruitments in the system:';
+        bulletItems.length > 0 && nonBulletLines.length > 0
+          ? nonBulletLines[0]
+          : 'The uploaded CSV is missing user(s) currently assigned to active recruitments in the system:';
       this.errorModalItems = bulletItems;
       this.errorModalTip =
         'These users cannot be removed while participating in active recruitments. Please ensure all active recruitment interviewers, coordinators, panel members, and front desk staff are included in your CSV file before re-uploading.';
@@ -1123,8 +592,9 @@ exit /b 0
     } else if (lowerText.includes('validation failed') || lowerText.includes('validation error')) {
       this.errorModalTitle = 'CSV Validation Failed';
       this.errorModalSubtitle =
-        nonBulletLines[0] ||
-        'The uploaded CSV contains validation errors. Please resolve them and try again:';
+        bulletItems.length > 0 && nonBulletLines.length > 0
+          ? nonBulletLines[0]
+          : 'The uploaded CSV contains validation errors. Please resolve them and try again:';
       this.errorModalItems = bulletItems;
       this.errorModalTip =
         'Required columns are "First Name" (or Name) and "Email". Each row must contain a valid email address and non-empty name (max 150 characters).';
@@ -1132,10 +602,21 @@ exit /b 0
     } else {
       this.errorModalTitle = 'Import Failed';
       this.errorModalSubtitle =
-        nonBulletLines[0] || 'An error occurred while importing users from CSV:';
+        bulletItems.length > 0 && nonBulletLines.length > 0
+          ? nonBulletLines[0]
+          : 'An error occurred while importing users from CSV:';
       this.errorModalItems = bulletItems;
       this.errorModalRawMessage = bulletItems.length === 0 ? cleaned : '';
       this.errorModalTip = null;
+    }
+
+    if (
+      this.errorModalRawMessage &&
+      this.errorModalSubtitle &&
+      this.errorModalRawMessage.trim().toLowerCase().replace(/[:.!\s]/g, '') ===
+        this.errorModalSubtitle.trim().toLowerCase().replace(/[:.!\s]/g, '')
+    ) {
+      this.errorModalRawMessage = '';
     }
 
     this.showErrorModal = true;
