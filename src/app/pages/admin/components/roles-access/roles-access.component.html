@@ -22,6 +22,8 @@
         style="display: none"
       />
       <app-button
+        *ngIf="canShowSyncButton"
+        class="roles-access__sync-btn"
         [buttonLabel]="'Sync OpenOrg'"
         [icon]="'pi pi-sync'"
         [isLoading]="isSyncing"
@@ -109,6 +111,14 @@
         <i class="pi pi-exclamation-circle"></i>
         <div>
           <strong>Prerequisites:</strong> Please ensure your device is connected to the office network (WiFi/LAN or VPN). When prompted by your browser, click <strong>"Open HireAssist Sync Bridge"</strong>.
+        </div>
+      </div>
+
+      <div class="confirm-modal-notice confirm-modal-notice--compatibility">
+        <i class="pi pi-desktop"></i>
+        <div>
+          <strong>Platform & Display Exceptions:</strong><br />
+          Direct OpenOrg synchronization is supported exclusively on <strong>Windows</strong> and <strong>Ubuntu/Linux</strong> desktops with a minimum display width of <strong>1024px</strong>. On <strong>macOS</strong>, <strong>iPads</strong>, or mobile devices, please use the <strong>"Import CSV"</strong> option.
         </div>
       </div>
     </div>
@@ -284,6 +294,13 @@
           <p>
             OpenOrg runs securely inside your office network (<code>192.168.3.75</code>). A lightweight 1-click background connector bridges users to HireAssist.
           </p>
+        </div>
+      </div>
+
+      <div class="confirm-modal-notice confirm-modal-notice--compatibility" style="margin-bottom: 14px;">
+        <i class="pi pi-desktop"></i>
+        <div>
+          <strong>Platform & Display Exceptions:</strong> Direct connector is supported on <strong>Windows</strong> and <strong>Ubuntu/Linux</strong> desktops (1024px+). On <strong>macOS</strong>, <strong>iPads</strong>, or mobile, click <strong>"Upload OpenOrg CSV Instead"</strong> below.
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -106,6 +106,7 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   public historyLoading = false;
 
   public isSyncing = false;
+  public canShowSyncButton = false;
   public showConfirmSyncModal = false;
 
   public showBridgeWalkthroughModal = false;
@@ -147,10 +148,16 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
 
   // LifeCycle Hooks
   ngOnInit(): void {
+    this.canShowSyncButton = this.checkSyncButtonEligibility();
     this.setPaginationEndpoint();
     const initialPayload = getDefaultPayload('RolesAccessComponent');
     this.currentPayload = initialPayload;
     this.getAllUsers(initialPayload);
+  }
+
+  @HostListener('window:resize')
+  onWindowResize() {
+    this.canShowSyncButton = this.checkSyncButtonEligibility();
   }
   ngOnDestroy() {
     if (this.ref) {
@@ -592,6 +599,55 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
   }
 
   
+  public checkSyncButtonEligibility(): boolean {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return false;
+    }
+
+    // 1. Must be desktop width (1024px or higher)
+    const width =
+      window.innerWidth ||
+      document.documentElement?.clientWidth ||
+      document.body?.clientWidth ||
+      0;
+    if (width < 1024) {
+      return false;
+    }
+
+    const ua = (navigator.userAgent || '').toLowerCase();
+    const platform = (navigator.platform || '').toLowerCase();
+    const maxTouchPoints = navigator.maxTouchPoints || 0;
+
+    // 2. Hide on mobile devices
+    const isMobile =
+      /android|webos|iphone|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua);
+    if (isMobile) {
+      return false;
+    }
+
+    // 3. Hide on iPads and tablets (iPadOS 13+ reports MacIntel with touch points)
+    const isTablet =
+      /ipad|tablet/i.test(ua) || (platform.includes('mac') && maxTouchPoints > 1);
+    if (isTablet) {
+      return false;
+    }
+
+    // 4. Hide on macOS (MacBook, iMac, Mac mini, Mac Studio)
+    const isMac =
+      /macintosh|mac os x|mac_powerpc/i.test(ua) || platform.includes('mac');
+    if (isMac) {
+      return false;
+    }
+
+    // 5. Allowed exclusively on Windows and Linux/Ubuntu desktops
+    const isWindows = /win/i.test(ua) || platform.includes('win');
+    const isLinuxOrUbuntu =
+      (/linux|ubuntu|debian|x11/i.test(ua) || platform.includes('linux')) &&
+      !ua.includes('android');
+
+    return isWindows || isLinuxOrUbuntu;
+  }
+
   public openConfirmSyncModal() {
     this.showConfirmSyncModal = true;
   }
@@ -600,22 +656,32 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     this.showConfirmSyncModal = false;
   }
 
-  public async proceedWithOpenOrgSync() {
+  public proceedWithOpenOrgSync() {
     this.showConfirmSyncModal = false;
     this.isSyncing = true;
 
-    const resourceUrl = this.userService.getResourceUrl();
-    const pushUrl = resourceUrl + '/sync-openorg-push';
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Connecting to OpenOrg',
+      detail: 'Connecting to OpenOrg directory server and synchronizing users...',
+      life: 6000,
+    });
 
-    const isBridgeActive = await this.checkLocalBridgeHealth();
-
-    if (isBridgeActive) {
-      await this.performDirectBridgeSync(pushUrl);
-    } else {
-      this.isSyncing = false;
-      this.selectedBridgeOs = this.detectUserOs();
-      this.openBridgeWalkthroughModal();
-    }
+    this.userService.syncOpenOrg().subscribe({
+      next: (response: any) => {
+        this.isSyncing = false;
+        this.handleSyncSuccess(response, 'OpenOrg Server');
+      },
+      error: (err: any) => {
+        this.isSyncing = false;
+        const rawError =
+          err?.error?.message ||
+          err?.error?.detail ||
+          err?.message ||
+          'Failed to synchronize users from OpenOrg. Please ensure the office Cloudflare Tunnel / Bridge is active or use CSV upload.';
+        this.handleImportError(rawError);
+      },
+    });
   }
 
   private async checkLocalBridgeHealth(): Promise<boolean> {

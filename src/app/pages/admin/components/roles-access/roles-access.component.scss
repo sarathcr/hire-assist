@@ -204,6 +204,16 @@
           }
         }
 
+        &--compatibility {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #334155;
+
+          i {
+            color: #475569;
+          }
+        }
+
         i {
           margin-top: 2px;
           font-size: 1rem;
@@ -521,6 +531,16 @@
 
           i {
             color: #d97706;
+          }
+        }
+
+        &--compatibility {
+          background: #f8fafc;
+          border-color: #cbd5e1;
+          color: #334155;
+
+          i {
+            color: #475569;
           }
         }
 
@@ -1334,5 +1354,11 @@
         color: #e2e8f0 !important;
       }
     }
+  }
+}
+
+.roles-access__sync-btn {
+  @media (max-width: 1023px) {
+    display: none !important;
   }
 }
