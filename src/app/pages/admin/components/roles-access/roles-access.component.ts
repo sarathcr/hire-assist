@@ -656,32 +656,22 @@ export class RolesAccessComponent implements OnInit, OnDestroy {
     this.showConfirmSyncModal = false;
   }
 
-  public proceedWithOpenOrgSync() {
+  public async proceedWithOpenOrgSync() {
     this.showConfirmSyncModal = false;
     this.isSyncing = true;
 
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Connecting to OpenOrg',
-      detail: 'Connecting to OpenOrg directory server and synchronizing users...',
-      life: 6000,
-    });
+    const resourceUrl = this.userService.getResourceUrl();
+    const pushUrl = resourceUrl + '/sync-openorg-push';
 
-    this.userService.syncOpenOrg().subscribe({
-      next: (response: any) => {
-        this.isSyncing = false;
-        this.handleSyncSuccess(response, 'OpenOrg Server');
-      },
-      error: (err: any) => {
-        this.isSyncing = false;
-        const rawError =
-          err?.error?.message ||
-          err?.error?.detail ||
-          err?.message ||
-          'Failed to synchronize users from OpenOrg. Please ensure the office Cloudflare Tunnel / Bridge is active or use CSV upload.';
-        this.handleImportError(rawError);
-      },
-    });
+    const isBridgeActive = await this.checkLocalBridgeHealth();
+
+    if (isBridgeActive) {
+      await this.performDirectBridgeSync(pushUrl);
+    } else {
+      this.isSyncing = false;
+      this.selectedBridgeOs = this.detectUserOs();
+      this.openBridgeWalkthroughModal();
+    }
   }
 
   private async checkLocalBridgeHealth(): Promise<boolean> {
