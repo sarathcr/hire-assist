@@ -3,6 +3,7 @@
   @if (floatLabel) {
     <p-floatlabel 
       variant="on"
+      (mousedown)="onDatePickerMouseDown($event, datePicker)"
       (click)="onDatePickerClick($event, datePicker)"
       (touchstart)="onTouchStart()"
       (touchmove)="onTouchMove()"
@@ -37,6 +38,7 @@
   @else {
     <div 
       class="input-text-calender__basic"
+      (mousedown)="onDatePickerMouseDown($event, datePickerBasic)"
       (click)="onDatePickerClick($event, datePickerBasic)"
       (touchstart)="onTouchStart()"
       (touchmove)="onTouchMove()"

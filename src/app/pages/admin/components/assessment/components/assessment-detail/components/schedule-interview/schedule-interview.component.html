@@ -72,6 +72,9 @@
           <div class="schedule-interview-dialog__buffer-header">
             <i class="pi pi-hourglass"></i>
             <span class="schedule-interview-dialog__buffer-label">Minimum Scheduling Buffer (Minutes)</span>
+            @if (bufferHoursText) {
+              <span class="schedule-interview-dialog__buffer-header-hint">{{ bufferHoursText }}</span>
+            }
           </div>
           <div class="schedule-interview-dialog__buffer-input-wrapper">
             <input
@@ -84,18 +87,14 @@
               class="schedule-interview-dialog__buffer-input"
               placeholder="e.g. 30"
             />
-            @if (bufferHoursText) {
-              <div class="schedule-interview-dialog__buffer-hint">
-                <i class="pi pi-clock"></i>
-                <span>{{ bufferHoursText }}</span>
-              </div>
+          </div>
+          <div class="schedule-interview-dialog__buffer-feedback">
+            @if ((fGroup.get('bufferMinutes')?.dirty || fGroup.get('bufferMinutes')?.touched) && fGroup.get('bufferMinutes')?.errors) {
+              <small class="schedule-interview-dialog__buffer-error">
+                Buffer minutes is required and must be an integer between 1 and 1440 (24 hours).
+              </small>
             }
           </div>
-          @if ((fGroup.get('bufferMinutes')?.dirty || fGroup.get('bufferMinutes')?.touched) && fGroup.get('bufferMinutes')?.errors) {
-            <small class="schedule-interview-dialog__buffer-error">
-              Buffer minutes is required and must be an integer between 1 and 1440 (24 hours).
-            </small>
-          }
         </div>
 
         <!-- Date Picker Section -->

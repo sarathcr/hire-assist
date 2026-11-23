@@ -210,9 +210,9 @@
                     >
                       @for (
                         round of interviewFeedbacksDataSource!;
-                        track (round.interviewId || round.assessmentRoundId || round.roundId || $index)
+                        track getRoundKey(round, $index)
                       ) {
-                        <p-accordion-panel [value]="getRoundKey(round)">
+                        <p-accordion-panel [value]="getRoundKey(round, $index)">
                           <p-accordion-header (click)="onPreviousRoundAccordionOpen(round)">
                             <div class="candidate-detail__round-header">
                               <span class="candidate-detail__round-name">

@@ -902,7 +902,7 @@
     class="custom-hover-tooltip"
     [ngClass]="{ 'custom-hover-tooltip--bottom': tooltipPositionBelow }"
   >
-    Recruitment is inactive/completed, you can only view the recruitment.
+    {{ isRecruitmentCompleted ? 'Recruitment is completed, you can only view the recruitment.' : 'Recruitment is inactive, you can only view the recruitment.' }}
     <div class="custom-hover-tooltip__arrow"></div>
   </div>
 </div>

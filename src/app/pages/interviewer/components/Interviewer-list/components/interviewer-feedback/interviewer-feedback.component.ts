@@ -509,11 +509,13 @@ export class InterviewerFeedbackComponent
    */
   public isAptitudeRound(round: any): boolean {
     if (!round) return false;
-    const roundName = typeof round === 'string' ? round : round.roundName;
-    const roundTypeId = typeof round === 'string' ? null : round.roundTypeId;
-    const roundId = typeof round === 'string' ? null : round.roundId;
+    const roundName = typeof round === 'string' ? round : (round.roundName || round.name || '');
+    const rawRoundTypeId = typeof round === 'string' ? null : (round.roundTypeId ?? round.roundType);
 
-    if (roundTypeId === 1 || roundId === 1) return true;
+    if (rawRoundTypeId !== null && rawRoundTypeId !== undefined && rawRoundTypeId !== '') {
+      if (Number(rawRoundTypeId) === 1) return true;
+      if (Number(rawRoundTypeId) === 2) return false;
+    }
     if (!roundName) return false;
     const nameLower = roundName.trim().toLowerCase();
     return nameLower.includes('aptitude') || nameLower.includes('online');

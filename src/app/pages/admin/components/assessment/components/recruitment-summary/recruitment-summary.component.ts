@@ -436,8 +436,31 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
     }
   }
 
+  public isAptitudeRound(round: any): boolean {
+    if (!round) return false;
+    if (round.isAptitude !== undefined && round.isAptitude !== null) {
+      return Boolean(round.isAptitude);
+    }
+    const rawRoundTypeId = round.roundTypeId ?? round.roundType;
+    if (rawRoundTypeId !== null && rawRoundTypeId !== undefined && rawRoundTypeId !== '') {
+      if (Number(rawRoundTypeId) === 1) return true;
+      if (Number(rawRoundTypeId) === 2) return false;
+    }
+    const name = (round.roundName || round.name || '').toLowerCase();
+    return name.includes('aptitude') || name.includes('online');
+  }
+
   private sortFeedbackCriteria(data: any): any {
     console.log('=== RECRUITMENT SUMMARY RESPONSE DATA ===', data);
+    if (data?.rounds) {
+      data.rounds.forEach((round: any) => {
+        round.completed = round.completed ?? round.attended ?? round.totalCandidates ?? round.processed ?? 0;
+        round.passed = round.passed ?? round.selected ?? 0;
+        round.failed = round.failed ?? round.rejected ?? 0;
+        round.isAptitude = this.isAptitudeRound(round);
+      });
+    }
+
     if (data?.detailedCandidates) {
       data.detailedCandidates.forEach((candidate: any) => {
         console.log('=== Candidate Data ===', {
@@ -451,7 +474,53 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
         });
         if (candidate.roundsData) {
           candidate.roundsData.forEach((round: any) => {
+            round.isAptitude = this.isAptitudeRound(round);
+
+            // If feedbackCriteria is missing but assessmentDetails or feedBacks exist, normalize
+            if (!round.feedbackCriteria || round.feedbackCriteria.length === 0) {
+              if (round.assessmentDetails && round.assessmentDetails.length > 0) {
+                const synthesized: any[] = [];
+                round.assessmentDetails.forEach((detail: any) => {
+                  const list = detail.feedbackListDto || detail.feedBacks || detail.feedbacks || [];
+                  list.forEach((f: any) => {
+                    synthesized.push({
+                      name: f.criteria || f.name,
+                      criteria: f.criteria || f.name,
+                      score: f.feedbackScore ?? f.score ?? 0,
+                      feedbackScore: f.feedbackScore ?? f.score ?? 0,
+                      maxScore: f.maxScore ?? f.max_score ?? 0,
+                      remarks: f.feedbackDetails || f.remarks || f.comments || '',
+                      feedbackDetails: f.feedbackDetails || f.remarks || f.comments || '',
+                      interviewerName: detail.interviewerName || detail.panelName,
+                    });
+                  });
+                });
+                if (synthesized.length > 0) {
+                  round.feedbackCriteria = synthesized;
+                }
+              } else if (round.feedBacks || round.feedbacks) {
+                const list = round.feedBacks || round.feedbacks || [];
+                round.feedbackCriteria = list.map((f: any) => ({
+                  name: f.criteria || f.name,
+                  criteria: f.criteria || f.name,
+                  score: f.feedbackScore ?? f.score ?? 0,
+                  feedbackScore: f.feedbackScore ?? f.score ?? 0,
+                  maxScore: f.maxScore ?? f.max_score ?? 0,
+                  remarks: f.feedbackDetails || f.remarks || f.comments || '',
+                  feedbackDetails: f.feedbackDetails || f.remarks || f.comments || '',
+                  interviewerName: round.interviewer || 'Interviewer',
+                }));
+              }
+            }
+
             if (round.feedbackCriteria && round.feedbackCriteria.length > 0) {
+              round.feedbackCriteria.forEach((crit: any) => {
+                crit.name = crit.name || crit.criteria;
+                crit.score = crit.score ?? crit.feedbackScore ?? 0;
+                crit.maxScore = crit.maxScore ?? crit.max_score ?? 0;
+                crit.remarks = crit.remarks || crit.feedbackDetails || crit.comments || '';
+              });
+
               round.feedbackCriteria.sort((a: any, b: any) => {
                 const idA = Number(a.feedbackCriteriaId || a.id);
                 const idB = Number(b.feedbackCriteriaId || b.id);
@@ -461,8 +530,8 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
                 }
 
                 // Fallback to alphabetical sorting by name if IDs are missing
-                const nameA = (a.name || '').toLowerCase();
-                const nameB = (b.name || '').toLowerCase();
+                const nameA = (a.name || a.criteria || '').toLowerCase();
+                const nameB = (b.name || b.criteria || '').toLowerCase();
                 return nameA.localeCompare(nameB);
               });
             }
@@ -651,8 +720,12 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
   ): { score: number; maxScore: number } | null {
     if (!round) return null;
 
-    const rawScore = round.totalScore !== undefined && round.totalScore !== null ? round.totalScore : round.score;
-    const rawMaxScore = round.maxScore !== undefined && round.maxScore !== null ? round.maxScore : round.outofScore;
+    const rawScore = round.totalScore !== undefined && round.totalScore !== null 
+      ? round.totalScore 
+      : (round.score !== undefined && round.score !== null ? round.score : round.feedbackScore);
+    const rawMaxScore = round.maxScore !== undefined && round.maxScore !== null 
+      ? round.maxScore 
+      : (round.outofScore !== undefined && round.outofScore !== null ? round.outofScore : (round.max_score !== undefined && round.max_score !== null ? round.max_score : round.cutOffScore));
 
     const hasTotalScore =
       rawScore !== undefined &&
@@ -671,7 +744,7 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
       };
     }
 
-    if (round.isAptitude) {
+    if (this.isAptitudeRound(round)) {
       let score = 0;
       let maxScore = 0;
       if (round.aptitudeQuestions && round.aptitudeQuestions.length > 0) {
@@ -686,46 +759,88 @@ export class RecruitmentSummaryComponent implements OnInit, OnDestroy {
           }
         });
       } else {
-        score = round.correctCount || 0;
+        score = round.correctCount || round.correctAnswers || 0;
         maxScore = round.totalQuestions || 0;
       }
       return { score, maxScore };
     }
 
-    if (round.feedbackCriteria && round.feedbackCriteria.length > 0) {
+    // Technical / Panel Round: Check feedbackCriteria
+    const criteriaList = round.feedbackCriteria || round.feedBacks || round.feedbacks || round.feedbackList;
+    if (criteriaList && criteriaList.length > 0) {
       const interviewerScores: Record<
         string,
         { score: number; maxScore: number }
       > = {};
 
-      round.feedbackCriteria.forEach((crit: any) => {
-        const interviewer = crit.interviewerName || 'default';
+      criteriaList.forEach((crit: any) => {
+        const interviewer = crit.interviewerName || crit.interviewer || 'default';
         if (!interviewerScores[interviewer]) {
           interviewerScores[interviewer] = { score: 0, maxScore: 0 };
         }
-        interviewerScores[interviewer].score += Number(crit.score || 0);
-        interviewerScores[interviewer].maxScore += Number(crit.maxScore || 0);
+        const critScore = crit.score !== undefined && crit.score !== null 
+          ? Number(crit.score) 
+          : (crit.feedbackScore !== undefined && crit.feedbackScore !== null ? Number(crit.feedbackScore) : 0);
+        const critMaxScore = crit.maxScore !== undefined && crit.maxScore !== null 
+          ? Number(crit.maxScore) 
+          : (crit.max_score !== undefined && crit.max_score !== null ? Number(crit.max_score) : 0);
+
+        interviewerScores[interviewer].score += isNaN(critScore) ? 0 : critScore;
+        interviewerScores[interviewer].maxScore += isNaN(critMaxScore) ? 0 : critMaxScore;
       });
 
       const interviewers = Object.keys(interviewerScores);
-      if (interviewers.length === 0) return { score: 0, maxScore: 0 };
+      if (interviewers.length > 0) {
+        let totalScoreSum = 0;
+        let totalMaxScoreSum = 0;
 
+        interviewers.forEach((interviewer) => {
+          totalScoreSum += interviewerScores[interviewer].score;
+          totalMaxScoreSum += interviewerScores[interviewer].maxScore;
+        });
+
+        const averageScore =
+          Math.round((totalScoreSum / interviewers.length) * 100) / 100;
+        const averageMaxScore =
+          Math.round((totalMaxScoreSum / interviewers.length) * 100) / 100;
+
+        if (averageMaxScore > 0 || averageScore > 0) {
+          return {
+            score: averageScore,
+            maxScore: averageMaxScore,
+          };
+        }
+      }
+    }
+
+    // Check assessmentDetails if present
+    if (round.assessmentDetails && round.assessmentDetails.length > 0) {
       let totalScoreSum = 0;
       let totalMaxScoreSum = 0;
+      let count = 0;
 
-      interviewers.forEach((interviewer) => {
-        totalScoreSum += interviewerScores[interviewer].score;
-        totalMaxScoreSum += interviewerScores[interviewer].maxScore;
+      round.assessmentDetails.forEach((detail: any) => {
+        const score = Number(detail.totalScore ?? detail.score ?? 0);
+        const maxScore = Number(detail.outofScore ?? detail.maxScore ?? 0);
+        if (maxScore > 0 || score > 0) {
+          totalScoreSum += score;
+          totalMaxScoreSum += maxScore;
+          count++;
+        }
       });
 
-      const averageScore =
-        Math.round((totalScoreSum / interviewers.length) * 100) / 100;
-      const averageMaxScore =
-        Math.round((totalMaxScoreSum / interviewers.length) * 100) / 100;
+      if (count > 0) {
+        return {
+          score: Math.round((totalScoreSum / count) * 100) / 100,
+          maxScore: Math.round((totalMaxScoreSum / count) * 100) / 100,
+        };
+      }
+    }
 
+    if (hasTotalScore) {
       return {
-        score: averageScore,
-        maxScore: averageMaxScore,
+        score: Math.round(Number(rawScore) * 100) / 100,
+        maxScore: Number(rawMaxScore) > 0 ? Math.round(Number(rawMaxScore) * 100) / 100 : 0,
       };
     }
 

@@ -1950,8 +1950,8 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   public hasAnyAvailableActionInRound(): boolean {
+    if (this.isRecruitmentCompleted) return false;
     if (!this.data || !this.data.isActive) return false;
-    if (this.isAllRoundsCompleted) return false;
     const candidates = this.tableData?.data;
     if (!candidates || candidates.length === 0) return false;
 
@@ -2076,11 +2076,23 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     });
   }
 
+  public get isRecruitmentCompleted(): boolean {
+    return !!(
+      this.isAllRoundsCompleted ||
+      this.data?.statusId === StatusEnum.Completed ||
+      (this.data?.statusId as any) === '7' ||
+      this.data?.status?.toLowerCase() === 'completed' ||
+      (this.step &&
+        this.step.length > 0 &&
+        this.step.every((s) => s.status === 'Completed' || s.status?.toLowerCase() === 'completed'))
+    );
+  }
+
   public get isActionsButtonDisabled(): boolean {
-    if (!this.data || !this.data.isActive) {
+    if (this.isRecruitmentCompleted) {
       return true;
     }
-    if (this.isAllRoundsCompleted) {
+    if (!this.data || !this.data.isActive) {
       return true;
     }
     if (!this.tableData?.data || this.tableData.data.length === 0) {
@@ -2099,20 +2111,17 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
   }
 
   public get actionsButtonTooltip(): string {
+    if (this.isRecruitmentCompleted) {
+      return 'Recruitment is completed';
+    }
     if (!this.data || !this.data.isActive) {
       return 'Recruitment is inactive';
-    }
-    if (this.isAllRoundsCompleted) {
-      return 'All recruitment rounds are completed';
     }
     if (!this.tableData?.data || this.tableData.data.length === 0) {
       return 'No candidates in this round';
     }
     if (this.roundStatus && !this.hasAnyAvailableActionInRound()) {
       return 'Current round is completed';
-    }
-    if (!this.tableData?.data || this.tableData.data.length === 0) {
-      return 'No candidates in this round';
     }
     if (!this.hasAnyAvailableActionInRound()) {
       return 'No further actions available for candidates in this round';
@@ -2383,7 +2392,10 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const next = (res: Assessment) => {
       this.normalizeDates(res);
       this.data = res;
-      this.isAllRoundsCompleted = res.statusId === StatusEnum.Completed;
+      this.isAllRoundsCompleted =
+        res.statusId === StatusEnum.Completed ||
+        (res.statusId as any) === '7' ||
+        res.status?.toLowerCase() === 'completed';
       this.cdr.detectChanges();
     };
     const error = () => {};
@@ -2451,6 +2463,15 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
     const next = (res: AssessmentRound[]) => {
       this.step = res.sort((a, b) => a.sequence - b.sequence);
       if (this.step.length > 0) {
+        const allCompleted = this.step.every(
+          (s) =>
+            s.status === 'Completed' ||
+            s.status?.toLowerCase() === 'completed',
+        );
+        if (allCompleted) {
+          this.isAllRoundsCompleted = true;
+        }
+
         const activeIndex = this.step.findIndex(
           (s) => s.status !== 'Completed',
         );
@@ -2571,36 +2592,42 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
               reportingTime: item.reportingTime || item.ReportingTime || null,
               visibleButtonIndices: this.getVisibleButtonIndices(item),
               disabledButtonIndices:
-                (this.data && !this.data.isActive) || this.isAllRoundsCompleted
+                this.isRecruitmentCompleted || (this.data && !this.data.isActive)
                   ? [1]
                   : [],
               disabledButtonTooltips:
-                (this.data && !this.data.isActive) || this.isAllRoundsCompleted
+                this.isRecruitmentCompleted
                   ? {
-                      1: 'Recruitment is inactive/completed, you can only view the recruitment.',
+                      1: 'Recruitment is completed, you can only view the recruitment.',
                     }
-                  : {},
+                  : (this.data && !this.data.isActive)
+                    ? {
+                        1: 'Recruitment is inactive, you can only view the recruitment.',
+                      }
+                    : {},
               isDisabled:
+                this.isRecruitmentCompleted ||
                 (this.data && !this.data.isActive) ||
-                this.isAllRoundsCompleted ||
                 this.isCandidateAbsent(item) ||
                 this.isCandidateInterviewStarted(item),
               disabledTooltip: this.isCandidateAbsent(item)
                 ? `Candidate "${item.candidateName || item.fullName || item.name || 'Unknown'}" is marked as absent and cannot be selected.`
                 : this.isCandidateInterviewStarted(item)
                   ? `Interview for candidate "${item.candidateName || item.fullName || item.name || 'Unknown'}" has already started.`
-                  : (this.data && !this.data.isActive) ||
-                      this.isAllRoundsCompleted
-                    ? 'Recruitment is inactive/completed, you can only view the recruitment.'
-                    : '',
+                  : this.isRecruitmentCompleted
+                    ? 'Recruitment is completed, you can only view the recruitment.'
+                    : (this.data && !this.data.isActive)
+                      ? 'Recruitment is inactive, you can only view the recruitment.'
+                      : '',
               disabledReason: this.isCandidateAbsent(item)
                 ? `Candidate "${item.candidateName || item.fullName || item.name || 'Unknown'}" is marked as absent and cannot be selected.`
                 : this.isCandidateInterviewStarted(item)
                   ? `Interview for candidate "${item.candidateName || item.fullName || item.name || 'Unknown'}" has already started.`
-                  : (this.data && !this.data.isActive) ||
-                      this.isAllRoundsCompleted
-                    ? 'Recruitment is inactive/completed, you can only view the recruitment.'
-                    : '',
+                  : this.isRecruitmentCompleted
+                    ? 'Recruitment is completed, you can only view the recruitment.'
+                    : (this.data && !this.data.isActive)
+                      ? 'Recruitment is inactive, you can only view the recruitment.'
+                      : '',
             })),
           };
         },
@@ -2766,7 +2793,7 @@ export class AssessmentDetailComponent implements OnInit, OnDestroy {
 
   @HostListener('document:mouseover', ['$event'])
   public onMouseOver(event: MouseEvent): void {
-    if (!this.data || (this.data.isActive && !this.isAllRoundsCompleted)) {
+    if (!this.data || (this.data.isActive && !this.isRecruitmentCompleted)) {
       this.showHoverTooltip = false;
       return;
     }

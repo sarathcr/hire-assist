@@ -186,7 +186,41 @@ export class CandidateDetailViewComponent
       .pipe(finalize(() => (this.isLoadingInterviewFeedbacks = false)))
       .subscribe({
         next: (res: PreviousInterview[]) => {
-          this.interviewFeedbacksDataSource = res;
+          this.interviewFeedbacksDataSource = (res || []).map((round) => {
+            // If assessmentDetails is empty but feedBacks exist, normalize into assessmentDetails
+            if (
+              (!round.assessmentDetails || round.assessmentDetails.length === 0) &&
+              ((round.feedBacks && round.feedBacks.length > 0) || ((round as any).feedbacks && (round as any).feedbacks.length > 0))
+            ) {
+              const feedbacks = round.feedBacks || (round as any).feedbacks || [];
+              const totalScore = feedbacks.reduce(
+                (acc: number, f: any) => acc + (Number(f.feedbackScore ?? f.score) || 0),
+                0,
+              );
+              const outofScore = feedbacks.reduce(
+                (acc: number, f: any) => acc + (Number(f.maxScore ?? f.max_score) || 0),
+                0,
+              );
+              round.assessmentDetails = [
+                {
+                  interviewerId: 'default',
+                  interviewerName: (round as any).interviewerName || (round as any).interviewer || 'Interviewer',
+                  panelName: (round as any).panelName || 'Panel',
+                  questionSet: (round as any).questionSet || '',
+                  batch: (round as any).batch || '',
+                  totalQuestions: 0,
+                  attendedQuestions: 0,
+                  correctAnswers: 0,
+                  skipped: 0,
+                  score: round.score ?? totalScore,
+                  totalScore: round.score ?? totalScore,
+                  outofScore: outofScore,
+                  feedbackListDto: feedbacks,
+                },
+              ];
+            }
+            return round;
+          });
         },
         error: () => {
           this.messageService.add({
@@ -421,14 +455,12 @@ export class CandidateDetailViewComponent
     }
   }
 
-  public getRoundKey(round: any): string {
-    if (!round) return '';
-    if (round.interviewId) {
-      return `interview_${round.interviewId}`;
-    }
-    const roundId = round.assessmentRoundId || round.roundId || round.sequence || '0';
+  public getRoundKey(round: any, index?: number): string {
+    if (!round) return `round_${index ?? 0}`;
+    const roundId = round.assessmentRoundId || round.roundId || round.sequence || (index !== undefined ? index : '0');
+    const interviewPart = round.interviewId ? `_int_${round.interviewId}` : '';
     const attempt = round.attemptNumber ? `_attempt_${round.attemptNumber}` : '';
-    return `round_${roundId}${attempt}`;
+    return `round_${roundId}${interviewPart}${attempt}`;
   }
 
   public getRoundAttemptLabel(round: any): string {
@@ -467,11 +499,13 @@ export class CandidateDetailViewComponent
 
   public isAptitudeRound(round: any): boolean {
     if (!round) return false;
-    const roundName = typeof round === 'string' ? round : round.roundName;
-    const roundTypeId = typeof round === 'string' ? null : round.roundTypeId;
-    const roundId = typeof round === 'string' ? null : round.roundId;
+    const roundName = typeof round === 'string' ? round : (round.roundName || round.name || '');
+    const rawRoundTypeId = typeof round === 'string' ? null : (round.roundTypeId ?? round.roundType);
 
-    if (roundTypeId === 1 || roundId === 1) return true;
+    if (rawRoundTypeId !== null && rawRoundTypeId !== undefined && rawRoundTypeId !== '') {
+      if (Number(rawRoundTypeId) === 1) return true;
+      if (Number(rawRoundTypeId) === 2) return false;
+    }
     if (!roundName) return false;
     const nameLower = roundName.trim().toLowerCase();
     return nameLower.includes('aptitude') || nameLower.includes('online');

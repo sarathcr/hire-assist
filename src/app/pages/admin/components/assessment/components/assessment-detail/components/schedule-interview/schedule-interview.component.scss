@@ -196,6 +196,19 @@
     white-space: nowrap;
   }
 
+  &__buffer-header-hint {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--primary-color, #667eea);
+    margin-left: 0.5rem;
+  }
+
+  &__buffer-feedback {
+    min-height: 1.25rem;
+  }
+
   &__buffer-hint {
     display: inline-flex;
     align-items: center;
@@ -390,7 +403,7 @@
 
   // Date picker z-index fix
   .p-datepicker-panel {
-    z-index: 10000 !important;
+    z-index: 11000 !important;
   }
 }
 

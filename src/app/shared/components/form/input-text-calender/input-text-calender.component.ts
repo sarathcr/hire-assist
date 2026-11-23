@@ -1,4 +1,12 @@
-import { Component, Input, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  AfterViewInit,
+  ViewChild,
+  ChangeDetectorRef,
+  inject,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -27,8 +35,11 @@ import { BaseFormComponent } from '../base-form/base-form.component';
 })
 export class InputTextCalenderComponent
   extends BaseFormComponent
-  implements OnInit
+  implements OnInit, AfterViewInit
 {
+  @ViewChild('datePicker') datePicker?: DatePicker;
+  @ViewChild('datePickerBasic') datePickerBasic?: DatePicker;
+
   @Input() formGroup!: FormGroup;
   @Input() config!: CustomFormControlConfig;
   @Input() dynamicSuffix!: string;
@@ -58,6 +69,15 @@ export class InputTextCalenderComponent
     >;
   }
 
+  ngAfterViewInit(): void {
+    if (this.datePicker) {
+      this.patchDatePicker(this.datePicker);
+    }
+    if (this.datePickerBasic) {
+      this.patchDatePicker(this.datePickerBasic);
+    }
+  }
+
   get isDisabled(): boolean {
     return !!(
       this.formControl?.disabled ||
@@ -65,10 +85,18 @@ export class InputTextCalenderComponent
     );
   }
 
-  onDatePickerClick(event: MouseEvent | Event, datePicker: DatePicker): void {
-    if (this.isDisabled) {
+  onDatePickerMouseDown(event: MouseEvent, datePicker: DatePicker): void {
+    if (this.isDisabled || !datePicker) {
       return;
     }
+    this.patchDatePicker(datePicker);
+  }
+
+  onDatePickerClick(event: MouseEvent | Event, datePicker: DatePicker): void {
+    if (this.isDisabled || !datePicker) {
+      return;
+    }
+    this.patchDatePicker(datePicker);
     const target = event.target as HTMLElement;
     if (
       target?.closest('.p-datepicker-clear-icon') ||
@@ -89,9 +117,10 @@ export class InputTextCalenderComponent
   }
 
   onTouchEnd(event: TouchEvent, datePicker: DatePicker): void {
-    if (this.isTouchMoved || this.isDisabled) {
+    if (this.isTouchMoved || this.isDisabled || !datePicker) {
       return;
     }
+    this.patchDatePicker(datePicker);
     const target = event.target as HTMLElement;
     if (
       target?.closest('.p-datepicker-clear-icon') ||
@@ -103,34 +132,35 @@ export class InputTextCalenderComponent
     this.showDatePicker(datePicker);
   }
 
+  private patchDatePicker(datePicker: DatePicker): void {
+    if (!datePicker || (datePicker as any)['_outsideClickPatched']) {
+      return;
+    }
+    (datePicker as any)['_outsideClickPatched'] = true;
+    const originalIsOutsideClicked = datePicker.isOutsideClicked.bind(datePicker);
+    datePicker.isOutsideClicked = (event: any) => {
+      const target = event?.target as HTMLElement;
+      if (target) {
+        if (
+          target.closest('.p-floatlabel') ||
+          target.closest('.input-text-calender')
+        ) {
+          return false;
+        }
+      }
+      return originalIsOutsideClicked(event);
+    };
+  }
+
   private showDatePicker(datePicker: DatePicker): void {
     if (!datePicker || this.isDisabled) {
       return;
     }
 
-    if (!(datePicker as any)['_outsideClickPatched']) {
-      (datePicker as any)['_outsideClickPatched'] = true;
-      const originalIsOutsideClicked = datePicker.isOutsideClicked.bind(datePicker);
-      datePicker.isOutsideClicked = (event: any) => {
-        const target = event?.target as HTMLElement;
-        if (target) {
-          if (
-            target.closest('.p-floatlabel') ||
-            target.closest('.input-text-calender')
-          ) {
-            return false;
-          }
-        }
-        return originalIsOutsideClicked(event);
-      };
-    }
+    this.patchDatePicker(datePicker);
 
     if (!datePicker.overlayVisible) {
       datePicker.showOverlay();
-      if (datePicker.overlay) {
-        datePicker.overlay.style.display = 'block';
-        datePicker.overlay.style.visibility = 'visible';
-      }
       this.cd?.markForCheck();
     }
   }

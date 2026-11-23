@@ -373,7 +373,7 @@
       </div>
 
       <div class="pipeline-journey">
-        @for (round of summaryData.rounds; track round.name; let i = $index) {
+        @for (round of summaryData.rounds; track (round.name || round.roundName || $index); let i = $index) {
           <div class="journey-step" [class.is-last]="i === summaryData.rounds.length - 1">
             <div class="step-line">
               <div class="step-node">{{ i + 1 }}</div>
@@ -383,7 +383,7 @@
             <div class="step-card">
               <div class="step-header">
                 <div class="step-info">
-                  <h3 [attr.data-index]="i + 1">{{ round.name }}</h3>
+                  <h3 [attr.data-index]="i + 1">{{ round.name || round.roundName }}</h3>
                   <span class="step-status" [ngClass]="'status-' + (round.status?.toLowerCase().replace(' ', '-') || 'pending')">
                     {{ round.status }}
                   </span>
@@ -396,26 +396,26 @@
               <div class="step-body">
                 <div class="step-metrics">
                   <div class="step-metric">
-                    <span class="v">{{ round.completed }}</span>
+                    <span class="v">{{ round.completed ?? round.attended ?? round.totalCandidates ?? round.processed ?? 0 }}</span>
                     <span class="l">Processed</span>
                   </div>
                   <div class="step-metric success">
-                    <span class="v">{{ round.passed }}</span>
+                    <span class="v">{{ round.passed ?? round.selected ?? 0 }}</span>
                     <span class="l">Passed</span>
                   </div>
                   <div class="step-metric failure">
-                    <span class="v">{{ round.failed }}</span>
+                    <span class="v">{{ round.failed ?? round.rejected ?? 0 }}</span>
                     <span class="l">Failed</span>
                   </div>
                 </div>
 
-                <div class="step-progress" *ngIf="round.completed > 0">
+                <div class="step-progress" *ngIf="(round.completed ?? round.attended ?? round.totalCandidates ?? 0) > 0">
                   <div class="progress-bar">
-                    <div class="fill success" [style.width.%]="(round.passed / round.completed) * 100"></div>
-                    <div class="fill failure" [style.width.%]="(round.failed / round.completed) * 100"></div>
+                    <div class="fill success" [style.width.%]="(((round.passed ?? round.selected ?? 0) / (round.completed ?? round.attended ?? round.totalCandidates ?? 1)) * 100)"></div>
+                    <div class="fill failure" [style.width.%]="(((round.failed ?? round.rejected ?? 0) / (round.completed ?? round.attended ?? round.totalCandidates ?? 1)) * 100)"></div>
                   </div>
                   <div class="progress-info">
-                    <span class="success-pct">{{ (round.passed / round.completed) * 100 | number:'1.0-0' }}% Success Rate</span>
+                    <span class="success-pct">{{ (((round.passed ?? round.selected ?? 0) / (round.completed ?? round.attended ?? round.totalCandidates ?? 1)) * 100) | number:'1.0-0' }}% Success Rate</span>
                   </div>
                 </div>
               </div>
@@ -499,7 +499,7 @@
                 </div>
 
                 <div class="round-breakdown">
-                  @for (round of candidate.roundsData; track round.roundId; let last = $last; let idx = $index) {
+                  @for (round of candidate.roundsData; track (round.roundId || round.assessmentRoundId || round.roundName || $index); let last = $last; let idx = $index) {
                     <div class="round-item" [class.is-last]="last">
                       <div class="round-timeline">
                         <div class="round-marker">{{ idx + 1 }}</div>
@@ -509,7 +509,7 @@
                       <div class="round-content">
                         <div class="round-header">
                           <div class="round-title-group">
-                            <h5 [attr.data-round]="round.roundId">{{ round.roundName }}</h5>
+                            <h5 [attr.data-round]="round.roundId || round.assessmentRoundId">{{ round.roundName || round.name }}</h5>
                             <span class="round-date" *ngIf="round.date">{{ round.date | date:'MMM dd, yyyy' }}</span>
                           </div>
                           <div class="round-status-group">
@@ -601,19 +601,19 @@
                                 </tr>
                               </thead>
                               <tbody>
-                                @for (crit of round.feedbackCriteria; track ($index + '-' + crit.name + '-' + (crit.interviewerName || ''))) {
-                                  @if (crit.name !== 'Attachments') {
+                                @for (crit of round.feedbackCriteria; track ($index + '-' + (crit.name || crit.criteria || '') + '-' + (crit.interviewerName || ''))) {
+                                  @if ((crit.name || crit.criteria) !== 'Attachments') {
                                     <tr>
                                       <td data-label="Criteria">
-                                        <span class="crit-name">{{ crit.name }}</span>
+                                        <span class="crit-name">{{ crit.name || crit.criteria }}</span>
                                         <div class="crit-interviewer" *ngIf="crit.interviewerName">
                                           <i class="pi pi-user"></i> {{ crit.interviewerName }}
                                         </div>
                                       </td>
                                       <td data-label="Score" class="text-center">
-                                        <span class="score-pill">{{ crit.score }} / {{ crit.maxScore }}</span>
+                                        <span class="score-pill">{{ crit.score ?? crit.feedbackScore ?? 0 }} / {{ crit.maxScore ?? crit.max_score ?? 0 }}</span>
                                       </td>
-                                      <td data-label="Remarks" class="remarks-cell" [innerHTML]="(crit.remarks || 'No remarks') | safe: 'html'" (click)="onRemarksClick($event)"></td>
+                                      <td data-label="Remarks" class="remarks-cell" [innerHTML]="(crit.remarks || crit.feedbackDetails || crit.comments || 'No remarks') | safe: 'html'" (click)="onRemarksClick($event)"></td>
                                     </tr>
                                   }
                                 }

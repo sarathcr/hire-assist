@@ -884,6 +884,15 @@ export class AssessmentViewComponent
     return null;
   }
 
+  public get isAssessmentCompleted(): boolean {
+    if (!this.assessment) return false;
+    return (
+      this.assessment.status?.toLowerCase() === 'completed' ||
+      this.assessment.statusId === StatusEnum.Completed ||
+      (this.assessment.statusId as any) === '7'
+    );
+  }
+
   public get isAssessmentCompletedOrInactive(): boolean {
     if (!this.assessment) return false;
     return (
