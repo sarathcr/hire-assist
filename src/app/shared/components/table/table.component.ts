@@ -1054,6 +1054,23 @@ export class TableComponent<
     ) as HTMLElement | null;
   }
 
+  private getPageScrollContainer(): HTMLElement | null {
+    if (!this.table || !isPlatformBrowser(this.platformId)) return null;
+    let el = (this.table.el?.nativeElement as HTMLElement | undefined)
+      ?.parentElement;
+    while (el && el !== document.body && el !== document.documentElement) {
+      const style = window.getComputedStyle(el);
+      if (
+        (style.overflowY === 'auto' || style.overflowY === 'scroll') &&
+        el.scrollHeight > el.clientHeight
+      ) {
+        return el;
+      }
+      el = el.parentElement;
+    }
+    return null;
+  }
+
   public onSelectionChange(newSelection: any): void {
     // Block any selection changes when selectionDisabled or all items are non-selectable
     if (this.selectionDisabled() || this.isHeaderCheckboxDisabled()) {
@@ -1067,6 +1084,10 @@ export class TableComponent<
     const scrollContainer = this.getScrollContainer();
     const savedTableScrollTop = scrollContainer
       ? scrollContainer.scrollTop
+      : null;
+    const pageScrollContainer = this.getPageScrollContainer();
+    const savedPageScrollTop = pageScrollContainer
+      ? pageScrollContainer.scrollTop
       : null;
     const savedWindowScrollY = isPlatformBrowser(this.platformId)
       ? window.scrollY ||
@@ -1121,6 +1142,14 @@ export class TableComponent<
         savedTableScrollTop > 0
       ) {
         scrollContainer.scrollTop = savedTableScrollTop;
+      }
+      if (
+        pageScrollContainer &&
+        savedPageScrollTop !== null &&
+        savedPageScrollTop > 0 &&
+        Math.abs(pageScrollContainer.scrollTop - savedPageScrollTop) > 5
+      ) {
+        pageScrollContainer.scrollTop = savedPageScrollTop;
       }
       if (
         savedWindowScrollY > 0 &&

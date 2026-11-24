@@ -113,6 +113,17 @@ describe('InstructionDialogComponent', () => {
       expect(component.areSectionsValid).toBeFalse();
       expect(component.isFormValid).toBeFalse();
     });
+
+    it('should format long rules correctly in candidate preview', () => {
+      const longRule = 'Proctoring Instruction: ' + 'This is a long instruction rule text. '.repeat(5);
+      const formatted = component.formatRule(longRule);
+      expect(formatted).toContain('<strong>Proctoring Instruction:</strong>');
+      expect(formatted).toContain('This is a long instruction rule text.');
+    });
+
+    it('should execute resizeAllTextareas without errors', () => {
+      expect(() => component.resizeAllTextareas()).not.toThrow();
+    });
   });
 
   describe('Section and Rule Count Limits', () => {

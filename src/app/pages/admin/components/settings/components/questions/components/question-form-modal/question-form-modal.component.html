@@ -80,7 +80,7 @@
     </div>
   } @else if (data && data.fGroup) {
     <form [formGroup]="data.fGroup" class="question-form__form">
-      <div class="question-form__container">
+      <div class="question-form__container" #formContainer>
         <div class="question-form__section">
           <div class="question-form__section-header">
             <h4 class="question-form__section-title">

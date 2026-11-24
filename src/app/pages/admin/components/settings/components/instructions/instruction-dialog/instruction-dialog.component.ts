@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, HostListener, inject, ViewChildren, QueryList } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  HostListener,
+  inject,
+  ViewChildren,
+  QueryList,
+  ElementRef,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   CdkDragDrop,
@@ -9,7 +19,7 @@ import {
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { TextareaModule } from 'primeng/textarea';
+import { TextareaModule, Textarea } from 'primeng/textarea';
 import { CheckboxModule } from 'primeng/checkbox';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule, Tooltip } from 'primeng/tooltip';
@@ -53,17 +63,20 @@ export interface ComponentPreset {
   templateUrl: './instruction-dialog.component.html',
   styleUrl: './instruction-dialog.component.scss',
 })
-export class InstructionDialogComponent implements OnInit {
+export class InstructionDialogComponent implements OnInit, AfterViewInit, OnDestroy {
   private ref = inject(DynamicDialogRef);
   private config = inject(DynamicDialogConfig);
   private instructionService = inject(InstructionService);
+  private elementRef = inject(ElementRef);
 
   public mode: 'create' | 'edit' | 'clone' | 'preview' = 'create';
   public viewMode: 'split' | 'builder' | 'preview' = 'split';
   public isLoading = false;
   public isSubmitting = false;
   @ViewChildren(Tooltip) public tooltips!: QueryList<Tooltip>;
+  @ViewChildren(Textarea) public ruleTextareas!: QueryList<Textarea>;
   public isDragging = false;
+  private resizeObserver?: ResizeObserver;
 
   // Form Fields
   public id?: number;
@@ -185,6 +198,7 @@ export class InstructionDialogComponent implements OnInit {
         this.viewMode = 'builder';
       }
       this.isMobileView = mobile;
+      this.scheduleTextareaResize(50);
     }
   }
 
@@ -216,6 +230,61 @@ export class InstructionDialogComponent implements OnInit {
     }
 
     this.loadExistingInstructions();
+  }
+
+  ngAfterViewInit(): void {
+    // Re-evaluate textarea heights after modal animation and layout settle
+    this.scheduleTextareaResize(100);
+    this.scheduleTextareaResize(300);
+    this.scheduleTextareaResize(600);
+
+    // Watch for container size changes (e.g. split view toggles, sidebar changes, dialog maximize)
+    if (typeof window !== 'undefined' && 'ResizeObserver' in window) {
+      const container =
+        this.elementRef?.nativeElement?.querySelector('.instruction-studio-grid') ||
+        this.elementRef?.nativeElement;
+      if (container) {
+        this.resizeObserver = new ResizeObserver(() => {
+          this.resizeAllTextareas();
+        });
+        this.resizeObserver.observe(container);
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+  }
+
+  public scheduleTextareaResize(delay = 100): void {
+    setTimeout(() => {
+      this.resizeAllTextareas();
+    }, delay);
+  }
+
+  public resizeAllTextareas(): void {
+    if (typeof window === 'undefined') return;
+
+    // Trigger PrimeNG Textarea directive resize
+    if (this.ruleTextareas && this.ruleTextareas.length) {
+      this.ruleTextareas.forEach((ta) => {
+        try {
+          ta.resize();
+        } catch {
+          // safe fallback
+        }
+      });
+    }
+
+    // Direct DOM height adjustment as guaranteed fallback
+    const root = this.elementRef?.nativeElement;
+    if (root) {
+      const textareas = root.querySelectorAll('textarea.rule-textarea, textarea.desc-textarea');
+      textareas.forEach((textarea: HTMLTextAreaElement) => {
+        textarea.style.height = 'auto';
+        textarea.style.height = `${Math.max(textarea.scrollHeight, 32)}px`;
+      });
+    }
   }
 
   private loadExistingInstructions(): void {
@@ -644,16 +713,20 @@ export class InstructionDialogComponent implements OnInit {
   public addRule(sectionIndex: number): void {
     if (this.sections[sectionIndex].rules.length >= this.MAX_RULES_PER_SECTION) return;
     this.sections[sectionIndex].rules.push('');
+    this.scheduleTextareaResize(50);
   }
 
   public removeRule(sectionIndex: number, ruleIndex: number): void {
     if (this.sections[sectionIndex].rules.length > 1) {
       this.sections[sectionIndex].rules.splice(ruleIndex, 1);
+      this.scheduleTextareaResize(50);
     }
   }
 
   public setViewMode(mode: 'split' | 'builder' | 'preview'): void {
     this.viewMode = mode;
+    this.scheduleTextareaResize(50);
+    this.scheduleTextareaResize(200);
   }
 
   public trackByIndex(index: number): number {

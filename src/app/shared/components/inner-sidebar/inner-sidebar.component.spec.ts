@@ -174,4 +174,50 @@ describe('InnerSidebarComponent', () => {
       expect(link.nativeElement.getAttribute('title')).toBeNull();
     });
   });
+
+  it('should not re-trigger scrollToActiveItem when items change but activeMenuItem remains unchanged', () => {
+    const scrollSpy = spyOn(component, 'scrollToActiveItem');
+    scrollSpy.calls.reset();
+
+    // Change items without changing activeMenuItem
+    fixture.componentRef.setInput('items', [
+      { label: 'Home (Updated)', icon: 'pi pi-home', route: '/home', index: 0 },
+      { label: 'Profile (Updated)', icon: 'pi pi-user', route: '/profile', index: 1 },
+    ]);
+    fixture.detectChanges();
+
+    expect(scrollSpy).not.toHaveBeenCalled();
+  });
+
+  it('should scroll menu horizontally when menu container has overflow on active item change', () => {
+    const menuEl = fixture.debugElement.nativeElement.querySelector('.p-menu') as HTMLElement;
+    if (menuEl) {
+      Object.defineProperty(menuEl, 'scrollWidth', { configurable: true, value: 500 });
+      Object.defineProperty(menuEl, 'clientWidth', { configurable: true, value: 300 });
+      const scrollToSpy = spyOn(menuEl, 'scrollTo');
+
+      component.scrollToActiveItem();
+
+      jasmine.clock().install();
+      jasmine.clock().tick(100);
+      expect(scrollToSpy).toHaveBeenCalled();
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it('should not scroll when menu container has no horizontal overflow', () => {
+    const menuEl = fixture.debugElement.nativeElement.querySelector('.p-menu') as HTMLElement;
+    if (menuEl) {
+      Object.defineProperty(menuEl, 'scrollWidth', { configurable: true, value: 300 });
+      Object.defineProperty(menuEl, 'clientWidth', { configurable: true, value: 300 });
+      const scrollToSpy = spyOn(menuEl, 'scrollTo');
+
+      component.scrollToActiveItem();
+
+      jasmine.clock().install();
+      jasmine.clock().tick(100);
+      expect(scrollToSpy).not.toHaveBeenCalled();
+      jasmine.clock().uninstall();
+    }
+  });
 });

@@ -1196,23 +1196,6 @@
     line-height: 1;
   }
 
-  // "Required" pill badge
-  &__required-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 1px 7px;
-    background: #fef3c7;
-    border: 1px solid #fcd34d;
-    border-radius: 5px;
-    font-size: 10px;
-    font-weight: 700;
-    color: #92400e;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-left: 6px;
-    vertical-align: middle;
-  }
-
   // Inline validation message below the dropdown
   &__instruction-required-msg {
     display: flex;

@@ -24,13 +24,30 @@ export class InnerSidebarComponent extends BaseComponent {
   public icon = input<string>('pi pi-cog');
   public itemClick = output<MenuItem>();
 
+  private previousActiveMenuItem: number | undefined = undefined;
+  private hasScrolledInitial = false;
+
   constructor() {
     super();
     effect(() => {
-      // Re-trigger scroll when activeMenuItem or items change
-      this.activeMenuItem();
-      this.items();
-      this.scrollToActiveItem();
+      const currentActive = this.activeMenuItem();
+      const currentItems = this.items();
+      const activeChanged =
+        currentActive !== undefined &&
+        currentActive !== this.previousActiveMenuItem;
+      const initialLoad =
+        !this.hasScrolledInitial &&
+        currentActive !== undefined &&
+        !!currentItems &&
+        currentItems.length > 0;
+
+      if (activeChanged || initialLoad) {
+        this.previousActiveMenuItem = currentActive;
+        if (currentItems && currentItems.length > 0) {
+          this.hasScrolledInitial = true;
+        }
+        this.scrollToActiveItem();
+      }
     });
   }
 
@@ -50,15 +67,26 @@ export class InnerSidebarComponent extends BaseComponent {
 
   public scrollToActiveItem(): void {
     setTimeout(() => {
+      const menuEl = this.elementRef.nativeElement.querySelector('.p-menu') as HTMLElement;
       const activeEl = this.elementRef.nativeElement.querySelector(
         '.p-menu-item-link.active, .inner-sidebar__btn-item.active'
       ) as HTMLElement;
-      if (activeEl) {
-        activeEl.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center',
-        });
+      if (menuEl && activeEl && menuEl.scrollWidth > menuEl.clientWidth) {
+        const menuRect = menuEl.getBoundingClientRect();
+        const activeRect = activeEl.getBoundingClientRect();
+        const targetScrollLeft =
+          menuEl.scrollLeft +
+          (activeRect.left - menuRect.left) -
+          menuEl.clientWidth / 2 +
+          activeRect.width / 2;
+        if (typeof menuEl.scrollTo === 'function') {
+          menuEl.scrollTo({
+            left: Math.max(0, targetScrollLeft),
+            behavior: 'smooth',
+          });
+        } else {
+          menuEl.scrollLeft = Math.max(0, targetScrollLeft);
+        }
       }
     }, 100);
   }

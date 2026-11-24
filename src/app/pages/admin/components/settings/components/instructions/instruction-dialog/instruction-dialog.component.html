@@ -208,10 +208,11 @@
                 {{ (description || "").length }} / 500
               </span>
             </div>
-            <input
+            <textarea
               id="inst-desc"
-              type="text"
-              pInputText
+              pTextarea
+              [autoResize]="true"
+              rows="2"
               [(ngModel)]="description"
               [disabled]="mode === 'preview'"
               (blur)="descriptionTouched = true"
@@ -219,8 +220,8 @@
               [class.ng-dirty]="descriptionTouched"
               maxlength="500"
               placeholder="e.g. Please read the following proctoring rules carefully before starting your assessment."
-              class="w-full"
-            />
+              class="w-full desc-textarea"
+            ></textarea>
             @if (descriptionTouched && !isDescriptionValid) {
               <small class="p-error text-red-500 block mt-1">{{
                 descriptionErrorMessage
@@ -661,9 +662,10 @@
 
                             <span class="rule-index">{{ rIdx + 1 }}.</span>
 
-                            <input
-                              type="text"
-                              pInputText
+                            <textarea
+                              pTextarea
+                              [autoResize]="true"
+                              rows="1"
                               [(ngModel)]="section.rules[rIdx]"
                               maxlength="300"
                               [class.ng-invalid]="
@@ -671,8 +673,8 @@
                                 !section.rules[rIdx].trim()
                               "
                               placeholder="Enter specific instruction or rule here..."
-                              class="w-full rule-input"
-                            />
+                              class="w-full rule-input rule-textarea"
+                            ></textarea>
 
                             <span
                               class="rule-char-counter"

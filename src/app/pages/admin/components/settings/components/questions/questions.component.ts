@@ -550,8 +550,8 @@ export class QuestionsComponent implements OnInit, OnDestroy {
     });
   }
 
-  public previewFile(blobId: string, attachmentType: number) {
-    this.dialog.open(FileComponent, {
+  public previewFile(blobId: string, attachmentType: number): DynamicDialogRef {
+    return this.dialog.open(FileComponent, {
       header: 'Image Preview',
       width: '75vw',
       // height: 'auto',

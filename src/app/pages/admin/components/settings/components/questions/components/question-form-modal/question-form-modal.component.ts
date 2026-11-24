@@ -3,8 +3,10 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectorRef,
   Component,
+  ElementRef,
   OnDestroy,
   OnInit,
+  ViewChild,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -228,11 +230,17 @@ export class QuestionFormModalComponent
   public isSubmitting = false;
   private initialValue: any;
 
+  @ViewChild('formContainer') private formContainerRef?: ElementRef<HTMLElement>;
+  private activeScrollUnlock?: () => void;
+
   // Private Properties
   private configMap!: ConfigMap;
   private questionType!: Option[];
   private previousMultipleChoiceAnswers: string[] = [];
-  private previewCallback?: (blodId: string, attachmentType: number) => void;
+  private previewCallback?: (
+    blobId: string,
+    attachmentType: number,
+  ) => DynamicDialogRef | void;
   private selectedOptionIndex: number | 'question' | null = null;
   private questionId?: number;
   private isDestroyed = false;
@@ -254,6 +262,7 @@ export class QuestionFormModalComponent
     private readonly ref: DynamicDialogRef,
     private readonly messageService: MessageService,
     private readonly storeService: StoreService,
+    private readonly elementRef: ElementRef,
   ) {
     super();
   }
@@ -272,6 +281,10 @@ export class QuestionFormModalComponent
 
   override ngOnDestroy(): void {
     this.isDestroyed = true;
+    if (this.activeScrollUnlock) {
+      this.activeScrollUnlock();
+      this.activeScrollUnlock = undefined;
+    }
     this.messageService.clear();
     
     if (this.ref) {
@@ -685,10 +698,127 @@ export class QuestionFormModalComponent
     );
   }
 
+  private getScrollContainer(): HTMLElement | null {
+    if (this.formContainerRef?.nativeElement) {
+      return this.formContainerRef.nativeElement;
+    }
+    const fromEl = this.elementRef?.nativeElement?.querySelector(
+      '.question-form__container',
+    ) as HTMLElement | null;
+    if (fromEl) {
+      return fromEl;
+    }
+    return document.querySelector(
+      '.question-form__container',
+    ) as HTMLElement | null;
+  }
+
+  private startScrollAndFocusLock(
+    savedScrollTop: number,
+    savedWindowY: number,
+    buttonId: string,
+    durationMs = 600,
+  ): () => void {
+    if (this.activeScrollUnlock) {
+      this.activeScrollUnlock();
+      this.activeScrollUnlock = undefined;
+    }
+
+    const scrollContainer = this.getScrollContainer();
+    let isLocked = true;
+
+    // 1. Temporarily patch HTMLElement.prototype.focus to enforce preventScroll: true
+    // This stops browser/PrimeNG focus algorithms from auto-scrolling the container into view
+    const originalFocus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function (
+      this: HTMLElement,
+      options?: FocusOptions,
+    ) {
+      return originalFocus.call(this, { ...options, preventScroll: true });
+    };
+
+    // 2. Synchronous scroll lock: if anything attempts to adjust scrollTop, snap it back before paint
+    const onScroll = () => {
+      if (
+        isLocked &&
+        scrollContainer &&
+        scrollContainer.scrollTop !== savedScrollTop
+      ) {
+        scrollContainer.scrollTop = savedScrollTop;
+      }
+    };
+
+    const onWindowScroll = () => {
+      if (isLocked && window.scrollY !== savedWindowY) {
+        window.scrollTo({
+          top: savedWindowY,
+          left: 0,
+          behavior: 'instant' as ScrollBehavior,
+        });
+      }
+    };
+
+    if (scrollContainer) {
+      scrollContainer.scrollTop = savedScrollTop;
+      scrollContainer.addEventListener('scroll', onScroll, { passive: false });
+    }
+    window.addEventListener('scroll', onWindowScroll, { passive: false });
+
+    // 3. Mark the target button with autofocus so PrimeNG queries it instead of the top textarea
+    const btnElement = document.getElementById(buttonId);
+    const nativeBtn = (btnElement?.querySelector('button') ||
+      btnElement) as HTMLElement | null;
+    nativeBtn?.setAttribute('autofocus', '');
+
+    const unlock = () => {
+      if (!isLocked) return;
+      isLocked = false;
+
+      HTMLElement.prototype.focus = originalFocus;
+
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', onScroll);
+        scrollContainer.scrollTop = savedScrollTop;
+      }
+      window.removeEventListener('scroll', onWindowScroll);
+
+      const currentBtn = document.getElementById(buttonId);
+      const target = (currentBtn?.querySelector('button') ||
+        currentBtn) as HTMLElement | null;
+      target?.removeAttribute('autofocus');
+
+      if (target && document.activeElement !== target) {
+        target.focus({ preventScroll: true });
+      }
+
+      if (scrollContainer && scrollContainer.scrollTop !== savedScrollTop) {
+        scrollContainer.scrollTop = savedScrollTop;
+      }
+    };
+
+    const timer = setTimeout(() => {
+      unlock();
+    }, durationMs);
+
+    const safeUnlock = () => {
+      clearTimeout(timer);
+      unlock();
+    };
+
+    this.activeScrollUnlock = safeUnlock;
+    return safeUnlock;
+  }
+
   private confirmAndDeleteOptionAttachment(
     fileDto: FileDto,
     optionIndex: number,
   ): void {
+    const scrollContainer = this.getScrollContainer();
+    const savedScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+    const savedWindowY =
+      window.scrollY || document.documentElement.scrollTop || 0;
+    const buttonId = `option-attachment-btn-${optionIndex}`;
+
     const formTouchedState = this.storeFormTouchedState();
 
     const modalData: DialogData = {
@@ -699,26 +829,48 @@ export class QuestionFormModalComponent
       acceptButtonText: 'Delete',
     };
 
+    const btnElement = document.getElementById(buttonId);
+    const nativeBtn = (btnElement?.querySelector('button') ||
+      btnElement) as HTMLElement | null;
+    nativeBtn?.setAttribute('autofocus', '');
+
     const confirmRef = this.openDeleteConfirmationDialog(modalData);
+
+    confirmRef?.onDestroy.subscribe(() => {
+      setTimeout(() => {
+        if (this.activeScrollUnlock) {
+          this.activeScrollUnlock();
+          this.activeScrollUnlock = undefined;
+        }
+      }, 30);
+    });
 
     confirmRef?.onClose.subscribe((confirmed: boolean) => {
       this.restoreFormValidationStateWithoutBlur(formTouchedState);
 
       if (confirmed) {
-        this.performOptionDelete(fileDto, optionIndex);
+        this.performOptionDelete(
+          fileDto,
+          optionIndex,
+          savedScrollTop,
+          savedWindowY,
+          buttonId,
+        );
       } else {
         this.isSubmitting = false;
+        this.startScrollAndFocusLock(savedScrollTop, savedWindowY, buttonId);
       }
     });
   }
 
-  private performOptionDelete(fileDto: FileDto, optionIndex: number): void {
+  private performOptionDelete(
+    fileDto: FileDto,
+    optionIndex: number,
+    savedScrollTop: number,
+    savedWindowY: number,
+    buttonId: string,
+  ): void {
     this.deletingOptionAttachments.set(optionIndex, true);
-
-    // Store scroll position and prevent auto-focus
-    const scrollContainer = document.querySelector('.question-form__container');
-    const scrollPosition = scrollContainer?.scrollTop || 0;
-    const activeElementBeforeDelete = document.activeElement as HTMLElement;
 
     const deletePayload: FileDto = {
       ...fileDto,
@@ -734,42 +886,18 @@ export class QuestionFormModalComponent
         this.deletingOptionAttachments.set(optionIndex, false);
         this.cdr.detectChanges();
         this.isSubmitting = false;
-        // Restore scroll position and prevent auto-focus
-        setTimeout(() => {
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollPosition;
-          }
-          // Prevent auto-focus to first element
-          if (
-            activeElementBeforeDelete &&
-            document.body.contains(activeElementBeforeDelete)
-          ) {
-            activeElementBeforeDelete.blur();
-          }
-          this.showSuccessMessage(
-            'Success',
-            'Option attachment deleted successfully',
-          );
-        }, 0);
+        this.startScrollAndFocusLock(savedScrollTop, savedWindowY, buttonId);
+        this.showSuccessMessage(
+          'Success',
+          'Option attachment deleted successfully',
+        );
       },
       error: () => {
         this.deletingOptionAttachments.set(optionIndex, false);
         this.cdr.detectChanges();
         this.isSubmitting = false;
-        // Restore scroll position and prevent auto-focus
-        setTimeout(() => {
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollPosition;
-          }
-          // Prevent auto-focus to first element
-          if (
-            activeElementBeforeDelete &&
-            document.body.contains(activeElementBeforeDelete)
-          ) {
-            activeElementBeforeDelete.blur();
-          }
-          this.showErrorMessage('Error', 'Failed to delete option attachment');
-        }, 0);
+        this.startScrollAndFocusLock(savedScrollTop, savedWindowY, buttonId);
+        this.showErrorMessage('Error', 'Failed to delete option attachment');
       },
       complete: () => {
         this.isSubmitting = false;
@@ -786,13 +914,25 @@ export class QuestionFormModalComponent
   }
 
   public openAttachmentModal(index: number | 'question'): void {
+    const scrollContainer = this.getScrollContainer();
+    const savedScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+    const savedWindowY =
+      window.scrollY || document.documentElement.scrollTop || 0;
+    const buttonId =
+      index === 'question'
+        ? 'question-attachment-btn'
+        : `option-attachment-btn-${index}`;
+
     const formTouchedState = this.storeFormTouchedState();
     this.selectedOptionIndex = index;
 
     const attachmentForm = this.createAttachmentForm();
     const modalData = this.createFileFormGroupData(index, attachmentForm);
 
-    document.body.style.overflow = 'hidden';
+    const btnElement = document.getElementById(buttonId);
+    const nativeBtn = (btnElement?.querySelector('button') ||
+      btnElement) as HTMLElement | null;
+    nativeBtn?.setAttribute('autofocus', '');
 
     const uploadRef = this.dialog.open(FileUploadDialogComponentComponent, {
       data: modalData,
@@ -807,15 +947,16 @@ export class QuestionFormModalComponent
       breakpoints: DIALOG_BREAKPOINTS,
     });
 
-    uploadRef.onClose.subscribe((result: FileDto) => {
-      // Store scroll position before changes
-      const scrollContainer = document.querySelector('.question-form__container');
-      const scrollPosition = scrollContainer?.scrollTop || 0;
+    uploadRef.onDestroy.subscribe(() => {
+      setTimeout(() => {
+        if (this.activeScrollUnlock) {
+          this.activeScrollUnlock();
+          this.activeScrollUnlock = undefined;
+        }
+      }, 30);
+    });
 
-      document.body.style.overflow = 'auto';
-      if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur();
-      }
+    uploadRef.onClose.subscribe((result: FileDto) => {
       this.restoreFormValidationStateWithoutBlur(formTouchedState);
 
       if (result) {
@@ -824,34 +965,7 @@ export class QuestionFormModalComponent
       this.selectedOptionIndex = null;
       this.cdr.detectChanges();
 
-      // Restore scroll position and explicitly restore focus to the button that opened it
-      let focusAttempts = 0;
-      const focusInterval = setInterval(() => {
-        if (scrollContainer) {
-          scrollContainer.scrollTop = scrollPosition;
-        }
-
-        const buttonId = index === 'question' 
-          ? 'question-attachment-btn' 
-          : `option-attachment-btn-${index}`;
-        
-        const btnElement = document.getElementById(buttonId);
-        if (btnElement) {
-          const nativeButton = btnElement.querySelector('button') || btnElement;
-          nativeButton.focus();
-          
-          // Clear interval if focus is successfully held on the button
-          const activeEl = document.activeElement;
-          if (activeEl === nativeButton || activeEl?.contains(nativeButton) || focusAttempts > 10) {
-            clearInterval(focusInterval);
-          }
-        }
-        
-        focusAttempts++;
-        if (focusAttempts > 10) {
-          clearInterval(focusInterval);
-        }
-      }, 100);
+      this.startScrollAndFocusLock(savedScrollTop, savedWindowY, buttonId);
     });
   }
 
@@ -929,7 +1043,32 @@ export class QuestionFormModalComponent
 
     const blobId = (fileDto as any)?.blobId || fileDto?.id;
     if (blobId && fileDto?.attachmentType) {
-      this.previewCallback?.(blobId, fileDto.attachmentType);
+      const scrollContainer = this.getScrollContainer();
+      const savedScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+      const savedWindowY =
+        window.scrollY || document.documentElement.scrollTop || 0;
+      const buttonId = optionCtrl
+        ? `option-attachment-btn-${this.optionsArray.controls.indexOf(optionCtrl)}`
+        : 'question-attachment-btn';
+
+      const previewRef = this.previewCallback?.(blobId, fileDto.attachmentType);
+      if (
+        previewRef &&
+        typeof previewRef === 'object' &&
+        'onDestroy' in previewRef
+      ) {
+        previewRef.onDestroy.subscribe(() => {
+          setTimeout(() => {
+            if (this.activeScrollUnlock) {
+              this.activeScrollUnlock();
+              this.activeScrollUnlock = undefined;
+            }
+          }, 30);
+        });
+        previewRef.onClose.subscribe(() => {
+          this.startScrollAndFocusLock(savedScrollTop, savedWindowY, buttonId);
+        });
+      }
     } else {
       this.showInfoMessage('Info', 'No image is uploaded for preview');
     }
@@ -955,6 +1094,12 @@ export class QuestionFormModalComponent
   }
 
   private confirmAndDeleteQuestionAttachment(fileDto: FileDto): void {
+    const scrollContainer = this.getScrollContainer();
+    const savedScrollTop = scrollContainer ? scrollContainer.scrollTop : 0;
+    const savedWindowY =
+      window.scrollY || document.documentElement.scrollTop || 0;
+    const buttonId = 'question-attachment-btn';
+
     const formTouchedState = this.storeFormTouchedState();
 
     const modalData: DialogData = {
@@ -965,15 +1110,35 @@ export class QuestionFormModalComponent
       acceptButtonText: 'Delete',
     };
 
+    const btnElement = document.getElementById(buttonId);
+    const nativeBtn = (btnElement?.querySelector('button') ||
+      btnElement) as HTMLElement | null;
+    nativeBtn?.setAttribute('autofocus', '');
+
     const confirmRef = this.openDeleteConfirmationDialog(modalData);
+
+    confirmRef?.onDestroy.subscribe(() => {
+      setTimeout(() => {
+        if (this.activeScrollUnlock) {
+          this.activeScrollUnlock();
+          this.activeScrollUnlock = undefined;
+        }
+      }, 30);
+    });
 
     confirmRef?.onClose.subscribe((confirmed: boolean) => {
       this.restoreFormValidationStateWithoutBlur(formTouchedState);
 
       if (confirmed) {
-        this.performQuestionDelete(fileDto);
+        this.performQuestionDelete(
+          fileDto,
+          savedScrollTop,
+          savedWindowY,
+          buttonId,
+        );
       } else {
         this.isSubmitting = false;
+        this.startScrollAndFocusLock(savedScrollTop, savedWindowY, buttonId);
       }
     });
   }
@@ -1025,13 +1190,13 @@ export class QuestionFormModalComponent
     });
   }
 
-  private performQuestionDelete(fileDto: FileDto): void {
+  private performQuestionDelete(
+    fileDto: FileDto,
+    savedScrollTop: number,
+    savedWindowY: number,
+    buttonId: string,
+  ): void {
     this.isDeletingAttachment = true;
-
-    // Store scroll position and prevent auto-focus
-    const scrollContainer = document.querySelector('.question-form__container');
-    const scrollPosition = scrollContainer?.scrollTop || 0;
-    const activeElementBeforeDelete = document.activeElement as HTMLElement;
 
     const deletePayload: FileDto = {
       ...fileDto,
@@ -1044,41 +1209,19 @@ export class QuestionFormModalComponent
         this.data.fGroup.get('hasAttachments')?.setValue(false);
         this.isDeletingAttachment = false;
         this.cdr.detectChanges();
-        // Restore scroll position and prevent auto-focus
-        setTimeout(() => {
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollPosition;
-          }
-          // Prevent auto-focus to first element
-          if (
-            activeElementBeforeDelete &&
-            document.body.contains(activeElementBeforeDelete)
-          ) {
-            activeElementBeforeDelete.blur();
-          }
-          this.showSuccessMessage(
-            'Success',
-            'Question image deleted successfully',
-          );
-        }, 0);
+        this.isSubmitting = false;
+        this.startScrollAndFocusLock(savedScrollTop, savedWindowY, buttonId);
+        this.showSuccessMessage(
+          'Success',
+          'Question image deleted successfully',
+        );
       },
       error: () => {
         this.isDeletingAttachment = false;
         this.cdr.detectChanges();
-        // Restore scroll position and prevent auto-focus
-        setTimeout(() => {
-          if (scrollContainer) {
-            scrollContainer.scrollTop = scrollPosition;
-          }
-          // Prevent auto-focus to first element
-          if (
-            activeElementBeforeDelete &&
-            document.body.contains(activeElementBeforeDelete)
-          ) {
-            activeElementBeforeDelete.blur();
-          }
-          this.showErrorMessage('Error', 'Failed to delete question image');
-        }, 0);
+        this.isSubmitting = false;
+        this.startScrollAndFocusLock(savedScrollTop, savedWindowY, buttonId);
+        this.showErrorMessage('Error', 'Failed to delete question image');
       },
       complete: () => {
         this.isSubmitting = false;

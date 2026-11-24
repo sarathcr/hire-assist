@@ -1,4 +1,4 @@
-﻿/* You can add global styles to this file, and also import other style files */
+/* You can add global styles to this file, and also import other style files */
 @use "./styles/main.scss";
 @import url("https://fonts.googleapis.com/css2?family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Josefin+Sans:ital,wght@0,100;0,300;0,600;1,400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
@@ -909,10 +909,11 @@ app-input-text-iftalabel {
 }
 
 // Ensure date picker panel is always displayed, fully visible, above modals and masks
+body > .p-datepicker-panel,
 .p-datepicker-panel {
   display: block !important;
   visibility: visible !important;
-  z-index: 11000 !important;
+  z-index: 12000 !important;
   pointer-events: auto !important;
   background: var(--color-white, #ffffff) !important;
 }
